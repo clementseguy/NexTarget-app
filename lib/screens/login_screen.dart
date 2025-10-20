@@ -60,10 +60,10 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.lock_outline,
-                  size: 80,
-                  color: Theme.of(context).primaryColor,
+                Image.asset(
+                  'assets/app_logo.png',
+                  width: 120,
+                  height: 120,
                 ),
                 const SizedBox(height: 24),
                 Text(
