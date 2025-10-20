@@ -6,7 +6,6 @@
 Spécifications fonctionnelles et techniques des versions **en cours** ou **à venir**.
 
 - `backlog.md` - Backlog général du projet
-- `cahier_recette.yaml` - Template pour les recettes de test
 - `v0.3/` - Spécifications de la version 0.3
 - `v0.4/` - Spécifications de la version 0.4
 
@@ -51,6 +50,7 @@ Documentation purement technique : architecture, build, déploiement, intégrati
 Guides de tests manuels, automatiques et cahiers de recette.
 
 - `testing_auth.md` - Guide de test manuel pour l'authentification OAuth
+- `cahier_recette.yaml` - Template pour les recettes de test
 - `cahier_recette.md` - Cahier de recette complet pour toutes les fonctionnalités
 
 **Quand ajouter ici :** Pour tout nouveau scénario de test ou procédure de validation.
