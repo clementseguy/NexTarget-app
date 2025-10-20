@@ -40,8 +40,8 @@ Documentation détaillée des **fonctionnalités implémentées** et en producti
 Documentation purement technique : architecture, build, déploiement, intégrations.
 
 - `build_apk_guide.md` - Guide de compilation d'APK Android
-- `BACKEND_OAUTH_SPEC.md` - Spécifications OAuth pour le backend
-- `evolution_chart_refactor.md` - Composant de graphe réutilisable (après refactoring)
+- `backend_oauth_spec.md` - Spécifications OAuth pour le backend
+- `evolution_chart.md` - Composant de graphe réutilisable
 
 **Quand ajouter ici :** Pour toute documentation technique (CI/CD, architecture, configuration).
 
@@ -50,7 +50,7 @@ Documentation purement technique : architecture, build, déploiement, intégrati
 ### 🧪 `tests/` - Documentation de tests
 Guides de tests manuels, automatiques et cahiers de recette.
 
-- `TESTING_AUTH.md` - Guide de test manuel pour l'authentification OAuth
+- `testing_auth.md` - Guide de test manuel pour l'authentification OAuth
 - `cahier_recette.md` - Cahier de recette complet pour toutes les fonctionnalités
 
 **Quand ajouter ici :** Pour tout nouveau scénario de test ou procédure de validation.
@@ -81,26 +81,10 @@ Guides de tests manuels, automatiques et cahiers de recette.
 
 ```
 docs/
-├── README.md (ce fichier)
+├── README.md           # Ce fichier - guide d'organisation
 ├── specs/              # Spécifications versions futures/en cours
-│   ├── backlog.md
-│   ├── cahier_recette.yaml
-│   ├── evolution_chart_refactor.md
-│   ├── v0.3_scope_exercice.md
-│   ├── v0.3_scope_objectifs.md
-│   ├── v0.3/
-│   └── v0.4/
 ├── release_notes/      # Notes de versions passées
-│   ├── .release_notes_v0.2.0.md
-│   └── .release_notes_v0.3.0.md
 ├── features/           # Fonctionnalités en production
-│   ├── objectifs_tendance.md
-│   ├── statistiques.md
-│   └── stats_explicatives.md
 ├── tech/               # Documentation technique
-│   ├── build_apk_guide.md
-│   └── BACKEND_OAUTH_SPEC.md
 └── tests/              # Tests et validation
-    ├── TESTING_AUTH.md
-    └── cahier_recette.md
 ```
