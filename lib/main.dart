@@ -9,6 +9,8 @@ import 'migrations/migration_3_create_exercises_box.dart';
 import 'constants/session_constants.dart';
 import 'providers/navigation_provider.dart';
 import 'providers/settings_provider.dart';
+import 'providers/auth_provider.dart';
+import 'services/auth_service.dart';
 import 'app/my_app.dart';
 
 Future<void> main() async {
@@ -37,12 +39,19 @@ Future<void> main() async {
     await Hive.openBox('app_preferences');
   }
 
+  // Initialiser AuthService
+  final authService = AuthService(
+    authBaseUrl: AppConfig.I.authBaseUrl,
+    callbackScheme: AppConfig.I.authCallbackScheme,
+  );
+
   // Lancer l'application avec les providers
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider(authService)),
       ],
       child: const MyApp(),
     ),

@@ -15,7 +15,6 @@ dependencies:
     sdk: flutter
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  # sqflite retiré (migration abandonnée, Hive unique source de vérité)
   path_provider: ^2.1.2
   intl: ^0.20.2
   fl_chart: ^1.1.1
@@ -26,6 +25,8 @@ dependencies:
   share_plus: ^7.2.0
   url_launcher: ^6.2.6
   provider: ^6.1.1
+  flutter_secure_storage: ^9.0.0
+  flutter_web_auth_2: ^4.1.0
 
 dev_dependencies:
   flutter_test:

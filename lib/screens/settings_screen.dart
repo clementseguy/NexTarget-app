@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
 import '../services/backup_service.dart';
 import '../services/session_service.dart';
 import '../config/app_config.dart';
 import '../widgets/series_cards.dart'; // Pour TwoFistsIcon
+import '../providers/auth_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   @override
@@ -16,8 +18,45 @@ class SettingsScreen extends StatelessWidget {
     final prefBox = Hive.box('app_preferences');
     String current = prefBox.get('default_hand_method', defaultValue: 'two');
     String? defaultCaliber = prefBox.get('default_caliber');
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
     return Scaffold(
-      appBar: AppBar(title: Text('Paramètres')),
+      appBar: AppBar(
+        title: Text('Paramètres'),
+        actions: [
+          if (authProvider.isAuthenticated)
+            IconButton(
+              icon: const Icon(Icons.logout),
+              tooltip: 'Se deconnecter',
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Deconnexion'),
+                    content: const Text('Voulez-vous vraiment vous deconnecter ?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Annuler'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text('Deconnexion'),
+                      ),
+                    ],
+                  ),
+                );
+                
+                if (confirm == true) {
+                  await authProvider.logout();
+                  if (context.mounted) {
+                    Navigator.of(context).pushReplacementNamed('/login');
+                  }
+                }
+              },
+            ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
