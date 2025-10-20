@@ -144,6 +144,7 @@ class AppNavigator extends StatelessWidget {
   
   AppBar _buildSessionsAppBar(BuildContext context) {
     return AppBar(
+      automaticallyImplyLeading: false,
       centerTitle: true,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.center,

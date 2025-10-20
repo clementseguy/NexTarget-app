@@ -12,7 +12,10 @@ class _ExercicesScreenState extends State<ExercicesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Exercices & Objectifs')),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text('Exercices & Objectifs'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

@@ -15,8 +15,55 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Vérifie l'authentification au cas où le callback OAuth aurait réussi
+    _checkAuthAfterReturn();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Quand l'app revient au premier plan après le navigateur OAuth
+    if (state == AppLifecycleState.resumed) {
+      _checkAuthAfterReturn();
+    }
+  }
+
+  Future<void> _checkAuthAfterReturn() async {
+    // Attend un peu que le callback OAuth soit traité
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    if (!mounted) return;
+    
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    print('[LOGIN] Vérification du statut d\'authentification...');
+    await authProvider.checkAuthStatus();
+    
+    print('[LOGIN] isAuthenticated = ${authProvider.isAuthenticated}');
+    print('[LOGIN] currentUser = ${authProvider.currentUser}');
+    
+    if (!mounted) return;
+    
+    // Si l'utilisateur est maintenant authentifié, redirige vers le dashboard
+    if (authProvider.isAuthenticated) {
+      print('[LOGIN] Utilisateur authentifié détecté, redirection vers dashboard');
+      Navigator.of(context).pushReplacementNamed('/dashboard');
+    } else {
+      print('[LOGIN] Utilisateur toujours non authentifié');
+    }
+  }
 
   Future<void> _handleGoogleSignIn(BuildContext context) async {
     setState(() => _isLoading = true);
@@ -74,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Connecte-toi pour synchroniser tes donnees',
+                  'Nous ne stockons pas vos données personnelles.\n\n L’authentification via Google ou Facebook nous permet simplement d’associer vos séances à votre profil pour une analyse personnalisée et précise.',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.grey[600],
