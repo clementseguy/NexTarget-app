@@ -9,6 +9,7 @@ import '../screens/settings_screen.dart';
 import '../screens/create_session_screen.dart';
 import '../screens/goal_edit_screen.dart';
 import '../screens/exercises_list_screen.dart';
+import '../screens/login_screen.dart';
 import '../providers/navigation_provider.dart';
 import '../constants/session_constants.dart';
 import '../data/local_db_hive.dart';
@@ -24,12 +25,24 @@ class AppRouter {
   static const String createSession = '/sessions/create';
   static const String editGoal = '/goals/edit';
   static const String exercisesList = '/exercises/list';
+  static const String login = '/login';
+  static const String dashboard = '/dashboard';
   
   /// Retourne la route correspondant au nom spécifié
   static Route<dynamic> generateRoute(RouteSettings settings) {
     final name = settings.name;
-    if (name == home) {
-      return MaterialPageRoute(builder: (_) => HomeScreen());
+    
+    // Gestion spéciale pour le callback OAuth (contient #access_token=...)
+    // Flutter intercepte parfois cette URL après le retour de flutter_web_auth_2
+    if (name != null && name.startsWith('/#access_token')) {
+      // Redirige vers le dashboard (l'auth est déjà traitée par flutter_web_auth_2)
+      return MaterialPageRoute(builder: (_) => AppNavigator());
+    }
+    
+    if (name == home || name == dashboard) {
+      return MaterialPageRoute(builder: (_) => AppNavigator());
+    } else if (name == login) {
+      return MaterialPageRoute(builder: (_) => const LoginScreen());
     } else if (name == coach) {
       return MaterialPageRoute(builder: (_) => CoachScreen());
     } else if (name == exercises) {
