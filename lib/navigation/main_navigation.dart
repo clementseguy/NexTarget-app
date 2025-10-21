@@ -37,6 +37,7 @@ class _MainNavigationState extends State<MainNavigation> {
     if (safeIndex == 3) {
       return Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           centerTitle: true,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.center,

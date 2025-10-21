@@ -197,14 +197,6 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
               ),
             ],
           ),
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () async {
-              if (await _confirmCancel()) {
-                if (mounted) Navigator.pop(context, false);
-              }
-            },
-          ),
         ),
         body: _buildStep(),
       ),

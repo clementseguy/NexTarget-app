@@ -160,14 +160,6 @@ class GoalEditScreenState extends State<GoalEditScreen> {
               onPressed: _saving ? null : _save,
             ),
           ],
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () async {
-              if (await _confirmDiscard()) {
-                if (mounted) Navigator.of(context).pop(false);
-              }
-            },
-          ),
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
