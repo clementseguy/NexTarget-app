@@ -18,7 +18,7 @@ class SettingsScreen extends StatelessWidget {
     final prefBox = Hive.box('app_preferences');
     String current = prefBox.get('default_hand_method', defaultValue: 'two');
     String? defaultCaliber = prefBox.get('default_caliber');
-    final authProvider = Provider.of<AuthProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
     return Scaffold(
       appBar: AppBar(
@@ -61,53 +61,6 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
-          // DEBUG: Affichage des infos d'authentification
-          if (authProvider.isAuthenticated)
-            Card(
-              color: Colors.green.shade900,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.green.shade300),
-                        const SizedBox(width: 8),
-                        Text('✅ Authentifié', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green.shade300)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text('Infos utilisateur:', style: TextStyle(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 4),
-                    if (authProvider.currentUser != null) ...[
-                      Text('Email: ${authProvider.currentUser!['email'] ?? 'N/A'}', style: TextStyle(fontSize: 12)),
-                      Text('Nom: ${authProvider.currentUser!['name'] ?? 'N/A'}', style: TextStyle(fontSize: 12)),
-                      Text('ID: ${authProvider.currentUser!['id'] ?? 'N/A'}', style: TextStyle(fontSize: 12)),
-                      const SizedBox(height: 4),
-                      Text('Données complètes:', style: TextStyle(fontSize: 10, fontStyle: FontStyle.italic)),
-                      Text('${authProvider.currentUser}', style: TextStyle(fontSize: 10, color: Colors.white70)),
-                    ] else
-                      Text('currentUser est null', style: TextStyle(fontSize: 12, color: Colors.orange)),
-                  ],
-                ),
-              ),
-            )
-          else
-            Card(
-              color: Colors.red.shade900,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    Icon(Icons.cancel, color: Colors.red.shade300),
-                    const SizedBox(width: 8),
-                    Text('❌ Non authentifié', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.red.shade300)),
-                  ],
-                ),
-              ),
-            ),
-          const SizedBox(height: 16),
           Text('Préférences Tir', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           Card(

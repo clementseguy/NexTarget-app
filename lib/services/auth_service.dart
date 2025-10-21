@@ -90,29 +90,23 @@ class AuthService {
 
   Future<bool> isAuthenticated() async {
     final token = await getToken();
-    print('[AUTH_SERVICE] isAuthenticated() - token présent: ${token != null}');
     if (token == null) {
       return false;
     }
 
     try {
-      print('[AUTH_SERVICE] Vérification du token auprès de $_authBaseUrl/users/me');
       final response = await http.get(
         Uri.parse('$_authBaseUrl/users/me'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
-      print('[AUTH_SERVICE] Réponse /users/me: ${response.statusCode}');
       if (response.statusCode == 200) {
-        print('[AUTH_SERVICE] Token valide, utilisateur authentifié');
         return true;
       } else {
-        print('[AUTH_SERVICE] Token invalide (${response.statusCode}), déconnexion');
         await logout();
         return false;
       }
     } catch (e) {
-      print('[AUTH_SERVICE] Erreur lors de la vérification: $e');
       return false;
     }
   }
