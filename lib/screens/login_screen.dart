@@ -15,55 +15,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
+class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    // Vérifie l'authentification au cas où le callback OAuth aurait réussi
-    _checkAuthAfterReturn();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Quand l'app revient au premier plan après le navigateur OAuth
-    if (state == AppLifecycleState.resumed) {
-      _checkAuthAfterReturn();
-    }
-  }
-
-  Future<void> _checkAuthAfterReturn() async {
-    // Attend un peu que le callback OAuth soit traité
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    if (!mounted) return;
-    
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
-    print('[LOGIN] Vérification du statut d\'authentification...');
-    await authProvider.checkAuthStatus();
-    
-    print('[LOGIN] isAuthenticated = ${authProvider.isAuthenticated}');
-    print('[LOGIN] currentUser = ${authProvider.currentUser}');
-    
-    if (!mounted) return;
-    
-    // Si l'utilisateur est maintenant authentifié, redirige vers le dashboard
-    if (authProvider.isAuthenticated) {
-      print('[LOGIN] Utilisateur authentifié détecté, redirection vers dashboard');
-      Navigator.of(context).pushReplacementNamed('/dashboard');
-    } else {
-      print('[LOGIN] Utilisateur toujours non authentifié');
-    }
-  }
 
   Future<void> _handleGoogleSignIn(BuildContext context) async {
     setState(() => _isLoading = true);
