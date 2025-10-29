@@ -107,13 +107,14 @@ void main() {
   });
 
   testWidgets('App boots and shows bottom navigation items', (WidgetTester tester) async {
+    final navigatorKey = GlobalKey<NavigatorState>();
     await tester.pumpWidget(
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => NavigationProvider()),
           ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ],
-        child: const MyApp(),
+        child: MyApp(navigatorKey: navigatorKey),
       )
     );
     // Premier frame + animations éventuelles

@@ -8,18 +8,35 @@ import '../providers/auth_provider.dart';
 import '../screens/login_screen.dart';
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final GlobalKey<NavigatorState> navigatorKey;
+
+  const MyApp({super.key, required this.navigatorKey});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'NexTarget',
       theme: AppTheme.darkTheme,
       home: FadeInWrapper(
         duration: Duration(milliseconds: AppConfig.I.splashFadeDurationMs),
         child: const _AuthGate(),
       ),
-      onGenerateRoute: AppRouter.generateRoute,
+      onGenerateRoute: (settings) {
+        print('[MYAPP] onGenerateRoute appelé avec route: ${settings.name}');
+        print('[MYAPP] Arguments: ${settings.arguments}');
+        
+        // Intercepter les deep links OAuth qui sont transformés en routes web par Flutter
+        // Le token est déjà géré par le deep link handler dans main.dart
+        if (settings.name != null && settings.name!.contains('token=')) {
+          print('[MYAPP] Route OAuth détectée, ignorée (déjà gérée par deep link handler)');
+          // Retourner null pour ignorer cette tentative de navigation
+          // L'AuthGate gérera la navigation après authentification réussie
+          return null;
+        }
+        
+        return AppRouter.generateRoute(settings);
+      },
       initialRoute: AppRouter.home,
     );
   }
@@ -44,26 +61,38 @@ class _AuthGateState extends State<_AuthGate> {
   }
 
   Future<void> _checkAuth() async {
+    print('[AUTH_GATE] 🚪 Vérification de l\'authentification au démarrage...');
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.checkAuthStatus();
+    print('[AUTH_GATE] État final: isAuthenticated=${authProvider.isAuthenticated}');
   }
 
   @override
   Widget build(BuildContext context) {
+    print('[AUTH_GATE] ========================================');
+    print('[AUTH_GATE] 🔄 Rebuild du Consumer<AuthProvider>');
+    print('[AUTH_GATE] ========================================');
     return Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
+        print('[AUTH_GATE] Consumer.builder appelé');
+        print('[AUTH_GATE] isLoading=${authProvider.isLoading}, isAuthenticated=${authProvider.isAuthenticated}');
+        
         if (authProvider.isLoading) {
+          print('[AUTH_GATE] ⏳ Chargement en cours...');
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
         final authEnabled = AppConfig.I.authEnabled;
+        print('[AUTH_GATE] 🎯 auth.enabled=$authEnabled, isAuthenticated=${authProvider.isAuthenticated}');
         
         if (authEnabled && !authProvider.isAuthenticated) {
+          print('[AUTH_GATE] 🔐 Affichage de l\'écran de login');
           return const LoginScreen();
         }
 
+        print('[AUTH_GATE] ✅ Navigation vers l\'application');
         return AppNavigator();
       },
     );

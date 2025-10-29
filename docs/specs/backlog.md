@@ -3,6 +3,8 @@
 ## Idées (hors scope à date)
 
 - Revoir les règles de sécurité FFTir
+- Thème Clair : Bleu-Blanc-Rouge
+- Thème ASCII Art
 
 ## Coaches
 - Plusieurs coachs (tons différents) : 

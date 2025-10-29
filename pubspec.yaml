@@ -26,7 +26,8 @@ dependencies:
   url_launcher: ^6.2.6
   provider: ^6.1.1
   flutter_secure_storage: ^9.0.0
-  flutter_web_auth_2: ^4.1.0
+  app_links: ^6.3.3
+  # flutter_web_auth_2: ^4.1.0  # Remplacé par url_launcher + app_links
 
 dev_dependencies:
   flutter_test:

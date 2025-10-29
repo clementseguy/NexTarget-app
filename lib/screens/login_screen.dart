@@ -16,18 +16,13 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool _isLoading = false;
-
   Future<void> _handleGoogleSignIn(BuildContext context) async {
-    setState(() => _isLoading = true);
-
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      await authProvider.signInWithGoogle();
-
-      if (!context.mounted) return;
-
-      Navigator.of(context).pushReplacementNamed('/dashboard');
+      authProvider.signInWithGoogle();
+      
+      // Le AuthProvider gère maintenant isLoading=true
+      // AuthGate affichera le CircularProgressIndicator
     } catch (e) {
       if (!context.mounted) return;
 
@@ -37,10 +32,6 @@ class _LoginScreenState extends State<LoginScreen> {
           backgroundColor: Colors.red,
         ),
       );
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
     }
   }
 
@@ -81,24 +72,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                 ),
                 const SizedBox(height: 48),
-                if (_isLoading)
-                  const CircularProgressIndicator()
-                else ...[
-                  ElevatedButton.icon(
-                    onPressed: () => _handleGoogleSignIn(context),
-                    icon: const Icon(Icons.login),
-                    label: const Text('Se connecter avec Google'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
+                ElevatedButton.icon(
+                  onPressed: () => _handleGoogleSignIn(context),
+                  icon: const Icon(Icons.login),
+                  label: const Text('Se connecter avec Google'),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
                   ),
-                  if (!authEnabled) ...[
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () => _handleSkip(context),
-                      child: const Text('Continuer sans compte'),
-                    ),
-                  ],
+                ),
+                if (!authEnabled) ...[
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => _handleSkip(context),
+                    child: const Text('Continuer sans compte'),
+                  ),
                 ],
               ],
             ),

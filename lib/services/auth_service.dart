@@ -1,12 +1,11 @@
 import 'dart:convert';
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 /// Service d'authentification OAuth2 avec Google via le backend NexTarget.
 class AuthService {
   final String _authBaseUrl;
-  final String _callbackScheme;
   final FlutterSecureStorage _storage;
   
   static const String _tokenKey = 'jwt_token';
@@ -14,68 +13,100 @@ class AuthService {
 
   AuthService({
     required String authBaseUrl,
-    required String callbackScheme,
+    String? callbackScheme,
     FlutterSecureStorage? storage,
   })  : _authBaseUrl = authBaseUrl,
-        _callbackScheme = callbackScheme,
         _storage = storage ?? const FlutterSecureStorage();
 
   /// Lance le flow d'authentification Google OAuth2
-  Future<Map<String, dynamic>> signInWithGoogle() async {
+  /// 
+  /// Flow (selon décision architecte):
+  /// 1. Appel HTTP GET /auth/google/login
+  /// 2. Récupération de auth_url du JSON
+  /// 3. Ouverture de auth_url dans le navigateur externe
+  /// 4. Backend gère OAuth2 et redirige vers nextarget://callback?token=XYZ
+  /// 5. App intercepte le deep link via uni_links (géré dans main.dart)
+  Future<void> signInWithGoogle() async {
     try {
-      print('[AUTH] Demande de l URL OAuth au serveur...');
-      final startResponse = await http.get(
-        Uri.parse('$_authBaseUrl/auth/google/start'),
-      );
+      final loginUrl = '$_authBaseUrl/auth/google/login';
 
-      if (startResponse.statusCode != 200) {
-        throw Exception('Erreur serveur: ${startResponse.statusCode}');
+      // Étape 1 : Récupérer auth_url depuis le backend
+      final response = await http.get(Uri.parse(loginUrl));
+
+      if (response.statusCode != 200) {
+        throw Exception('Échec de récupération de l\'URL OAuth (${response.statusCode})');
       }
 
-      final startData = jsonDecode(startResponse.body);
-      final authUrl = startData['auth_url'] as String;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final authUrl = data['auth_url'] as String?;
 
-      print('[AUTH] Ouverture du navigateur in-app...');
-
-      final resultUrl = await FlutterWebAuth2.authenticate(
-        url: authUrl,
-        callbackUrlScheme: _callbackScheme,
-      );
-
-      print('[AUTH] Callback intercepte');
-
-      final uri = Uri.parse(resultUrl);
-
-      if (uri.fragment.isEmpty) {
-        throw Exception('Pas de donnees dans le callback');
+      if (authUrl == null || authUrl.isEmpty) {
+        throw Exception('URL d\'authentification manquante');
       }
 
-      final params = Uri.splitQueryString(uri.fragment);
+      // Étape 2 : Ouvrir auth_url dans le navigateur externe
+      final uri = Uri.parse(authUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw Exception('Impossible d\'ouvrir le navigateur');
+      }
+
+      // Note : Le token sera récupéré via le deep link handler dans main.dart
+    } catch (e) {
+      print('[AUTH] Erreur lors de l\'authentification Google: $e');
+      rethrow;
+    }
+  }
+
+  /// Traite le callback deep link et stocke le token
+  /// À appeler depuis le deep link handler
+  Future<Map<String, dynamic>> handleCallback(Uri callbackUri) async {
+    try {
+      final token = callbackUri.queryParameters['token'];
+      final error = callbackUri.queryParameters['error'];
+
+      // Gérer les erreurs
+      if (error != null && error.isNotEmpty) {
+        throw Exception('Erreur d\'authentification: $error');
+      }
+
+      if (token == null || token.isEmpty) {
+        throw Exception('Token manquant dans le callback OAuth');
+      }
       
-      final accessToken = params['access_token'];
-      final email = params['email'];
-      final provider = params['provider'] ?? 'google';
+      // Échanger le token callback contre un token d'accès valide
+      final exchangeResponse = await http.post(
+        Uri.parse('$_authBaseUrl/auth/token/exchange'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'callback_token': token}),
+      );
+
+      if (exchangeResponse.statusCode != 200) {
+        throw Exception('Échec de l\'échange du token (${exchangeResponse.statusCode})');
+      }
+
+      final exchangeData = jsonDecode(exchangeResponse.body) as Map<String, dynamic>;
+      final accessToken = exchangeData['access_token'] as String?;
 
       if (accessToken == null || accessToken.isEmpty) {
-        throw Exception('Token manquant dans le callback');
+        throw Exception('Token d\'accès manquant dans la réponse');
       }
 
-      if (email == null || email.isEmpty) {
-        throw Exception('Email manquant dans le callback');
-      }
-
+      // Stocker le token d'accès
       await _storage.write(key: _tokenKey, value: accessToken);
-      await _storage.write(key: _emailKey, value: email);
 
-      print('[AUTH] Authentification reussie et token stocke');
+      // Récupérer les infos utilisateur avec le token d'accès
+      final userInfo = await getUserInfo();
+      await _storage.write(key: _emailKey, value: userInfo['email'] ?? '');
 
       return {
         'access_token': accessToken,
-        'email': email,
-        'provider': provider,
+        'email': userInfo['email'],
+        'provider': 'google',
       };
     } catch (e) {
-      print('[AUTH] Erreur lors de l authentification: $e');
+      print('[AUTH] Erreur lors du traitement du callback OAuth: $e');
       rethrow;
     }
   }
@@ -107,6 +138,7 @@ class AuthService {
         return false;
       }
     } catch (e) {
+      print('[AUTH] Erreur lors de la vérification du token: $e');
       return false;
     }
   }
@@ -114,7 +146,7 @@ class AuthService {
   Future<Map<String, dynamic>> getUserInfo() async {
     final token = await getToken();
     if (token == null) {
-      throw Exception('Non authentifie');
+      throw Exception('Non authentifié');
     }
 
     try {
@@ -124,14 +156,16 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
+        final userInfo = jsonDecode(response.body) as Map<String, dynamic>;
+        return userInfo;
       } else if (response.statusCode == 401) {
         await logout();
-        throw Exception('Session expiree');
+        throw Exception('Session expirée');
       } else {
-        throw Exception('Erreur lors de la recuperation du profil');
+        throw Exception('Erreur lors de la récupération du profil (${response.statusCode})');
       }
     } catch (e) {
+      print('[AUTH] Erreur lors de la récupération des infos utilisateur: $e');
       rethrow;
     }
   }

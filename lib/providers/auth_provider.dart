@@ -41,7 +41,7 @@ class AuthProvider extends ChangeNotifier {
         _currentUser = null;
       }
     } catch (e) {
-      print('[AUTH_PROVIDER] Erreur checkAuthStatus: $e');
+      print('[AUTH] Erreur lors de la vérification du statut: $e');
       _isAuthenticated = false;
       _currentUser = null;
     } finally {
@@ -50,27 +50,45 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Lance le flow OAuth Google
-  Future<bool> signInWithGoogle() async {
+  /// Lance le flow OAuth Google (ouvre le navigateur externe)
+  /// Le résultat sera traité via handleAuthCallback() quand le deep link arrive
+  Future<void> signInWithGoogle() async {
     _isLoading = true;
     notifyListeners();
 
     try {
+      // Ouvre le navigateur, ne retourne pas de résultat immédiat
       await _authService.signInWithGoogle();
       
-      _currentUser = await _authService.getUserInfo();
-      _isAuthenticated = true;
+      // Note: _isLoading reste à true jusqu'à ce que handleAuthCallback() soit appelé
+    } catch (e) {
+      print('[AUTH] Erreur lors de l\'authentification Google: $e');
       
       _isLoading = false;
       notifyListeners();
       
-      return true;
+      rethrow;
+    }
+  }
+
+  /// Traite le callback du deep link OAuth
+  /// À appeler depuis le deep link handler dans main.dart
+  Future<void> handleAuthCallback(Uri callbackUri) async {
+    try {
+      final result = await _authService.handleCallback(callbackUri);
+      
+      _currentUser = result;
+      _isAuthenticated = true;
+      _isLoading = false;
+      
+      notifyListeners();
     } catch (e) {
-      print('[AUTH_PROVIDER] Erreur signInWithGoogle: $e');
+      print('[AUTH] Erreur lors du traitement du callback OAuth: $e');
       
       _isAuthenticated = false;
       _currentUser = null;
       _isLoading = false;
+      
       notifyListeners();
       
       rethrow;
@@ -95,7 +113,7 @@ class AuthProvider extends ChangeNotifier {
       _currentUser = await _authService.getUserInfo();
       notifyListeners();
     } catch (e) {
-      print('[AUTH_PROVIDER] Erreur refreshUserInfo: $e');
+      print('[AUTH] Erreur lors du rafraîchissement des infos utilisateur: $e');
       await logout();
     }
   }

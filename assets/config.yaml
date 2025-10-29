@@ -14,7 +14,7 @@ auth:
   # URL de base du backend NexTarget pour OAuth2
   base_url: "https://nextarget-server.onrender.com"
   # Custom URL scheme pour intercepter le callback OAuth
-  # Doit correspondre à celui configuré dans iOS/Android
+  # Backend redirigera vers {callback_scheme}://callback?token=XYZ
   callback_scheme: "nextarget"
 
 splash:

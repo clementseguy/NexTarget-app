@@ -26,12 +26,20 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- Deep linking pour OAuth callback (flutter_web_auth_2) -->
+            <!-- Deep linking pour OAuth callback (scheme custom) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="nextarget"/>
+            </intent-filter>
+            <!-- Deep linking pour OAuth callback (URL web du backend) -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https"/>
+                <data android:host="nextarget-server.onrender.com"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
@@ -49,6 +57,16 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Query pour url_launcher : permettre l'ouverture d'URLs HTTPS -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
+        </intent>
+        <!-- Query pour url_launcher : permettre l'ouverture d'URLs HTTP -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="http"/>
         </intent>
     </queries>
 </manifest>
