@@ -50,3 +50,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 /android/build/
+
+# Working documents (temporary notes, screenshots)
+docs/working_docs/
