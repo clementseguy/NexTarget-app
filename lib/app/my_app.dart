@@ -5,7 +5,6 @@ import '../navigation/app_router.dart';
 import '../widgets/fade_in_wrapper.dart';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
-import '../screens/login_screen.dart';
 
 class MyApp extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
@@ -84,15 +83,7 @@ class _AuthGateState extends State<_AuthGate> {
           );
         }
 
-        final authEnabled = AppConfig.I.authEnabled;
-        print('[AUTH_GATE] 🎯 auth.enabled=$authEnabled, isAuthenticated=${authProvider.isAuthenticated}');
-        
-        if (authEnabled && !authProvider.isAuthenticated) {
-          print('[AUTH_GATE] 🔐 Affichage de l\'écran de login');
-          return const LoginScreen();
-        }
-
-        print('[AUTH_GATE] ✅ Navigation vers l\'application');
+        print('[AUTH_GATE] ✅ Navigation vers l\'application (authentification optionnelle)');
         return AppNavigator();
       },
     );

@@ -18,46 +18,71 @@ class SettingsScreen extends StatelessWidget {
     final prefBox = Hive.box('app_preferences');
     String current = prefBox.get('default_hand_method', defaultValue: 'two');
     String? defaultCaliber = prefBox.get('default_caliber');
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text('Paramètres'),
-        actions: [
-          if (authProvider.isAuthenticated)
-            IconButton(
-              icon: const Icon(Icons.logout),
-              tooltip: 'Se deconnecter',
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Deconnexion'),
-                    content: const Text('Voulez-vous vraiment vous deconnecter ?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('Annuler'),
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, _) {
+        return Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            title: Text('Paramètres'),
+            actions: [
+              if (!authProvider.isAuthenticated)
+                IconButton(
+                  icon: const Icon(Icons.login),
+                  tooltip: 'Se connecter',
+                  onPressed: () async {
+                    try {
+                      await authProvider.signInWithGoogle();
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Erreur d\'authentification: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                ),
+              if (authProvider.isAuthenticated)
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  tooltip: 'Se deconnecter',
+                  onPressed: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Deconnexion'),
+                        content: const Text('Voulez-vous vraiment vous deconnecter ?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Annuler'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text('Deconnexion'),
+                          ),
+                        ],
                       ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text('Deconnexion'),
-                      ),
-                    ],
-                  ),
-                );
-                
-                if (confirm == true) {
-                  await authProvider.logout();
-                  if (context.mounted) {
-                    Navigator.of(context).pushReplacementNamed('/login');
-                  }
-                }
-              },
-            ),
-        ],
-      ),
+                    );
+                    
+                    if (confirm == true) {
+                      await authProvider.logout();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Déconnexion réussie'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                ),
+            ],
+          ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
@@ -276,7 +301,9 @@ class SettingsScreen extends StatelessWidget {
           SizedBox(height: 6),
           Text('Les exports ne chiffrent pas les données. Ne partage pas le fichier si tu ne fais pas confiance au destinataire.' , style: TextStyle(fontSize: 12, color: Colors.white70)),
         ],
-      ),
+          ),
+        );
+      },
     );
   }
 }

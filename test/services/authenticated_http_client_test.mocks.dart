@@ -57,10 +57,21 @@ class MockAuthService extends _i1.Mock implements _i3.AuthService {
   }
 
   @override
-  _i4.Future<Map<String, dynamic>> signInWithGoogle() => (super.noSuchMethod(
+  _i4.Future<void> signInWithGoogle() => (super.noSuchMethod(
         Invocation.method(
           #signInWithGoogle,
           [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<Map<String, dynamic>> handleCallback(Uri? callbackUri) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #handleCallback,
+          [callbackUri],
         ),
         returnValue:
             _i4.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
