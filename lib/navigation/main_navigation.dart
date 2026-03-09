@@ -188,9 +188,9 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget _buildBottomNavBar(int safeIndex) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.black,
-      selectedItemColor: Colors.amber,
-      unselectedItemColor: Colors.white70,
+      backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+      selectedItemColor: Theme.of(context).bottomNavigationBarTheme.selectedItemColor ?? Theme.of(context).colorScheme.primary,
+      unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor ?? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
       currentIndex: safeIndex,
       onTap: _onItemTapped,
       items: const [

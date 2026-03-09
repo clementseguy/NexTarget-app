@@ -5,6 +5,7 @@ import '../navigation/app_router.dart';
 import '../widgets/fade_in_wrapper.dart';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
+import '../providers/settings_provider.dart';
 
 class MyApp extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
@@ -13,10 +14,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settingsProvider = context.watch<SettingsProvider>();
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'NexTarget',
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.forType(settingsProvider.themeType),
       home: FadeInWrapper(
         duration: Duration(milliseconds: AppConfig.I.splashFadeDurationMs),
         child: const _AuthGate(),

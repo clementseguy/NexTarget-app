@@ -131,11 +131,11 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
                         padding: const EdgeInsets.all(32.0),
                         child: Column(
                           children: [
-                            Icon(Icons.pending_actions, size: 48, color: Colors.white24),
+                            Icon(Icons.pending_actions, size: 48, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
                             SizedBox(height: 12),
                             Text('Aucune session prévue', style: TextStyle(fontWeight: FontWeight.w600)),
                             SizedBox(height: 8),
-                            Text('Crée une session prévue depuis le +', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.white60)),
+                            Text('Crée une session prévue depuis le +', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
                           ],
                         ),
                       );
@@ -147,12 +147,12 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
                       return Padding(
                         padding: const EdgeInsets.all(48.0),
                         child: Column(
-                          children: const [
-                            Icon(Icons.insights_outlined, size: 48, color: Colors.white24),
+                          children: [
+                            Icon(Icons.insights_outlined, size: 48, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
                             SizedBox(height: 12),
                             Text('Aucune session réalisée', style: TextStyle(fontWeight: FontWeight.w600)),
                             SizedBox(height: 8),
-                            Text('Utilise le bouton + pour ajouter ta première.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.white60)),
+                            Text('Utilise le bouton + pour ajouter ta première.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
                           ],
                         ),
                       );
@@ -301,7 +301,7 @@ class _PlannedHeader extends StatelessWidget {
                 children: [
                   Icon(Icons.pending_actions, color: Colors.blueAccent),
                   SizedBox(width: 8),
-                  Text('Résumé des prévues', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.lightBlue[100])),
+                  Text('Résumé des sessions prévues', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.lightBlue[100])),
                 ],
               ),
               SizedBox(height: 12),
@@ -330,7 +330,7 @@ class _PlannedHeader extends StatelessWidget {
 
 class _VerticalDivider extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => Container(width: 1, height: 42, color: Colors.white12, margin: EdgeInsets.symmetric(horizontal: 8));
+  Widget build(BuildContext context) => Container(width: 1, height: 42, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12), margin: EdgeInsets.symmetric(horizontal: 8));
 }
 
 class _Stat extends StatelessWidget {
@@ -356,7 +356,7 @@ class _Stat extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: TextStyle(fontSize: 11, color: Colors.white70)),
+              Text(label, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
               Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
             ],
           ),
@@ -384,17 +384,17 @@ class _DaySection extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6),
             child: Row(
               children: [
-                Icon(Icons.calendar_today, size: 14, color: Colors.amberAccent),
+                Icon(Icons.calendar_today, size: 14, color: Theme.of(context).colorScheme.primary),
                 SizedBox(width: 6),
                 Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                 SizedBox(width: 8),
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.07),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.07),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text('${sessions.length} session${sessions.length>1? 's':''}', style: TextStyle(fontSize: 11, color: Colors.white70)),
+                  child: Text('${sessions.length} session${sessions.length>1? 's':''}', style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
                 )
               ],
             ),

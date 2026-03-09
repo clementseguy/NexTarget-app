@@ -32,18 +32,19 @@ class SessionHeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final date = session.date;
-    final Color accent = planned ? Colors.blueAccent : Colors.amberAccent;
-    final Color chipBase = planned ? Colors.lightBlueAccent : Colors.tealAccent;
+    final colorScheme = Theme.of(context).colorScheme;
+    final Color accent = planned ? colorScheme.primary : colorScheme.secondary;
+    final Color chipBase = colorScheme.primary;
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: planned ? Colors.blueAccent.withValues(alpha:0.4): Colors.white12,
+          color: planned ? colorScheme.primary.withValues(alpha:0.4): colorScheme.onSurface.withValues(alpha: 0.12),
           width: 0.8,
         ),
       ),
-      color: planned ? Colors.blueGrey.withValues(alpha: 0.25) : null,
+      color: Theme.of(context).cardColor,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -61,7 +62,7 @@ class SessionHeaderCard extends StatelessWidget {
                 SessionChip(
                   text: session.status,
                   icon: Icons.flag,
-                  color: planned ? Colors.blueAccent : Colors.lightBlueAccent,
+                  color: colorScheme.primary,
                 ),
               ],
             ),
@@ -84,7 +85,7 @@ class SessionHeaderCard extends StatelessWidget {
                   SessionChip(
                     text: session.category,
                     icon: Icons.category,
-                    color: planned ? Colors.indigoAccent : Colors.purpleAccent,
+                    color: colorScheme.secondary,
                   ),
                 SessionChip(
                   text: '${series.length} séries',
@@ -221,11 +222,11 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.white.withValues(alpha: 0.05),
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ExpansionTile(
         initiallyExpanded: widget.analyse != null && widget.analyse!.trim().isNotEmpty,
-        leading: Icon(Icons.analytics, color: Colors.amberAccent),
+        leading: Icon(Icons.analytics, color: Theme.of(context).colorScheme.secondary),
         title: Text('Analyse Coach', style: TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(
           (widget.analyse != null && widget.analyse!.trim().isNotEmpty)
@@ -336,7 +337,7 @@ class SessionExercisesSection extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.fitness_center, size: 18, color: Colors.amberAccent),
+                Icon(Icons.fitness_center, size: 18, color: Theme.of(context).colorScheme.secondary),
                 SizedBox(width: 8),
                 Text('Exercices travaillés', style: TextStyle(fontWeight: FontWeight.bold)),
               ],
@@ -350,9 +351,9 @@ class SessionExercisesSection extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white12),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -424,7 +425,7 @@ class SessionChip extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    final Color base = color ?? (overrideBase ? Colors.lightBlueAccent : Colors.white70);
+    final Color base = color ?? (overrideBase ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7));
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
@@ -457,7 +458,7 @@ class StatBlock extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 11, color: Colors.white70)),
+          Text(label, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7))),
           SizedBox(height: 4),
           Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
         ],
@@ -472,6 +473,6 @@ class DividerVert extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return Container(width: 1, height: 32, color: Colors.white12);
+    return Container(width: 1, height: 32, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12));
   }
 }

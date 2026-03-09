@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../services/backup_service.dart';
 import '../services/session_service.dart';
+import '../theme/app_theme.dart';
 
 /// Provider pour gérer l'état de l'écran des paramètres
 class SettingsProvider extends ChangeNotifier {
@@ -24,6 +25,20 @@ class SettingsProvider extends ChangeNotifier {
       
   String? get defaultCaliber => 
       _preferencesBox.get('default_caliber');
+
+  // Thème
+  AppThemeType get themeType {
+    final stored = _preferencesBox.get('app_theme', defaultValue: 'classique');
+    return AppThemeType.values.firstWhere(
+      (t) => t.name == stored,
+      orElse: () => AppThemeType.classique,
+    );
+  }
+
+  Future<void> updateTheme(AppThemeType type) async {
+    await _preferencesBox.put('app_theme', type.name);
+    notifyListeners();
+  }
   
   // Méthodes pour mettre à jour les préférences
   Future<void> updateDefaultHandMethod(String value) async {

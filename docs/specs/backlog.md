@@ -6,13 +6,16 @@
 - Thème Clair : Bleu-Blanc-Rouge
 - Thème ASCII Art
 
+## Sessions
+- Attacher une photo de la cible en fin de session
+- Analyser la photo pour confirmer : dispersion et score total, pour confronter aux commentaires de la session et enrichir l'analyse du coach
+
 ## Coaches
 - Plusieurs coachs (tons différents) : 
     - coach neutre
     - coach cool
 - Ecran "Coach" :
     - Permet d'analyser l'ensemble de l'activité de l'utilsiateur : plusieurs sessions, changement d'armes ou de calibres, régularité (ou pas), identification de comportements répétés, ... et de proposer des actions pour améliorer
-- Attacher un coach à un utilisateur (personnalisation des retours et )
 
 ## Exercices
 - Création d'Exercice par le Coach (via retour analyse de session)
@@ -20,7 +23,7 @@
     - Champs usageCount / lastPerformedAt.
 - Recommandations croisées Objectifs ⇄ Exercices.
 - Tags libres : pourquoi faire ??
-- Gérer un niveau de difficulté : beginer / advanced / expert
+- Gérer un niveau de difficulté : beginner / advanced / expert
 
 ## Propositions GPT5
 

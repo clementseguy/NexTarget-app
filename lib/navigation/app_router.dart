@@ -109,9 +109,9 @@ class AppNavigator extends StatelessWidget {
           body: body,
           bottomNavigationBar: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.black,
-            selectedItemColor: Colors.amber,
-            unselectedItemColor: Colors.white70,
+            backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+            selectedItemColor: Theme.of(context).bottomNavigationBarTheme.selectedItemColor ?? Theme.of(context).colorScheme.primary,
+            unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor ?? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
             currentIndex: currentIndex,
             onTap: (index) => navigationProvider.changeIndex(index),
             items: const [

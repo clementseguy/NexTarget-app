@@ -20,15 +20,15 @@ class SessionCard extends StatelessWidget {
       avgScore = totalPoints / series.length;
       avgGroup = series.map((s) => (s['group_size'] ?? 0.0) as num).fold(0.0, (a, b) => a + b) / series.length;
     }
-    final Color accent = isPlanned ? Colors.blueAccent : Colors.amber;
+    final colorScheme = Theme.of(context).colorScheme;
+    final Color accent = isPlanned ? Colors.blueAccent : colorScheme.primary;
     final Color badgeColor = isPlanned ? Colors.blueAccent : Colors.green;
-    final Color titleColor = isPlanned ? Colors.lightBlue[100]! : Theme.of(context).textTheme.titleMedium?.color ?? Colors.white;
-    final Color bgOverlay = isPlanned ? Colors.blueGrey.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.06);
+    final Color titleColor = isPlanned ? colorScheme.primary : Theme.of(context).textTheme.titleMedium?.color ?? colorScheme.onSurface;
     return Card(
-      color: bgOverlay,
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: isPlanned ? Colors.blueAccent.withValues(alpha: 0.4) : Colors.white24, width: 0.8),
+        side: BorderSide(color: isPlanned ? Colors.blueAccent.withValues(alpha: 0.4) : colorScheme.primary.withValues(alpha: 0.3), width: 0.8),
       ),
       child: ListTile(
         leading: Column(
@@ -45,14 +45,14 @@ class SessionCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Score moyen : ${avgScore.toStringAsFixed(1)}', style: TextStyle(color: isPlanned ? Colors.lightBlue[200] : null)),
-            Text('Groupement moyen : ${avgGroup.toStringAsFixed(1)} cm', style: TextStyle(color: isPlanned ? Colors.lightBlue[200] : null)),
+            Text('Score moyen : ${avgScore.toStringAsFixed(1)}', style: TextStyle(color: isPlanned ? colorScheme.primary.withValues(alpha: 0.8) : null)),
+            Text('Groupement moyen : ${avgGroup.toStringAsFixed(1)} cm', style: TextStyle(color: isPlanned ? colorScheme.primary.withValues(alpha: 0.8) : null)),
             if (exerciseIds.isNotEmpty)
               Row(
                 children: [
                   Icon(Icons.fitness_center, size: 14, color: badgeColor),
                   SizedBox(width: 4),
-                  Text('${exerciseIds.length} exercice(s)', style: TextStyle(fontSize: 12, color: isPlanned ? Colors.lightBlue[200] : null)),
+                  Text('${exerciseIds.length} exercice(s)', style: TextStyle(fontSize: 12, color: isPlanned ? colorScheme.primary.withValues(alpha: 0.8) : null)),
                 ],
               ),
           ],

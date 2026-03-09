@@ -132,9 +132,9 @@ class _DashboardTabViewState extends State<DashboardTabView> with SingleTickerPr
       children: [
         TabBar(
           controller: _tabController,
-          labelColor: Colors.amberAccent,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.amberAccent,
+          labelColor: Theme.of(context).colorScheme.primary,
+          unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+          indicatorColor: Theme.of(context).colorScheme.primary,
           tabs: const [
             Tab(text: 'Synthèse'),
             Tab(text: 'Avancé'),

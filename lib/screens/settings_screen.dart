@@ -9,6 +9,8 @@ import '../services/session_service.dart';
 import '../config/app_config.dart';
 import '../widgets/series_cards.dart'; // Pour TwoFistsIcon
 import '../providers/auth_provider.dart';
+import '../providers/settings_provider.dart';
+import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
   @override
@@ -86,6 +88,43 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
+          Text('Thème', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Consumer<SettingsProvider>(
+                builder: (context, settings, _) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Apparence de l\'application', style: TextStyle(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 12),
+                      SegmentedButton<AppThemeType>(
+                        segments: const [
+                          ButtonSegment(
+                            value: AppThemeType.classique,
+                            label: Text('Classique'),
+                            icon: Icon(Icons.dark_mode),
+                          ),
+                          ButtonSegment(
+                            value: AppThemeType.bleuBlancRouge,
+                            label: Text('France'),
+                            icon: Icon(Icons.flag),
+                          ),
+                        ],
+                        selected: {settings.themeType},
+                        onSelectionChanged: (s) {
+                          settings.updateTheme(s.first);
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 28),
           Text('Préférences Tir', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           Card(
@@ -246,7 +285,7 @@ class SettingsScreen extends StatelessWidget {
                     '"Exporter (.json)" permet de partager directement (mail, messagerie).\n'
                     '"Enregistrer dans un dossier" crée le fichier dans le dossier que tu sélectionnes. '
                     'Conseil: crée un dossier "MyCoachExports" sur ton téléphone.',
-                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                   ),
                 ],
               ),
@@ -299,7 +338,7 @@ class SettingsScreen extends StatelessWidget {
           SizedBox(height: 28),
           Text('Avertissement', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
           SizedBox(height: 6),
-          Text('Les exports ne chiffrent pas les données. Ne partage pas le fichier si tu ne fais pas confiance au destinataire.' , style: TextStyle(fontSize: 12, color: Colors.white70)),
+          Text('Les exports ne chiffrent pas les données. Ne partage pas le fichier si tu ne fais pas confiance au destinataire.' , style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
         ],
           ),
         );

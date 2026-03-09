@@ -23,7 +23,7 @@ class ValueChip extends StatelessWidget {
         children: [
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(fontSize: 10, color: Colors.white60)),
+          Text(label, style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
           const SizedBox(width: 4),
           Text(value, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color)),
         ],
@@ -42,7 +42,9 @@ class SeriesDisplayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = highlightBestPoints ? Colors.amberAccent : highlightBestGroup ? Colors.tealAccent : Colors.white12;
+    final colorScheme = Theme.of(context).colorScheme;
+    final borderColor = highlightBestPoints ? Colors.amberAccent : highlightBestGroup ? Colors.tealAccent : colorScheme.onSurface.withValues(alpha: 0.12);
+    final cardBg = Theme.of(context).cardColor;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 1,
@@ -51,11 +53,7 @@ class SeriesDisplayCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: borderColor.withValues(alpha: 0.55), width: highlightBestPoints || highlightBestGroup ? 1.2 : 0.6),
-          gradient: LinearGradient(
-            colors: [Colors.blueGrey.shade900, Colors.blueGrey.shade800],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: cardBg,
         ),
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
         child: Column(
@@ -72,8 +70,8 @@ class SeriesDisplayCard extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 15,
-                        backgroundColor: Colors.amberAccent.withValues(alpha: 0.85),
-                        child: Text('${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                        backgroundColor: colorScheme.primary.withValues(alpha: 0.85),
+                        child: Text('${index + 1}', style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onPrimary)),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -111,7 +109,7 @@ class SeriesDisplayCard extends StatelessWidget {
             ),
             if (series.comment.trim().isNotEmpty) ...[
               const SizedBox(height: 10),
-              Text(series.comment.trim(), style: const TextStyle(fontSize: 12.5, color: Colors.white70)),
+              Text(series.comment.trim(), style: TextStyle(fontSize: 12.5, color: colorScheme.onSurface.withValues(alpha: 0.7))),
             ],
           ],
         ),
