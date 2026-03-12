@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:app_links/app_links.dart';
 import 'config/app_config.dart';
@@ -24,6 +25,7 @@ late AppLinks _appLinks;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await initializeDateFormatting('fr_FR');
   await AppConfig.load();
   await Hive.initFlutter();
   

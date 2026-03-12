@@ -29,9 +29,16 @@ class AuthService {
   Future<void> signInWithGoogle() async {
     try {
       final loginUrl = '$_authBaseUrl/auth/google/login';
+      print('[AUTH] Appel GET $loginUrl ...');
 
-      // Étape 1 : Récupérer auth_url depuis le backend
-      final response = await http.get(Uri.parse(loginUrl));
+      // Étape 1 : Récupérer auth_url depuis le backend (timeout 15 s)
+      final response = await http.get(Uri.parse(loginUrl)).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => throw Exception(
+          'Le serveur ne répond pas (timeout 15 s). Vérifiez votre connexion.',
+        ),
+      );
+      print('[AUTH] Réponse ${response.statusCode}');
 
       if (response.statusCode != 200) {
         throw Exception('Échec de récupération de l\'URL OAuth (${response.statusCode})');
@@ -45,6 +52,7 @@ class AuthService {
       }
 
       // Étape 2 : Ouvrir auth_url dans le navigateur externe
+      print('[AUTH] Ouverture du navigateur pour OAuth...');
       final uri = Uri.parse(authUrl);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -80,7 +88,7 @@ class AuthService {
         Uri.parse('$_authBaseUrl/auth/token/exchange'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'callback_token': token}),
-      );
+      ).timeout(const Duration(seconds: 15));
 
       if (exchangeResponse.statusCode != 200) {
         throw Exception('Échec de l\'échange du token (${exchangeResponse.statusCode})');
@@ -96,15 +104,11 @@ class AuthService {
       // Stocker le token d'accès
       await _storage.write(key: _tokenKey, value: accessToken);
 
-      // Récupérer les infos utilisateur avec le token d'accès
+      // Récupérer les infos utilisateur complètes avec le token d'accès
       final userInfo = await getUserInfo();
       await _storage.write(key: _emailKey, value: userInfo['email'] ?? '');
 
-      return {
-        'access_token': accessToken,
-        'email': userInfo['email'],
-        'provider': 'google',
-      };
+      return userInfo;
     } catch (e) {
       print('[AUTH] Erreur lors du traitement du callback OAuth: $e');
       rethrow;
@@ -129,7 +133,7 @@ class AuthService {
       final response = await http.get(
         Uri.parse('$_authBaseUrl/users/me'),
         headers: {'Authorization': 'Bearer $token'},
-      );
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         return true;
@@ -153,10 +157,12 @@ class AuthService {
       final response = await http.get(
         Uri.parse('$_authBaseUrl/users/me'),
         headers: {'Authorization': 'Bearer $token'},
-      );
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final userInfo = jsonDecode(response.body) as Map<String, dynamic>;
+        print('[AUTH] getUserInfo response keys: ${userInfo.keys.toList()}');
+        print('[AUTH] created_at value: ${userInfo['created_at']}');
         return userInfo;
       } else if (response.statusCode == 401) {
         await logout();
@@ -166,6 +172,45 @@ class AuthService {
       }
     } catch (e) {
       print('[AUTH] Erreur lors de la récupération des infos utilisateur: $e');
+      rethrow;
+    }
+  }
+
+  /// Met à jour le profil utilisateur (experience_level)
+  /// Retourne le profil mis à jour (UserPublic)
+  Future<Map<String, dynamic>> updateProfile({String? experienceLevel}) async {
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('Non authentifié');
+    }
+
+    try {
+      final body = <String, dynamic>{};
+      if (experienceLevel != null) {
+        body['experience_level'] = experienceLevel;
+      }
+
+      final response = await http.patch(
+        Uri.parse('$_authBaseUrl/users/me/profile'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else if (response.statusCode == 401) {
+        await logout();
+        throw Exception('Session expirée');
+      } else if (response.statusCode == 422) {
+        throw Exception('Valeur invalide');
+      } else {
+        throw Exception('Erreur lors de la mise à jour du profil (${response.statusCode})');
+      }
+    } catch (e) {
+      print('[AUTH] Erreur lors de la mise à jour du profil: $e');
       rethrow;
     }
   }

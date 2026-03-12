@@ -11,6 +11,15 @@ import '../widgets/series_cards.dart'; // Pour TwoFistsIcon
 import '../providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_theme.dart';
+import 'profile_screen.dart';
+
+String _avatarInitial(Map<String, dynamic>? user) {
+  final name = user?['display_name'] as String?;
+  if (name != null && name.isNotEmpty) return name[0].toUpperCase();
+  final email = user?['email'] as String?;
+  if (email != null && email.isNotEmpty) return email[0].toUpperCase();
+  return '?';
+}
 
 class SettingsScreen extends StatelessWidget {
   @override
@@ -28,7 +37,15 @@ class SettingsScreen extends StatelessWidget {
             automaticallyImplyLeading: false,
             title: Text('Paramètres'),
             actions: [
-              if (!authProvider.isAuthenticated)
+              if (authProvider.isLoading)
+                const Padding(
+                  padding: EdgeInsets.only(right: 12),
+                  child: SizedBox(
+                    width: 20, height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              else if (!authProvider.isAuthenticated)
                 IconButton(
                   icon: const Icon(Icons.login),
                   tooltip: 'Se connecter',
@@ -48,40 +65,30 @@ class SettingsScreen extends StatelessWidget {
                   },
                 ),
               if (authProvider.isAuthenticated)
-                IconButton(
-                  icon: const Icon(Icons.logout),
-                  tooltip: 'Se deconnecter',
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Deconnexion'),
-                        content: const Text('Voulez-vous vraiment vous deconnecter ?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text('Annuler'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text('Deconnexion'),
-                          ),
-                        ],
-                      ),
-                    );
-                    
-                    if (confirm == true) {
-                      await authProvider.logout();
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Déconnexion réussie'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      }
-                    }
-                  },
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const ProfileScreen(),
+                          fullscreenDialog: true,
+                        ),
+                      );
+                    },
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundImage: authProvider.currentUser?['avatar_url'] != null
+                          ? NetworkImage(authProvider.currentUser!['avatar_url'] as String)
+                          : null,
+                      child: authProvider.currentUser?['avatar_url'] == null
+                          ? Text(
+                              _avatarInitial(authProvider.currentUser),
+                              style: const TextStyle(fontSize: 14),
+                            )
+                          : null,
+                    ),
+                  ),
                 ),
             ],
           ),

@@ -85,5 +85,21 @@ void main() {
         verify(mockStorage.delete(key: 'user_email')).called(1);
       });
     });
+
+    group('updateProfile', () {
+      test('lève une exception si non authentifié (pas de token)', () async {
+        when(mockStorage.read(key: 'jwt_token'))
+            .thenAnswer((_) async => null);
+
+        expect(
+          () => authService.updateProfile(experienceLevel: 'beginner'),
+          throwsA(isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('Non authentifié'),
+          )),
+        );
+      });
+    });
   });
 }

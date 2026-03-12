@@ -117,4 +117,18 @@ class AuthProvider extends ChangeNotifier {
       await logout();
     }
   }
+
+  /// Met à jour le niveau d'expérience de l'utilisateur
+  /// Appelle PATCH /users/me/profile puis rafraîchit _currentUser
+  Future<void> updateExperienceLevel(String level) async {
+    if (!_isAuthenticated) return;
+
+    try {
+      await _authService.updateProfile(experienceLevel: level);
+      await refreshUserInfo();
+    } catch (e) {
+      print('[AUTH] Erreur lors de la mise à jour du niveau: $e');
+      rethrow;
+    }
+  }
 }
