@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:tir_sportif/providers/auth_provider.dart';
 import 'package:tir_sportif/services/auth_service.dart';
 import 'package:tir_sportif/screens/profile_screen.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'profile_screen_test.mocks.dart';
 
@@ -27,6 +27,10 @@ void main() {
     'is_active': true,
   };
 
+  setUpAll(() async {
+    await initializeDateFormatting('fr_FR');
+  });
+
   setUp(() {
     mockAuthService = MockAuthService();
   });
@@ -38,13 +42,6 @@ void main() {
         home: ProfileScreen(),
       ),
     );
-  }
-
-  AuthProvider _authenticatedProvider(Map<String, dynamic> user) {
-    final provider = AuthProvider(mockAuthService);
-    // Simuler un état authentifié en utilisant les internals
-    // On doit passer par checkAuthStatus qui appelle getUserInfo
-    return provider;
   }
 
   group('ProfileScreen', () {
@@ -129,6 +126,37 @@ void main() {
 
       expect(find.text('Membre depuis'), findsOneWidget);
       expect(find.text('Connexion via'), findsOneWidget);
+    });
+
+    testWidgets('affiche la date created_at formatée en français', (tester) async {
+      when(mockAuthService.hasToken()).thenAnswer((_) async => true);
+      when(mockAuthService.isAuthenticated()).thenAnswer((_) async => true);
+      when(mockAuthService.getUserInfo()).thenAnswer((_) async => testUser);
+
+      final authProvider = AuthProvider(mockAuthService);
+      await authProvider.checkAuthStatus();
+
+      await tester.pumpWidget(buildProfileScreen(authProvider));
+      await tester.pump();
+
+      // '2025-10-21T14:30:00Z' → '21 oct. 2025' en fr_FR
+      expect(find.text('21 oct. 2025'), findsOneWidget);
+    });
+
+    testWidgets('affiche tiret si created_at est null', (tester) async {
+      final userNoDate = {...testUser, 'created_at': null};
+      when(mockAuthService.hasToken()).thenAnswer((_) async => true);
+      when(mockAuthService.isAuthenticated()).thenAnswer((_) async => true);
+      when(mockAuthService.getUserInfo()).thenAnswer((_) async => userNoDate);
+
+      final authProvider = AuthProvider(mockAuthService);
+      await authProvider.checkAuthStatus();
+
+      await tester.pumpWidget(buildProfileScreen(authProvider));
+      await tester.pump();
+
+      // Quand created_at est null, on affiche '—'
+      expect(find.text('\u2014'), findsOneWidget);
     });
 
     testWidgets('affiche le bouton "Se déconnecter"', (tester) async {
