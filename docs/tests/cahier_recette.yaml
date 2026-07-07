@@ -132,3 +132,40 @@ features:
       - Vérifier la section “Règles de sécurité”
     expected:
       - Le contenu est à jour et lisible (révision FFTir 2024)
+
+  - id: COACH-01
+    name: Analyse coach – utilisateur connecté (via serveur)
+    objectif: Vérifier que l'analyse coach passe par NexTarget-server quand l'utilisateur est connecté, sans clé Mistral côté client.
+    preconditions:
+      - Utilisateur connecté (compte Google)
+      - Session avec au moins 1 série
+    steps:
+      - Ouvrir une session réalisée avec au moins 1 série
+      - Ouvrir la section "Analyse Coach" et lancer l'analyse
+    expected:
+      - L'analyse s'affiche normalement (popup markdown), sans configurer de clé Mistral locale
+      - La réponse est enregistrée dans la session (relecture après réouverture)
+
+  - id: COACH-02
+    name: Analyse coach – utilisateur non connecté (mode déconnecté)
+    objectif: Vérifier que le carnet de tir et l'analyse coach restent utilisables sans connexion (si une clé Mistral locale est configurée).
+    preconditions:
+      - Utilisateur non connecté (pas de compte)
+      - Clé Mistral locale configurée (assets/config.local.yaml ou --dart-define)
+    steps:
+      - Vérifier que l'app démarre normalement sans être connecté (carnet de tir accessible)
+      - Ouvrir une session réalisée et lancer l'analyse coach
+    expected:
+      - L'analyse fonctionne comme avant (ancien chemin Mistral direct), aucune régression
+      - Le reste de l'app (sessions, exercices, objectifs) reste pleinement utilisable hors connexion
+
+  - id: COACH-03
+    name: Analyse coach – gestion des erreurs (session expirée / serveur indisponible)
+    objectif: Vérifier qu'une erreur d'analyse reste claire et ne bloque pas l'app.
+    preconditions:
+      - Utilisateur connecté avec un token expiré ou invalide (ou serveur temporairement indisponible)
+    steps:
+      - Lancer l'analyse coach dans ces conditions dégradées
+    expected:
+      - Un message d'erreur clair s'affiche ("Session expirée, reconnectez-vous." ou équivalent)
+      - Aucun crash, l'app reste utilisable ensuite

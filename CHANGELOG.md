@@ -18,6 +18,13 @@ Toutes les modifications notables de ce projet seront listées ici.
     - Sortie: `docs/cahier_recette.md`
     - Politique: jouer le cahier de recette avant toute MR vers `main`; mettre à jour le YAML + régénérer si comportement modifié.
 
+### Technical (en cours)
+- T5: Déport des appels Mistral vers NexTarget-server
+    - Nouveau `ServerCoachAnalysisService` : utilisé quand l'utilisateur est connecté (aucune clé Mistral côté client).
+    - Utilisateur non connecté : ancien appel Mistral direct conservé (mode déconnecté du carnet de tir préservé).
+    - Serveur : nouvel endpoint `POST /coach/analyze-session` (JWT requis, rate limiting, cf. NexTarget-server).
+    - À faire ensuite : validation en usage réel puis retrait de la clé Mistral côté client + rotation.
+
 ## [0.3.0] - 2025-09-29
 ### Added
 - Sessions :

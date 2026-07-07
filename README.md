@@ -25,9 +25,21 @@ Application mobile pour suivre et analyser les entraînements de tir sportif (Ne
 
 ## Configuration de l'API (Coach IA / Mistral)
 
+Depuis juillet 2026, l'analyse coach passe par deux chemins possibles :
+
+- **Utilisateur connecté (compte Google)** : l'app appelle `POST /coach/analyze-session`
+  sur NexTarget-server (`ServerCoachAnalysisService`). Le serveur détient la clé Mistral
+  et le prompt ; **aucune clé n'est nécessaire côté client** dans ce cas.
+- **Utilisateur non connecté** (mode déconnecté du carnet de tir préservé) : l'app garde
+  l'ancien appel Mistral direct (`CoachAnalysisService`), qui nécessite une clé API
+  fournie localement. C'est ce chemin que documente le reste de cette section.
+
+Cette clé locale ne sera retirée du code que lorsque le chemin serveur aura été validé
+en usage réel (voir `docs/specs/v0.4/v0.4_scope.md`, T5).
+
 La clé API Mistral ne doit PAS être commitée.
 
-Plusieurs méthodes pour la fournir au runtime :
+Plusieurs méthodes pour la fournir au runtime (mode non connecté uniquement) :
 
 1. Via un fichier local non versionné : `assets/config.local.yaml`
    ```yaml
