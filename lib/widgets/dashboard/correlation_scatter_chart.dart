@@ -214,13 +214,13 @@ class CorrelationScatterChart extends StatelessWidget {
             verticalInterval: data.maxX > 50 ? 10 : 5,
             getDrawingHorizontalLine: (value) {
               return FlLine(
-                color: Colors.grey.withOpacity(0.3),
+                color: Colors.grey.withValues(alpha: 0.3),
                 strokeWidth: 0.5,
               );
             },
             getDrawingVerticalLine: (value) {
               return FlLine(
-                color: Colors.grey.withOpacity(0.3),
+                color: Colors.grey.withValues(alpha: 0.3),
                 strokeWidth: 0.5,
               );
             },
@@ -228,7 +228,7 @@ class CorrelationScatterChart extends StatelessWidget {
           borderData: FlBorderData(
             show: true,
             border: Border.all(
-              color: Colors.grey.withOpacity(0.5),
+              color: Colors.grey.withValues(alpha: 0.5),
               width: 1,
             ),
           ),

@@ -14,6 +14,10 @@ class AuthProvider extends ChangeNotifier {
 
   AuthProvider(this._authService);
 
+  /// Exposé pour construire un AuthenticatedHttpClient depuis l'UI
+  /// (ex. ServerCoachAnalysisService).
+  AuthService get authService => _authService;
+
   bool get isAuthenticated => _isAuthenticated;
   Map<String, dynamic>? get currentUser => _currentUser;
   bool get isLoading => _isLoading;

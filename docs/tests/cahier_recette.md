@@ -122,3 +122,28 @@ Objectif: Afficher le bloc de règles FFTir et vérifier sa lisibilité.
 Résultats attendus:
 - Le contenu est à jour et lisible (révision FFTir 2024)
 
+## COACH-01 — Analyse coach – utilisateur connecté (via serveur)
+Objectif: Vérifier que l'analyse coach passe par NexTarget-server quand l'utilisateur est connecté, sans clé Mistral côté client.
+Étapes:
+1. Ouvrir une session réalisée avec au moins 1 série
+2. Ouvrir la section "Analyse Coach" et lancer l'analyse
+Résultats attendus:
+- L'analyse s'affiche normalement (popup markdown), sans configurer de clé Mistral locale
+- La réponse est enregistrée dans la session (relecture après réouverture)
+
+## COACH-02 — Analyse coach – utilisateur non connecté (mode déconnecté)
+Objectif: Vérifier que le carnet de tir et l'analyse coach restent utilisables sans connexion (si une clé Mistral locale est configurée).
+Étapes:
+1. Vérifier que l'app démarre normalement sans être connecté (carnet de tir accessible)
+2. Ouvrir une session réalisée et lancer l'analyse coach
+Résultats attendus:
+- L'analyse fonctionne comme avant (ancien chemin Mistral direct), aucune régression
+- Le reste de l'app (sessions, exercices, objectifs) reste pleinement utilisable hors connexion
+
+## COACH-03 — Analyse coach – gestion des erreurs (session expirée / serveur indisponible)
+Objectif: Vérifier qu'une erreur d'analyse reste claire et ne bloque pas l'app.
+Étapes:
+1. Lancer l'analyse coach avec un token expiré/invalide ou serveur indisponible
+Résultats attendus:
+- Un message d'erreur clair s'affiche ("Session expirée, reconnectez-vous." ou équivalent)
+- Aucun crash, l'app reste utilisable ensuite

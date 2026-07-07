@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:provider/provider.dart';
 import '../../models/shooting_session.dart';
 import '../../models/series.dart';
 import '../../models/exercise.dart';
+import '../../config/app_config.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/coach_analysis_service.dart';
+import '../../services/server_coach_analysis_service.dart';
 import '../../services/session_service.dart';
 import '../../utils/markdown_sanitizer.dart';
 import '../../widgets/coach_analysis_card.dart';
@@ -136,14 +140,35 @@ class SessionCoachAnalysisSection extends StatefulWidget {
 class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSection> {
   bool _isAnalysing = false;
 
+  /// Déport Mistral vers le serveur (décision produit du 7 juillet 2026) :
+  /// si l'utilisateur est authentifié, l'analyse passe par le serveur
+  /// NexTarget (aucune clé Mistral côté client, plus sécurisé). Sinon,
+  /// on garde l'ancien comportement (appel Mistral direct, nécessite
+  /// une clé configurée localement) pour préserver le mode déconnecté.
+  /// Si ce double chemin s'avère trop coûteux à maintenir, on pourra
+  /// basculer en "connecté uniquement" (cf. spec de déport Mistral).
+  /// Le reste de l'app (carnet de tir) fonctionne sans connexion dans
+  /// tous les cas, ce chemin ne le concerne pas.
+  Future<String> _fetchAnalysisText() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (authProvider.isAuthenticated) {
+      final serverService = ServerCoachAnalysisService(
+        baseUrl: AppConfig.I.authBaseUrl,
+        authService: authProvider.authService,
+      );
+      return serverService.analyzeSession(widget.session);
+    }
+    final analysisService = await CoachAnalysisService.fromAssets(
+      loadAsset: (path) => DefaultAssetBundle.of(widget.parentContext).loadString(path),
+    );
+    final fullPrompt = analysisService.buildPrompt(widget.session);
+    return analysisService.fetchAnalysis(fullPrompt);
+  }
+
   Future<void> _launchAnalysis() async {
     setState(() => _isAnalysing = true);
     try {
-      final analysisService = await CoachAnalysisService.fromAssets(
-        loadAsset: (path) => DefaultAssetBundle.of(widget.parentContext).loadString(path),
-      );
-      final fullPrompt = analysisService.buildPrompt(widget.session);
-      final rawReply = await analysisService.fetchAnalysis(fullPrompt);
+      final rawReply = await _fetchAnalysisText();
       final coachReply = sanitizeCoachMarkdown(rawReply);
       
       try {
