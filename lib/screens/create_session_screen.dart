@@ -10,7 +10,7 @@ import '../services/session_service.dart';
 class CreateSessionScreen extends StatelessWidget {
   final Map<String, dynamic>? initialSessionData;
   final bool isEdit;
-  const CreateSessionScreen({Key? key, this.initialSessionData, this.isEdit = false}) : super(key: key);
+  const CreateSessionScreen({super.key, this.initialSessionData, this.isEdit = false});
 
   @override
   Widget build(BuildContext context) {

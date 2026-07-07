@@ -191,8 +191,8 @@ class _GoalsListScreenState extends State<GoalsListScreen> {
       floatingActionButton: FloatingActionButton(
         heroTag: 'fab_goal_create',
         onPressed: _openCreate,
-        child: const Icon(Icons.add),
         tooltip: 'Créer un objectif',
+        child: const Icon(Icons.add),
       ),
     );
   }

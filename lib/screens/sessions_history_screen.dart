@@ -7,7 +7,7 @@ import '../models/shooting_session.dart';
 
 
 class SessionsHistoryScreen extends StatefulWidget {
-  const SessionsHistoryScreen({Key? key}) : super(key: key);
+  const SessionsHistoryScreen({super.key});
 
   @override
   SessionsHistoryScreenState createState() => SessionsHistoryScreenState();
@@ -413,6 +413,7 @@ class _DaySection extends StatelessWidget {
                   ),
                 );
                 if (action == 'delete' && session.id != null) {
+                  if (!context.mounted) return;
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (ctx) => AlertDialog(

@@ -49,7 +49,10 @@ class AppRouter {
       return MaterialPageRoute(builder: (_) => ExercicesScreen());
     } else if (name == sessions) {
       return MaterialPageRoute(builder: (_) => SessionsHistoryScreen());
-    } else if (name == settings) {
+    } else if (name == AppRouter.settings) {
+      // NB: le paramètre `RouteSettings settings` masque la constante de
+      // route ; sans le préfixe, la comparaison String == RouteSettings
+      // était toujours fausse et la route /settings ne résolvait jamais.
       return MaterialPageRoute(builder: (_) => SettingsScreen());
     } else if (name == createSession) {
       final args = settings.arguments as Map<String, dynamic>?;
@@ -86,7 +89,7 @@ class AppRouter {
 /// Widget principal de navigation qui utilise un BottomNavigationBar
 /// et un NavigationProvider pour gérer l'état de navigation
 class AppNavigator extends StatelessWidget {
-  AppNavigator({Key? key}) : super(key: key);
+  AppNavigator({super.key});
   
   final GlobalKey<SessionsHistoryScreenState> _historyKey = GlobalKey<SessionsHistoryScreenState>();
   
@@ -278,8 +281,8 @@ class AppNavigator extends StatelessWidget {
                     .push(MaterialPageRoute(builder: (ctx) => CreateSessionScreen()))
                     .then((_) => _historyKey.currentState?.refreshSessions());
               },
-              child: const Icon(Icons.add),
               tooltip: kIsWeb ? 'Créer une session (clic droit pour prévue)' : 'Créer une session (appui long pour prévue)',
+              child: const Icon(Icons.add),
             ),
           ),
         ),

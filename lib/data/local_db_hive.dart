@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:hive/hive.dart';
 import '../config/app_config.dart';
+import '../services/logger.dart';
 
 class LocalDatabaseHive {
   /// Supprime toutes les sessions de la base Hive
@@ -10,7 +11,7 @@ class LocalDatabaseHive {
       await _box.clear();
       return true;
     } catch (e) {
-      print('Erreur lors de la suppression de toutes les sessions: $e');
+      AppLogger.I.error('Erreur lors de la suppression de toutes les sessions', e);
       return false;
     }
   }
@@ -90,7 +91,7 @@ class LocalDatabaseHive {
       
       return key;
     } catch (e) {
-      print('Erreur lors de l\'insertion d\'une session: $e');
+      AppLogger.I.error('Erreur lors de l\'insertion d\'une session', e);
       return null; // Valeur de retour en cas d'erreur
     }
   }
@@ -101,7 +102,7 @@ class LocalDatabaseHive {
     try {
       final id = session['id'];
       if (id == null) {
-        print('Tentative de mise à jour d\'une session sans ID');
+        AppLogger.I.warn('Tentative de mise à jour d\'une session sans ID');
         return false;
       }
       
@@ -112,7 +113,7 @@ class LocalDatabaseHive {
       
       return true;
     } catch (e) {
-      print('Erreur lors de la mise à jour de la session: $e');
+      AppLogger.I.error('Erreur lors de la mise à jour de la session', e);
       return false;
     }
   }
@@ -145,7 +146,7 @@ class LocalDatabaseHive {
       
       return result;
     } catch (e) {
-      print('Erreur lors de la récupération des sessions: $e');
+      AppLogger.I.error('Erreur lors de la récupération des sessions', e);
       return [];
     }
   }
@@ -157,7 +158,7 @@ class LocalDatabaseHive {
       await _box.delete(sessionId);
       return true;
     } catch (e) {
-      print('Erreur lors de la suppression de la session $sessionId: $e');
+      AppLogger.I.error('Erreur lors de la suppression de la session $sessionId', e);
       return false;
     }
   }

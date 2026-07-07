@@ -70,7 +70,7 @@ class _GoalsAtGlanceCardState extends State<GoalsAtGlanceCard> {
                       children: [
                         const Text('Top 3 (progression)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 6),
-                        ..._top3.map((g) => _GoalLine(goal: g)).toList(),
+                        ..._top3.map((g) => _GoalLine(goal: g)),
                       ],
                     ),
                 ],

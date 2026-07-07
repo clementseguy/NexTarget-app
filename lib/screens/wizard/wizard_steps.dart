@@ -203,7 +203,7 @@ class WizardSeriesStep extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
-                  key: ValueKey('comment_${seriesIndex}'),
+                  key: ValueKey('comment_$seriesIndex'),
                   initialValue: '',
                   decoration: const InputDecoration(labelText: 'Commentaire série'),
                   onChanged: (v)=> controller.comment = v,

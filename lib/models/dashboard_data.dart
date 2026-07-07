@@ -55,13 +55,11 @@ class EvolutionData {
   });
   
   /// Constructeur pour état vide
-  const EvolutionData.empty(String title, String unit)
+  const EvolutionData.empty(this.title, this.unit)
       : dataPoints = const [],
         sma3Points = const [],
         seriesDates = const [],
         seriesIndices = const [],
-        title = title,
-        unit = unit,
         minY = 0.0,
         maxY = 50.0;
 }
@@ -79,10 +77,8 @@ class DistributionData {
   });
   
   /// Constructeur pour état vide
-  const DistributionData.empty(String title, {bool isPercentage = true})
-      : data = const {},
-        title = title,
-        isPercentage = isPercentage;
+  const DistributionData.empty(this.title, {this.isPercentage = true})
+      : data = const {};
 }
 
 /// Données pour l'histogramme points
@@ -95,9 +91,7 @@ class PointsHistogramData {
     required this.title,
   });
   
-  const PointsHistogramData.empty(String title)
-      : buckets = const [],
-        title = title;
+  const PointsHistogramData.empty(this.title) : buckets = const [];
 }
 
 class HistogramBucket {
@@ -151,11 +145,10 @@ class EvolutionComparisonData {
     required this.title,
   });
   
-  const EvolutionComparisonData.empty(String title)
+  const EvolutionComparisonData.empty(this.title)
       : avg30Days = 0,
         avg90Days = 0,
-        delta = 0,
-        title = title;
+        delta = 0;
 }
 
 /// Point pour le nuage de corrélation
@@ -189,11 +182,10 @@ class CorrelationData {
     required this.title,
   });
   
-  const CorrelationData.empty(String title)
+  const CorrelationData.empty(this.title)
       : points = const [],
         maxX = 50,
-        maxY = 55,
-        title = title;
+        maxY = 55;
 }
 
 /// Données pour les graphiques spécifiques à une méthode de prise
@@ -218,10 +210,9 @@ class HandSpecificData {
     required this.maxY2,
   });
   
-  const HandSpecificData.empty(String title)
+  const HandSpecificData.empty(this.title)
       : pointsData = const [],
         groupSizeData = const [],
-        title = title,
         hasData = false,
         minY = 0,
         maxY = 50,

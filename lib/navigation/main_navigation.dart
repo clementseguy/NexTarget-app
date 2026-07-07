@@ -10,6 +10,8 @@ import '../screens/settings_screen.dart';
 import '../screens/create_session_screen.dart';
 
 class MainNavigation extends StatefulWidget {
+  const MainNavigation({super.key});
+
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
@@ -168,8 +170,8 @@ class _MainNavigationState extends State<MainNavigation> {
                         .push(MaterialPageRoute(builder: (ctx) => CreateSessionScreen()))
                         .then((_) => _historyKey.currentState?.refreshSessions());
                   },
-                  child: const Icon(Icons.add),
                   tooltip: kIsWeb ? 'Créer une session (clic droit pour prévue)' : 'Créer une session (appui long pour prévue)',
+                  child: const Icon(Icons.add),
                 ),
               ),
             ),

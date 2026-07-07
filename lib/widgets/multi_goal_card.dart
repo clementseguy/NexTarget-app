@@ -53,7 +53,7 @@ class MultiGoalCardState extends State<MultiGoalCard> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      ..._activeGoals.map((g) => _GoalRow(goal: g)).toList(),
+                      ..._activeGoals.map((g) => _GoalRow(goal: g)),
                       if (_activeGoals.length > 10)
                         Padding(
                           padding: const EdgeInsets.only(top: 6.0),

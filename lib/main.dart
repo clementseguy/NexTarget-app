@@ -14,6 +14,7 @@ import 'providers/navigation_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/auth_provider.dart';
 import 'services/auth_service.dart';
+import 'services/logger.dart';
 import 'app/my_app.dart';
 
 // Global key pour la navigation
@@ -73,14 +74,13 @@ Future<void> main() async {
 
 /// Initialise l'écoute des deep links OAuth
 void _initDeepLinks() {
-  print('[MAIN] Initialisation du listener de deep links...');
   _appLinks = AppLinks();
 
   // Écouter les nouveaux deep links pendant que l'app tourne
   _appLinks.uriLinkStream.listen((uri) {
     _handleDeepLink(uri);
   }, onError: (err) {
-    print('[AUTH] Erreur deep link: $err');
+    AppLogger.I.error('AUTH: erreur deep link', err);
   });
 
   // Note: On ne vérifie PAS le deep link initial pour éviter de rejouer
@@ -123,11 +123,11 @@ void _handleDeepLink(Uri uri) {
             navigatorKey.currentState?.pushNamedAndRemoveUntil('/', (route) => false);
           }
         }).catchError((e) {
-          print('[AUTH] Erreur lors du traitement du callback OAuth: $e');
+          AppLogger.I.error('AUTH: erreur lors du traitement du callback OAuth', e);
         });
       }
     } else {
-      print('[AUTH] Erreur: contexte de navigation non disponible pour OAuth');
+      AppLogger.I.error('AUTH: contexte de navigation non disponible pour OAuth');
     }
   }
 }

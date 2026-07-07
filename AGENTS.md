@@ -122,10 +122,10 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 
 ## Qualité & CI
 
-- **Analyse statique** : `flutter analyze` doit passer **sans warning**.
-  ⚠️ Aujourd'hui `flutter_lints` est **désactivé** dans `analysis_options.yaml`
-  (`include` commenté) — durcir le ruleset est une tâche qualité (NT-051). Si tu
-  actives un ruleset, corrige les warnings dans le même lot.
+- **Analyse statique** : `flutter_lints` est **actif** (`analysis_options.yaml`,
+  NT-051) et `flutter analyze` doit rester à **zéro issue** (infos comprises) —
+  la CI exécute `flutter analyze --fatal-infos`. Pas de nouveau `// ignore:`
+  sans justification en commentaire.
 - **SonarCloud** : workflow `.github/workflows/sonarcloud.yml` (push `dev`/`main`,
   PR vers `main`, run quotidien). Quality Gate visé **≥ B**, couverture importée via
   `coverage/lcov.info`. Ne pas dégrader le Quality Gate.

@@ -180,7 +180,7 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return; // déjà géré
         if (await _confirmCancel()) {
-            if (mounted) Navigator.of(context).pop(false);
+            if (context.mounted) Navigator.of(context).pop(false);
         }
       },
       child: Scaffold(
@@ -188,7 +188,7 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(_step == 0 ? 'Session prévue' : _step == _lastStepIndex ? 'Synthèse' : 'Série ${_step} / $_seriesCount'),
+              Text(_step == 0 ? 'Session prévue' : _step == _lastStepIndex ? 'Synthèse' : 'Série $_step / $_seriesCount'),
               const SizedBox(height:4),
               LinearProgressIndicator(
                 value: _progressRatio.clamp(0,1),
@@ -305,7 +305,7 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
     if (base.isEmpty) return base;
     final pattern = RegExp(r'^Session créée à partir de .+');
     if (pattern.hasMatch(base) && !base.endsWith('\n')) {
-      return base + '\n';
+      return '$base\n';
     }
     return base;
   }

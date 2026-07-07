@@ -39,7 +39,7 @@ class SessionCard extends StatelessWidget {
           ],
         ),
         title: Text(
-          '${session['weapon']} [${session['caliber']}] - ${session['category'] ?? ''} - # Séries : ${series.length}' + (isPlanned ? ' (prévue)' : ''),
+          '${session['weapon']} [${session['caliber']}] - ${session['category'] ?? ''} - # Séries : ${series.length}${isPlanned ? ' (prévue)' : ''}',
           style: TextStyle(color: titleColor, fontWeight: FontWeight.w600),
         ),
         subtitle: Column(

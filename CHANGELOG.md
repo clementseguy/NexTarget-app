@@ -3,6 +3,14 @@
 Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Unreleased] — Sprint S1 (Sécurité & Qualité)
+### Quality
+- NT-051: Analyse statique durcie.
+    - `flutter_lints` activé (dev_dependency + include dans `analysis_options.yaml`) ; 138 issues corrigées, `flutter analyze` à zéro issue.
+    - Correction d'un vrai bug détecté par le lint : la route nommée `/settings` ne résolvait jamais (comparaison `String == RouteSettings`, paramètre masquant la constante) — `app_router.dart`.
+    - 8 usages de `BuildContext` après `await` sécurisés (`context.mounted`).
+    - Prints remplacés par `AppLogger` (auth, Hive, deep links) ; plus aucun `print` hors utilitaire CLI justifié.
+    - `uuid` promu en dépendance directe (importé par `models/goal.dart`, était transitif).
+    - CI : step `flutter analyze --fatal-infos` ajouté au workflow SonarCloud.
 ### Security
 - NT-061: Coach « connecté uniquement » — suppression du chemin Mistral direct côté client.
     - `CoachAnalysisService` (appel Mistral direct) supprimé ; `ServerCoachAnalysisService` devient l'unique chemin d'analyse.

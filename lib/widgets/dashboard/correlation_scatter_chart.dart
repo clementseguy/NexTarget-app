@@ -47,7 +47,7 @@ class CorrelationScatterChart extends StatelessWidget {
 
   Widget _buildLoadingState() {
     return Card(
-      child: Container(
+      child: SizedBox(
         height: 300,
         child: Center(
           child: Column(
@@ -67,7 +67,7 @@ class CorrelationScatterChart extends StatelessWidget {
   }
 
   Widget _buildEmptyState() {
-    return Container(
+    return SizedBox(
       height: 250,
       child: Center(
         child: Column(

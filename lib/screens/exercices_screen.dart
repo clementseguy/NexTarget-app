@@ -3,6 +3,8 @@ import '../widgets/goals_at_glance_card.dart';
 import '../widgets/exercises_at_glance_card.dart';
 
 class ExercicesScreen extends StatefulWidget {
+  const ExercicesScreen({super.key});
+
   @override
   State<ExercicesScreen> createState() => _ExercicesScreenState();
 }

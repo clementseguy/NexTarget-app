@@ -240,7 +240,7 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                           onPressed: () async {
                             try {
                               final sess = await _sessionService.planFromExercise(ex);
-                              if (!mounted) return;
+                              if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Session prévue créée (${sess.series.length} série(s))')),
                               );
@@ -256,7 +256,7 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                               // Actualiser le mapping (au cas où l'utilisateur revienne en arrière sans convertir)
                               await _refreshPlannedMapping();
                             } catch (e) {
-                              if (!mounted) return;
+                              if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Impossible de planifier: $e')),
                               );

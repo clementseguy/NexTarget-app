@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+import 'logger.dart';
 
 /// Service d'authentification OAuth2 avec Google via le backend NexTarget.
 class AuthService {
@@ -29,7 +30,7 @@ class AuthService {
   Future<void> signInWithGoogle() async {
     try {
       final loginUrl = '$_authBaseUrl/auth/google/login';
-      print('[AUTH] Appel GET $loginUrl ...');
+      AppLogger.I.debug('AUTH: appel GET $loginUrl');
 
       // Étape 1 : Récupérer auth_url depuis le backend (timeout 15 s)
       final response = await http.get(Uri.parse(loginUrl)).timeout(
@@ -38,7 +39,7 @@ class AuthService {
           'Le serveur ne répond pas (timeout 15 s). Vérifiez votre connexion.',
         ),
       );
-      print('[AUTH] Réponse ${response.statusCode}');
+      AppLogger.I.debug('AUTH: réponse ${response.statusCode}');
 
       if (response.statusCode != 200) {
         throw Exception('Échec de récupération de l\'URL OAuth (${response.statusCode})');
@@ -52,7 +53,7 @@ class AuthService {
       }
 
       // Étape 2 : Ouvrir auth_url dans le navigateur externe
-      print('[AUTH] Ouverture du navigateur pour OAuth...');
+      AppLogger.I.debug('AUTH: ouverture du navigateur pour OAuth');
       final uri = Uri.parse(authUrl);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -62,7 +63,7 @@ class AuthService {
 
       // Note : Le token sera récupéré via le deep link handler dans main.dart
     } catch (e) {
-      print('[AUTH] Erreur lors de l\'authentification Google: $e');
+      AppLogger.I.error('AUTH: erreur lors de l\'authentification Google', e);
       rethrow;
     }
   }
@@ -110,7 +111,7 @@ class AuthService {
 
       return userInfo;
     } catch (e) {
-      print('[AUTH] Erreur lors du traitement du callback OAuth: $e');
+      AppLogger.I.error('AUTH: erreur lors du traitement du callback OAuth', e);
       rethrow;
     }
   }
@@ -142,7 +143,7 @@ class AuthService {
         return false;
       }
     } catch (e) {
-      print('[AUTH] Erreur lors de la vérification du token: $e');
+      AppLogger.I.error('AUTH: erreur lors de la vérification du token', e);
       return false;
     }
   }
@@ -161,8 +162,8 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final userInfo = jsonDecode(response.body) as Map<String, dynamic>;
-        print('[AUTH] getUserInfo response keys: ${userInfo.keys.toList()}');
-        print('[AUTH] created_at value: ${userInfo['created_at']}');
+        AppLogger.I.debug('AUTH: getUserInfo keys=${userInfo.keys.toList()}');
+        
         return userInfo;
       } else if (response.statusCode == 401) {
         await logout();
@@ -171,7 +172,7 @@ class AuthService {
         throw Exception('Erreur lors de la récupération du profil (${response.statusCode})');
       }
     } catch (e) {
-      print('[AUTH] Erreur lors de la récupération des infos utilisateur: $e');
+      AppLogger.I.error('AUTH: erreur lors de la récupération des infos utilisateur', e);
       rethrow;
     }
   }
@@ -210,7 +211,7 @@ class AuthService {
         throw Exception('Erreur lors de la mise à jour du profil (${response.statusCode})');
       }
     } catch (e) {
-      print('[AUTH] Erreur lors de la mise à jour du profil: $e');
+      AppLogger.I.error('AUTH: erreur lors de la mise à jour du profil', e);
       rethrow;
     }
   }

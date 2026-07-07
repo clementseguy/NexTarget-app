@@ -45,7 +45,7 @@ class AppConfig {
         local = loadYaml(localRaw) as Map;
       } catch (_) {}
 
-      int _readInt(dynamic value, int fallback) {
+      int readInt(dynamic value, int fallback) {
         if (value == null) return fallback;
         if (value is int) return value;
         if (value is String) return int.tryParse(value) ?? fallback;
@@ -64,7 +64,7 @@ class AppConfig {
         '.45 ACP',
         'Autre',
       ];
-      List<String> _readCalibers(dynamic val) {
+      List<String> readCalibers(dynamic val) {
         if (val == null) return defaultCalibers;
         if (val is Iterable) {
           return val.map((e) => e.toString()).toList();
@@ -73,9 +73,9 @@ class AppConfig {
       }
 
       final cfg = AppConfig._(
-        splashMinDisplayMs: _readInt(splash?['min_display_ms'], 1500),
-        splashFadeDurationMs: _readInt(splash?['fade_duration_ms'], 450),
-        calibers: _readCalibers(calibersYaml),
+        splashMinDisplayMs: readInt(splash?['min_display_ms'], 1500),
+        splashFadeDurationMs: readInt(splash?['fade_duration_ms'], 450),
+        calibers: readCalibers(calibersYaml),
         authEnabled: (yaml['auth']?['enabled'] ?? false) as bool,
         authBaseUrl: (yaml['auth']?['base_url'] ?? 'https://nextarget-server.onrender.com').toString(),
         authCallbackScheme: (yaml['auth']?['callback_scheme'] ?? 'nextarget').toString(),

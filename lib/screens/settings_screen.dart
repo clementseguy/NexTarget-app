@@ -22,6 +22,8 @@ String _avatarInitial(Map<String, dynamic>? user) {
 }
 
 class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final backup = BackupService();
@@ -154,6 +156,7 @@ class SettingsScreen extends StatelessWidget {
                         selected: {val},
                         onSelectionChanged: (s) async {
                           await box.put('default_hand_method', s.first);
+                          if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Prise par défaut: ${s.first == 'one' ? '1 main' : '2 mains'}')),
                           );
@@ -222,6 +225,7 @@ class SettingsScreen extends StatelessWidget {
                           } else {
                             await box.put('default_caliber', nv);
                           }
+                          if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text(nv.isEmpty ? 'Préférence calibre effacée' : 'Calibre par défaut: $nv')),
                           );

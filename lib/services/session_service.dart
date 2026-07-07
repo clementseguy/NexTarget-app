@@ -11,10 +11,12 @@ class SessionService implements ISessionService {
 
   SessionService({SessionRepository? repository}) : _repo = repository ?? HiveSessionRepository();
 
+  @override
   Future<List<ShootingSession>> getAllSessions() async {
     return _repo.getAll();
   }
 
+  @override
   Future<void> addSession(ShootingSession session) async {
     final id = await _repo.insert(session);
     if (id >= 0) {
@@ -22,6 +24,7 @@ class SessionService implements ISessionService {
     }
   }
 
+  @override
   Future<void> updateSession(
     ShootingSession session, {
     bool preserveExistingSeriesIfEmpty = true,
@@ -36,10 +39,12 @@ class SessionService implements ISessionService {
     }
   }
 
+  @override
   Future<void> deleteSession(int id) async {
     await _repo.delete(id);
   }
 
+  @override
   Future<void> clearAllSessions() async {
     AppLogger.I.debug('Clearing all sessions');
     await _repo.clearAll();
@@ -47,6 +52,7 @@ class SessionService implements ISessionService {
 
   /// Convert a planned session (status 'prévue') into a realized one.
   /// Applies provided field overrides, forces date to now if not supplied.
+  @override
   Future<ShootingSession> convertPlannedToRealized({
     required ShootingSession session,
     String? weapon,
@@ -74,6 +80,7 @@ class SessionService implements ISessionService {
   }
 
   /// Persist a single series change in a planned session before final conversion.
+  @override
   Future<void> updateSingleSeries(ShootingSession session, int seriesIndex, Series newSeries) async {
     if (seriesIndex < 0 || seriesIndex >= session.series.length) return;
     session.series[seriesIndex] = newSeries;
@@ -83,6 +90,7 @@ class SessionService implements ISessionService {
 
   /// Create a planned session from an Exercise definition.
   /// One empty Series is generated per consigne (or single if none).
+  @override
   Future<ShootingSession> planFromExercise(Exercise exercise) async {
     if (exercise.type != ExerciseType.stand) {
       throw StateError('Seuls les exercices de type Stand peuvent être planifiés.');

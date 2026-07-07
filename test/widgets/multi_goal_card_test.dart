@@ -8,10 +8,10 @@ class MockMultiGoalCard extends StatelessWidget {
   final List<Goal> activeGoals;
 
   const MockMultiGoalCard({
-    Key? key,
+    super.key,
     this.loading = false,
     this.activeGoals = const [],
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +33,7 @@ class MockMultiGoalCard extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      ...activeGoals.map((g) => _GoalRow(goal: g)).toList(),
+                      ...activeGoals.map((g) => _GoalRow(goal: g)),
                       if (activeGoals.length > 10)
                         Padding(
                           padding: const EdgeInsets.only(top: 6.0),

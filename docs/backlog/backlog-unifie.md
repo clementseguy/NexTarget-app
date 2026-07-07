@@ -312,7 +312,7 @@
 | ID | Titre | Portée | Prio | Est | Statut |
 |---|---|---|---|---|---|
 | NT-050 | SonarCloud + Quality Gate + couverture (app) | app | Must | M | FAIT |
-| NT-051 | Analyse statique & lint (durcir) | app | Should | S | À VÉRIFIER |
+| NT-051 | Analyse statique & lint (durcir) | app | Should | S | FAIT |
 | NT-052 | Cahier de recette généré | app | Should | S | FAIT |
 | NT-053 | Logging structuré + tracing (serveur) | server | Should | M | À FAIRE |
 | NT-054 | Tests OAuth mockés (providers externes) | server | Should | M | À FAIRE |
@@ -326,8 +326,8 @@
 ### NT-051 — Analyse statique & lint (durcir)
 - **Portée** : app · **Dépendances** : NT-050 · **Description** : Renforcer l'analyse statique pour tenir le niveau de qualité visé.
 - **Critères d'acceptation** : un ruleset de lint actif (ex. `flutter_lints` ou `very_good_analysis`) ; `flutter analyze` sans warning ; job d'analyse en CI.
-- **Statut** : **À VÉRIFIER / partiel** — `flutter analyze` tourne (pré-commit `scripts/verify_before_commit.sh` + SonarCloud), mais **`flutter_lints` est désactivé** (`include` commenté dans `analysis_options.yaml`) et **`dart_code_metrics` n'est pas installé**.
-- **Notes** : activer un ruleset et corriger les warnings est une tâche qualité recommandée (cf. AGENTS.md app).
+- **Statut** : FAIT (2026-07-07, sprint S1) — `flutter_lints` activé (`analysis_options.yaml`), 138 issues corrigées (dont un vrai bug : route `/settings` jamais résolue, `unrelated_type_equality_checks`), step CI `flutter analyze --fatal-infos` ajouté au workflow SonarCloud.
+- **Notes** : `dart_code_metrics` non retenu (payant/archivé) ; `flutter_lints` + Sonar suffisent.
 
 ### NT-052 — Cahier de recette généré
 - **Portée** : app · **Dépendances** : — · **Description** : Tests manuels reproductibles avant chaque MR vers `main`.

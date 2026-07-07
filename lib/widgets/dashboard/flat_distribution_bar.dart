@@ -44,7 +44,7 @@ class FlatDistributionBar extends StatelessWidget {
   }
 
   Widget _buildLoadingState() {
-    return Container(
+    return SizedBox(
       height: 60,
       child: Center(
         child: Column(
@@ -70,7 +70,7 @@ class FlatDistributionBar extends StatelessWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 60,
       child: Center(
         child: Text(

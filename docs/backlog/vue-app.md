@@ -42,7 +42,7 @@
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE | — |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE | — |
 | NT-050 | SonarCloud + Quality Gate | app | Must | M | FAIT | `sonar-project.properties`, CI |
-| NT-051 | Analyse statique & lint (durcir) | app | Should | S | À VÉRIFIER | `flutter analyze` OK, mais `flutter_lints` désactivé / pas de `dart_code_metrics` |
+| NT-051 | Analyse statique & lint (durcir) | app | Should | S | FAIT | `flutter_lints` actif, zéro issue, step CI `analyze --fatal-infos` |
 | NT-052 | Cahier de recette généré | app | Should | S | FAIT | `scripts/generate_cahier_recette.dart` |
 | NT-061 | Coach connecté uniquement (retrait clé client) | both | Must | M | FAIT | `CoachAnalysisService` direct supprimé ; rotation clé = action manuelle |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT | `lib/migrations/` (script cohérence : à faire) |
@@ -56,6 +56,6 @@
 
 ## Prochaines actions app (hors FAIT), par priorité
 
-- **Should** — NT-032 (multi-personas coach), NT-033 (écran Coach transverse), NT-042 (édition profil à confirmer), NT-051 (durcir lint/analyse statique).
+- **Should** — NT-032 (multi-personas coach), NT-033 (écran Coach transverse), NT-042 (édition profil à confirmer).
 - **Could** — NT-014, NT-015, NT-023, NT-024, NT-025, NT-044, NT-073, NT-074, NT-075, NT-076.
 - **Won't-now** — NT-005/006, NT-045, NT-046, NT-047, NT-090, NT-091.
