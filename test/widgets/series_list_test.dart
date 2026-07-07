@@ -3,17 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/widgets/series_list.dart';
 
-extension ColorWithValues on Color {
-  Color withValues({int? red, int? green, int? blue, double? alpha}) {
-    return Color.fromRGBO(
-      red ?? this.red, 
-      green ?? this.green, 
-      blue ?? this.blue, 
-      alpha ?? this.opacity
-    );
-  }
-}
-
 void main() {
   group('SeriesList', () {
     testWidgets('affiche un message quand aucune série n\'est disponible', (WidgetTester tester) async {
