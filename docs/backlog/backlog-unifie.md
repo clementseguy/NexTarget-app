@@ -313,7 +313,7 @@
 | ID | Titre | Portée | Prio | Est | Statut |
 |---|---|---|---|---|---|
 | NT-050 | SonarCloud + Quality Gate + couverture (app) | app | Must | M | FAIT |
-| NT-051 | dart_code_metrics / lint en CI | app | Should | S | FAIT |
+| NT-051 | Analyse statique & lint (durcir) | app | Should | S | À VÉRIFIER |
 | NT-052 | Cahier de recette généré | app | Should | S | FAIT |
 | NT-053 | Logging structuré + tracing (serveur) | server | Should | M | À FAIRE |
 | NT-054 | Tests OAuth mockés (providers externes) | server | Should | M | À FAIRE |
@@ -324,10 +324,11 @@
 - **Critères d'acceptation** : analyse SonarCloud sur push `dev` et PR `main` ; import couverture LCOV ; badges README ; Quality Gate ≥ B.
 - **Statut** : FAIT — `.github`, `sonar-project.properties`, CHANGELOG T1.
 
-### NT-051 — dart_code_metrics / lint en CI
-- **Portée** : app · **Dépendances** : NT-050 · **Description** : Métriques de code et lint automatisés.
-- **Critères d'acceptation** : job lint/metrics exécuté en CI ; règles dans `analysis_options.yaml`.
-- **Statut** : FAIT.
+### NT-051 — Analyse statique & lint (durcir)
+- **Portée** : app · **Dépendances** : NT-050 · **Description** : Renforcer l'analyse statique pour tenir le niveau de qualité visé.
+- **Critères d'acceptation** : un ruleset de lint actif (ex. `flutter_lints` ou `very_good_analysis`) ; `flutter analyze` sans warning ; job d'analyse en CI.
+- **Statut** : **À VÉRIFIER / partiel** — `flutter analyze` tourne (pré-commit `scripts/verify_before_commit.sh` + SonarCloud), mais **`flutter_lints` est désactivé** (`include` commenté dans `analysis_options.yaml`) et **`dart_code_metrics` n'est pas installé**.
+- **Notes** : activer un ruleset et corriger les warnings est une tâche qualité recommandée (cf. AGENTS.md app).
 
 ### NT-052 — Cahier de recette généré
 - **Portée** : app · **Dépendances** : — · **Description** : Tests manuels reproductibles avant chaque MR vers `main`.
