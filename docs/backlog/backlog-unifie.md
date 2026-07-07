@@ -460,3 +460,182 @@
 
 ### NT-092 — Thèmes visuels (thème clair « France »)
 - **Portée** : app · **Description** : Thématisation de l'app, dont le thème clair « France ». · **Priorité** : Could · **Statut** : FAIT — commit `feat: thème clair France`. · **Notes** : d'autres thèmes possibles (voir NT-090).
+
+---
+
+## Backlog priorisé
+
+> **Dernière mise à jour** : 2026-07-07.
+> Découpage en sprints de 2 semaines. Chaque sprint livre un produit (app +
+> serveur) cohérent, fonctionnel, sans régression. Les items FAIT ne figurent pas
+> ici. Les Won't-now sont en Icebox.
+>
+> **Contexte** : dev solo (Senior + agentic dev Claude Code), vélocité élevée.
+> **Contrainte** : beta demo à la FFTir début août 2026 — S1 et S2 doivent être
+> livrés avant cette date.
+
+### Vue synthétique
+
+| Sprint | Thème | Items | Portée | Deadline |
+|---|---|---|---|---|
+| **S1** | Sécurité & Qualité | NT-061, NT-065, NT-066, NT-051 | both | **Pré-demo** |
+| **S2** | Demo-ready | NT-075, NT-032 | both | **Pré-demo** |
+| **S3** | Robustesse serveur | NT-055, NT-054, NT-048, NT-053 | server | Post-demo |
+| **S4** | Enrichissement fonctionnel | NT-005, NT-025, NT-073, NT-014 | app | — |
+| **S5** | UX & Performance | NT-074, NT-076 | app | — |
+| **S6** | Fonctionnalités avancées | NT-033, NT-023, NT-024, NT-015, NT-044 | both | — |
+| **Icebox** | Won't-now / pas prioritaire | NT-006, NT-045, NT-046, NT-047, NT-071, NT-090, NT-091 | — | — |
+
+---
+
+### Sprint 1 — Sécurité & Qualité ⚡ PRÉ-DEMO
+
+*Objectif : éliminer la dette sécurité (le seul Must restant) et poser la base
+qualité. Prérequis à la beta demo FFTir.*
+
+| Ordre | ID | Titre | Portée | Prio | Est |
+|---|---|---|---|---|---|
+| 1 | NT-061 | Coach connecté uniquement — retrait clé Mistral client + rotation | both | Must | M |
+| 2 | NT-065 | Restreindre CORS par environnement | server | Should | S |
+| 3 | NT-066 | Vérification du nonce Google | server | Should | S |
+| 4 | NT-051 | Analyse statique & lint (durcir) | app | Should | S |
+
+**Justification** :
+- NT-061 est le seul item **Must** non terminé ; il ferme la faille clé Mistral
+  côté client. **Bloquant** pour la demo.
+- NT-065 et NT-066 sont des quick-wins sécurité (S) identifiés dans l'audit.
+- NT-051 stabilise la qualité statique avant d'empiler des features.
+
+**Critère de fin de sprint** : `flutter analyze` zéro warning, coach
+inaccessible sans authentification (message clair), CORS restreint en prod,
+nonce Google vérifié, clé Mistral historique rotée.
+
+### Sprint 2 — Demo-ready ⚡ PRÉ-DEMO
+
+*Objectif : rendre l'app prête pour la demo FFTir — première impression soignée
+et coach différenciant.*
+
+| Ordre | ID | Titre | Portée | Prio | Est |
+|---|---|---|---|---|---|
+| 1 | NT-075 | Onboarding + aide contextuelle | app | Could → **Must** (demo) | M |
+| 2 | NT-032 | Multi-personas coach (neutre / cool) | both | Should | M |
+
+**Justification** :
+- NT-075 est **critique pour la demo** : les membres FFTir découvriront l'app
+  pour la première fois. Un mini-onboarding (3 écrans) + aide contextuelle sur
+  Objectifs/Exercices/Sessions guide la prise en main.
+- NT-032 a du scaffolding existant (`prompt_variant`, `_VARIANT_FILES`) et rend
+  le coach plus vivant en demo. Le ton « cool » est un atout marketing.
+
+**Critère de fin de sprint** : onboarding au 1er lancement, aide « ? »
+contextuelle, ≥ 2 tons de coach sélectionnables. **App buildée en APK de demo.**
+
+### Sprint 3 — Robustesse serveur
+
+*Objectif : rendre le serveur production-ready (CI, tests, auth durable,
+observabilité). Fondation avant d'ajouter des features serveur post-demo.*
+
+| Ordre | ID | Titre | Portée | Prio | Est |
+|---|---|---|---|---|---|
+| 1 | NT-055 | CI serveur (tests + couverture) | server | Should | S |
+| 2 | NT-054 | Tests OAuth mockés (providers externes) | server | Should | M |
+| 3 | NT-048 | Refresh tokens + rotation | server | Should | M |
+| 4 | NT-053 | Logging structuré + tracing | server | Should | M |
+
+**Justification** :
+- NT-055 (CI) est la fondation : sans CI, aucune PR serveur n'est fiable.
+- NT-054 sécurise l'auth qui est le point d'entrée de tout le coach.
+- NT-048 améliore l'UX (sessions longues sans re-login) — retour probable de la
+  demo FFTir.
+- NT-053 donne de la visibilité en production, d'autant plus utile si la demo
+  génère du trafic.
+
+**Critère de fin de sprint** : pipeline CI vert, providers OAuth mockés, refresh
+tokens fonctionnels, logs structurés en JSON.
+
+### Sprint 4 — Enrichissement fonctionnel
+
+*Objectif : améliorer le carnet de tir au quotidien.*
+
+| Ordre | ID | Titre | Portée | Prio | Est |
+|---|---|---|---|---|---|
+| 1 | NT-005 | Attacher une photo de la cible | app | Could | M |
+| 2 | NT-025 | Niveau de difficulté d'exercice | app | Could | S |
+| 3 | NT-073 | Normalisation calibres + dernier calibre utilisé | app | Could | S |
+| 4 | NT-014 | Comparatif glissant 30j vs 60j + sparkline | app | Could | M |
+
+**Justification** :
+- NT-005 enrichit visuellement le carnet (photo = mémoire visuelle) et prépare
+  NT-006 (analyse image, Icebox).
+- NT-025 et NT-073 sont des quick-wins (S) qui améliorent l'hygiène de données.
+- NT-014 apporte de la profondeur aux statistiques existantes.
+
+**Critère de fin de sprint** : photos attachées aux sessions, exercices
+filtrables par difficulté, calibres normalisés avec pré-remplissage, sparklines
+sur le dashboard.
+
+### Sprint 5 — UX & Performance
+
+*Objectif : réduire la friction utilisateur et préparer la montée en volumétrie.*
+
+| Ordre | ID | Titre | Portée | Prio | Est |
+|---|---|---|---|---|---|
+| 1 | NT-074 | Saisie séries plein écran + navigation rapide | app | Could | M |
+| 2 | NT-076 | Cache stats + compactage Hive | app | Could | M |
+
+**Justification** :
+- NT-074 réduit la friction du cœur de métier (saisie de tir).
+- NT-076 anticipe la dégradation de performance avec la volumétrie.
+
+**Critère de fin de sprint** : saisie séries plein écran, stats cachées avec
+TTL, compactage Hive automatique.
+
+### Sprint 6 — Fonctionnalités avancées
+
+*Objectif : boucler les features avancées. NT-033 pourra être affiné entre-temps
+(scope, UX, prompts).*
+
+| Ordre | ID | Titre | Portée | Prio | Est |
+|---|---|---|---|---|---|
+| 1 | NT-033 | Écran Coach : analyse transverse multi-sessions | both | Should | L |
+| 2 | NT-023 | Création d'exercice par le coach | both | Could | L |
+| 3 | NT-024 | Stats d'exécution exercices (fenêtres glissantes) | app | Could | M |
+| 4 | NT-015 | Recommandations croisées Objectifs ⇄ Exercices | app | Could | M |
+| 5 | NT-044 | Authentification OAuth Facebook (partie app) | both | Could | M |
+
+**Justification** :
+- NT-033 est repoussée ici volontairement : le scope et les prompts ne sont pas
+  encore définis. Le temps post-demo permet de mûrir la vision.
+- NT-023 dépend du format de sortie structuré du coach (à définir avec NT-033).
+- NT-024 et NT-015 exploitent les liens exercices ↔ sessions/objectifs déjà en
+  place.
+- NT-044 a une valeur marginale (serveur déjà prêt, seul le bouton app manque).
+
+**Critère de fin de sprint** : écran Coach multi-sessions fonctionnel, coach
+proposant des exercices structurés, stats d'usage, recommandations croisées,
+login Facebook disponible.
+
+### Icebox (Won't-now / pas prioritaire)
+
+*Items explicitement écartés pour le moment. À réexaminer lors d'un futur cycle
+de planification.*
+
+| ID | Titre | Raison |
+|---|---|---|
+| NT-006 | Analyse d'image de la cible | Coûteux (vision par ordinateur), dépend de NT-005 |
+| NT-045 | Stats publiques / partage de profil | Pas de demande utilisateur identifiée |
+| NT-046 | Gamification | Scope large, pas prioritaire |
+| NT-047 | Apple Sign In | Requis uniquement pour publication iOS avec login social |
+| NT-071 | Migration SQLite → Postgres | Montée en charge non prévue à court/moyen terme |
+| NT-090 | Thème ASCII Art | Cosmétique, pas de valeur métier |
+| NT-091 | Règles de sécurité FFTir | À instruire quand le besoin se précise |
+
+### Décisions prises (2026-07-07)
+
+| Sujet | Décision |
+|---|---|
+| NT-071 (Postgres) | **Icebox** — SQLite single-instance suffit à moyen terme. |
+| NT-033 (Coach multi-sessions) | **Repoussé en S6** — nice-to-have, scope et prompts pas encore définis. |
+| Cadence | Senior + agentic dev (Claude Code), sprints de 2 semaines. |
+| Demo FFTir | **Début août 2026** — S1 (sécurité) et S2 (onboarding + multi-personas) sont bloquants. |
+| NT-075 (Onboarding) | **Remonté en S2** — critique pour la première impression en demo FFTir. |
