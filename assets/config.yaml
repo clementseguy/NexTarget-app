@@ -1,11 +1,5 @@
-api:
-  # Renseigner la clé Mistral via:
-  # 1. Fichier local non versionné assets/config.local.yaml (mêmes champs)
-  # 2. Ou variable --dart-define=MISTRAL_API_KEY=...
-  # 3. Ou variable d'environnement MISTRAL_API_KEY (en fallback)
-  mistral_key: "$MISTRAL_API_KEY"
-  mistral_url: "https://api.mistral.ai/v1/chat/completions"
-  mistral_model: "mistral-medium"
+# NT-061 : plus de bloc `api:` (clé/URL/modèle Mistral) — l'analyse coach
+# passe exclusivement par NexTarget-server (auth.base_url ci-dessous).
 
 auth:
   # Feature flag pour activer/désactiver l'authentification

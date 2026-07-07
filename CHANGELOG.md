@@ -2,6 +2,15 @@
 
 Toutes les modifications notables de ce projet seront listées ici.
 
+## [Unreleased] — Sprint S1 (Sécurité & Qualité)
+### Security
+- NT-061: Coach « connecté uniquement » — suppression du chemin Mistral direct côté client.
+    - `CoachAnalysisService` (appel Mistral direct) supprimé ; `ServerCoachAnalysisService` devient l'unique chemin d'analyse.
+    - Plus aucune clé/config Mistral côté client : `AppConfig` (sélection de clé), `assets/config.yaml`, `config.example.yaml` et `scripts/build_apk.sh` purgés ; assets `coach_prompt*.yaml` retirés (le prompt vit côté serveur, NT-031).
+    - Section « Analyse Coach » : sans compte, message clair + bouton « Se connecter » (route `/login`) ; le carnet de tir reste 100 % hors-ligne.
+    - Prints `[DEBUG]` hérités retirés des fichiers coach.
+    - ⚠️ Rotation de la clé Mistral historique : action manuelle (console Mistral + env Render), hors code.
+
 ## [0.4.0] - Unreleased
 ### Technical
 - T1: Intégration SonarCloud (acceptation: badge visible, Quality Gate ≥ B, couverture ≥ 20%).

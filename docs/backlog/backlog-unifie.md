@@ -213,8 +213,7 @@
 - **Thème** : Coach IA · **Portée** : both · **Dépendances** : NT-002, NT-040, NT-060
 - **Description** : Le tireur obtient une analyse rédigée de sa séance ; l'appel Mistral passe par le serveur (proxy), sans clé côté client.
 - **Critères d'acceptation** : app envoie les données de session au serveur ; `POST /coach/analyze-session` (JWT requis) renvoie une analyse texte ; rendu markdown dans l'app.
-- **Statut** : FAIT — serveur `api/coach.py` ; app `ServerCoachAnalysisService` (utilisé si connecté, `session_detail_components.dart:154`).
-- **Notes** : le chemin Mistral **direct** hors-ligne existe encore et doit être retiré → voir NT-061.
+- **Statut** : FAIT — serveur `api/coach.py` ; app `ServerCoachAnalysisService` (unique chemin d'analyse depuis NT-061).
 
 ### NT-031 — Prompt d'analyse centralisé côté serveur
 - **Thème** : Coach IA · **Portée** : server · **Dépendances** : NT-030
@@ -356,7 +355,7 @@
 | ID | Titre | Portée | Prio | Est | Statut |
 |---|---|---|---|---|---|
 | NT-060 | Proxy Mistral côté serveur (clé hors client) | server | Must | M | FAIT |
-| NT-061 | Coach « connecté uniquement » : retrait clé Mistral client + rotation | both | Must | M | EN COURS |
+| NT-061 | Coach « connecté uniquement » : retrait clé Mistral client + rotation | both | Must | M | FAIT |
 | NT-062 | Rate limiting de l'endpoint coach | server | Must | S | FAIT |
 | NT-063 | State OAuth à usage unique (CSRF) | server | Must | S | FAIT |
 | NT-064 | Vérification du type de token JWT | server | Must | S | FAIT |
@@ -375,8 +374,8 @@
   - l'analyse coach exige un utilisateur authentifié (message clair sinon) ;
   - la clé Mistral historique est révoquée/rotée ;
   - le carnet de tir reste utilisable hors-ligne (le coach seul devient online-only).
-- **Priorité** : Must · **Statut** : EN COURS — proxy livré (NT-060) ; reste le retrait client + rotation.
-- **Notes** : voir CHANGELOG app T5 (« à faire ensuite : retrait clé + rotation ») et [incoherences.md](incoherences.md) I2.
+- **Priorité** : Must · **Statut** : FAIT (code, 2026-07-07, sprint S1) — `CoachAnalysisService` direct supprimé, plus aucune clé/config Mistral côté client (`AppConfig`, `config.yaml`, `build_apk.sh` purgés), analyse gated par l'auth avec message clair + CTA login.
+- **Notes** : ⚠️ la **rotation de la clé Mistral historique** est une action manuelle (console Mistral + env Render) à réaliser par le mainteneur — hors code. Voir [incoherences.md](incoherences.md) I2.
 
 ### NT-062 — Rate limiting de l'endpoint coach
 - **Portée** : server · **Dépendances** : NT-060 · **Description** : Empêcher l'abus qui viderait le quota Mistral.

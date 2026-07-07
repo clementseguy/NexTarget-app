@@ -1,7 +1,7 @@
 # Cahier de Recette
 
-- Dernière mise à jour: 2025-10-07
-- Généré automatiquement depuis `docs/specs/cahier_recette.yaml`
+- Dernière mise à jour: 2026-07-07
+- Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
 
 ## SESS-01 — Sessions – création/édition
 Objectif: Créer une session réalisée avec armes/séries, puis l’éditer sans perte de données.
@@ -124,6 +124,9 @@ Résultats attendus:
 
 ## COACH-01 — Analyse coach – utilisateur connecté (via serveur)
 Objectif: Vérifier que l'analyse coach passe par NexTarget-server quand l'utilisateur est connecté, sans clé Mistral côté client.
+Pré-requis:
+- Utilisateur connecté (compte Google)
+- Session avec au moins 1 série
 Étapes:
 1. Ouvrir une session réalisée avec au moins 1 série
 2. Ouvrir la section "Analyse Coach" et lancer l'analyse
@@ -131,19 +134,24 @@ Résultats attendus:
 - L'analyse s'affiche normalement (popup markdown), sans configurer de clé Mistral locale
 - La réponse est enregistrée dans la session (relecture après réouverture)
 
-## COACH-02 — Analyse coach – utilisateur non connecté (mode déconnecté)
-Objectif: Vérifier que le carnet de tir et l'analyse coach restent utilisables sans connexion (si une clé Mistral locale est configurée).
+## COACH-02 — Analyse coach – utilisateur non connecté (coach connecté uniquement, NT-061)
+Objectif: Vérifier que sans compte, l'analyse coach est inaccessible avec un message clair, et que le carnet de tir reste 100 % utilisable hors connexion.
+Pré-requis:
+- Utilisateur non connecté (pas de compte)
 Étapes:
 1. Vérifier que l'app démarre normalement sans être connecté (carnet de tir accessible)
-2. Ouvrir une session réalisée et lancer l'analyse coach
+2. Ouvrir une session réalisée et déplier la section "Analyse Coach"
 Résultats attendus:
-- L'analyse fonctionne comme avant (ancien chemin Mistral direct), aucune régression
-- Le reste de l'app (sessions, exercices, objectifs) reste pleinement utilisable hors connexion
+- Aucun bouton "Lancer analyse" ; message "Le coach IA nécessite un compte" + bouton "Se connecter" menant à l'écran de connexion
+- Le reste de l'app (sessions, exercices, objectifs, stats) reste pleinement utilisable hors connexion
 
 ## COACH-03 — Analyse coach – gestion des erreurs (session expirée / serveur indisponible)
 Objectif: Vérifier qu'une erreur d'analyse reste claire et ne bloque pas l'app.
+Pré-requis:
+- Utilisateur connecté avec un token expiré ou invalide (ou serveur temporairement indisponible)
 Étapes:
-1. Lancer l'analyse coach avec un token expiré/invalide ou serveur indisponible
+1. Lancer l'analyse coach dans ces conditions dégradées
 Résultats attendus:
 - Un message d'erreur clair s'affiche ("Session expirée, reconnectez-vous." ou équivalent)
 - Aucun crash, l'app reste utilisable ensuite
+

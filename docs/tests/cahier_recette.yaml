@@ -1,5 +1,5 @@
 version: v0.4
-last_updated: 2025-10-07
+last_updated: 2026-07-07
 features:
   - id: SESS-01
     name: Sessions – création/édition
@@ -147,17 +147,16 @@ features:
       - La réponse est enregistrée dans la session (relecture après réouverture)
 
   - id: COACH-02
-    name: Analyse coach – utilisateur non connecté (mode déconnecté)
-    objectif: Vérifier que le carnet de tir et l'analyse coach restent utilisables sans connexion (si une clé Mistral locale est configurée).
+    name: Analyse coach – utilisateur non connecté (coach connecté uniquement, NT-061)
+    objectif: Vérifier que sans compte, l'analyse coach est inaccessible avec un message clair, et que le carnet de tir reste 100 % utilisable hors connexion.
     preconditions:
       - Utilisateur non connecté (pas de compte)
-      - Clé Mistral locale configurée (assets/config.local.yaml ou --dart-define)
     steps:
       - Vérifier que l'app démarre normalement sans être connecté (carnet de tir accessible)
-      - Ouvrir une session réalisée et lancer l'analyse coach
+      - Ouvrir une session réalisée et déplier la section "Analyse Coach"
     expected:
-      - L'analyse fonctionne comme avant (ancien chemin Mistral direct), aucune régression
-      - Le reste de l'app (sessions, exercices, objectifs) reste pleinement utilisable hors connexion
+      - Aucun bouton "Lancer analyse" ; message "Le coach IA nécessite un compte" + bouton "Se connecter" menant à l'écran de connexion
+      - Le reste de l'app (sessions, exercices, objectifs, stats) reste pleinement utilisable hors connexion
 
   - id: COACH-03
     name: Analyse coach – gestion des erreurs (session expirée / serveur indisponible)

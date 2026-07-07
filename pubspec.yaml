@@ -50,6 +50,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/app_logo.png # conservé temporairement (legacy)
-    - assets/coach_prompt.yaml
-    - assets/coach_prompt.local.yaml # Priorité sur .yaml si présent
     - assets/config.yaml

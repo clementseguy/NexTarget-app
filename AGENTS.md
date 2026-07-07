@@ -58,7 +58,7 @@ lib/
 - **Pas d'accès Hive direct depuis l'UI** : passer par un repository, puis un service.
 - **Modèles = données** : pas d'I/O ni d'appel réseau dans `models/` (leur rôle : structure + `toMap`/`fromMap`).
 - **Persistance Hive** : la plupart des modèles sont stockés en `Map<String, dynamic>` (sérialisation manuelle `toMap`/`fromMap`). Seul `Goal` utilise l'adapter généré (`@HiveType`, `part 'goal.g.dart'`).
-- **Config & secrets** : tout passe par `AppConfig` (charge `assets/config.yaml`). La clé Mistral vient de `dart-define` / env / `config.local.yaml` — **jamais commitée**.
+- **Config & secrets** : tout passe par `AppConfig` (charge `assets/config.yaml`). Depuis NT-061, **aucun secret côté client** (la clé Mistral vit côté serveur) ; `config.local.yaml` ne sert plus qu'aux surcharges locales non sensibles (ex. calibres).
 
 ## Hive — règles impératives
 
@@ -100,11 +100,10 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 - Tokens stockés via `flutter_secure_storage`. Ne jamais logguer un token ni une clé.
 - OAuth : flow délégué au serveur, retour par **deep link** `nextarget://callback?token=…`
   (`app_links`). Ne pas réimplémenter le flow ailleurs.
-- **Coach IA** : décision produit (2026-07-07) = **coach connecté uniquement**
-  (cf. NT-061). Cible : ne garder que `ServerCoachAnalysisService`, **supprimer**
-  `CoachAnalysisService` (Mistral direct) et toute clé Mistral côté client. Ne pas
-  réintroduire d'appel Mistral direct. Le reste de l'app doit rester utilisable
-  hors-ligne.
+- **Coach IA** : **coach connecté uniquement** (NT-061, livré) —
+  `ServerCoachAnalysisService` est l'unique chemin d'analyse ; il n'existe plus de
+  clé Mistral ni d'appel Mistral direct côté client. **Ne jamais les réintroduire.**
+  Le reste de l'app reste utilisable hors-ligne.
 
 ## Tests
 
@@ -157,8 +156,6 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 - **Package id `tir_sportif`** conservé (le branding NexTarget est au niveau UI).
 - **Stockage Map + `toMap`/`fromMap`** pour la plupart des modèles (seul `Goal` en
   adapter généré) — choix assumé, ne pas tout migrer sans raison.
-- **Coach à double chemin** = état **transitoire** ; la cible est *connecté
-  uniquement* (NT-061), pas un design pérenne.
 - **Valeurs métier en français** dans les données (`status`, `category`).
 
 ## Commandes de référence
