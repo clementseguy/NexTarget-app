@@ -37,20 +37,20 @@
 | NT-054 | Tests OAuth mockés | server | Should | M | À FAIRE | `tests/` basiques présents |
 | NT-055 | CI serveur (tests + couverture) | server | Should | S | À FAIRE | pas de `.github/` |
 | NT-060 | Proxy Mistral (clé hors client) | server | Must | M | FAIT | `services/mistral_client.py`, `core/config.py` |
-| NT-061 | Coach connecté uniquement + rotation clé | both | Must | M | EN COURS | serveur = proxy livré ; rotation clé à faire |
+| NT-061 | Coach connecté uniquement + rotation clé | both | Must | M | FAIT | code livré (S1) ; rotation clé = action manuelle |
 | NT-062 | Rate limiting endpoint coach | server | Must | S | FAIT | `services/rate_limiter.py` (10/5min) |
 | NT-063 | State OAuth à usage unique (CSRF) | server | Must | S | FAIT | `services/oauth_state.py` |
 | NT-064 | Vérification du type de token JWT | server | Must | S | FAIT | `core/security.py`, `api/deps.py` |
-| NT-065 | Restreindre CORS par environnement | server | Should | S | À FAIRE | `main.py` (`allow_origins=["*"]`) |
-| NT-066 | Vérification du nonce Google | server | Should | S | À FAIRE | cf. `SECURITY_ANALYSIS.md` |
+| NT-065 | Restreindre CORS par environnement | server | Should | S | FAIT | `CORS_ALLOW_ORIGINS` ; `*` en dev, aucune origine sinon |
+| NT-066 | Vérification du nonce Google | server | Should | S | FAIT | nonce OIDC vérifié au callback (400 sinon) |
 | NT-070 | Déploiement serveur (Render) | server | Must | S | FAIT | `render.yaml`, `docs/tech/render_setup.md` |
 | NT-071 | Migration SQLite → Postgres + Alembic | server | Should | M | À FAIRE | débloque multi-instance (NT-062/063) |
 | NT-006 | Analyse d'image de la cible | both | Won't-now | L | À FAIRE | vraisemblablement côté serveur |
 
 ## Prochaines actions serveur (hors FAIT), par priorité
 
-- **Must** — NT-061 (rotation de la clé Mistral une fois le client sevré).
-- **Should** — NT-048 (refresh tokens), NT-053 (logging/tracing), NT-054 (tests OAuth mockés), NT-055 (CI serveur), NT-065 (CORS prod), NT-066 (nonce Google), NT-071 (Postgres/Alembic), NT-032/NT-033 (coach avancé).
+- **Must** — (aucun ; la rotation manuelle de la clé Mistral reste à faire côté ops, cf. NT-061).
+- **Should** — NT-048 (refresh tokens), NT-053 (logging/tracing), NT-054 (tests OAuth mockés), NT-055 (CI serveur), NT-071 (Postgres/Alembic), NT-032/NT-033 (coach avancé).
 - **Won't-now** — NT-045, NT-046, NT-047, NT-006.
 
 ## Note de cohérence documentaire

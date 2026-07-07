@@ -359,8 +359,8 @@
 | NT-062 | Rate limiting de l'endpoint coach | server | Must | S | FAIT |
 | NT-063 | State OAuth à usage unique (CSRF) | server | Must | S | FAIT |
 | NT-064 | Vérification du type de token JWT | server | Must | S | FAIT |
-| NT-065 | Restreindre CORS par environnement | server | Should | S | À FAIRE |
-| NT-066 | Vérification du nonce Google | server | Should | S | À FAIRE |
+| NT-065 | Restreindre CORS par environnement | server | Should | S | FAIT |
+| NT-066 | Vérification du nonce Google | server | Should | S | FAIT |
 
 ### NT-060 — Proxy Mistral côté serveur
 - **Portée** : server · **Dépendances** : NT-030 · **Description** : Centraliser l'appel Mistral côté serveur pour retirer la clé du client (ancien P2).
@@ -392,11 +392,11 @@
 
 ### NT-065 — Restreindre CORS par environnement
 - **Portée** : server · **Dépendances** : — · **Description** : `allow_origins=["*"]` est un TODO connu.
-- **Critères d'acceptation** : origines restreintes en prod via configuration. · **Priorité** : Should · **Statut** : À FAIRE — `main.py` (TODO présent).
+- **Critères d'acceptation** : origines restreintes en prod via configuration. · **Priorité** : Should · **Statut** : FAIT (2026-07-07, sprint S1) — `CORS_ALLOW_ORIGINS` (défaut : `*` en dev, aucune origine sinon), tests `tests/test_cors.py`.
 
 ### NT-066 — Vérification du nonce Google
 - **Portée** : server · **Dépendances** : NT-040 · **Description** : Nonce généré mais non vérifié dans le callback (identifié dans `SECURITY_ANALYSIS.md`).
-- **Critères d'acceptation** : nonce vérifié à la réception du callback. · **Priorité** : Should · **Statut** : À FAIRE.
+- **Critères d'acceptation** : nonce vérifié à la réception du callback. · **Priorité** : Should · **Statut** : FAIT (2026-07-07, sprint S1) — claim `nonce` comparé au state stocké (400 sinon), tests mockés `tests/test_auth_google_nonce.py`.
 
 ---
 
