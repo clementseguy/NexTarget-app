@@ -1,16 +1,21 @@
 # NexTarget - Backlog (infini)
 
-## Idées (hors scope à date)
+## Utilisateur authentifié
+- Pouvoir afficher son nom ou pseudo, photo/avatar, son expérience (beginner, advanced, expert - il choisit), sa date d'inscription
+- Pouvoir afficher ses stats publiques (option) 
+- Système de gamification
 
-- Revoir les règles de sécurité FFTir
+## Sessions
+- Attacher une photo de la cible en fin de session
+- Analyser la photo pour confirmer : dispersion et score total, pour confronter aux commentaires de la session et enrichir l'analyse du coach
 
 ## Coaches
+- Utiliser le serveur NexTarget-server en tant que Proxy pour les requêtes au Coach
 - Plusieurs coachs (tons différents) : 
     - coach neutre
     - coach cool
 - Ecran "Coach" :
     - Permet d'analyser l'ensemble de l'activité de l'utilsiateur : plusieurs sessions, changement d'armes ou de calibres, régularité (ou pas), identification de comportements répétés, ... et de proposer des actions pour améliorer
-- Attacher un coach à un utilisateur (personnalisation des retours et )
 
 ## Exercices
 - Création d'Exercice par le Coach (via retour analyse de session)
@@ -18,10 +23,13 @@
     - Champs usageCount / lastPerformedAt.
 - Recommandations croisées Objectifs ⇄ Exercices.
 - Tags libres : pourquoi faire ??
-- Gérer un niveau de difficulté : beginer / advanced / expert
+- Gérer un niveau de difficulté : beginner / advanced / expert
+
+## Idées (hors scope à date)
+- Revoir les règles de sécurité FFTir
+- Thème ASCII Art
 
 ## Propositions GPT5
-
 Propositions à trier :
 - P1 Qualité & Observabilité: SonarCloud + couverture cible minimale (>=60%) + job lint/metrics (dart_code_metrics) + badge qualité.
 - P2 Sécurité & Secrets: Centraliser appels Mistral via serveur (proxy) + suppression clé API côté client (réduction surface fuite).

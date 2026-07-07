@@ -7,6 +7,15 @@ api:
   mistral_url: "https://api.mistral.ai/v1/chat/completions"
   mistral_model: "mistral-tiny"
 
+auth:
+  # Feature flag pour activer/désactiver l'authentification
+  # false = écran login affiché mais avec bouton skip
+  enabled: false
+  # URL de base du backend NexTarget pour OAuth2
+  base_url: "http://localhost:3000"
+  # Custom URL scheme pour intercepter le callback OAuth
+  callback_scheme: "nextarget"
+
 splash:
   # Durée minimale d'affichage du splash (en millisecondes)
   min_display_ms: 1500

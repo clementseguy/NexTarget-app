@@ -14,6 +14,9 @@ class AppConfig {
   final String mistralUrl;
   final String mistralModel;
   final List<String> calibers;
+  final bool authEnabled;
+  final String authBaseUrl;
+  final String authCallbackScheme;
 
   AppConfig._({
     required this.splashMinDisplayMs,
@@ -22,6 +25,9 @@ class AppConfig {
     required this.mistralUrl,
     required this.mistralModel,
     required this.calibers,
+    required this.authEnabled,
+    required this.authBaseUrl,
+    required this.authCallbackScheme,
   });
 
   static AppConfig get I {
@@ -99,6 +105,9 @@ class AppConfig {
         mistralUrl: (api['mistral_url'] ?? 'https://api.mistral.ai/v1/chat/completions').toString(),
         mistralModel: (api['mistral_model'] ?? 'mistral-tiny').toString(),
         calibers: _readCalibers(calibersYaml),
+        authEnabled: (yaml['auth']?['enabled'] ?? false) as bool,
+        authBaseUrl: (yaml['auth']?['base_url'] ?? 'https://nextarget-server.onrender.com').toString(),
+        authCallbackScheme: (yaml['auth']?['callback_scheme'] ?? 'nextarget').toString(),
       );
       _instance = cfg;
     } catch (e) {
@@ -120,6 +129,9 @@ class AppConfig {
           '.45 ACP',
           'Autre',
         ],
+        authEnabled: false,
+        authBaseUrl: 'https://nextarget-server.onrender.com',
+        authCallbackScheme: 'nextarget',
       );
     }
   }

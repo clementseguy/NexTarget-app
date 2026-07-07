@@ -2,6 +2,22 @@
 
 Toutes les modifications notables de ce projet seront listées ici.
 
+## [0.4.0] - Unreleased
+### Technical
+- T1: Intégration SonarCloud (acceptation: badge visible, Quality Gate ≥ B, couverture ≥ 20%).
+    - CI GitHub Actions: analyse automatique à chaque push sur `dev` et sur chaque PR vers `main`.
+    - Import de la couverture via LCOV (`flutter test --coverage` → `coverage/lcov.info`).
+    - Badges SonarCloud ajoutés au README (Quality Gate, Coverage, Maintainability, Reliability, Security).
+    - Anti‑doublons: garde qui évite les exécutions redondantes (push vs PR) et `concurrency` par ref.
+    - Analyse de `main` sans push direct: triggers `workflow_dispatch` (manuel) et `schedule` quotidien.
+
+### Docs
+- T2: Cahier de recette (tests manuels)
+    - Générateur: `scripts/generate_cahier_recette.dart`
+    - Source: `docs/specs/cahier_recette.yaml`
+    - Sortie: `docs/cahier_recette.md`
+    - Politique: jouer le cahier de recette avant toute MR vers `main`; mettre à jour le YAML + régénérer si comportement modifié.
+
 ## [0.3.0] - 2025-09-29
 ### Added
 - Sessions :

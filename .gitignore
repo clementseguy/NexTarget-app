@@ -3,6 +3,7 @@ assets/config.local.yaml
 app_preferences.hive
 app_preferences.lock
 assets/coach_prompt.local.yaml
+
 # Miscellaneous
 *.class
 *.log
@@ -28,9 +29,6 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
-# CI stray files
-.github/workflows/build.yaml
-
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
@@ -51,3 +49,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/build/
+
+# Working documents (temporary notes, screenshots)
+docs/working_docs/

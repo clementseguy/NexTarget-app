@@ -9,8 +9,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'dart:io';
 import 'package:hive/hive.dart';
+import 'package:provider/provider.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'package:tir_sportif/app/my_app.dart';
+import 'package:tir_sportif/providers/navigation_provider.dart';
+import 'package:tir_sportif/providers/settings_provider.dart';
+import 'package:tir_sportif/providers/auth_provider.dart';
+import 'package:tir_sportif/services/auth_service.dart';
 
-import 'package:tir_sportif/main.dart';
+import 'widget_test.mocks.dart';
+
+@GenerateMocks([AuthService])
+
 import 'package:tir_sportif/config/app_config.dart';
 import 'package:tir_sportif/constants/session_constants.dart';
 import 'package:tir_sportif/migrations/migration.dart';
@@ -104,9 +115,25 @@ void main() {
   });
 
   testWidgets('App boots and shows bottom navigation items', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
-    // Premier frame + animations éventuelles
-    await tester.pump(const Duration(milliseconds: 50));
+    final navigatorKey = GlobalKey<NavigatorState>();
+    // Mock AuthService pour le test
+    final mockAuthService = MockAuthService();
+    when(mockAuthService.hasToken()).thenAnswer((_) async => false);
+    when(mockAuthService.isAuthenticated()).thenAnswer((_) async => false);
+    
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => NavigationProvider()),
+          ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ChangeNotifierProvider(create: (_) => AuthProvider(mockAuthService)),
+        ],
+        child: MyApp(navigatorKey: navigatorKey),
+      )
+    );
+    // Attendre quelques frames pour que checkAuthStatus se termine
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
     // Vérifie la présence des items de navigation (labels)
   // BottomNavigationBar may create multiple instances (e.g. semantics / offstage),

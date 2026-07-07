@@ -16,13 +16,15 @@ class CoachAnalysisService {
   final String apiUrl;
   final String model;
   final String promptTemplate; // Contenu de coach_prompt.yaml -> key 'prompt'
+  final http.Client _client;
 
   CoachAnalysisService({
     required this.apiKey,
     required this.apiUrl,
     required this.model,
     required this.promptTemplate,
-  });
+    http.Client? client,
+  }) : _client = client ?? http.Client();
 
   /// Construit le prompt complet à partir du template et de la session.
   /// Idempotent / sans effet de bord.
@@ -62,7 +64,7 @@ class CoachAnalysisService {
   Future<String> fetchAnalysis(String fullPrompt) async {
     http.Response response;
     try {
-      response = await http
+      response = await _client
           .post(
             Uri.parse(apiUrl),
             headers: {
@@ -120,7 +122,16 @@ class CoachAnalysisService {
   static Future<CoachAnalysisService> fromAssets({required Future<String> Function(String path) loadAsset}) async {
     // AppConfig doit être chargé dans main() déjà.
     final cfg = AppConfig.I;
-    final promptStr = await loadAsset('assets/coach_prompt.yaml');
+    
+    // Charger coach_prompt.local.yaml en priorité (fichier non versionné)
+    // Sinon fallback sur coach_prompt.yaml (versionné)
+    String promptStr;
+    try {
+      promptStr = await loadAsset('assets/coach_prompt.local.yaml');
+    } catch (_) {
+      promptStr = await loadAsset('assets/coach_prompt.yaml');
+    }
+    
     final promptYaml = loadYaml(promptStr);
     final promptTemplate = promptYaml['prompt'].toString();
     if (cfg.mistralKey == null) {

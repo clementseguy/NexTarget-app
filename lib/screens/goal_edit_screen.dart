@@ -160,14 +160,6 @@ class GoalEditScreenState extends State<GoalEditScreen> {
               onPressed: _saving ? null : _save,
             ),
           ],
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () async {
-              if (await _confirmDiscard()) {
-                if (mounted) Navigator.of(context).pop(false);
-              }
-            },
-          ),
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
@@ -187,7 +179,7 @@ class GoalEditScreenState extends State<GoalEditScreen> {
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<GoalMetric>(
-                  value: _metric,
+                  initialValue: _metric,
                   isExpanded: true,
                   decoration: const InputDecoration(labelText: 'Métrique'),
                   items: GoalMetric.values.where((m) => m != GoalMetric.totalPoints)
@@ -196,7 +188,7 @@ class GoalEditScreenState extends State<GoalEditScreen> {
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<GoalComparator>(
-                  value: _comparator,
+                  initialValue: _comparator,
                   isExpanded: true,
                   decoration: const InputDecoration(labelText: 'Comparateur'),
                   items: GoalComparator.values
@@ -218,7 +210,7 @@ class GoalEditScreenState extends State<GoalEditScreen> {
                 ),
                 const SizedBox(height: 24),
                 DropdownButtonFormField<GoalPeriod>(
-                  value: _period,
+                  initialValue: _period,
                   isExpanded: true,
                   decoration: const InputDecoration(labelText: 'Période'),
                   items: const [

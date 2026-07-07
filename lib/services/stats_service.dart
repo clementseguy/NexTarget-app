@@ -1,5 +1,7 @@
 import '../models/shooting_session.dart';
+import '../models/series.dart';
 import '../utils/session_filters.dart';
+import '../interfaces/stats_service_interface.dart';
 
 class SeriesStat {
   final DateTime date; // date de la session associée
@@ -7,16 +9,20 @@ class SeriesStat {
   final double groupSize;
   final double distance;
   final String category;
+  final int seriesIndexInSession; // position de la série dans sa session (1-based)
+  final HandMethod handMethod; // prise (1 main / 2 mains)
   SeriesStat({
     required this.date,
     required this.points,
     required this.groupSize,
     required this.distance,
     required this.category,
+    required this.seriesIndexInSession,
+    required this.handMethod,
   });
 }
 
-class StatsService {
+class StatsService implements IStatsService {
   final List<ShootingSession> sessions;
   late final List<SeriesStat> _series; // séries aplaties
   // Freeze a reference "now" to ensure deterministic date-based computations (useful for tests)
@@ -35,13 +41,16 @@ class StatsService {
       ..sort((a, b) => (a.date ?? DateTime(1970)).compareTo(b.date ?? DateTime(1970)));
     for (final s in ordered) {
       final date = s.date ?? DateTime.fromMillisecondsSinceEpoch(0);
-      for (final serie in s.series) {
+      for (int i = 0; i < s.series.length; i++) {
+        final serie = s.series[i];
         list.add(SeriesStat(
           date: date,
           points: serie.points,
           groupSize: serie.groupSize,
           distance: serie.distance,
           category: s.category,
+          seriesIndexInSession: i + 1, // 1-based index
+          handMethod: serie.handMethod,
         ));
       }
     }

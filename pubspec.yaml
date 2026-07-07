@@ -5,7 +5,7 @@ description: >
 
 publish_to: 'none'
 
-version: 0.3.0
+version: 0.4.1
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -15,7 +15,6 @@ dependencies:
     sdk: flutter
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  # sqflite retiré (migration abandonnée, Hive unique source de vérité)
   path_provider: ^2.1.2
   intl: ^0.20.2
   fl_chart: ^1.1.1
@@ -25,12 +24,18 @@ dependencies:
   file_picker: ^8.0.0
   share_plus: ^7.2.0
   url_launcher: ^6.2.6
+  provider: ^6.1.1
+  flutter_secure_storage: ^9.0.0
+  app_links: ^6.3.3
+  # flutter_web_auth_2: ^4.1.0  # Remplacé par url_launcher + app_links
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.4.0
+  mockito: ^5.5.1
+  build_runner: ^2.9.0
 
 flutter_icons:
   android: true
@@ -46,4 +51,5 @@ flutter:
   assets:
     - assets/app_logo.png # conservé temporairement (legacy)
     - assets/coach_prompt.yaml
+    - assets/coach_prompt.local.yaml # Priorité sur .yaml si présent
     - assets/config.yaml
