@@ -2,6 +2,17 @@
 
 Toutes les modifications notables de ce projet seront listées ici.
 
+## [Unreleased] — Sprint S2 (Demo-ready)
+### Added
+- NT-075: Onboarding + aide contextuelle.
+    - `OnboardingScreen`/`OnboardingGate` : 3 écrans (carnet de tir, stats & objectifs, coach IA) au premier lancement, flag Hive `onboarding_seen`, boutons Passer/Suivant/Commencer.
+    - Ré-accès via Paramètres > Aide > « Revoir l'introduction ».
+    - `HelpButton` (« ? » → bottom sheet) sur : Mes sessions, hub Exercices & Objectifs, liste Objectifs, liste Exercices.
+- NT-032: Multi-personas coach (partie app).
+    - Préférence `coach_persona` (Hive) exposée par `SettingsProvider` (défaut `coach_neutre`, valeurs validées).
+    - Sélecteur « Ton du coach » dans Paramètres > Coach IA + chips Neutre/Cool dans la section Analyse Coach (synchronisés).
+    - `prompt_variant` transmis au serveur (`ServerCoachAnalysisService`).
+
 ## [Unreleased] — Sprint S1 (Sécurité & Qualité)
 ### Quality
 - NT-051: Analyse statique durcie.

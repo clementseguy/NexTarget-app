@@ -11,6 +11,7 @@ import '../widgets/series_cards.dart'; // Pour TwoFistsIcon
 import '../providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_theme.dart';
+import 'onboarding_screen.dart';
 import 'profile_screen.dart';
 
 String _avatarInitial(Map<String, dynamic>? user) {
@@ -386,6 +387,26 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ),
+          const SizedBox(height: 28),
+          Text('Aide', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.slideshow),
+              title: const Text('Revoir l\'introduction'),
+              subtitle: const Text('Les 3 écrans de présentation du premier lancement.'),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    fullscreenDialog: true,
+                    builder: (ctx) => OnboardingScreen(
+                      onFinished: () => Navigator.of(ctx).pop(),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           SizedBox(height: 28),

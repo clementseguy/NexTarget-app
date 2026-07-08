@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/goal.dart';
 import '../services/goal_service.dart';
 import '../widgets/goals_macro_stats_panel.dart';
+import '../widgets/help_button.dart';
 import '../widgets/multi_goal_card.dart';
 import '../widgets/exercises_total_card.dart';
 import 'goal_edit_screen.dart';
@@ -122,9 +123,18 @@ class _GoalsListScreenState extends State<GoalsListScreen> {
       appBar: AppBar(
         title: const Text('Objectifs'),
         actions: [
+          const HelpButton(
+            title: 'Objectifs',
+            points: [
+              'Créez un objectif chiffré : métrique (score, groupement…), comparateur et valeur cible.',
+              'La progression se calcule automatiquement à partir de vos sessions réalisées.',
+              'Un objectif atteint passe en « réalisé » ; suivez vos records dans les hauts faits.',
+              'L\'icône tendance (à côté) explique les statuts En hausse / Stable / En baisse.',
+            ],
+          ),
           IconButton(
             tooltip: 'Aide tendance',
-            icon: const Icon(Icons.help_outline),
+            icon: const Icon(Icons.trending_up),
             onPressed: _openTrendHelp,
           ),
           IconButton(

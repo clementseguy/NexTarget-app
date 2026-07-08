@@ -112,6 +112,10 @@ void main() {
     if (!Hive.isBoxOpen('goals')) {
       await Hive.openBox<Goal>('goals');
     }
+
+    // NT-075 : au premier lancement l'app affiche l'onboarding ; ce smoke
+    // test vérifie la navigation principale, on marque donc l'intro comme vue.
+    await Hive.box('app_preferences').put('onboarding_seen', true);
   });
 
   testWidgets('App boots and shows bottom navigation items', (WidgetTester tester) async {

@@ -206,7 +206,7 @@
 |---|---|---|---|---|---|
 | NT-030 | Analyse d'une session par le coach IA | both | Must | M | FAIT |
 | NT-031 | Prompt d'analyse centralisé côté serveur | server | Must | S | FAIT |
-| NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | À FAIRE |
+| NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | FAIT |
 | NT-033 | Écran "Coach" : analyse transverse multi-sessions | both | Should | L | À FAIRE |
 
 ### NT-030 — Analyse d'une session par le coach IA
@@ -225,8 +225,7 @@
 - **Thème** : Coach IA · **Portée** : both · **Dépendances** : NT-031
 - **Description** : Proposer plusieurs tons de coach (neutre, cool…).
 - **Critères d'acceptation** : ≥2 variantes de prompt côté serveur ; sélection du ton depuis l'app via `prompt_variant`.
-- **Priorité** : Should · **Statut** : À FAIRE.
-- **Notes** : scaffolding déjà en place — `prompt_variant` (app+serveur) et `_VARIANT_FILES`, mais un seul fichier (`coach_neutre.yaml`) existe.
+- **Priorité** : Should · **Statut** : FAIT (2026-07-07, sprint S2) — serveur : `coach_cool.yaml` + `_VARIANT_FILES` ; app : préférence `coach_persona` (Paramètres > Coach IA + chips dans la section Analyse Coach), envoyée en `prompt_variant`.
 
 ### NT-033 — Écran "Coach" : analyse transverse multi-sessions
 - **Thème** : Coach IA · **Portée** : both · **Dépendances** : NT-030
@@ -409,7 +408,7 @@
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT |
 | NT-073 | Normalisation calibres + dernier calibre utilisé | app | Could | S | À FAIRE |
 | NT-074 | Saisie séries plein écran + navigation rapide | app | Could | M | À FAIRE |
-| NT-075 | Onboarding + aide contextuelle | app | Could | M | À FAIRE |
+| NT-075 | Onboarding + aide contextuelle | app | Could | M | FAIT |
 | NT-076 | Cache stats + compactage Hive | app | Could | M | À FAIRE |
 
 ### NT-070 — Déploiement serveur (Render)
@@ -435,7 +434,7 @@
 
 ### NT-075 — Onboarding + aide contextuelle
 - **Portée** : app · **Dépendances** : — · **Description** : Mini-onboarding (3 écrans) + bouton « ? » contextuel (ancien P9).
-- **Critères d'acceptation** : onboarding au 1er lancement ; aide sur Objectifs/Exercices/Sessions. · **Priorité** : Could · **Statut** : À FAIRE.
+- **Critères d'acceptation** : onboarding au 1er lancement ; aide sur Objectifs/Exercices/Sessions. · **Priorité** : Could · **Statut** : FAIT (2026-07-07, sprint S2) — `OnboardingScreen`/`OnboardingGate` (3 écrans, flag `onboarding_seen`, ré-accès via Paramètres > Aide), `HelpButton` sur Sessions, Objectifs, Exercices (+ hub Exercices & Objectifs).
 
 ### NT-076 — Cache stats + compactage Hive
 - **Portée** : app · **Dépendances** : NT-010 · **Description** : Cache mémoire des stats (TTL courte) + compactage Hive périodique (ancien P8).

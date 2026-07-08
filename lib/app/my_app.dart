@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/app_config.dart';
 import '../navigation/app_router.dart';
+import '../screens/onboarding_screen.dart';
 import '../services/logger.dart';
 import '../widgets/fade_in_wrapper.dart';
 import '../theme/app_theme.dart';
@@ -75,7 +76,8 @@ class _AuthGateState extends State<_AuthGate> {
           );
         }
 
-        return AppNavigator();
+        // Onboarding au premier lancement (NT-075), puis navigation normale.
+        return OnboardingGate(child: AppNavigator());
       },
     );
   }

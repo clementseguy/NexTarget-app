@@ -14,6 +14,7 @@ import '../providers/navigation_provider.dart';
 import '../constants/session_constants.dart';
 import '../data/local_db_hive.dart';
 import '../models/goal.dart';
+import '../widgets/help_button.dart';
 
 /// Classe responsable de la gestion des routes nommées de l'application
 class AppRouter {
@@ -159,6 +160,15 @@ class AppNavigator extends StatelessWidget {
         ],
       ),
       actions: [
+        const HelpButton(
+          title: 'Mes sessions',
+          points: [
+            'Le bouton + crée une session réalisée ; un appui long propose une session prévue.',
+            'Chaque session contient vos séries : coups, distance, points, groupement, prise.',
+            'Ouvrez une session réalisée pour la synthèse, les exercices travaillés et l\'analyse du coach IA.',
+            'Un appui long sur une carte permet de la supprimer.',
+          ],
+        ),
         IconButton(
           icon: Icon(Icons.bolt, color: Colors.amber),
           tooltip: 'Ajouter 3 sessions aléatoires',

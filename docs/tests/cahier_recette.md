@@ -155,3 +155,47 @@ Résultats attendus:
 - Un message d'erreur clair s'affiche ("Session expirée, reconnectez-vous." ou équivalent)
 - Aucun crash, l'app reste utilisable ensuite
 
+## COACH-04 — Coach – sélection du ton (neutre / cool) (NT-032)
+Objectif: Vérifier la sélection de la persona du coach et son effet sur l'analyse.
+Pré-requis:
+- Utilisateur connecté
+- Session réalisée avec au moins 1 série
+Étapes:
+1. Dans Paramètres > Coach IA, sélectionner le ton Cool
+2. Ouvrir une session réalisée, déplier Analyse Coach et vérifier que le chip Cool est sélectionné
+3. Lancer l'analyse ; puis repasser sur Neutre via les chips et vérifier la synchro dans Paramètres
+Résultats attendus:
+- Le choix est persisté (Paramètres et chips toujours synchronisés, y compris après redémarrage)
+- L'analyse en ton cool est tutoyée/encourageante ; en ton neutre elle est sèche et factuelle
+
+## ONB-01 — Onboarding – premier lancement (NT-075)
+Objectif: Vérifier l'introduction 3 écrans au premier lancement.
+Pré-requis:
+- Première installation (ou données app effacées)
+Étapes:
+1. Lancer l'app et parcourir les 3 écrans avec "Suivant" puis "Commencer"
+2. Redémarrer l'app
+Résultats attendus:
+- Les 3 écrans (carnet de tir, stats & objectifs, coach IA) s'affichent au premier lancement uniquement
+- Le bouton Passer saute l'introduction ; après Commencer ou Passer, l'app s'ouvre normalement
+- Au redémarrage, l'onboarding ne réapparaît pas
+
+## ONB-02 — Onboarding – revoir l'introduction (NT-075)
+Objectif: Revoir l'introduction depuis les Paramètres.
+Étapes:
+1. Ouvrir Paramètres > Aide > Revoir l'introduction
+2. Parcourir ou passer l'introduction
+Résultats attendus:
+- L'introduction s'affiche en plein écran et se referme sur Commencer/Passer
+- Retour aux Paramètres sans effet de bord
+
+## HELP-01 — Aide contextuelle « ? » (NT-075)
+Objectif: Vérifier les boutons d'aide sur Sessions, Objectifs, Exercices.
+Étapes:
+1. Ouvrir l'écran Mes sessions et toucher l'icône « ? »
+2. Ouvrir l'onglet Exercices & Objectifs et toucher l'icône « ? »
+3. Ouvrir la liste Objectifs puis la liste Exercices et toucher l'icône « ? »
+Résultats attendus:
+- Chaque écran affiche une bottom sheet d'aide avec un titre et des points concrets propres à l'écran
+- La bottom sheet se ferme par glissement ou tap hors zone, sans effet de bord
+

@@ -5,6 +5,7 @@ class PreferencesService {
   static const _boxName = 'app_preferences';
   static const _handMethodKey = 'default_hand_method';
   static const _defaultCaliberKey = 'default_caliber';
+  static const _onboardingSeenKey = 'onboarding_seen';
   static final PreferencesService _instance = PreferencesService._internal();
   factory PreferencesService() => _instance;
   PreferencesService._internal();
@@ -32,5 +33,14 @@ class PreferencesService {
     } else {
       await _box.put(_defaultCaliberKey, caliber.trim());
     }
+  }
+
+  /// Onboarding vu au moins une fois (NT-075).
+  bool isOnboardingSeen() {
+    return _box.get(_onboardingSeenKey, defaultValue: false) == true;
+  }
+
+  Future<void> setOnboardingSeen(bool seen) async {
+    await _box.put(_onboardingSeenKey, seen);
   }
 }

@@ -32,7 +32,7 @@
 | NT-024 | Stats d'exécution (fenêtres glissantes) | app | Could | M | À FAIRE | `usageCount` / `lastPerformedAt` |
 | NT-025 | Niveau de difficulté d'exercice | app | Could | S | À FAIRE | — |
 | NT-030 | Analyse d'une session par le coach IA | both | Must | M | FAIT | `ServerCoachAnalysisService` (si connecté) |
-| NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | À FAIRE | envoi `prompt_variant` (scaffold prêt) |
+| NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | FAIT | préférence `coach_persona` + chips, envoi `prompt_variant` |
 | NT-033 | Écran "Coach" transverse | both | Should | L | À FAIRE | `coach_screen.dart` = placeholder |
 | NT-040 | Authentification OAuth Google | both | Must | M | FAIT | `auth_service.dart`, `auth_provider` |
 | NT-041 | Authentification optionnelle | app | Must | S | FAIT | mode déconnecté préservé |
@@ -48,7 +48,7 @@
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT | `lib/migrations/` (script cohérence : à faire) |
 | NT-073 | Normalisation calibres + dernier calibre | app | Could | S | À FAIRE | — |
 | NT-074 | Saisie séries plein écran + navigation | app | Could | M | À FAIRE | — |
-| NT-075 | Onboarding + aide contextuelle | app | Could | M | À FAIRE | — |
+| NT-075 | Onboarding + aide contextuelle | app | Could | M | FAIT | `OnboardingGate` (3 écrans) + `HelpButton` |
 | NT-076 | Cache stats + compactage Hive | app | Could | M | À FAIRE | — |
 | NT-090 | Thème ASCII Art | app | Won't-now | M | À FAIRE | `docs/specs/ascii_art_theme.md` |
 | NT-091 | Règles de sécurité FFTir | app | Won't-now | S | À FAIRE | — |
@@ -56,6 +56,6 @@
 
 ## Prochaines actions app (hors FAIT), par priorité
 
-- **Should** — NT-032 (multi-personas coach), NT-033 (écran Coach transverse), NT-042 (édition profil à confirmer).
-- **Could** — NT-014, NT-015, NT-023, NT-024, NT-025, NT-044, NT-073, NT-074, NT-075, NT-076.
+- **Should** — NT-033 (écran Coach transverse), NT-042 (édition profil à confirmer).
+- **Could** — NT-014, NT-015, NT-023, NT-024, NT-025, NT-044, NT-073, NT-074, NT-076.
 - **Won't-now** — NT-005/006, NT-045, NT-046, NT-047, NT-090, NT-091.
