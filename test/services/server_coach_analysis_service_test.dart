@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -30,6 +31,21 @@ void main() {
     final svc = ServerCoachAnalysisService(baseUrl: 'http://x', authService: dummyAuthService, client: client);
     final out = await svc.analyzeSession(_session());
     expect(out, 'OK');
+  });
+
+  test('analyzeSession envoie le prompt_variant choisi (NT-032), défaut coach_neutre', () async {
+    final capturedVariants = <String>[];
+    final client = MockClient((req) async {
+      final body = jsonDecode(req.body) as Map<String, dynamic>;
+      capturedVariants.add(body['prompt_variant'] as String);
+      return http.Response('{"analysis":"OK"}', 200);
+    });
+    final svc = ServerCoachAnalysisService(baseUrl: 'http://x', authService: dummyAuthService, client: client);
+
+    await svc.analyzeSession(_session());
+    await svc.analyzeSession(_session(), promptVariant: 'coach_cool');
+
+    expect(capturedVariants, ['coach_neutre', 'coach_cool']);
   });
 
   test('analyzeSession 401 throws session expirée', () async {

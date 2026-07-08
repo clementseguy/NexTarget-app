@@ -134,6 +134,48 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 28),
+          Text('Coach IA', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Consumer<SettingsProvider>(
+                builder: (context, settings, _) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Ton du coach', style: TextStyle(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Choisissez le style des analyses de vos sessions.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 12),
+                      SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(
+                            value: 'coach_neutre',
+                            label: Text('Neutre'),
+                            icon: Icon(Icons.psychology),
+                          ),
+                          ButtonSegment(
+                            value: 'coach_cool',
+                            label: Text('Cool'),
+                            icon: Icon(Icons.emoji_emotions),
+                          ),
+                        ],
+                        selected: {settings.coachPersona},
+                        onSelectionChanged: (s) {
+                          settings.updateCoachPersona(s.first);
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 28),
           Text('Préférences Tir', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           Card(

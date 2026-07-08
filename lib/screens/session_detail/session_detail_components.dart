@@ -7,6 +7,7 @@ import '../../models/exercise.dart';
 import '../../config/app_config.dart';
 import '../../navigation/app_router.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../services/coach_analysis_exception.dart';
 import '../../services/server_coach_analysis_service.dart';
 import '../../services/session_service.dart';
@@ -144,13 +145,19 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
   /// NexTarget — aucune clé Mistral ni prompt côté client. Le reste de
   /// l'app (carnet de tir) fonctionne sans connexion, ce chemin ne le
   /// concerne pas.
+  ///
+  /// Le ton du coach (NT-032) vient de la préférence `coachPersona`
+  /// (Paramètres + chips de cette section) et part au serveur en
+  /// `prompt_variant`.
   Future<String> _fetchAnalysisText() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final persona =
+        Provider.of<SettingsProvider>(context, listen: false).coachPersona;
     final serverService = ServerCoachAnalysisService(
       baseUrl: AppConfig.I.authBaseUrl,
       authService: authProvider.authService,
     );
-    return serverService.analyzeSession(widget.session);
+    return serverService.analyzeSession(widget.session, promptVariant: persona);
   }
 
   Future<void> _launchAnalysis() async {
@@ -295,19 +302,46 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
                 }
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.play_arrow),
-                      label: Text(
-                        (widget.analyse != null && widget.analyse!.trim().isNotEmpty)
-                            ? 'Re-générer'
-                            : 'Lancer analyse',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Choix du ton du coach (NT-032), synchronisé avec la
+                      // préférence globale (Paramètres > Coach IA).
+                      Consumer<SettingsProvider>(
+                        builder: (context, settings, _) {
+                          return Wrap(
+                            spacing: 8,
+                            children: [
+                              ChoiceChip(
+                                label: const Text('Neutre'),
+                                selected: settings.coachPersona == 'coach_neutre',
+                                onSelected: (_) => settings.updateCoachPersona('coach_neutre'),
+                              ),
+                              ChoiceChip(
+                                label: const Text('Cool'),
+                                selected: settings.coachPersona == 'coach_cool',
+                                onSelected: (_) => settings.updateCoachPersona('coach_cool'),
+                              ),
+                            ],
+                          );
+                        },
                       ),
-                      onPressed: (widget.analyse == null || widget.analyse!.trim().isEmpty)
-                          ? _launchAnalysis
-                          : null,
-                    ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.play_arrow),
+                          label: Text(
+                            (widget.analyse != null && widget.analyse!.trim().isNotEmpty)
+                                ? 'Re-générer'
+                                : 'Lancer analyse',
+                          ),
+                          onPressed: (widget.analyse == null || widget.analyse!.trim().isEmpty)
+                              ? _launchAnalysis
+                              : null,
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },

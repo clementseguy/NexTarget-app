@@ -26,6 +26,21 @@ class SettingsProvider extends ChangeNotifier {
   String? get defaultCaliber => 
       _preferencesBox.get('default_caliber');
 
+  // Persona du coach IA (NT-032) : 'coach_neutre' ou 'coach_cool'.
+  // Valeur = prompt_variant envoyé au serveur (POST /coach/analyze-session).
+  static const coachPersonas = ['coach_neutre', 'coach_cool'];
+
+  String get coachPersona {
+    final stored = _preferencesBox.get('coach_persona', defaultValue: 'coach_neutre');
+    return coachPersonas.contains(stored) ? stored : 'coach_neutre';
+  }
+
+  Future<void> updateCoachPersona(String persona) async {
+    if (!coachPersonas.contains(persona)) return;
+    await _preferencesBox.put('coach_persona', persona);
+    notifyListeners();
+  }
+
   // Thème
   AppThemeType get themeType {
     final stored = _preferencesBox.get('app_theme', defaultValue: 'classique');
