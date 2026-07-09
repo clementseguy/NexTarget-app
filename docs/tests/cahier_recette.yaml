@@ -1,5 +1,5 @@
 version: v0.4
-last_updated: 2025-10-07
+last_updated: 2026-07-07
 features:
   - id: SESS-01
     name: Sessions – création/édition
@@ -8,7 +8,7 @@ features:
       - Application installée
       - Aucune session obligatoire
     steps:
-      - Ouvrir l’app et aller sur “+” → “Nouvelle session (réalisée)”
+      - Ouvrir l’app, onglet “Réalisées”, puis “+” (le + crée une session du type de l’onglet actif)
       - Renseigner arme, calibre, prise, au moins 1 série (coups, distance, points, groupement)
       - Enregistrer la session
       - Ouvrir la session et modifier un champ (ex: commentaire)
@@ -17,6 +17,16 @@ features:
       - La session apparaît dans l’historique réalisée
       - Les champs saisis sont persistés fidèlement
       - La modification est bien visible après réouverture
+
+  - id: SESS-01b
+    name: Sessions – bouton + selon l'onglet actif
+    objectif: Vérifier que le + crée une session du même type que l'onglet affiché (retour recette S2).
+    steps:
+      - Ouvrir Mes sessions, onglet Réalisées, toucher + et vérifier le statut prérempli
+      - Revenir, passer sur l'onglet Prévues, toucher + et vérifier le statut prérempli
+    expected:
+      - Onglet Réalisées → formulaire de session réalisée ; onglet Prévues → formulaire de session prévue
+      - Aucun menu d'appui long sur le + (comportement supprimé)
 
   - id: SESS-02
     name: Sessions prévues (planification) + conversion wizard
@@ -147,17 +157,16 @@ features:
       - La réponse est enregistrée dans la session (relecture après réouverture)
 
   - id: COACH-02
-    name: Analyse coach – utilisateur non connecté (mode déconnecté)
-    objectif: Vérifier que le carnet de tir et l'analyse coach restent utilisables sans connexion (si une clé Mistral locale est configurée).
+    name: Analyse coach – utilisateur non connecté (coach connecté uniquement, NT-061)
+    objectif: Vérifier que sans compte, l'analyse coach est inaccessible avec un message clair, et que le carnet de tir reste 100 % utilisable hors connexion.
     preconditions:
       - Utilisateur non connecté (pas de compte)
-      - Clé Mistral locale configurée (assets/config.local.yaml ou --dart-define)
     steps:
       - Vérifier que l'app démarre normalement sans être connecté (carnet de tir accessible)
-      - Ouvrir une session réalisée et lancer l'analyse coach
+      - Ouvrir une session réalisée et déplier la section "Analyse Coach"
     expected:
-      - L'analyse fonctionne comme avant (ancien chemin Mistral direct), aucune régression
-      - Le reste de l'app (sessions, exercices, objectifs) reste pleinement utilisable hors connexion
+      - Aucun bouton "Lancer analyse" ; message "Le coach IA nécessite un compte" + bouton "Se connecter" menant à l'écran de connexion
+      - Le reste de l'app (sessions, exercices, objectifs, stats) reste pleinement utilisable hors connexion
 
   - id: COACH-03
     name: Analyse coach – gestion des erreurs (session expirée / serveur indisponible)
@@ -169,3 +178,51 @@ features:
     expected:
       - Un message d'erreur clair s'affiche ("Session expirée, reconnectez-vous." ou équivalent)
       - Aucun crash, l'app reste utilisable ensuite
+
+  - id: COACH-04
+    name: Coach – sélection du ton (neutre / cool) (NT-032)
+    objectif: Vérifier la sélection de la persona du coach et son effet sur l'analyse.
+    preconditions:
+      - Utilisateur connecté
+      - Session réalisée avec au moins 1 série
+    steps:
+      - Dans Paramètres > Coach IA, sélectionner le ton Cool
+      - Ouvrir une session réalisée, déplier Analyse Coach (aucun sélecteur de ton ne doit y figurer)
+      - Lancer l'analyse ; puis repasser sur Neutre dans Paramètres et relancer une analyse sur une autre session
+    expected:
+      - Le choix est persisté (y compris après redémarrage) et ne se règle QUE dans Paramètres
+      - L'analyse en ton cool est tutoyée/encourageante ; en ton neutre elle est sèche et factuelle
+
+  - id: ONB-01
+    name: Onboarding – premier lancement (NT-075)
+    objectif: Vérifier l'introduction 3 écrans au premier lancement.
+    preconditions:
+      - Première installation (ou données app effacées)
+    steps:
+      - Lancer l'app et parcourir les 3 écrans avec "Suivant" puis "Commencer"
+      - Redémarrer l'app
+    expected:
+      - Les 3 écrans (carnet de tir, stats & objectifs, coach IA) s'affichent au premier lancement uniquement
+      - Le bouton Passer saute l'introduction ; après Commencer ou Passer, l'app s'ouvre normalement
+      - Au redémarrage, l'onboarding ne réapparaît pas
+
+  - id: ONB-02
+    name: Onboarding – revoir l'introduction (NT-075)
+    objectif: Revoir l'introduction depuis les Paramètres.
+    steps:
+      - Ouvrir Paramètres > Aide > Revoir l'introduction
+      - Parcourir ou passer l'introduction
+    expected:
+      - L'introduction s'affiche en plein écran et se referme sur Commencer/Passer
+      - Retour aux Paramètres sans effet de bord
+
+  - id: HELP-01
+    name: Aide contextuelle « ? » (NT-075)
+    objectif: Vérifier les boutons d'aide sur Sessions, Objectifs, Exercices.
+    steps:
+      - Ouvrir l'écran Mes sessions et toucher l'icône « ? »
+      - Ouvrir l'onglet Exercices & Objectifs et toucher l'icône « ? »
+      - Ouvrir la liste Objectifs puis la liste Exercices et toucher l'icône « ? »
+    expected:
+      - Chaque écran affiche une bottom sheet d'aide avec un titre et des points concrets propres à l'écran
+      - La bottom sheet se ferme par glissement ou tap hors zone, sans effet de bord

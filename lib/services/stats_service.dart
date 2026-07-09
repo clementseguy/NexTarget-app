@@ -77,9 +77,12 @@ class StatsService implements IStatsService {
   }
 
   // Public KPIs
+  @override
   double averagePointsLast30Days() => _avgPoints(_filterLast(const Duration(days: 30)));
+  @override
   double averageGroupSizeLast30Days() => _avgGroupSize(_filterLast(const Duration(days: 30)));
 
+  @override
   SeriesStat? bestSeriesByPoints() {
     if (_series.isEmpty) return null;
     SeriesStat best = _series.first;
@@ -89,6 +92,7 @@ class StatsService implements IStatsService {
     return best;
   }
 
+  @override
   int sessionsCountCurrentMonth() {
     final now = _now;
     final realized = SessionFilters.realizedWithDate(sessions);
@@ -96,6 +100,7 @@ class StatsService implements IStatsService {
   }
 
   // Moyenne mobile des points (window par défaut 3)
+  @override
   List<double> movingAveragePoints({int window = 3}) {
     if (_series.isEmpty || window <= 1) return _series.map((e) => e.points.toDouble()).toList();
     final List<double> result = [];
@@ -120,6 +125,7 @@ class StatsService implements IStatsService {
     return variance <= 0 ? 0 : variance.sqrtNewton();
   }
 
+  @override
   double consistencyIndexLast30Days() {
     final data = _filterLast(const Duration(days: 30));
     if (data.length < 3) return 0; // insuffisant
@@ -131,6 +137,7 @@ class StatsService implements IStatsService {
     return ci.clamp(0, 100);
   }
 
+  @override
   double progressionPercent30Days() {
     final now = _now;
     final currentWindow = now.subtract(const Duration(days: 30));
@@ -144,6 +151,7 @@ class StatsService implements IStatsService {
     return ((avgCurr - avgPrev) / avgPrev) * 100;
   }
 
+  @override
   Map<double,int> distanceDistribution({bool last30 = true}) {
     final list = last30 ? _filterLast(const Duration(days:30)) : _series;
     final Map<double,int> counts = {};
@@ -154,6 +162,7 @@ class StatsService implements IStatsService {
     return counts;
   }
 
+  @override
   Map<String,int> categoryDistribution({bool sessionsOnly = true}) {
     // sessionsOnly = true : compte par session (pas par série)
     if (sessionsOnly) {
@@ -172,15 +181,16 @@ class StatsService implements IStatsService {
     }
   }
 
-  List<_PointBucket> pointBuckets({int bucketSize = 10, bool last30 = true}) {
+  @override
+  List<PointBucket> pointBuckets({int bucketSize = 10, bool last30 = true}) {
     final list = last30 ? _filterLast(const Duration(days:30)) : _series;
     if (list.isEmpty) return [];
     final maxP = list.map((e)=> e.points).reduce((a,b)=> a>b?a:b);
-    final List<_PointBucket> buckets = [];
+    final List<PointBucket> buckets = [];
     for (int start = 0; start <= maxP; start += bucketSize) {
       final end = start + bucketSize - 1;
       final count = list.where((e) => e.points >= start && e.points <= end).length;
-      buckets.add(_PointBucket(start: start, end: end, count: count));
+      buckets.add(PointBucket(start: start, end: end, count: count));
     }
     return buckets;
   }
@@ -188,6 +198,7 @@ class StatsService implements IStatsService {
   // ===== Phase 3 Metrics =====
   /// Returns the last [n] series from the full chronological series list (ASC order).
   /// If fewer than [n] exist, returns all. Used by UI graphs to ensure newest on the right.
+  @override
   List<SeriesStat> lastNSortedSeriesAsc(int n) {
     if (n <= 0 || _series.isEmpty) return const [];
     final len = _series.length;
@@ -195,6 +206,7 @@ class StatsService implements IStatsService {
     // _series is already sorted by date ASC
     return _series.sublist(start, len);
   }
+  @override
   int currentDayStreak() {
     final dates = <DateTime>{};
     for (final s in SessionFilters.realizedWithDate(sessions)) {
@@ -217,6 +229,7 @@ class StatsService implements IStatsService {
     return streak;
   }
 
+  @override
   double bestGroupSize() {
     if (_series.isEmpty) return 0;
     final positives = _series.where((s)=> s.groupSize > 0).map((e)=> e.groupSize).toList();
@@ -225,6 +238,7 @@ class StatsService implements IStatsService {
     return positives.first;
   }
 
+  @override
   bool lastSeriesIsRecordPoints() {
     if (_series.length < 2) return false;
     final last = _series.last;
@@ -232,6 +246,7 @@ class StatsService implements IStatsService {
     return last.points > prevMax;
   }
 
+  @override
   bool lastSeriesIsRecordGroup() {
     if (_series.length < 2) return false;
     final last = _series.last;
@@ -242,6 +257,7 @@ class StatsService implements IStatsService {
     return last.groupSize < prevMin;
   }
 
+  @override
   int sessionsThisWeek() {
     final now = _now;
     final start = _startOfWeek(now);
@@ -251,6 +267,7 @@ class StatsService implements IStatsService {
       .length;
   }
 
+  @override
   int sessionsPreviousWeek() {
     final now = _now;
     final startCurrent = _startOfWeek(now);
@@ -261,6 +278,7 @@ class StatsService implements IStatsService {
       .length;
   }
 
+  @override
   int weeklyLoadDelta() => sessionsThisWeek() - sessionsPreviousWeek();
 
   DateTime _startOfWeek(DateTime d) {
@@ -286,9 +304,9 @@ extension _SqrtExt on double {
   }
 }
 
-class _PointBucket {
+class PointBucket {
   final int start;
   final int end;
   final int count;
-  _PointBucket({required this.start, required this.end, required this.count});
+  PointBucket({required this.start, required this.end, required this.count});
 }

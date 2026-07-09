@@ -1,10 +1,10 @@
-// Simple generator: reads docs/specs/cahier_recette.yaml and writes docs/cahier_recette.md
+// Simple generator: reads docs/tests/cahier_recette.yaml and writes docs/tests/cahier_recette.md
 import 'dart:io';
 import 'package:yaml/yaml.dart';
 
 void main(List<String> args) async {
   final repoRoot = Directory.current.path;
-  final yamlFile = File('$repoRoot/docs/specs/cahier_recette.yaml');
+  final yamlFile = File('$repoRoot/docs/tests/cahier_recette.yaml');
   if (!await yamlFile.exists()) {
     stderr.writeln('YAML not found: ${yamlFile.path}');
     exit(1);
@@ -29,7 +29,7 @@ void main(List<String> args) async {
   buf.writeln('# Cahier de Recette');
   buf.writeln();
   buf.writeln('- Dernière mise à jour: $lastUpdated');
-  buf.writeln('- Généré automatiquement depuis `docs/specs/cahier_recette.yaml`');
+  buf.writeln('- Généré automatiquement depuis `docs/tests/cahier_recette.yaml`');
   buf.writeln();
 
   for (final f in features) {
@@ -74,7 +74,7 @@ void main(List<String> args) async {
     buf.writeln();
   }
 
-  final outFile = File('$repoRoot/docs/cahier_recette.md');
+  final outFile = File('$repoRoot/docs/tests/cahier_recette.md');
   await outFile.writeAsString(buf.toString());
   stdout.writeln('Generated ${outFile.path}');
 }

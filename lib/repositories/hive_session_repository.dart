@@ -2,6 +2,7 @@ import '../data/local_db_hive.dart';
 import '../models/shooting_session.dart';
 import '../models/series.dart';
 import 'session_repository.dart';
+import '../services/logger.dart';
 
 /// Hive-backed implementation of [SessionRepository].
 class HiveSessionRepository implements SessionRepository {
@@ -68,7 +69,7 @@ class HiveSessionRepository implements SessionRepository {
           }
         }
       } catch (e) {
-        print('Erreur lors de la récupération des séries existantes: $e');
+        AppLogger.I.error('Erreur lors de la récupération des séries existantes', e);
         // En cas d'erreur, on continue avec l'update normal
       }
     }

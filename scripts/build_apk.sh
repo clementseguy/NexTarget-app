@@ -4,24 +4,17 @@ set -euo pipefail
 #############################################
 # Script de build APK NexTarget
 # - Support release (défaut) et debug (--debug)
-# - Injection clé API Mistral via --dart-define
 # - Lecture automatique de la version (pubspec.yaml)
 # - Renommage: NexTarget-v<version>-<mode>-<timestamp>.apk
 #
-# Comportement prompt Mistral:
-#   L'app charge automatiquement coach_prompt.local.yaml (non versionné)
-#   en priorité, sinon fallback sur coach_prompt.yaml (versionné).
-#   Assurez-vous que assets/coach_prompt.local.yaml existe.
+# NT-061 : plus aucune clé Mistral côté client — l'analyse coach passe
+# par NexTarget-server (aucun secret à injecter au build).
 #
-# Usage de base:
+# Usage:
 #   ./build_apk.sh                 # build release
 #   ./build_apk.sh --debug         # build debug
-#   MISTRAL_API_KEY=xxxx ./build_apk.sh
-#   ./build_apk.sh --ask-key       # force saisie clé
 #
 # Options:
-#   --ask-key        Demande la clé si absente (par défaut true)
-#   --no-ask-key     N'interroge pas si $MISTRAL_API_KEY présent
 #   --debug          Mode debug (sinon release)
 #   --flavor <f>     (réservé future extension flavors)
 #
@@ -30,16 +23,11 @@ set -euo pipefail
 #   NexTarget-v0.4.0-debug-20251017-1434.apk
 #############################################
 
-ASK_KEY=true
 BUILD_MODE="release" # ou debug
 FLAVOR=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --ask-key)
-      ASK_KEY=true; shift ;;
-    --no-ask-key)
-      ASK_KEY=false; shift ;;
     --debug)
       BUILD_MODE="debug"; shift ;;
     --flavor)
@@ -47,16 +35,6 @@ while [[ $# -gt 0 ]]; do
     *) echo "Option inconnue: $1"; exit 1 ;;
   esac
 done
-
-if [[ -z "${MISTRAL_API_KEY:-}" || "$ASK_KEY" == "true" ]]; then
-  read -rsp "Entrer la clé API Mistral (input caché): " INPUT_KEY
-  echo
-  if [[ -z "$INPUT_KEY" ]]; then
-    echo "Erreur: clé vide" >&2
-    exit 2
-  fi
-  export MISTRAL_API_KEY="$INPUT_KEY"
-fi
 
 echo "==> Vérification environnement Flutter"
 if ! command -v flutter >/dev/null 2>&1; then
@@ -82,9 +60,9 @@ echo "Version détectée: $APP_VERSION"
 
 echo "==> Préparation commande build ($BUILD_MODE)"
 if [[ "$BUILD_MODE" == "release" ]]; then
-  CMD=(flutter build apk --release --dart-define=MISTRAL_API_KEY="${MISTRAL_API_KEY}")
+  CMD=(flutter build apk --release)
 else
-  CMD=(flutter build apk --debug --dart-define=MISTRAL_API_KEY="${MISTRAL_API_KEY}")
+  CMD=(flutter build apk --debug)
 fi
 
 if [[ -n "$FLAVOR" ]]; then

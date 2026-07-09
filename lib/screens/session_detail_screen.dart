@@ -149,7 +149,6 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
             SessionCoachAnalysisSection(
               session: session,
               analyse: analyse,
-              parentContext: context,
               onAnalyseUpdated: () async {
                 final all = await _sessionService.getAllSessions();
                 final updated = all.firstWhere((s)=> s.id == session.id, orElse: ()=> session);

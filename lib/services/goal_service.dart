@@ -31,6 +31,7 @@ class GoalService implements IGoalService {
       : _sessions = sessionRepository ?? HiveSessionRepository(),
         _goals = goalRepository ?? HiveGoalRepository();
 
+  @override
   Future<void> init() async {
     // Trigger box open via repository
     final list = await _goals.getAll();
@@ -44,12 +45,16 @@ class GoalService implements IGoalService {
     }
   }
 
+  @override
   Future<List<Goal>> listAll() => _goals.getAll();
 
+  @override
   Future<void> addGoal(Goal goal) => _goals.put(goal);
 
+  @override
   Future<void> updateGoal(Goal goal) => _goals.put(goal);
 
+  @override
   Future<void> deleteGoal(String id) => _goals.delete(id);
 
   Future<void> recomputeAllProgress() async {
@@ -66,6 +71,7 @@ class GoalService implements IGoalService {
 
   /// Returns active (non achieved, non archived, non failed) goals sorted by
   /// lastProgress desc then priority asc (tie-break) limited to n.
+  @override
   Future<List<Goal>> topActiveGoals(int n) async {
     final all = await _goals.getAll();
     final filtered = all.where((g) => g.status == GoalStatus.active).toList();
@@ -262,9 +268,7 @@ class GoalService implements IGoalService {
           (goal.comparator == GoalComparator.lessOrEqual && value! <= goal.targetValue);
       if (achieved && status == GoalStatus.active) {
         status = GoalStatus.achieved;
-        if (achievementDate == null) {
-          achievementDate = DateTime.now();
-        }
+        achievementDate ??= DateTime.now();
       }
     }
 
@@ -309,7 +313,11 @@ class GoalService implements IGoalService {
         return null;
       case GoalMetric.averageSessionPoints:
         double sum = 0; int count = 0; for (final s in sessions) { if (s.series.isEmpty) continue; final pts = s.series.map((e)=>e.points.toDouble()).reduce((a,b)=>a+b); sum += pts / s.series.length; count++; }
-        if (count>0) return sum / count; else return null;
+        if (count>0) {
+          return sum / count;
+        } else {
+          return null;
+        }
       case GoalMetric.bestSeriesPoints:
         final allSeries = sessions.expand((s)=> s.series).toList();
         if (allSeries.isNotEmpty) return allSeries.map((s)=> s.points.toDouble()).reduce((a,b)=> a>b?a:b);

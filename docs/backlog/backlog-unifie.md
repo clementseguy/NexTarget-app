@@ -30,7 +30,7 @@
 | 1. Carnet de tir | NT-001 → NT-006 |
 | 2. Statistiques & Objectifs | NT-010 → NT-015 |
 | 3. Exercices | NT-020 → NT-025 |
-| 4. Coach IA | NT-030 → NT-033 |
+| 4. Coach IA | NT-030 → NT-034 |
 | 5. Auth & Compte | NT-040 → NT-048 |
 | 6. Qualité & Observabilité | NT-050 → NT-055 |
 | 7. Sécurité & Secrets | NT-060 → NT-066 |
@@ -206,15 +206,15 @@
 |---|---|---|---|---|---|
 | NT-030 | Analyse d'une session par le coach IA | both | Must | M | FAIT |
 | NT-031 | Prompt d'analyse centralisé côté serveur | server | Must | S | FAIT |
-| NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | À FAIRE |
+| NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | FAIT |
 | NT-033 | Écran "Coach" : analyse transverse multi-sessions | both | Should | L | À FAIRE |
+| NT-034 | Affiner les prompts des personas coach | server | Could | S | À FAIRE |
 
 ### NT-030 — Analyse d'une session par le coach IA
 - **Thème** : Coach IA · **Portée** : both · **Dépendances** : NT-002, NT-040, NT-060
 - **Description** : Le tireur obtient une analyse rédigée de sa séance ; l'appel Mistral passe par le serveur (proxy), sans clé côté client.
 - **Critères d'acceptation** : app envoie les données de session au serveur ; `POST /coach/analyze-session` (JWT requis) renvoie une analyse texte ; rendu markdown dans l'app.
-- **Statut** : FAIT — serveur `api/coach.py` ; app `ServerCoachAnalysisService` (utilisé si connecté, `session_detail_components.dart:154`).
-- **Notes** : le chemin Mistral **direct** hors-ligne existe encore et doit être retiré → voir NT-061.
+- **Statut** : FAIT — serveur `api/coach.py` ; app `ServerCoachAnalysisService` (unique chemin d'analyse depuis NT-061).
 
 ### NT-031 — Prompt d'analyse centralisé côté serveur
 - **Thème** : Coach IA · **Portée** : server · **Dépendances** : NT-030
@@ -226,8 +226,8 @@
 - **Thème** : Coach IA · **Portée** : both · **Dépendances** : NT-031
 - **Description** : Proposer plusieurs tons de coach (neutre, cool…).
 - **Critères d'acceptation** : ≥2 variantes de prompt côté serveur ; sélection du ton depuis l'app via `prompt_variant`.
-- **Priorité** : Should · **Statut** : À FAIRE.
-- **Notes** : scaffolding déjà en place — `prompt_variant` (app+serveur) et `_VARIANT_FILES`, mais un seul fichier (`coach_neutre.yaml`) existe.
+- **Priorité** : Should · **Statut** : FAIT (2026-07-07, sprint S2) — serveur : `coach_cool.yaml` + `_VARIANT_FILES` ; app : préférence `coach_persona` (Paramètres > Coach IA), envoyée en `prompt_variant`.
+- **Notes** : retour de recette S2 (2026-07-09) — le ton se choisit **uniquement dans Paramètres** (le sélecteur initialement présent dans l'écran Session a été retiré). L'affinage du contenu des prompts est tracé dans NT-034.
 
 ### NT-033 — Écran "Coach" : analyse transverse multi-sessions
 - **Thème** : Coach IA · **Portée** : both · **Dépendances** : NT-030
@@ -235,6 +235,12 @@
 - **Critères d'acceptation** : à définir — agrégation multi-sessions ; analyse coach globale ; suggestions d'actions.
 - **Priorité** : Should · **Statut** : À FAIRE.
 - **Notes** : `coach_screen.dart` existe mais est un placeholder « Coming soon ».
+
+### NT-034 — Affiner les prompts des personas coach
+- **Thème** : Coach IA · **Portée** : server · **Dépendances** : NT-032
+- **Description** : Itérer sur le contenu des templates `coach_neutre.yaml` / `coach_cool.yaml` (qualité, différenciation des tons, format de sortie) à partir des retours d'usage réels.
+- **Critères d'acceptation** : à définir — prompts revus et validés en recette sur des sessions réelles ; différence de ton nette entre personas ; règles de mesurabilité conservées.
+- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : créé suite à la recette S2 (2026-07-09). Aucun changement de contrat d'API.
 
 ---
 
@@ -313,7 +319,7 @@
 | ID | Titre | Portée | Prio | Est | Statut |
 |---|---|---|---|---|---|
 | NT-050 | SonarCloud + Quality Gate + couverture (app) | app | Must | M | FAIT |
-| NT-051 | Analyse statique & lint (durcir) | app | Should | S | À VÉRIFIER |
+| NT-051 | Analyse statique & lint (durcir) | app | Should | S | FAIT |
 | NT-052 | Cahier de recette généré | app | Should | S | FAIT |
 | NT-053 | Logging structuré + tracing (serveur) | server | Should | M | À FAIRE |
 | NT-054 | Tests OAuth mockés (providers externes) | server | Should | M | À FAIRE |
@@ -327,8 +333,8 @@
 ### NT-051 — Analyse statique & lint (durcir)
 - **Portée** : app · **Dépendances** : NT-050 · **Description** : Renforcer l'analyse statique pour tenir le niveau de qualité visé.
 - **Critères d'acceptation** : un ruleset de lint actif (ex. `flutter_lints` ou `very_good_analysis`) ; `flutter analyze` sans warning ; job d'analyse en CI.
-- **Statut** : **À VÉRIFIER / partiel** — `flutter analyze` tourne (pré-commit `scripts/verify_before_commit.sh` + SonarCloud), mais **`flutter_lints` est désactivé** (`include` commenté dans `analysis_options.yaml`) et **`dart_code_metrics` n'est pas installé**.
-- **Notes** : activer un ruleset et corriger les warnings est une tâche qualité recommandée (cf. AGENTS.md app).
+- **Statut** : FAIT (2026-07-07, sprint S1) — `flutter_lints` activé (`analysis_options.yaml`), 138 issues corrigées (dont un vrai bug : route `/settings` jamais résolue, `unrelated_type_equality_checks`), step CI `flutter analyze --fatal-infos` ajouté au workflow SonarCloud.
+- **Notes** : `dart_code_metrics` non retenu (payant/archivé) ; `flutter_lints` + Sonar suffisent.
 
 ### NT-052 — Cahier de recette généré
 - **Portée** : app · **Dépendances** : — · **Description** : Tests manuels reproductibles avant chaque MR vers `main`.
@@ -356,12 +362,12 @@
 | ID | Titre | Portée | Prio | Est | Statut |
 |---|---|---|---|---|---|
 | NT-060 | Proxy Mistral côté serveur (clé hors client) | server | Must | M | FAIT |
-| NT-061 | Coach « connecté uniquement » : retrait clé Mistral client + rotation | both | Must | M | EN COURS |
+| NT-061 | Coach « connecté uniquement » : retrait clé Mistral client + rotation | both | Must | M | FAIT |
 | NT-062 | Rate limiting de l'endpoint coach | server | Must | S | FAIT |
 | NT-063 | State OAuth à usage unique (CSRF) | server | Must | S | FAIT |
 | NT-064 | Vérification du type de token JWT | server | Must | S | FAIT |
-| NT-065 | Restreindre CORS par environnement | server | Should | S | À FAIRE |
-| NT-066 | Vérification du nonce Google | server | Should | S | À FAIRE |
+| NT-065 | Restreindre CORS par environnement | server | Should | S | FAIT |
+| NT-066 | Vérification du nonce Google | server | Should | S | FAIT |
 
 ### NT-060 — Proxy Mistral côté serveur
 - **Portée** : server · **Dépendances** : NT-030 · **Description** : Centraliser l'appel Mistral côté serveur pour retirer la clé du client (ancien P2).
@@ -375,8 +381,8 @@
   - l'analyse coach exige un utilisateur authentifié (message clair sinon) ;
   - la clé Mistral historique est révoquée/rotée ;
   - le carnet de tir reste utilisable hors-ligne (le coach seul devient online-only).
-- **Priorité** : Must · **Statut** : EN COURS — proxy livré (NT-060) ; reste le retrait client + rotation.
-- **Notes** : voir CHANGELOG app T5 (« à faire ensuite : retrait clé + rotation ») et [incoherences.md](incoherences.md) I2.
+- **Priorité** : Must · **Statut** : FAIT (code, 2026-07-07, sprint S1) — `CoachAnalysisService` direct supprimé, plus aucune clé/config Mistral côté client (`AppConfig`, `config.yaml`, `build_apk.sh` purgés), analyse gated par l'auth avec message clair + CTA login.
+- **Notes** : ⚠️ la **rotation de la clé Mistral historique** est une action manuelle (console Mistral + env Render) à réaliser par le mainteneur — hors code. Voir [incoherences.md](incoherences.md) I2.
 
 ### NT-062 — Rate limiting de l'endpoint coach
 - **Portée** : server · **Dépendances** : NT-060 · **Description** : Empêcher l'abus qui viderait le quota Mistral.
@@ -393,11 +399,11 @@
 
 ### NT-065 — Restreindre CORS par environnement
 - **Portée** : server · **Dépendances** : — · **Description** : `allow_origins=["*"]` est un TODO connu.
-- **Critères d'acceptation** : origines restreintes en prod via configuration. · **Priorité** : Should · **Statut** : À FAIRE — `main.py` (TODO présent).
+- **Critères d'acceptation** : origines restreintes en prod via configuration. · **Priorité** : Should · **Statut** : FAIT (2026-07-07, sprint S1) — `CORS_ALLOW_ORIGINS` (défaut : `*` en dev, aucune origine sinon), tests `tests/test_cors.py`.
 
 ### NT-066 — Vérification du nonce Google
 - **Portée** : server · **Dépendances** : NT-040 · **Description** : Nonce généré mais non vérifié dans le callback (identifié dans `SECURITY_ANALYSIS.md`).
-- **Critères d'acceptation** : nonce vérifié à la réception du callback. · **Priorité** : Should · **Statut** : À FAIRE.
+- **Critères d'acceptation** : nonce vérifié à la réception du callback. · **Priorité** : Should · **Statut** : FAIT (2026-07-07, sprint S1) — claim `nonce` comparé au state stocké (400 sinon), tests mockés `tests/test_auth_google_nonce.py`.
 
 ---
 
@@ -410,7 +416,7 @@
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT |
 | NT-073 | Normalisation calibres + dernier calibre utilisé | app | Could | S | À FAIRE |
 | NT-074 | Saisie séries plein écran + navigation rapide | app | Could | M | À FAIRE |
-| NT-075 | Onboarding + aide contextuelle | app | Could | M | À FAIRE |
+| NT-075 | Onboarding + aide contextuelle | app | Could | M | FAIT |
 | NT-076 | Cache stats + compactage Hive | app | Could | M | À FAIRE |
 
 ### NT-070 — Déploiement serveur (Render)
@@ -436,7 +442,8 @@
 
 ### NT-075 — Onboarding + aide contextuelle
 - **Portée** : app · **Dépendances** : — · **Description** : Mini-onboarding (3 écrans) + bouton « ? » contextuel (ancien P9).
-- **Critères d'acceptation** : onboarding au 1er lancement ; aide sur Objectifs/Exercices/Sessions. · **Priorité** : Could · **Statut** : À FAIRE.
+- **Critères d'acceptation** : onboarding au 1er lancement ; aide sur Objectifs/Exercices/Sessions. · **Priorité** : Could · **Statut** : FAIT (2026-07-07, sprint S2) — `OnboardingScreen`/`OnboardingGate` (3 écrans, flag `onboarding_seen`, ré-accès via Paramètres > Aide), `HelpButton` sur Sessions, Objectifs, Exercices (+ hub Exercices & Objectifs).
+- **Notes** : ajusté en recette S2 (2026-07-09) — texte écran 3 simplifié ; aide « Tendance des objectifs » thémable (plus de fond sombre en dur) ; aide « Mes sessions » alignée sur le nouveau comportement du bouton + (création selon l'onglet actif, appui long supprimé).
 
 ### NT-076 — Cache stats + compactage Hive
 - **Portée** : app · **Dépendances** : NT-010 · **Description** : Cache mémoire des stats (TTL courte) + compactage Hive périodique (ancien P8).

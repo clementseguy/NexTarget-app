@@ -8,10 +8,10 @@ class MockStatsPanel extends StatefulWidget {
   final bool loading;
 
   const MockStatsPanel({
-    Key? key,
+    super.key,
     required this.stats,
     this.loading = false,
-  }) : super(key: key);
+  });
 
   @override
   State<MockStatsPanel> createState() => _MockStatsPanelState();

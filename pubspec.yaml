@@ -28,10 +28,11 @@ dependencies:
   flutter_secure_storage: ^9.0.0
   app_links: ^6.3.3
   # flutter_web_auth_2: ^4.1.0  # Remplacé par url_launcher + app_links
-
+  uuid: ^4.5.1 # dépendance directe (import dans models/goal.dart), était transitive
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.4.0
   mockito: ^5.5.1
@@ -50,6 +51,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/app_logo.png # conservé temporairement (legacy)
-    - assets/coach_prompt.yaml
-    - assets/coach_prompt.local.yaml # Priorité sur .yaml si présent
     - assets/config.yaml

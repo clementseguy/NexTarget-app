@@ -121,7 +121,7 @@ class _RulesList extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        ...rules.asMap().entries.map((e) => _RuleTile(index: e.key + 1, text: e.value, accent: color)).toList(),
+        ...rules.asMap().entries.map((e) => _RuleTile(index: e.key + 1, text: e.value, accent: color)),
         const SizedBox(height: 16),
         Text('Ces principes doivent être intégrés de manière consciente puis automatisée pour une progression durable.', style: TextStyle(fontSize: 12.5, color: Colors.white70)),
       ],

@@ -5,19 +5,18 @@ import 'package:http/http.dart' as http;
 import '../models/shooting_session.dart';
 import 'auth_service.dart';
 import 'authenticated_http_client.dart';
-import 'coach_analysis_service.dart' show CoachAnalysisException;
+import 'coach_analysis_exception.dart';
 
-/// Service coach IA "connecté" : appelle NexTarget-server
-/// (POST /coach/analyze-session) au lieu de Mistral en direct.
+/// Service coach IA : appelle NexTarget-server
+/// (POST /coach/analyze-session), unique chemin d'analyse depuis NT-061
+/// (« coach connecté uniquement », décision produit du 7 juillet 2026).
 ///
-/// Contrepartie de [CoachAnalysisService] : le client n'envoie plus de
-/// clé API ni de prompt complet, seulement les données de la session.
-/// Le serveur détient le prompt et la clé Mistral (cf.
-/// `docs/specs` — spec de déport Mistral, juillet 2026).
+/// Le client n'envoie ni clé API ni prompt complet, seulement les données
+/// de la session ; le serveur détient le prompt et la clé Mistral.
 ///
-/// Réutilise les mêmes cas d'erreur (timeout, réseau, 401/429/5xx) et
-/// la même [CoachAnalysisException] que l'ancien service, pour ne pas
-/// changer le comportement visible côté UI (SessionCoachAnalysisSection).
+/// Les cas d'erreur (timeout, réseau, 401/429/5xx) sont exposés via
+/// [CoachAnalysisException] avec des messages user-friendly affichés
+/// tels quels par l'UI (SessionCoachAnalysisSection).
 class ServerCoachAnalysisService {
   final String baseUrl;
   final http.Client _client;
