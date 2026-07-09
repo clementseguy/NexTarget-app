@@ -127,8 +127,14 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
   la CI exécute `flutter analyze --fatal-infos`. Pas de nouveau `// ignore:`
   sans justification en commentaire.
 - **SonarCloud** : workflow `.github/workflows/sonarcloud.yml` (push `dev`/`main`,
-  PR vers `main`, run quotidien). Quality Gate visé **≥ B**, couverture importée via
-  `coverage/lcov.info`. Ne pas dégrader le Quality Gate.
+  PR vers `main`, run quotidien). Couverture importée via `coverage/lcov.info`.
+  **Le Quality Gate SonarCloud (check « SonarCloud Code Analysis ») est
+  informatif, non bloquant** (décision 2026-07-09, gate par défaut 80 % nouveau
+  code non personnalisable en compte gratuit — inadapté à un diff UI-heavy).
+  Le check bloquant des PR est le job **« Test & SonarCloud »** (analyze
+  --fatal-infos + tests). Règle qualité : tout nouveau service/logique reçoit
+  des tests (nominal + erreur) ; viser ~60 % sur le nouveau code, sans y
+  sacrifier des tests de layout à faible valeur.
 - **Cahier de recette** : `docs/tests/cahier_recette.md` généré depuis
   `docs/specs/cahier_recette.yaml` (`scripts/generate_cahier_recette.dart`). Le
   **rejouer avant toute MR vers `main`** ; si un comportement visible change, mettre
