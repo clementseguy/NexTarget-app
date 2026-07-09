@@ -3,10 +3,8 @@ auth:
   # false = écran login affiché mais avec bouton skip
   enabled: true
   # URL de base du backend NexTarget pour OAuth2
-  # RECETTE LOCALE (ne pas committer) : localhost = serveur local via
-  # `adb reverse tcp:8000 tcp:8000`. Valeur nominale à restaurer :
-  # base_url: "https://nextarget-server.onrender.com"
-  base_url: "http://localhost:8000"
+  # (Pour une recette locale : http://localhost:8000 + `adb reverse tcp:8000 tcp:8000`)
+  base_url: "https://nextarget-server.onrender.com"
   # Custom URL scheme pour intercepter le callback OAuth
   # Backend redirigera vers {callback_scheme}://callback?token=XYZ
   callback_scheme: "nextarget"
