@@ -258,7 +258,7 @@
 | NT-045 | Stats publiques / partage de profil | both | Won't-now | M | À FAIRE |
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE |
-| NT-048 | Refresh tokens + rotation | server | Should | M | À FAIRE |
+| NT-048 | Refresh tokens + rotation | server | Should | M | FAIT |
 
 ### NT-040 — Authentification OAuth Google
 - **Thème** : Auth & Compte · **Portée** : both · **Dépendances** : —
@@ -310,7 +310,7 @@
 ### NT-048 — Refresh tokens + rotation
 - **Thème** : Auth & Compte · **Portée** : server · **Dépendances** : NT-040
 - **Description** : Sessions plus longues sans re-login (refresh + rotation).
-- **Critères d'acceptation** : émission/rotation de refresh tokens ; révocation. · **Priorité** : Should · **Statut** : À FAIRE. · **Notes** : roadmap serveur v0.2.
+- **Critères d'acceptation** : émission/rotation de refresh tokens ; révocation. · **Priorité** : Should · **Statut** : FAIT (2026-07-09, sprint S3) — `/auth/token/refresh` (rotation usage unique, rejeu ⇒ révocation de famille), `/auth/token/revoke` (logout idempotent), hash SHA-256 seul persisté ; champs additifs sur `/auth/token/exchange` (contrat client inchangé). L'adoption côté app (sessions longues sans re-login) reste à câbler — hors S3.
 
 ---
 
@@ -321,9 +321,9 @@
 | NT-050 | SonarCloud + Quality Gate + couverture (app) | app | Must | M | FAIT |
 | NT-051 | Analyse statique & lint (durcir) | app | Should | S | FAIT |
 | NT-052 | Cahier de recette généré | app | Should | S | FAIT |
-| NT-053 | Logging structuré + tracing (serveur) | server | Should | M | À FAIRE |
-| NT-054 | Tests OAuth mockés (providers externes) | server | Should | M | À FAIRE |
-| NT-055 | CI serveur (tests + couverture) | server | Should | S | À FAIRE |
+| NT-053 | Logging structuré + tracing (serveur) | server | Should | M | FAIT |
+| NT-054 | Tests OAuth mockés (providers externes) | server | Should | M | FAIT |
+| NT-055 | CI serveur (tests + couverture) | server | Should | S | FAIT |
 
 ### NT-050 — SonarCloud + Quality Gate + couverture (app)
 - **Portée** : app · **Dépendances** : — · **Description** : Qualité continue mesurée sur l'app.
@@ -343,17 +343,16 @@
 
 ### NT-053 — Logging structuré + tracing (serveur)
 - **Portée** : server · **Dépendances** : — · **Description** : Observabilité serveur (JSON + OpenTelemetry).
-- **Critères d'acceptation** : logs structurés ; corrélation des requêtes. · **Priorité** : Should · **Statut** : À FAIRE. · **Notes** : roadmap v0.2.
+- **Critères d'acceptation** : logs structurés ; corrélation des requêtes. · **Priorité** : Should · **Statut** : FAIT (2026-07-09, sprint S3) — logs JSON (stdlib) + middleware X-Request-ID (une ligne par requête : method/path/status/durée). OpenTelemetry écarté en single-instance (décision documentée AGENTS serveur).
 
 ### NT-054 — Tests OAuth mockés
 - **Portée** : server · **Dépendances** : NT-040 · **Description** : Tester le flow OAuth complet avec providers externes mockés.
-- **Critères d'acceptation** : Google/Facebook mockés ; cas nominal + erreurs. · **Priorité** : Should · **Statut** : À FAIRE.
-- **Notes** : `tests/test_auth.py` et `tests/test_coach.py` existent (tests basiques) ; mocks providers manquants.
+- **Critères d'acceptation** : Google/Facebook mockés ; cas nominal + erreurs. · **Priorité** : Should · **Statut** : FAIT (2026-07-09, sprint S3) — `tests/test_oauth_flows.py` (flows complets Google/Facebook mockés, nominal + erreurs), fixtures partagées `tests/conftest.py`, migration ASGITransport.
 
 ### NT-055 — CI serveur (tests + couverture)
 - **Portée** : server · **Dépendances** : — · **Description** : Le serveur n'a pas de pipeline CI.
 - **Critères d'acceptation** : workflow CI lançant `pytest` (+ couverture) sur push/PR.
-- **Priorité** : Should · **Statut** : À FAIRE. · **Notes** : aucun `.github/` côté serveur aujourd'hui.
+- **Priorité** : Should · **Statut** : FAIT (2026-07-09, sprint S3) — `.github/workflows/ci.yml` (pytest + pytest-cov, Python 3.11, push/PR).
 
 ---
 
