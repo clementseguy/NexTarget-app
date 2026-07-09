@@ -146,9 +146,9 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
   /// l'app (carnet de tir) fonctionne sans connexion, ce chemin ne le
   /// concerne pas.
   ///
-  /// Le ton du coach (NT-032) vient de la préférence `coachPersona`
-  /// (Paramètres + chips de cette section) et part au serveur en
-  /// `prompt_variant`.
+  /// Le ton du coach (NT-032) vient exclusivement de la préférence
+  /// `coachPersona` (Paramètres > Coach IA — retour de recette S2 : pas de
+  /// sélecteur dans la session) et part au serveur en `prompt_variant`.
   Future<String> _fetchAnalysisText() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final persona =
@@ -302,46 +302,19 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
                 }
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Choix du ton du coach (NT-032), synchronisé avec la
-                      // préférence globale (Paramètres > Coach IA).
-                      Consumer<SettingsProvider>(
-                        builder: (context, settings, _) {
-                          return Wrap(
-                            spacing: 8,
-                            children: [
-                              ChoiceChip(
-                                label: const Text('Neutre'),
-                                selected: settings.coachPersona == 'coach_neutre',
-                                onSelected: (_) => settings.updateCoachPersona('coach_neutre'),
-                              ),
-                              ChoiceChip(
-                                label: const Text('Cool'),
-                                selected: settings.coachPersona == 'coach_cool',
-                                onSelected: (_) => settings.updateCoachPersona('coach_cool'),
-                              ),
-                            ],
-                          );
-                        },
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.play_arrow),
+                      label: Text(
+                        (widget.analyse != null && widget.analyse!.trim().isNotEmpty)
+                            ? 'Re-générer'
+                            : 'Lancer analyse',
                       ),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.play_arrow),
-                          label: Text(
-                            (widget.analyse != null && widget.analyse!.trim().isNotEmpty)
-                                ? 'Re-générer'
-                                : 'Lancer analyse',
-                          ),
-                          onPressed: (widget.analyse == null || widget.analyse!.trim().isEmpty)
-                              ? _launchAnalysis
-                              : null,
-                        ),
-                      ),
-                    ],
+                      onPressed: (widget.analyse == null || widget.analyse!.trim().isEmpty)
+                          ? _launchAnalysis
+                          : null,
+                    ),
                   ),
                 );
               },

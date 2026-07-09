@@ -13,7 +13,8 @@ import 'package:tir_sportif/services/auth_service.dart';
 
 /// NT-061 — coach « connecté uniquement » : la section Analyse Coach doit
 /// exiger un utilisateur authentifié (message clair + CTA login sinon).
-/// NT-032 — le ton du coach (neutre/cool) est sélectionnable via chips.
+/// NT-032 — le ton du coach se choisit dans Paramètres uniquement (retour
+/// de recette S2) : aucun sélecteur dans la section.
 class _FakeAuthProvider extends AuthProvider {
   final bool _authenticated;
   _FakeAuthProvider(this._authenticated)
@@ -95,7 +96,9 @@ void main() {
     expect(find.text('Se connecter'), findsNothing);
   });
 
-  testWidgets('authentifié : chips de persona visibles, sélection persistée (NT-032)', (tester) async {
+  testWidgets('pas de sélecteur de persona dans la session (retour recette NT-032)', (tester) async {
+    // Le ton du coach se choisit uniquement dans Paramètres > Coach IA ;
+    // la section Analyse Coach ne doit exposer aucun chip Neutre/Cool.
     await tester.pumpWidget(_wrap(
       SessionCoachAnalysisSection(
         session: _session(),
@@ -108,28 +111,7 @@ void main() {
     await tester.tap(find.text('Analyse Coach'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Neutre'), findsOneWidget);
-    expect(find.text('Cool'), findsOneWidget);
-
-    await tester.tap(find.text('Cool'));
-    await tester.pumpAndSettle();
-
-    expect(Hive.box('app_preferences').get('coach_persona'), 'coach_cool');
-  });
-
-  testWidgets('non authentifié : pas de chips de persona', (tester) async {
-    await tester.pumpWidget(_wrap(
-      SessionCoachAnalysisSection(
-        session: _session(),
-        analyse: null,
-        onAnalyseUpdated: () {},
-      ),
-      authenticated: false,
-    ));
-
-    await tester.tap(find.text('Analyse Coach'));
-    await tester.pumpAndSettle();
-
+    expect(find.text('Lancer analyse'), findsOneWidget);
     expect(find.text('Neutre'), findsNothing);
     expect(find.text('Cool'), findsNothing);
   });
