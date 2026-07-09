@@ -27,12 +27,12 @@
 
 | Thème | Items |
 |---|---|
-| 1. Carnet de tir | NT-001 → NT-006 |
-| 2. Statistiques & Objectifs | NT-010 → NT-015 |
+| 1. Carnet de tir | NT-001 → NT-007 |
+| 2. Statistiques & Objectifs | NT-010 → NT-016 |
 | 3. Exercices | NT-020 → NT-025 |
 | 4. Coach IA | NT-030 → NT-034 |
 | 5. Auth & Compte | NT-040 → NT-048 |
-| 6. Qualité & Observabilité | NT-050 → NT-055 |
+| 6. Qualité & Observabilité | NT-050 → NT-057 |
 | 7. Sécurité & Secrets | NT-060 → NT-066 |
 | 8. Plateforme & Déploiement | NT-070 → NT-076 |
 | 9. Idées / hors-scope | NT-090 → NT-092 |
@@ -51,6 +51,7 @@
 | NT-004 | Synthèse libre du tireur par session | app | Should | S | FAIT |
 | NT-005 | Attacher une photo de la cible | app | Could | M | À FAIRE |
 | NT-006 | Analyse d'image de la cible (dispersion/score) | both | Won't-now | L | À FAIRE |
+| NT-007 | Filtrer l'historique des sessions par exercice | app | Could | S | À FAIRE |
 
 ### NT-001 — Enregistrer une session de tir
 - **Thème** : Carnet de tir
@@ -94,6 +95,12 @@
 - **Critères d'acceptation** : à définir — extraction dispersion/score ; résultat versé dans le contexte envoyé au coach.
 - **Priorité** : Won't-now · **Statut** : À FAIRE. · **Notes** : vision par ordinateur, coûteux ; probablement côté serveur.
 
+### NT-007 — Filtrer l'historique des sessions par exercice
+- **Thème** : Carnet de tir · **Portée** : app · **Dépendances** : NT-003, NT-022
+- **Description** : Retrouver dans l'historique les sessions où un exercice donné a été travaillé.
+- **Critères d'acceptation** : filtre par exercice dans l'historique ; combinable avec le filtre réalisées/prévues.
+- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue GitHub #5 (tracking v0.3), 2026-07-09.
+
 ---
 
 ## Thème 2 — Statistiques & Objectifs
@@ -108,6 +115,7 @@
 | NT-013 | Hauts faits (records) | app | Should | S | FAIT |
 | NT-014 | Comparatif glissant 30j vs 60j + sparkline | app | Could | M | À FAIRE |
 | NT-015 | Recommandations croisées Objectifs ⇄ Exercices | app | Could | M | À FAIRE |
+| NT-016 | Objectifs enrichis : statuts étendus, journal, vue détail | app | Could | M | À FAIRE |
 
 ### NT-010 — Tableau de bord statistiques
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-002
@@ -144,6 +152,12 @@
 - **Description** : Suggérer des exercices selon les objectifs en retard, et inversement.
 - **Critères d'acceptation** : à définir — au moins une reco pertinente affichée selon l'état des objectifs.
 - **Priorité** : Could · **Statut** : À FAIRE.
+
+### NT-016 — Objectifs enrichis : statuts étendus, journal, vue détail
+- **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-012
+- **Description** : Cycle de vie d'objectif plus riche que l'actuel `active/achieved/failed` : statuts étendus (ex. planned/in_progress/achieved/abandoned), journal des changements de statut (avec dates), vue détail dédiée.
+- **Critères d'acceptation** : statuts étendus persistés (migration Hive + adapters régénérés) ; historique des transitions consultable ; écran détail d'un objectif.
+- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue GitHub #5 (tracking v0.3), 2026-07-09. ⚠️ champ Hive : ajout additif d'états uniquement (typeIds/index stables).
 
 ---
 
@@ -324,6 +338,8 @@
 | NT-053 | Logging structuré + tracing (serveur) | server | Should | M | FAIT |
 | NT-054 | Tests OAuth mockés (providers externes) | server | Should | M | FAIT |
 | NT-055 | CI serveur (tests + couverture) | server | Should | S | FAIT |
+| NT-056 | Harmonisation des erreurs réseau (app) | app | Could | S | À FAIRE |
+| NT-057 | Nettoyage des widgets dupliqués (app) | app | Could | S | À FAIRE |
 
 ### NT-050 — SonarCloud + Quality Gate + couverture (app)
 - **Portée** : app · **Dépendances** : — · **Description** : Qualité continue mesurée sur l'app.
@@ -353,6 +369,16 @@
 - **Portée** : server · **Dépendances** : — · **Description** : Le serveur n'a pas de pipeline CI.
 - **Critères d'acceptation** : workflow CI lançant `pytest` (+ couverture) sur push/PR.
 - **Priorité** : Should · **Statut** : FAIT (2026-07-09, sprint S3) — `.github/workflows/ci.yml` (pytest + pytest-cov, Python 3.11, push/PR).
+
+### NT-056 — Harmonisation des erreurs réseau (app)
+- **Portée** : app · **Dépendances** : — · **Description** : Unifier la présentation des erreurs réseau (timeout, DNS, HTTP) sur tous les flux (auth, profil, backup) sur le modèle du coach (messages user-friendly via exception dédiée).
+- **Critères d'acceptation** : mêmes familles de messages partout ; aucun message technique brut à l'écran.
+- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue #5 ; le flux coach est déjà conforme (v0.5.0).
+
+### NT-057 — Nettoyage des widgets dupliqués (app)
+- **Portée** : app · **Dépendances** : — · **Description** : Chasse aux widgets/écrans dupliqués ou morts et factorisation.
+- **Critères d'acceptation** : inventaire fait ; doublons supprimés ou factorisés ; aucune régression (tests verts).
+- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue #5 ; `MainNavigation` (doublon d'`AppNavigator`) déjà supprimé en v0.5.0.
 
 ---
 
@@ -437,7 +463,7 @@
 
 ### NT-074 — Saisie séries plein écran + navigation rapide
 - **Portée** : app · **Dépendances** : NT-002 · **Description** : Mode plein écran + next/prev pour réduire la friction de saisie (ancien P6).
-- **Critères d'acceptation** : saisie plein écran ; navigation rapide entre séries. · **Priorité** : Could · **Statut** : À FAIRE.
+- **Critères d'acceptation** : saisie plein écran ; navigation rapide entre séries. · **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : inclut les idées de l'issue #5 — numpad/clavier rapide et navigation par swipe entre séries.
 
 ### NT-075 — Onboarding + aide contextuelle
 - **Portée** : app · **Dépendances** : — · **Description** : Mini-onboarding (3 écrans) + bouton « ? » contextuel (ancien P9).
