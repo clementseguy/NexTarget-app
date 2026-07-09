@@ -361,7 +361,7 @@ class _GoalsListScreenState extends State<GoalsListScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.grey[900],
+      // Pas de backgroundColor en dur : suit le thème actif (classique/France).
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
@@ -404,7 +404,6 @@ class _GoalsListScreenState extends State<GoalsListScreen> {
                       showDialog(
                         context: context,
                         builder: (dctx) => AlertDialog(
-                          backgroundColor: Colors.grey[900],
                           title: const Text('Détails complets'),
                           content: SizedBox(
                             width: double.maxFinite,

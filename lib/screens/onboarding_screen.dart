@@ -44,9 +44,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _OnboardingPage(
       icon: Icons.school,
       title: 'Votre coach IA',
-      body: 'Obtenez une analyse personnalisée de chaque séance, au ton '
-          'neutre ou plus cool selon vos préférences. Le coach nécessite '
-          'simplement un compte (connexion Google).',
+      body: 'Obtenez une analyse personnalisée de chaque séance. '
+          'L\'utilisation du coach nécessite la création d\'un compte.',
     ),
   ];
 
