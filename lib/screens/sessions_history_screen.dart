@@ -18,6 +18,10 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
   late Future<List<ShootingSession>> _sessionsFuture;
   String _filter = 'realized'; // realized | planned
 
+  /// Onglet actif, exposé pour que le bouton + (AppNavigator) crée une
+  /// session du même statut que l'onglet affiché.
+  String get currentFilter => _filter;
+
   @override
   void initState() {
     super.initState();

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import '../screens/coach_screen.dart';
 import '../screens/exercices_screen.dart';
@@ -163,7 +162,7 @@ class AppNavigator extends StatelessWidget {
         const HelpButton(
           title: 'Mes sessions',
           points: [
-            'Le bouton + crée une session réalisée ; un appui long propose une session prévue.',
+            'Le bouton + crée une session du même type que l\'onglet affiché : réalisée ou prévue.',
             'Chaque session contient vos séries : coups, distance, points, groupement, prise.',
             'Ouvrez une session réalisée pour la synthèse, les exercices travaillés et l\'analyse du coach IA.',
             'Un appui long sur une carte permet de la supprimer.',
@@ -186,6 +185,19 @@ class AppNavigator extends StatelessWidget {
     );
   }
 
+  /// Données initiales pour la création d'une session prévue depuis le +.
+  static Map<String, dynamic> plannedSessionTemplate() => {
+        'session': {
+          'weapon': '',
+          'caliber': '22LR',
+          'status': SessionConstants.statusPrevue,
+          'category': SessionConstants.categoryEntrainement,
+          'series': [],
+          'exercises': [],
+        },
+        'series': [],
+      };
+
   Widget _buildSessionsPage(BuildContext context) {
     return Stack(
       children: [
@@ -193,107 +205,23 @@ class AppNavigator extends StatelessWidget {
         Positioned(
           bottom: 24,
           right: 24,
-          child: GestureDetector(
-            onLongPress: () {
-              // Ouvre un menu contextuel pour créer une session prévue
-              showModalBottomSheet(
-                context: context,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                builder: (ctx) {
-                  return SafeArea(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ListTile(
-                          leading: const Icon(Icons.schedule, color: Colors.blueAccent),
-                          title: const Text('Créer une session prévue'),
-                          subtitle: const Text('Statut prérempli: prévue'),
-                          onTap: () {
-                            Navigator.of(ctx).pop();
-                            final initial = {
-                              'session': {
-                                'weapon': '',
-                                'caliber': '22LR',
-                                'status': SessionConstants.statusPrevue,
-                                'category': SessionConstants.categoryEntrainement,
-                                'series': [],
-                                'exercises': [],
-                              },
-                              'series': [],
-                            };
-                            Navigator.of(context)
-                                .push(MaterialPageRoute(builder: (c) => CreateSessionScreen(initialSessionData: initial)))
-                                .then((_) => _historyKey.currentState?.refreshSessions());
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
-                          child: Text('Astuce: simple pression = réalisée', style: Theme.of(context).textTheme.bodySmall),
-                        ),
-                      ],
+          child: FloatingActionButton(
+            heroTag: 'fab_create_session',
+            onPressed: () {
+              // Le + crée une session du même type que l'onglet affiché :
+              // onglet "Prévues" → session prévue, sinon session réalisée
+              // (retour de recette S2 ; l'ancien appui long est supprimé).
+              final planned = _historyKey.currentState?.currentFilter == 'planned';
+              Navigator.of(context)
+                  .push(MaterialPageRoute(
+                    builder: (ctx) => CreateSessionScreen(
+                      initialSessionData: planned ? plannedSessionTemplate() : null,
                     ),
-                  );
-                },
-              );
+                  ))
+                  .then((_) => _historyKey.currentState?.refreshSessions());
             },
-            onSecondaryTap: () { // Fallback Web: clic droit
-              showModalBottomSheet(
-                context: context,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                builder: (ctx) {
-                  return SafeArea(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ListTile(
-                          leading: const Icon(Icons.schedule, color: Colors.blueAccent),
-                          title: const Text('Créer une session prévue'),
-                          subtitle: const Text('Statut prérempli: prévue'),
-                          onTap: () {
-                            Navigator.of(ctx).pop();
-                            final initial = {
-                              'session': {
-                                'weapon': '',
-                                'caliber': '22LR',
-                                'status': SessionConstants.statusPrevue,
-                                'category': SessionConstants.categoryEntrainement,
-                                'series': [],
-                                'exercises': [],
-                              },
-                              'series': [],
-                            };
-                            Navigator.of(context)
-                                .push(MaterialPageRoute(builder: (c) => CreateSessionScreen(initialSessionData: initial)))
-                                .then((_) => _historyKey.currentState?.refreshSessions());
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
-                          child: Text('Astuce: appui long / clic droit', style: Theme.of(context).textTheme.bodySmall),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
-            child: FloatingActionButton(
-              heroTag: 'fab_create_session',
-              onPressed: () {
-                // Création d'une session réalisée (comportement original)
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (ctx) => CreateSessionScreen()))
-                    .then((_) => _historyKey.currentState?.refreshSessions());
-              },
-              tooltip: kIsWeb ? 'Créer une session (clic droit pour prévue)' : 'Créer une session (appui long pour prévue)',
-              child: const Icon(Icons.add),
-            ),
+            tooltip: 'Créer une session (réalisée ou prévue selon l\'onglet)',
+            child: const Icon(Icons.add),
           ),
         ),
       ],
