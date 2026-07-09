@@ -3,6 +3,13 @@
 Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Unreleased] — Sprint S2 (Demo-ready)
+### Changed (retours recette 2026-07-09)
+- NT-075: texte de l'écran 3 de l'onboarding simplifié (« L'utilisation du coach nécessite la création d'un compte. »).
+- NT-075: l'aide « Tendance des objectifs » suit désormais le thème actif (fonds sombres en dur retirés — thème France respecté).
+- NT-032: le ton du coach se choisit uniquement dans Paramètres > Coach IA — chips Neutre/Cool retirés de l'écran Session.
+- Nouvel item backlog NT-034 : affinage du contenu des prompts personas (évolution future, serveur).
+### Fixed (retours recette 2026-07-09)
+- Mes sessions : le bouton + crée une session du même type que l'onglet actif (Réalisées → réalisée, Prévues → prévue) ; l'appui long (non fonctionnel) est supprimé, aide contextuelle alignée.
 ### Added
 - NT-075: Onboarding + aide contextuelle.
     - `OnboardingScreen`/`OnboardingGate` : 3 écrans (carnet de tir, stats & objectifs, coach IA) au premier lancement, flag Hive `onboarding_seen`, boutons Passer/Suivant/Commencer.
@@ -10,7 +17,7 @@ Toutes les modifications notables de ce projet seront listées ici.
     - `HelpButton` (« ? » → bottom sheet) sur : Mes sessions, hub Exercices & Objectifs, liste Objectifs, liste Exercices.
 - NT-032: Multi-personas coach (partie app).
     - Préférence `coach_persona` (Hive) exposée par `SettingsProvider` (défaut `coach_neutre`, valeurs validées).
-    - Sélecteur « Ton du coach » dans Paramètres > Coach IA + chips Neutre/Cool dans la section Analyse Coach (synchronisés).
+    - Sélecteur « Ton du coach » dans Paramètres > Coach IA (unique point de réglage après retour de recette, cf. Changed).
     - `prompt_variant` transmis au serveur (`ServerCoachAnalysisService`).
 
 ## [Unreleased] — Sprint S1 (Sécurité & Qualité)

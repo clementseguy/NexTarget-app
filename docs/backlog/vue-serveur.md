@@ -25,6 +25,7 @@
 | NT-031 | Prompt d'analyse centralisé | server | Must | S | FAIT | `services/prompt_builder.py`, `prompts/coach_neutre.yaml` |
 | NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | À FAIRE | `_VARIANT_FILES` prêt ; 1 seule variante livrée |
 | NT-033 | Écran "Coach" transverse (endpoint agrégé) | both | Should | L | À FAIRE | nécessitera un endpoint d'analyse multi-sessions |
+| NT-034 | Affiner les prompts des personas coach | server | Could | S | À FAIRE | itération contenu `coach_neutre`/`coach_cool` (recette S2) |
 | NT-040 | Authentification OAuth Google | both | Must | M | FAIT | `api/auth_google.py`, `/auth/token` |
 | NT-042 | Profil utilisateur (nom/avatar/niveau) | both | Should | M | FAIT | `models/user.py` (champs profil) |
 | NT-043 | Endpoint `/users/me` | server | Must | S | FAIT | `api/users.py` |

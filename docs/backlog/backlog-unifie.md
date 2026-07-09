@@ -30,7 +30,7 @@
 | 1. Carnet de tir | NT-001 → NT-006 |
 | 2. Statistiques & Objectifs | NT-010 → NT-015 |
 | 3. Exercices | NT-020 → NT-025 |
-| 4. Coach IA | NT-030 → NT-033 |
+| 4. Coach IA | NT-030 → NT-034 |
 | 5. Auth & Compte | NT-040 → NT-048 |
 | 6. Qualité & Observabilité | NT-050 → NT-055 |
 | 7. Sécurité & Secrets | NT-060 → NT-066 |
@@ -208,6 +208,7 @@
 | NT-031 | Prompt d'analyse centralisé côté serveur | server | Must | S | FAIT |
 | NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | FAIT |
 | NT-033 | Écran "Coach" : analyse transverse multi-sessions | both | Should | L | À FAIRE |
+| NT-034 | Affiner les prompts des personas coach | server | Could | S | À FAIRE |
 
 ### NT-030 — Analyse d'une session par le coach IA
 - **Thème** : Coach IA · **Portée** : both · **Dépendances** : NT-002, NT-040, NT-060
@@ -225,7 +226,8 @@
 - **Thème** : Coach IA · **Portée** : both · **Dépendances** : NT-031
 - **Description** : Proposer plusieurs tons de coach (neutre, cool…).
 - **Critères d'acceptation** : ≥2 variantes de prompt côté serveur ; sélection du ton depuis l'app via `prompt_variant`.
-- **Priorité** : Should · **Statut** : FAIT (2026-07-07, sprint S2) — serveur : `coach_cool.yaml` + `_VARIANT_FILES` ; app : préférence `coach_persona` (Paramètres > Coach IA + chips dans la section Analyse Coach), envoyée en `prompt_variant`.
+- **Priorité** : Should · **Statut** : FAIT (2026-07-07, sprint S2) — serveur : `coach_cool.yaml` + `_VARIANT_FILES` ; app : préférence `coach_persona` (Paramètres > Coach IA), envoyée en `prompt_variant`.
+- **Notes** : retour de recette S2 (2026-07-09) — le ton se choisit **uniquement dans Paramètres** (le sélecteur initialement présent dans l'écran Session a été retiré). L'affinage du contenu des prompts est tracé dans NT-034.
 
 ### NT-033 — Écran "Coach" : analyse transverse multi-sessions
 - **Thème** : Coach IA · **Portée** : both · **Dépendances** : NT-030
@@ -233,6 +235,12 @@
 - **Critères d'acceptation** : à définir — agrégation multi-sessions ; analyse coach globale ; suggestions d'actions.
 - **Priorité** : Should · **Statut** : À FAIRE.
 - **Notes** : `coach_screen.dart` existe mais est un placeholder « Coming soon ».
+
+### NT-034 — Affiner les prompts des personas coach
+- **Thème** : Coach IA · **Portée** : server · **Dépendances** : NT-032
+- **Description** : Itérer sur le contenu des templates `coach_neutre.yaml` / `coach_cool.yaml` (qualité, différenciation des tons, format de sortie) à partir des retours d'usage réels.
+- **Critères d'acceptation** : à définir — prompts revus et validés en recette sur des sessions réelles ; différence de ton nette entre personas ; règles de mesurabilité conservées.
+- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : créé suite à la recette S2 (2026-07-09). Aucun changement de contrat d'API.
 
 ---
 
@@ -435,6 +443,7 @@
 ### NT-075 — Onboarding + aide contextuelle
 - **Portée** : app · **Dépendances** : — · **Description** : Mini-onboarding (3 écrans) + bouton « ? » contextuel (ancien P9).
 - **Critères d'acceptation** : onboarding au 1er lancement ; aide sur Objectifs/Exercices/Sessions. · **Priorité** : Could · **Statut** : FAIT (2026-07-07, sprint S2) — `OnboardingScreen`/`OnboardingGate` (3 écrans, flag `onboarding_seen`, ré-accès via Paramètres > Aide), `HelpButton` sur Sessions, Objectifs, Exercices (+ hub Exercices & Objectifs).
+- **Notes** : ajusté en recette S2 (2026-07-09) — texte écran 3 simplifié ; aide « Tendance des objectifs » thémable (plus de fond sombre en dur) ; aide « Mes sessions » alignée sur le nouveau comportement du bouton + (création selon l'onglet actif, appui long supprimé).
 
 ### NT-076 — Cache stats + compactage Hive
 - **Portée** : app · **Dépendances** : NT-010 · **Description** : Cache mémoire des stats (TTL courte) + compactage Hive périodique (ancien P8).

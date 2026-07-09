@@ -9,7 +9,7 @@ Pré-requis:
 - Application installée
 - Aucune session obligatoire
 Étapes:
-1. Ouvrir l’app et aller sur “+” → “Nouvelle session (réalisée)”
+1. Ouvrir l’app, onglet “Réalisées”, puis “+” (le + crée une session du type de l’onglet actif)
 2. Renseigner arme, calibre, prise, au moins 1 série (coups, distance, points, groupement)
 3. Enregistrer la session
 4. Ouvrir la session et modifier un champ (ex: commentaire)
@@ -18,6 +18,15 @@ Résultats attendus:
 - La session apparaît dans l’historique réalisée
 - Les champs saisis sont persistés fidèlement
 - La modification est bien visible après réouverture
+
+## SESS-01b — Sessions – bouton + selon l'onglet actif
+Objectif: Vérifier que le + crée une session du même type que l'onglet affiché (retour recette S2).
+Étapes:
+1. Ouvrir Mes sessions, onglet Réalisées, toucher + et vérifier le statut prérempli
+2. Revenir, passer sur l'onglet Prévues, toucher + et vérifier le statut prérempli
+Résultats attendus:
+- Onglet Réalisées → formulaire de session réalisée ; onglet Prévues → formulaire de session prévue
+- Aucun menu d'appui long sur le + (comportement supprimé)
 
 ## SESS-02 — Sessions prévues (planification) + conversion wizard
 Objectif: Planifier une session, puis la convertir en réalisée via l’assistant.
@@ -162,10 +171,10 @@ Pré-requis:
 - Session réalisée avec au moins 1 série
 Étapes:
 1. Dans Paramètres > Coach IA, sélectionner le ton Cool
-2. Ouvrir une session réalisée, déplier Analyse Coach et vérifier que le chip Cool est sélectionné
-3. Lancer l'analyse ; puis repasser sur Neutre via les chips et vérifier la synchro dans Paramètres
+2. Ouvrir une session réalisée, déplier Analyse Coach (aucun sélecteur de ton ne doit y figurer)
+3. Lancer l'analyse ; puis repasser sur Neutre dans Paramètres et relancer une analyse sur une autre session
 Résultats attendus:
-- Le choix est persisté (Paramètres et chips toujours synchronisés, y compris après redémarrage)
+- Le choix est persisté (y compris après redémarrage) et ne se règle QUE dans Paramètres
 - L'analyse en ton cool est tutoyée/encourageante ; en ton neutre elle est sèche et factuelle
 
 ## ONB-01 — Onboarding – premier lancement (NT-075)

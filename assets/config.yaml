@@ -1,12 +1,12 @@
-# NT-061 : plus de bloc `api:` (clé/URL/modèle Mistral) — l'analyse coach
-# passe exclusivement par NexTarget-server (auth.base_url ci-dessous).
-
 auth:
   # Feature flag pour activer/désactiver l'authentification
   # false = écran login affiché mais avec bouton skip
   enabled: true
   # URL de base du backend NexTarget pour OAuth2
-  base_url: "https://nextarget-server.onrender.com"
+  # RECETTE LOCALE (ne pas committer) : localhost = serveur local via
+  # `adb reverse tcp:8000 tcp:8000`. Valeur nominale à restaurer :
+  # base_url: "https://nextarget-server.onrender.com"
+  base_url: "http://localhost:8000"
   # Custom URL scheme pour intercepter le callback OAuth
   # Backend redirigera vers {callback_scheme}://callback?token=XYZ
   callback_scheme: "nextarget"

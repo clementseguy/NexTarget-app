@@ -8,7 +8,7 @@ features:
       - Application installée
       - Aucune session obligatoire
     steps:
-      - Ouvrir l’app et aller sur “+” → “Nouvelle session (réalisée)”
+      - Ouvrir l’app, onglet “Réalisées”, puis “+” (le + crée une session du type de l’onglet actif)
       - Renseigner arme, calibre, prise, au moins 1 série (coups, distance, points, groupement)
       - Enregistrer la session
       - Ouvrir la session et modifier un champ (ex: commentaire)
@@ -17,6 +17,16 @@ features:
       - La session apparaît dans l’historique réalisée
       - Les champs saisis sont persistés fidèlement
       - La modification est bien visible après réouverture
+
+  - id: SESS-01b
+    name: Sessions – bouton + selon l'onglet actif
+    objectif: Vérifier que le + crée une session du même type que l'onglet affiché (retour recette S2).
+    steps:
+      - Ouvrir Mes sessions, onglet Réalisées, toucher + et vérifier le statut prérempli
+      - Revenir, passer sur l'onglet Prévues, toucher + et vérifier le statut prérempli
+    expected:
+      - Onglet Réalisées → formulaire de session réalisée ; onglet Prévues → formulaire de session prévue
+      - Aucun menu d'appui long sur le + (comportement supprimé)
 
   - id: SESS-02
     name: Sessions prévues (planification) + conversion wizard
@@ -177,10 +187,10 @@ features:
       - Session réalisée avec au moins 1 série
     steps:
       - Dans Paramètres > Coach IA, sélectionner le ton Cool
-      - Ouvrir une session réalisée, déplier Analyse Coach et vérifier que le chip Cool est sélectionné
-      - Lancer l'analyse ; puis repasser sur Neutre via les chips et vérifier la synchro dans Paramètres
+      - Ouvrir une session réalisée, déplier Analyse Coach (aucun sélecteur de ton ne doit y figurer)
+      - Lancer l'analyse ; puis repasser sur Neutre dans Paramètres et relancer une analyse sur une autre session
     expected:
-      - Le choix est persisté (Paramètres et chips toujours synchronisés, y compris après redémarrage)
+      - Le choix est persisté (y compris après redémarrage) et ne se règle QUE dans Paramètres
       - L'analyse en ton cool est tutoyée/encourageante ; en ton neutre elle est sèche et factuelle
 
   - id: ONB-01
