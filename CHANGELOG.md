@@ -2,7 +2,9 @@
 
 Toutes les modifications notables de ce projet seront listées ici.
 
-## [Unreleased] — Sprint S2 (Demo-ready)
+## [0.5.0] - 2026-07-09
+
+### Sprint S2 (Demo-ready)
 ### Changed (retours recette 2026-07-09)
 - NT-075: texte de l'écran 3 de l'onboarding simplifié (« L'utilisation du coach nécessite la création d'un compte. »).
 - NT-075: l'aide « Tendance des objectifs » suit désormais le thème actif (fonds sombres en dur retirés — thème France respecté).
@@ -20,7 +22,7 @@ Toutes les modifications notables de ce projet seront listées ici.
     - Sélecteur « Ton du coach » dans Paramètres > Coach IA (unique point de réglage après retour de recette, cf. Changed).
     - `prompt_variant` transmis au serveur (`ServerCoachAnalysisService`).
 
-## [Unreleased] — Sprint S1 (Sécurité & Qualité)
+### Sprint S1 (Sécurité & Qualité)
 ### Quality
 - NT-051: Analyse statique durcie.
     - `flutter_lints` activé (dev_dependency + include dans `analysis_options.yaml`) ; 138 issues corrigées, `flutter analyze` à zéro issue.

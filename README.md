@@ -23,54 +23,18 @@ Application mobile pour suivre et analyser les entraînements de tir sportif (Ne
 3. Lancer sur un émulateur ou appareil Android :
    flutter run
 
-## Configuration de l'API (Coach IA / Mistral)
+## Coach IA (connecté uniquement — NT-061)
 
-Depuis juillet 2026, l'analyse coach passe par deux chemins possibles :
+Depuis la v0.5.0, l'analyse coach passe **exclusivement** par NexTarget-server
+(`POST /coach/analyze-session`, JWT requis). Le serveur détient la clé Mistral et
+le prompt : **aucune clé API ni secret côté client**, y compris dans les builds.
+Sans compte, la section « Analyse Coach » affiche un message clair et un bouton
+de connexion ; le reste de l'app (carnet, stats, objectifs, exercices) fonctionne
+100 % hors-ligne.
 
-- **Utilisateur connecté (compte Google)** : l'app appelle `POST /coach/analyze-session`
-  sur NexTarget-server (`ServerCoachAnalysisService`). Le serveur détient la clé Mistral
-  et le prompt ; **aucune clé n'est nécessaire côté client** dans ce cas.
-- **Utilisateur non connecté** (mode déconnecté du carnet de tir préservé) : l'app garde
-  l'ancien appel Mistral direct (`CoachAnalysisService`), qui nécessite une clé API
-  fournie localement. C'est ce chemin que documente le reste de cette section.
-
-Cette clé locale ne sera retirée du code que lorsque le chemin serveur aura été validé
-en usage réel (voir `docs/specs/v0.4/v0.4_scope.md`, T5).
-
-La clé API Mistral ne doit PAS être commitée.
-
-Plusieurs méthodes pour la fournir au runtime (mode non connecté uniquement) :
-
-1. Via un fichier local non versionné : `assets/config.local.yaml`
-   ```yaml
-   api:
-     mistral_key: "VOTRE_CLE_ICI"
-   ```
-   (Seuls les champs que vous surchargez sont nécessaires.)
-
-2. Via un `--dart-define` lors du run/build :
-   ```bash
-   flutter run --dart-define=MISTRAL_API_KEY=VOTRE_CLE_ICI
-   ```
-
-3. Via une variable d'environnement (tests / CI native) :
-   ```bash
-   export MISTRAL_API_KEY=VOTRE_CLE_ICI
-   flutter run
-   ```
-
-Ordre de priorité: `--dart-define` > fichier local > variable d'environnement > valeur dans `assets/config.yaml` (ignorée si placeholder) > null.
-
-En absence de clé valide, les appels d'analyse coach lèveront une erreur explicite.
-
-## Sécurité & rotation des clés
-
-Après exposition involontaire :
-1. Révoquez la clé dans le dashboard Mistral.
-2. Générez une nouvelle clé.
-3. Mettez-la via une des méthodes ci-dessus.
-4. (Optionnel) Purgez l'historique Git si vous voulez supprimer définitivement l'ancienne clé :
-   - Utilisez `git filter-repo` ou l'outil "GitHub Secret scanning remediation".
+L'URL du serveur se configure dans `assets/config.yaml` (`auth.base_url`).
+Pour une recette contre un serveur local : `base_url: "http://localhost:8000"`
++ `adb reverse tcp:8000 tcp:8000` (ne pas committer cette valeur).
 
 ## Exemple de configuration
 
@@ -78,8 +42,8 @@ Un fichier `assets/config.example.yaml` est fourni comme modèle.
 
 ## Cahier de Recette (tests manuels)
 
-- Document: `docs/cahier_recette.md`
-- Source (inventaire): `docs/specs/cahier_recette.yaml`
+- Document: `docs/tests/cahier_recette.md`
+- Source (inventaire): `docs/tests/cahier_recette.yaml`
 - Objectif: vérifier manuellement les fonctionnalités principales après refactor/évolutions.
 
 Mise à jour / génération:
@@ -91,7 +55,7 @@ dart run scripts/generate_cahier_recette.dart
 
 Avant toute MR vers `main`:
 - Jouer le cahier de recette (tests manuels) et s’assurer que les résultats attendus sont conformes.
-- Si une fonctionnalité change: mettre à jour `docs/specs/cahier_recette.yaml`, régénérer le Markdown, et committer.
+- Si une fonctionnalité change: mettre à jour `docs/tests/cahier_recette.yaml`, régénérer le Markdown, et committer.
 
 ## Qualité / Pré-commit
 
@@ -113,5 +77,5 @@ Lancement émulateur
 ```
 adb emu kill
 emulator -avd Pixel_8 -dns-server 8.8.8.8,8.8.4.4 &
-flutter run -d emulator-5554 --dart-define=MISTRAL_API_KEY=O0WzByU9PztnfNINQNXblBIe2l1bTOGx
+flutter run -d emulator-5554
 ```
