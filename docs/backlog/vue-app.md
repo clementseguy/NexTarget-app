@@ -19,12 +19,14 @@
 | NT-004 | Synthèse libre du tireur | app | Should | S | FAIT | `ShootingSession.synthese` |
 | NT-005 | Attacher une photo de la cible | app | Could | M | À FAIRE | — |
 | NT-006 | Analyse d'image de la cible | both | Won't-now | L | À FAIRE | capture côté app, analyse côté serveur |
+| NT-007 | Filtrer l'historique des sessions par exercice | app | Could | S | À FAIRE | issue #5 |
 | NT-010 | Tableau de bord statistiques | app | Must | M | FAIT | `dashboard_service`, `widgets/dashboard` |
 | NT-011 | Statistiques explicatives / évolution | app | Should | M | FAIT | `stats_service`, `evolution_chart` |
 | NT-012 | Objectifs mesurables | app | Must | M | FAIT | `Goal`, `goal_service` |
 | NT-013 | Hauts faits (records) | app | Should | S | FAIT | `GoalMetric` (best*) |
 | NT-014 | Comparatif 30j vs 60j + sparkline | app | Could | M | À FAIRE | — |
 | NT-015 | Recommandations Objectifs ⇄ Exercices | app | Could | M | À FAIRE | dépend NT-012, NT-021 |
+| NT-016 | Objectifs enrichis : statuts étendus, journal, vue détail | app | Could | M | À FAIRE | issue #5 |
 | NT-020 | Gérer des exercices (CRUD) | app | Must | M | FAIT | `Exercise`, écrans list/form |
 | NT-021 | Lier exercices ↔ objectifs | app | Should | S | FAIT | `Exercise.goalIds` |
 | NT-022 | Lier exercices ↔ sessions | app | Should | S | FAIT | `ShootingSession.exercises` |
@@ -44,6 +46,8 @@
 | NT-050 | SonarCloud + Quality Gate | app | Must | M | FAIT | `sonar-project.properties`, CI |
 | NT-051 | Analyse statique & lint (durcir) | app | Should | S | FAIT | `flutter_lints` actif, zéro issue, step CI `analyze --fatal-infos` |
 | NT-052 | Cahier de recette généré | app | Should | S | FAIT | `scripts/generate_cahier_recette.dart` |
+| NT-056 | Harmonisation des erreurs réseau | app | Could | S | À FAIRE | issue #5 ; coach déjà conforme |
+| NT-057 | Nettoyage des widgets dupliqués | app | Could | S | À FAIRE | issue #5 ; MainNavigation déjà supprimé |
 | NT-061 | Coach connecté uniquement (retrait clé client) | both | Must | M | FAIT | `CoachAnalysisService` direct supprimé ; rotation clé = action manuelle |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT | `lib/migrations/` (script cohérence : à faire) |
 | NT-073 | Normalisation calibres + dernier calibre | app | Could | S | À FAIRE | — |
@@ -57,5 +61,5 @@
 ## Prochaines actions app (hors FAIT), par priorité
 
 - **Should** — NT-033 (écran Coach transverse), NT-042 (édition profil à confirmer).
-- **Could** — NT-014, NT-015, NT-023, NT-024, NT-025, NT-044, NT-073, NT-074, NT-076.
+- **Could** — NT-007, NT-014, NT-015, NT-016, NT-023, NT-024, NT-025, NT-044, NT-056, NT-057, NT-073, NT-074, NT-076.
 - **Won't-now** — NT-005/006, NT-045, NT-046, NT-047, NT-090, NT-091.
