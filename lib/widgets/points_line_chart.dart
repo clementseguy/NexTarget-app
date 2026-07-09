@@ -2,6 +2,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class PointsLineChart extends StatelessWidget {
+  const PointsLineChart({super.key});
+
   @override
   Widget build(BuildContext context) {
     final spots = [

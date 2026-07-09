@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../services/auth_service.dart';
+import '../services/logger.dart';
 
 /// Provider pour la gestion d etat d authentification
 ///
@@ -45,7 +46,7 @@ class AuthProvider extends ChangeNotifier {
         _currentUser = null;
       }
     } catch (e) {
-      print('[AUTH] Erreur lors de la vérification du statut: $e');
+      AppLogger.I.error('AUTH: erreur lors de la vérification du statut', e);
       _isAuthenticated = false;
       _currentUser = null;
     } finally {
@@ -66,7 +67,7 @@ class AuthProvider extends ChangeNotifier {
       
       // Note: _isLoading reste à true jusqu'à ce que handleAuthCallback() soit appelé
     } catch (e) {
-      print('[AUTH] Erreur lors de l\'authentification Google: $e');
+      AppLogger.I.error('AUTH: erreur lors de l\'authentification Google', e);
       
       _isLoading = false;
       notifyListeners();
@@ -87,7 +88,7 @@ class AuthProvider extends ChangeNotifier {
       
       notifyListeners();
     } catch (e) {
-      print('[AUTH] Erreur lors du traitement du callback OAuth: $e');
+      AppLogger.I.error('AUTH: erreur lors du traitement du callback OAuth', e);
       
       _isAuthenticated = false;
       _currentUser = null;
@@ -117,7 +118,7 @@ class AuthProvider extends ChangeNotifier {
       _currentUser = await _authService.getUserInfo();
       notifyListeners();
     } catch (e) {
-      print('[AUTH] Erreur lors du rafraîchissement des infos utilisateur: $e');
+      AppLogger.I.error('AUTH: erreur lors du rafraîchissement des infos utilisateur', e);
       await logout();
     }
   }
@@ -131,7 +132,7 @@ class AuthProvider extends ChangeNotifier {
       await _authService.updateProfile(experienceLevel: level);
       await refreshUserInfo();
     } catch (e) {
-      print('[AUTH] Erreur lors de la mise à jour du niveau: $e');
+      AppLogger.I.error('AUTH: erreur lors de la mise à jour du niveau', e);
       rethrow;
     }
   }

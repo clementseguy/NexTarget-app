@@ -43,7 +43,7 @@ class EvolutionComparisonWidget extends StatelessWidget {
 
   Widget _buildLoadingState() {
     return Card(
-      child: Container(
+      child: SizedBox(
         height: 200,
         child: Center(
           child: Column(
@@ -64,7 +64,7 @@ class EvolutionComparisonWidget extends StatelessWidget {
 
   Widget _buildComparisonContent(BuildContext context, EvolutionComparisonData data) {
     if (data.avg30Days == 0 && data.avg90Days == 0) {
-      return Container(
+      return SizedBox(
         height: 150,
         child: Center(
           child: Column(

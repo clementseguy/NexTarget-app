@@ -23,7 +23,11 @@ class _InMemorySessionRepo implements SessionRepository {
   @override
   Future<bool> update(ShootingSession session, {bool preserveExistingSeriesIfEmpty = true}) async {
     final idx = _sessions.indexWhere((s) => s.id == session.id);
-    if (idx >= 0) _sessions[idx] = session; else _sessions.add(session);
+    if (idx >= 0) {
+      _sessions[idx] = session;
+    } else {
+      _sessions.add(session);
+    }
     return false;
   }
 }

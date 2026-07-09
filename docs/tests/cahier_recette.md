@@ -1,7 +1,7 @@
 # Cahier de Recette
 
-- Dernière mise à jour: 2025-10-07
-- Généré automatiquement depuis `docs/specs/cahier_recette.yaml`
+- Dernière mise à jour: 2026-07-07
+- Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
 
 ## SESS-01 — Sessions – création/édition
 Objectif: Créer une session réalisée avec armes/séries, puis l’éditer sans perte de données.
@@ -9,7 +9,7 @@ Pré-requis:
 - Application installée
 - Aucune session obligatoire
 Étapes:
-1. Ouvrir l’app et aller sur “+” → “Nouvelle session (réalisée)”
+1. Ouvrir l’app, onglet “Réalisées”, puis “+” (le + crée une session du type de l’onglet actif)
 2. Renseigner arme, calibre, prise, au moins 1 série (coups, distance, points, groupement)
 3. Enregistrer la session
 4. Ouvrir la session et modifier un champ (ex: commentaire)
@@ -18,6 +18,15 @@ Résultats attendus:
 - La session apparaît dans l’historique réalisée
 - Les champs saisis sont persistés fidèlement
 - La modification est bien visible après réouverture
+
+## SESS-01b — Sessions – bouton + selon l'onglet actif
+Objectif: Vérifier que le + crée une session du même type que l'onglet affiché (retour recette S2).
+Étapes:
+1. Ouvrir Mes sessions, onglet Réalisées, toucher + et vérifier le statut prérempli
+2. Revenir, passer sur l'onglet Prévues, toucher + et vérifier le statut prérempli
+Résultats attendus:
+- Onglet Réalisées → formulaire de session réalisée ; onglet Prévues → formulaire de session prévue
+- Aucun menu d'appui long sur le + (comportement supprimé)
 
 ## SESS-02 — Sessions prévues (planification) + conversion wizard
 Objectif: Planifier une session, puis la convertir en réalisée via l’assistant.
@@ -124,6 +133,9 @@ Résultats attendus:
 
 ## COACH-01 — Analyse coach – utilisateur connecté (via serveur)
 Objectif: Vérifier que l'analyse coach passe par NexTarget-server quand l'utilisateur est connecté, sans clé Mistral côté client.
+Pré-requis:
+- Utilisateur connecté (compte Google)
+- Session avec au moins 1 série
 Étapes:
 1. Ouvrir une session réalisée avec au moins 1 série
 2. Ouvrir la section "Analyse Coach" et lancer l'analyse
@@ -131,19 +143,68 @@ Résultats attendus:
 - L'analyse s'affiche normalement (popup markdown), sans configurer de clé Mistral locale
 - La réponse est enregistrée dans la session (relecture après réouverture)
 
-## COACH-02 — Analyse coach – utilisateur non connecté (mode déconnecté)
-Objectif: Vérifier que le carnet de tir et l'analyse coach restent utilisables sans connexion (si une clé Mistral locale est configurée).
+## COACH-02 — Analyse coach – utilisateur non connecté (coach connecté uniquement, NT-061)
+Objectif: Vérifier que sans compte, l'analyse coach est inaccessible avec un message clair, et que le carnet de tir reste 100 % utilisable hors connexion.
+Pré-requis:
+- Utilisateur non connecté (pas de compte)
 Étapes:
 1. Vérifier que l'app démarre normalement sans être connecté (carnet de tir accessible)
-2. Ouvrir une session réalisée et lancer l'analyse coach
+2. Ouvrir une session réalisée et déplier la section "Analyse Coach"
 Résultats attendus:
-- L'analyse fonctionne comme avant (ancien chemin Mistral direct), aucune régression
-- Le reste de l'app (sessions, exercices, objectifs) reste pleinement utilisable hors connexion
+- Aucun bouton "Lancer analyse" ; message "Le coach IA nécessite un compte" + bouton "Se connecter" menant à l'écran de connexion
+- Le reste de l'app (sessions, exercices, objectifs, stats) reste pleinement utilisable hors connexion
 
 ## COACH-03 — Analyse coach – gestion des erreurs (session expirée / serveur indisponible)
 Objectif: Vérifier qu'une erreur d'analyse reste claire et ne bloque pas l'app.
+Pré-requis:
+- Utilisateur connecté avec un token expiré ou invalide (ou serveur temporairement indisponible)
 Étapes:
-1. Lancer l'analyse coach avec un token expiré/invalide ou serveur indisponible
+1. Lancer l'analyse coach dans ces conditions dégradées
 Résultats attendus:
 - Un message d'erreur clair s'affiche ("Session expirée, reconnectez-vous." ou équivalent)
 - Aucun crash, l'app reste utilisable ensuite
+
+## COACH-04 — Coach – sélection du ton (neutre / cool) (NT-032)
+Objectif: Vérifier la sélection de la persona du coach et son effet sur l'analyse.
+Pré-requis:
+- Utilisateur connecté
+- Session réalisée avec au moins 1 série
+Étapes:
+1. Dans Paramètres > Coach IA, sélectionner le ton Cool
+2. Ouvrir une session réalisée, déplier Analyse Coach (aucun sélecteur de ton ne doit y figurer)
+3. Lancer l'analyse ; puis repasser sur Neutre dans Paramètres et relancer une analyse sur une autre session
+Résultats attendus:
+- Le choix est persisté (y compris après redémarrage) et ne se règle QUE dans Paramètres
+- L'analyse en ton cool est tutoyée/encourageante ; en ton neutre elle est sèche et factuelle
+
+## ONB-01 — Onboarding – premier lancement (NT-075)
+Objectif: Vérifier l'introduction 3 écrans au premier lancement.
+Pré-requis:
+- Première installation (ou données app effacées)
+Étapes:
+1. Lancer l'app et parcourir les 3 écrans avec "Suivant" puis "Commencer"
+2. Redémarrer l'app
+Résultats attendus:
+- Les 3 écrans (carnet de tir, stats & objectifs, coach IA) s'affichent au premier lancement uniquement
+- Le bouton Passer saute l'introduction ; après Commencer ou Passer, l'app s'ouvre normalement
+- Au redémarrage, l'onboarding ne réapparaît pas
+
+## ONB-02 — Onboarding – revoir l'introduction (NT-075)
+Objectif: Revoir l'introduction depuis les Paramètres.
+Étapes:
+1. Ouvrir Paramètres > Aide > Revoir l'introduction
+2. Parcourir ou passer l'introduction
+Résultats attendus:
+- L'introduction s'affiche en plein écran et se referme sur Commencer/Passer
+- Retour aux Paramètres sans effet de bord
+
+## HELP-01 — Aide contextuelle « ? » (NT-075)
+Objectif: Vérifier les boutons d'aide sur Sessions, Objectifs, Exercices.
+Étapes:
+1. Ouvrir l'écran Mes sessions et toucher l'icône « ? »
+2. Ouvrir l'onglet Exercices & Objectifs et toucher l'icône « ? »
+3. Ouvrir la liste Objectifs puis la liste Exercices et toucher l'icône « ? »
+Résultats attendus:
+- Chaque écran affiche une bottom sheet d'aide avec un titre et des points concrets propres à l'écran
+- La bottom sheet se ferme par glissement ou tap hors zone, sans effet de bord
+

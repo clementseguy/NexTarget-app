@@ -147,7 +147,7 @@ class GoalEditScreenState extends State<GoalEditScreen> {
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
         if (await _confirmDiscard()) {
-          if (mounted) Navigator.of(context).pop(false);
+          if (context.mounted) Navigator.of(context).pop(false);
         }
       },
       child: Scaffold(

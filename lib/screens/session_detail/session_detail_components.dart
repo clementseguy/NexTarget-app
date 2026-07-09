@@ -5,8 +5,10 @@ import '../../models/shooting_session.dart';
 import '../../models/series.dart';
 import '../../models/exercise.dart';
 import '../../config/app_config.dart';
+import '../../navigation/app_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/coach_analysis_service.dart';
+import '../../providers/settings_provider.dart';
+import '../../services/coach_analysis_exception.dart';
 import '../../services/server_coach_analysis_service.dart';
 import '../../services/session_service.dart';
 import '../../utils/markdown_sanitizer.dart';
@@ -122,14 +124,12 @@ class SessionHeaderCard extends StatelessWidget {
 class SessionCoachAnalysisSection extends StatefulWidget {
   final ShootingSession session;
   final String? analyse;
-  final BuildContext parentContext;
   final VoidCallback onAnalyseUpdated;
 
   const SessionCoachAnalysisSection({
     super.key,
     required this.session,
     required this.analyse,
-    required this.parentContext,
     required this.onAnalyseUpdated,
   });
 
@@ -140,29 +140,24 @@ class SessionCoachAnalysisSection extends StatefulWidget {
 class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSection> {
   bool _isAnalysing = false;
 
-  /// Déport Mistral vers le serveur (décision produit du 7 juillet 2026) :
-  /// si l'utilisateur est authentifié, l'analyse passe par le serveur
-  /// NexTarget (aucune clé Mistral côté client, plus sécurisé). Sinon,
-  /// on garde l'ancien comportement (appel Mistral direct, nécessite
-  /// une clé configurée localement) pour préserver le mode déconnecté.
-  /// Si ce double chemin s'avère trop coûteux à maintenir, on pourra
-  /// basculer en "connecté uniquement" (cf. spec de déport Mistral).
-  /// Le reste de l'app (carnet de tir) fonctionne sans connexion dans
-  /// tous les cas, ce chemin ne le concerne pas.
+  /// Coach « connecté uniquement » (NT-061, décision produit du
+  /// 7 juillet 2026) : l'analyse passe exclusivement par le serveur
+  /// NexTarget — aucune clé Mistral ni prompt côté client. Le reste de
+  /// l'app (carnet de tir) fonctionne sans connexion, ce chemin ne le
+  /// concerne pas.
+  ///
+  /// Le ton du coach (NT-032) vient exclusivement de la préférence
+  /// `coachPersona` (Paramètres > Coach IA — retour de recette S2 : pas de
+  /// sélecteur dans la session) et part au serveur en `prompt_variant`.
   Future<String> _fetchAnalysisText() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (authProvider.isAuthenticated) {
-      final serverService = ServerCoachAnalysisService(
-        baseUrl: AppConfig.I.authBaseUrl,
-        authService: authProvider.authService,
-      );
-      return serverService.analyzeSession(widget.session);
-    }
-    final analysisService = await CoachAnalysisService.fromAssets(
-      loadAsset: (path) => DefaultAssetBundle.of(widget.parentContext).loadString(path),
+    final persona =
+        Provider.of<SettingsProvider>(context, listen: false).coachPersona;
+    final serverService = ServerCoachAnalysisService(
+      baseUrl: AppConfig.I.authBaseUrl,
+      authService: authProvider.authService,
     );
-    final fullPrompt = analysisService.buildPrompt(widget.session);
-    return analysisService.fetchAnalysis(fullPrompt);
+    return serverService.analyzeSession(widget.session, promptVariant: persona);
   }
 
   Future<void> _launchAnalysis() async {
@@ -170,13 +165,7 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
     try {
       final rawReply = await _fetchAnalysisText();
       final coachReply = sanitizeCoachMarkdown(rawReply);
-      
-      try {
-        final prev = coachReply.length > 160 ? coachReply.substring(0,160) : coachReply;
-        // ignore: avoid_print
-        print('[DEBUG] CoachAnalysis sanitized preview="'+prev.replaceAll('\n',' ')+'"');
-      } catch(_) {}
-      
+
       if (coachReply.trim().isNotEmpty) {
         // Afficher la popup markdown
         if (!mounted) return;
@@ -275,63 +264,73 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
               ),
             ),
           ] else ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: ElevatedButton.icon(
-                  icon: Icon(Icons.play_arrow),
-                  label: Text(
-                    (widget.analyse != null && widget.analyse!.trim().isNotEmpty)
-                        ? 'Re-générer'
-                        : 'Lancer analyse',
+            // Coach « connecté uniquement » (NT-061) : sans compte, on
+            // affiche un message clair + accès direct à l'écran de connexion.
+            Consumer<AuthProvider>(
+              builder: (context, authProvider, _) {
+                if (!authProvider.isAuthenticated) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.lock_outline, size: 18, color: Theme.of(context).colorScheme.secondary),
+                            const SizedBox(width: 8),
+                            const Expanded(
+                              child: Text(
+                                'Le coach IA nécessite un compte : connectez-vous pour lancer une analyse.',
+                                style: TextStyle(fontSize: 13),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.login),
+                            label: const Text('Se connecter'),
+                            onPressed: () => Navigator.of(context).pushNamed(AppRouter.login),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                      ],
+                    ),
+                  );
+                }
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.play_arrow),
+                      label: Text(
+                        (widget.analyse != null && widget.analyse!.trim().isNotEmpty)
+                            ? 'Re-générer'
+                            : 'Lancer analyse',
+                      ),
+                      onPressed: (widget.analyse == null || widget.analyse!.trim().isEmpty)
+                          ? _launchAnalysis
+                          : null,
+                    ),
                   ),
-                  onPressed: (widget.analyse == null || widget.analyse!.trim().isEmpty)
-                      ? _launchAnalysis
-                      : null,
-                ),
-              ),
+                );
+              },
             ),
           ],
           if (widget.analyse != null && widget.analyse!.trim().isNotEmpty) ...[
             SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: LoggedCoachAnalysis(analyse: sanitizeCoachMarkdown(widget.analyse!)),
+              child: CoachAnalysisCard(analyse: sanitizeCoachMarkdown(widget.analyse!)),
             ),
             SizedBox(height: 12),
           ],
         ],
       ),
     );
-  }
-}
-
-/// Wrapper pour logger l'analyse coach lors du premier build d'affichage persistant
-class LoggedCoachAnalysis extends StatefulWidget {
-  final String analyse;
-  const LoggedCoachAnalysis({super.key, required this.analyse});
-  @override
-  State<LoggedCoachAnalysis> createState() => _LoggedCoachAnalysisState();
-}
-
-class _LoggedCoachAnalysisState extends State<LoggedCoachAnalysis> {
-  bool _logged = false;
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_logged) {
-      try {
-        final preview = widget.analyse.length > 180 ? widget.analyse.substring(0,180) : widget.analyse;
-        // ignore: avoid_print
-        print('[DEBUG] CoachAnalysis display (persisted) len=${widget.analyse.length} preview="'+preview.replaceAll('\n',' ')+'"');
-      } catch(_) {}
-      _logged = true;
-    }
-  }
-  @override
-  Widget build(BuildContext context) {
-    return CoachAnalysisCard(analyse: widget.analyse);
   }
 }
 

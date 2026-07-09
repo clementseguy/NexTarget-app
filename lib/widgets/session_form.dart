@@ -16,7 +16,7 @@ class SessionForm extends StatefulWidget {
   final Map<String, dynamic>? initialSessionData;
   final void Function(ShootingSession session) onSave;
   final bool isEdit;
-  const SessionForm({Key? key, this.initialSessionData, required this.onSave, this.isEdit = false}) : super(key: key);
+  const SessionForm({super.key, this.initialSessionData, required this.onSave, this.isEdit = false});
 
   static SessionFormState? of(BuildContext context) {
     return context.findAncestorStateOfType<SessionFormState>();

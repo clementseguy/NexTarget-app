@@ -23,7 +23,7 @@ void main() {
           try {
             await Hive.box(name).close();
           } catch (e) {
-            print('Erreur lors de la fermeture de la boîte Hive $name: $e');
+            // best-effort cleanup, erreur ignorée
           }
         }
       }
@@ -34,7 +34,7 @@ void main() {
           await tempDir.delete(recursive: true);
         }
       } catch (e) {
-        print('Erreur lors de la suppression du répertoire temporaire: $e');
+        // best-effort cleanup, erreur ignorée
         // Ne pas échouer le test à cause de problèmes de nettoyage
         // qui peuvent se produire dans l'environnement CI
       }

@@ -11,6 +11,7 @@ import '../widgets/series_cards.dart'; // Pour TwoFistsIcon
 import '../providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_theme.dart';
+import 'onboarding_screen.dart';
 import 'profile_screen.dart';
 
 String _avatarInitial(Map<String, dynamic>? user) {
@@ -22,6 +23,8 @@ String _avatarInitial(Map<String, dynamic>? user) {
 }
 
 class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final backup = BackupService();
@@ -132,6 +135,48 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 28),
+          Text('Coach IA', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Consumer<SettingsProvider>(
+                builder: (context, settings, _) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Ton du coach', style: TextStyle(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Choisissez le style des analyses de vos sessions.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 12),
+                      SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(
+                            value: 'coach_neutre',
+                            label: Text('Neutre'),
+                            icon: Icon(Icons.psychology),
+                          ),
+                          ButtonSegment(
+                            value: 'coach_cool',
+                            label: Text('Cool'),
+                            icon: Icon(Icons.emoji_emotions),
+                          ),
+                        ],
+                        selected: {settings.coachPersona},
+                        onSelectionChanged: (s) {
+                          settings.updateCoachPersona(s.first);
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 28),
           Text('Préférences Tir', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           Card(
@@ -154,6 +199,7 @@ class SettingsScreen extends StatelessWidget {
                         selected: {val},
                         onSelectionChanged: (s) async {
                           await box.put('default_hand_method', s.first);
+                          if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Prise par défaut: ${s.first == 'one' ? '1 main' : '2 mains'}')),
                           );
@@ -222,6 +268,7 @@ class SettingsScreen extends StatelessWidget {
                           } else {
                             await box.put('default_caliber', nv);
                           }
+                          if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text(nv.isEmpty ? 'Préférence calibre effacée' : 'Calibre par défaut: $nv')),
                           );
@@ -340,6 +387,26 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ),
+          const SizedBox(height: 28),
+          Text('Aide', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.slideshow),
+              title: const Text('Revoir l\'introduction'),
+              subtitle: const Text('Les 3 écrans de présentation du premier lancement.'),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    fullscreenDialog: true,
+                    builder: (ctx) => OnboardingScreen(
+                      onFinished: () => Navigator.of(ctx).pop(),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           SizedBox(height: 28),

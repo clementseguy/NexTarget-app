@@ -3,6 +3,7 @@ import '../services/exercise_service.dart';
 import '../models/exercise.dart';
 import '../services/session_service.dart';
 import '../widgets/exercises_total_card.dart';
+import '../widgets/help_button.dart';
 import 'session_detail_screen.dart';
 import 'exercise_form_screen.dart';
 import '../utils/exercise_sorting.dart';
@@ -111,6 +112,15 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
       appBar: AppBar(
         title: const Text('Exercices'),
         actions: [
+          const HelpButton(
+            title: 'Exercices',
+            points: [
+              'Créez vos exercices types : catégorie (précision, groupement, vitesse…), stand ou maison, durée et consignes ordonnées.',
+              'Reliez un exercice à vos objectifs pour cibler votre entraînement.',
+              'Sur un exercice de stand, l\'icône calendrier planifie une session prévue avec une série par consigne.',
+              'Utilisez le tri (icône en haut à droite) pour organiser la liste.',
+            ],
+          ),
           PopupMenuButton<ExerciseSortMode>(
             tooltip: 'Trier',
             icon: const Icon(Icons.sort),
@@ -240,7 +250,7 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                           onPressed: () async {
                             try {
                               final sess = await _sessionService.planFromExercise(ex);
-                              if (!mounted) return;
+                              if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Session prévue créée (${sess.series.length} série(s))')),
                               );
@@ -256,7 +266,7 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                               // Actualiser le mapping (au cas où l'utilisateur revienne en arrière sans convertir)
                               await _refreshPlannedMapping();
                             } catch (e) {
-                              if (!mounted) return;
+                              if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Impossible de planifier: $e')),
                               );

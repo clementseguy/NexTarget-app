@@ -35,7 +35,7 @@ void main() {
       service = GoalService(goalRepository: goalRepo, sessionRepository: sessionRepo);
     });
 
-    Goal _g({required String id, double prog=0.0, int prio=0, GoalStatus status=GoalStatus.active, DateTime? achievedAt}) {
+    Goal g({required String id, double prog=0.0, int prio=0, GoalStatus status=GoalStatus.active, DateTime? achievedAt}) {
       return Goal(
         id: id,
         title: id,
@@ -52,34 +52,34 @@ void main() {
     }
 
     test('topActiveGoals sorts by progress desc then priority asc', () async {
-      await goalRepo.put(_g(id:'g1', prog:0.5, prio:5));
-      await goalRepo.put(_g(id:'g2', prog:0.7, prio:9));
-      await goalRepo.put(_g(id:'g3', prog:0.7, prio:2)); // same progress lower priority wins
-      await goalRepo.put(_g(id:'g4', prog:0.2, prio:1));
+      await goalRepo.put(g(id:'g1', prog:0.5, prio:5));
+      await goalRepo.put(g(id:'g2', prog:0.7, prio:9));
+      await goalRepo.put(g(id:'g3', prog:0.7, prio:2)); // same progress lower priority wins
+      await goalRepo.put(g(id:'g4', prog:0.2, prio:1));
       final top = await service.topActiveGoals(3);
       expect(top.map((g)=>g.id).toList(), ['g3','g2','g1']);
     });
 
     test('topActiveGoals excludes achieved', () async {
-      await goalRepo.put(_g(id:'a1', prog:0.9));
-      await goalRepo.put(_g(id:'a2', prog:1.0, status: GoalStatus.achieved));
+      await goalRepo.put(g(id:'a1', prog:0.9));
+      await goalRepo.put(g(id:'a2', prog:1.0, status: GoalStatus.achieved));
       final top = await service.topActiveGoals(5);
       expect(top.any((g)=> g.id=='a2'), false);
     });
 
     test('countActiveGoals & countAchievedGoals', () async {
-      await goalRepo.put(_g(id:'x1', status: GoalStatus.active));
-      await goalRepo.put(_g(id:'x2', status: GoalStatus.achieved));
-      await goalRepo.put(_g(id:'x3', status: GoalStatus.active));
+      await goalRepo.put(g(id:'x1', status: GoalStatus.active));
+      await goalRepo.put(g(id:'x2', status: GoalStatus.achieved));
+      await goalRepo.put(g(id:'x3', status: GoalStatus.active));
       expect(await service.countActiveGoals(), 2);
       expect(await service.countAchievedGoals(), 1);
     });
 
     test('achievementsWithin counts correct windows', () async {
       final now = DateTime.now();
-      await goalRepo.put(_g(id:'w1', status: GoalStatus.achieved, achievedAt: now.subtract(const Duration(days:5))));
-      await goalRepo.put(_g(id:'w2', status: GoalStatus.achieved, achievedAt: now.subtract(const Duration(days:20))));
-      await goalRepo.put(_g(id:'w3', status: GoalStatus.achieved, achievedAt: now.subtract(const Duration(days:65))));
+      await goalRepo.put(g(id:'w1', status: GoalStatus.achieved, achievedAt: now.subtract(const Duration(days:5))));
+      await goalRepo.put(g(id:'w2', status: GoalStatus.achieved, achievedAt: now.subtract(const Duration(days:20))));
+      await goalRepo.put(g(id:'w3', status: GoalStatus.achieved, achievedAt: now.subtract(const Duration(days:65))));
       expect(await service.achievementsWithin(7), 1); // only w1
       expect(await service.achievementsWithin(30), 2); // w1 + w2
       expect(await service.achievementsWithin(60), 2); // w1 + w2 (w3 outside)

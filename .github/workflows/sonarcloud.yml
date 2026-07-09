@@ -77,9 +77,18 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          # Épinglé sur la version de dev locale : un SDK plus récent introduit
+          # de nouvelles deprecations qui font échouer 'analyze --fatal-infos'.
+          # Monter de version = tâche dédiée (corriger les APIs dépréciées).
+          flutter-version: 3.35.4
 
       - name: Flutter pub get
         run: flutter pub get
+
+      # NT-051: l'analyse statique (flutter_lints) doit rester à zéro issue.
+      # --fatal-infos fait échouer le job sur la moindre info lint.
+      - name: Flutter analyze
+        run: flutter analyze --fatal-infos
 
       - name: Run tests with coverage
         run: flutter test --coverage

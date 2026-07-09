@@ -58,7 +58,7 @@ lib/
 - **Pas d'accès Hive direct depuis l'UI** : passer par un repository, puis un service.
 - **Modèles = données** : pas d'I/O ni d'appel réseau dans `models/` (leur rôle : structure + `toMap`/`fromMap`).
 - **Persistance Hive** : la plupart des modèles sont stockés en `Map<String, dynamic>` (sérialisation manuelle `toMap`/`fromMap`). Seul `Goal` utilise l'adapter généré (`@HiveType`, `part 'goal.g.dart'`).
-- **Config & secrets** : tout passe par `AppConfig` (charge `assets/config.yaml`). La clé Mistral vient de `dart-define` / env / `config.local.yaml` — **jamais commitée**.
+- **Config & secrets** : tout passe par `AppConfig` (charge `assets/config.yaml`). Depuis NT-061, **aucun secret côté client** (la clé Mistral vit côté serveur) ; `config.local.yaml` ne sert plus qu'aux surcharges locales non sensibles (ex. calibres).
 
 ## Hive — règles impératives
 
@@ -100,11 +100,10 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 - Tokens stockés via `flutter_secure_storage`. Ne jamais logguer un token ni une clé.
 - OAuth : flow délégué au serveur, retour par **deep link** `nextarget://callback?token=…`
   (`app_links`). Ne pas réimplémenter le flow ailleurs.
-- **Coach IA** : décision produit (2026-07-07) = **coach connecté uniquement**
-  (cf. NT-061). Cible : ne garder que `ServerCoachAnalysisService`, **supprimer**
-  `CoachAnalysisService` (Mistral direct) et toute clé Mistral côté client. Ne pas
-  réintroduire d'appel Mistral direct. Le reste de l'app doit rester utilisable
-  hors-ligne.
+- **Coach IA** : **coach connecté uniquement** (NT-061, livré) —
+  `ServerCoachAnalysisService` est l'unique chemin d'analyse ; il n'existe plus de
+  clé Mistral ni d'appel Mistral direct côté client. **Ne jamais les réintroduire.**
+  Le reste de l'app reste utilisable hors-ligne.
 
 ## Tests
 
@@ -123,13 +122,19 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 
 ## Qualité & CI
 
-- **Analyse statique** : `flutter analyze` doit passer **sans warning**.
-  ⚠️ Aujourd'hui `flutter_lints` est **désactivé** dans `analysis_options.yaml`
-  (`include` commenté) — durcir le ruleset est une tâche qualité (NT-051). Si tu
-  actives un ruleset, corrige les warnings dans le même lot.
+- **Analyse statique** : `flutter_lints` est **actif** (`analysis_options.yaml`,
+  NT-051) et `flutter analyze` doit rester à **zéro issue** (infos comprises) —
+  la CI exécute `flutter analyze --fatal-infos`. Pas de nouveau `// ignore:`
+  sans justification en commentaire.
 - **SonarCloud** : workflow `.github/workflows/sonarcloud.yml` (push `dev`/`main`,
-  PR vers `main`, run quotidien). Quality Gate visé **≥ B**, couverture importée via
-  `coverage/lcov.info`. Ne pas dégrader le Quality Gate.
+  PR vers `main`, run quotidien). Couverture importée via `coverage/lcov.info`.
+  **Le Quality Gate SonarCloud (check « SonarCloud Code Analysis ») est
+  informatif, non bloquant** (décision 2026-07-09, gate par défaut 80 % nouveau
+  code non personnalisable en compte gratuit — inadapté à un diff UI-heavy).
+  Le check bloquant des PR est le job **« Test & SonarCloud »** (analyze
+  --fatal-infos + tests). Règle qualité : tout nouveau service/logique reçoit
+  des tests (nominal + erreur) ; viser ~60 % sur le nouveau code, sans y
+  sacrifier des tests de layout à faible valeur.
 - **Cahier de recette** : `docs/tests/cahier_recette.md` généré depuis
   `docs/specs/cahier_recette.yaml` (`scripts/generate_cahier_recette.dart`). Le
   **rejouer avant toute MR vers `main`** ; si un comportement visible change, mettre
@@ -157,8 +162,6 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 - **Package id `tir_sportif`** conservé (le branding NexTarget est au niveau UI).
 - **Stockage Map + `toMap`/`fromMap`** pour la plupart des modèles (seul `Goal` en
   adapter généré) — choix assumé, ne pas tout migrer sans raison.
-- **Coach à double chemin** = état **transitoire** ; la cible est *connecté
-  uniquement* (NT-061), pas un design pérenne.
 - **Valeurs métier en français** dans les données (`status`, `category`).
 
 ## Commandes de référence
