@@ -29,8 +29,8 @@ et ses vues dérivées. Il pilote le développement, y compris depuis Claude Cod
 3. **Sens de mise à jour** : on modifie **toujours** le backlog unifié d'abord,
    puis on répercute dans la ou les vues concernées. Jamais l'inverse.
 4. **Cohérence des statuts** : un même ID a le **même statut global** partout ; une
-   vue peut préciser un statut *par côté* en note (ex. NT-044 : serveur FAIT / app
-   À FAIRE) mais ne le contredit pas.
+   vue peut préciser un statut *par côté* en note (ex. NT-048 : serveur FAIT /
+   adoption app à câbler) mais ne le contredit pas.
 5. **IDs stables, jamais réutilisés.** Un item abandonné passe en `Won't-now` ou est
    marqué obsolète — son ID n'est pas recyclé. Les trous de numérotation par thème
    sont volontaires (réservés à l'insertion).

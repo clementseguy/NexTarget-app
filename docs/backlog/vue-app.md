@@ -39,7 +39,7 @@
 | NT-040 | Authentification OAuth Google | both | Must | M | FAIT | `auth_service.dart`, `auth_provider` |
 | NT-041 | Authentification optionnelle | app | Must | S | FAIT | mode déconnecté préservé |
 | NT-042 | Profil utilisateur (nom/avatar/niveau) | both | Should | M | FAIT | `profile_screen.dart` — édition à vérifier |
-| NT-044 | Authentification OAuth Facebook | both | Could | M | À FAIRE | serveur prêt ; bouton app non câblé (basse prio) |
+| NT-044 | Authentification OAuth Facebook | both | Could | M | À FAIRE | serveur : code présent, à valider (tests mockés) ; bouton app non câblé ; non prioritaire |
 | NT-045 | Stats publiques / partage de profil | both | Won't-now | M | À FAIRE | — |
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE | — |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE | — |
