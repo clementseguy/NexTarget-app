@@ -29,7 +29,7 @@
 | NT-040 | Authentification OAuth Google | both | Must | M | FAIT | `api/auth_google.py`, `/auth/token` |
 | NT-042 | Profil utilisateur (nom/avatar/niveau) | both | Should | M | FAIT | `models/user.py` (champs profil) |
 | NT-043 | Endpoint `/users/me` | server | Must | S | FAIT | `api/users.py` |
-| NT-044 | Authentification OAuth Facebook | both | Could | M | FAIT | `api/auth_facebook.py` (côté app : à câbler) |
+| NT-044 | Authentification OAuth Facebook | both | Could | M | À FAIRE | code `api/auth_facebook.py` présent, à valider (tests mockés seulement, non éprouvé contre une vraie app FB) ; côté app non câblé ; non prioritaire |
 | NT-045 | Stats publiques / partage de profil | both | Won't-now | M | À FAIRE | — |
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE | — |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE | roadmap v0.2 |

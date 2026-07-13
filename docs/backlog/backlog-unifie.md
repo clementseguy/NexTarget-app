@@ -268,7 +268,7 @@
 | NT-041 | Authentification optionnelle | app | Must | S | FAIT |
 | NT-042 | Profil utilisateur (nom/avatar/niveau) | both | Should | M | FAIT |
 | NT-043 | Endpoint `/users/me` | server | Must | S | FAIT |
-| NT-044 | Authentification OAuth Facebook | both | Could | M | À VÉRIFIER |
+| NT-044 | Authentification OAuth Facebook | both | Could | M | À FAIRE |
 | NT-045 | Stats publiques / partage de profil | both | Won't-now | M | À FAIRE |
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE |
@@ -302,9 +302,9 @@
 ### NT-044 — Authentification OAuth Facebook
 - **Thème** : Auth & Compte · **Portée** : both · **Dépendances** : NT-040
 - **Description** : Se connecter avec Facebook.
-- **Critères d'acceptation** : serveur `/auth/facebook/*` fonctionnel ; **app : bouton Facebook câblé** (manquant aujourd'hui).
-- **Priorité** : Could · **Statut** : À VÉRIFIER.
-- **Notes** : **serveur = FAIT** (`api/auth_facebook.py`), **app = À FAIRE**, priorité basse (arbitrage 2026-07-07 : « plus tard, optionnelle »). Reste au backlog.
+- **Critères d'acceptation** : serveur `/auth/facebook/*` **validé de bout en bout** contre une vraie app Facebook (au-delà des tests mockés) ; **app : bouton Facebook câblé** (manquant aujourd'hui).
+- **Priorité** : Could · **Statut** : À FAIRE.
+- **Notes** : ⚠️ **non prioritaire**. Côté serveur, le **code est présent** (`api/auth_facebook.py` : `/start` + `/callback`, échange de code, Graph API) mais **reste à valider** de bout en bout : couvert uniquement par des tests mockés (`tests/test_oauth_flows.py`), pas encore éprouvé contre une vraie app Facebook (credentials non configurés). Côté app, aucun bouton Facebook. Statut global **À FAIRE** tant que le flow n'est pas câblé (app) et validé (serveur). Arbitrage 2026-07-07 : « plus tard, optionnelle ».
 
 ### NT-045 — Stats publiques / partage de profil
 - **Thème** : Auth & Compte · **Portée** : both · **Dépendances** : NT-042
@@ -641,7 +641,9 @@ TTL, compactage Hive automatique.
 - NT-023 dépend du format de sortie structuré du coach (à définir avec NT-033).
 - NT-024 et NT-015 exploitent les liens exercices ↔ sessions/objectifs déjà en
   place.
-- NT-044 a une valeur marginale (serveur déjà prêt, seul le bouton app manque).
+- NT-044 a une valeur marginale et reste **non prioritaire** : le code serveur
+  existe mais n'est pas validé de bout en bout (tests mockés seulement) et le
+  bouton app manque.
 
 **Critère de fin de sprint** : écran Coach multi-sessions fonctionnel, coach
 proposant des exercices structurés, stats d'usage, recommandations croisées,
