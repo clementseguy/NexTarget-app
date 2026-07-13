@@ -13,6 +13,12 @@
 - **Portée** : `app` | `server` | `both`.
 - **Priorité (MoSCoW)** : Must / Should / Could / Won't-now.
 - **Estimation** : S / M / L.
+- **Valeur métier (VM)** : 1–5, renseignée sur les thèmes 10+ (5 = impact
+  direct et mesurable sur la progression en discipline officielle ; 3 =
+  friction / qualité des données ; 1 = confort).
+
+> Enrichissement fonctionnel du **2026-07-13** (thèmes 10–13 : disciplines
+> TAR, analyse de cible, coach avancé, saisie au stand). Statuts code inchangés.
 
 ## Légende des statuts
 
@@ -36,6 +42,10 @@
 | 7. Sécurité & Secrets | NT-060 → NT-066 |
 | 8. Plateforme & Déploiement | NT-070 → NT-076 |
 | 9. Idées / hors-scope | NT-090 → NT-092 |
+| 10. Disciplines officielles & TAR | NT-100 → NT-104 |
+| 11. Analyse de cible (photo) | NT-110 → NT-111 |
+| 12. Coach : progression & génération | NT-120 → NT-126 |
+| 13. Saisie au stand | NT-130 → NT-132 |
 
 ---
 
@@ -49,7 +59,7 @@
 | NT-002 | Saisir des séries détaillées | app | Must | M | FAIT |
 | NT-003 | Historique & détail des sessions | app | Must | M | FAIT |
 | NT-004 | Synthèse libre du tireur par session | app | Should | S | FAIT |
-| NT-005 | Attacher une photo de la cible | app | Could | M | À FAIRE |
+| NT-005 | Attacher une photo de la cible | app | Must | M | À FAIRE |
 | NT-006 | Analyse d'image de la cible (dispersion/score) | both | Won't-now | L | À FAIRE |
 | NT-007 | Filtrer l'historique des sessions par exercice | app | Could | S | À FAIRE |
 
@@ -86,14 +96,14 @@
 - **Description** : Ajouter une photo de la cible en fin de session pour mémoire visuelle et future analyse.
 - **Portée** : app · **Dépendances** : NT-001
 - **Critères d'acceptation** : sélection/prise de photo, stockage local associé à la session, affichage dans le détail.
-- **Statut** : À FAIRE. · **Notes** : préalable à NT-006.
+- **Priorité** : Must (Could → Must, décision 2026-07-13 : socle du thème 11) · **Statut** : À FAIRE. · **Notes** : préalable à NT-110/NT-111 (et NT-006, Icebox).
 
 ### NT-006 — Analyse d'image de la cible
 - **Thème** : Carnet de tir
 - **Description** : Analyser la photo (dispersion, score total) pour confronter aux commentaires et enrichir l'analyse coach.
 - **Portée** : both · **Dépendances** : NT-005, NT-030
 - **Critères d'acceptation** : à définir — extraction dispersion/score ; résultat versé dans le contexte envoyé au coach.
-- **Priorité** : Won't-now · **Statut** : À FAIRE. · **Notes** : vision par ordinateur, coûteux ; probablement côté serveur.
+- **Priorité** : Won't-now · **Statut** : À FAIRE. · **Notes** : vision par ordinateur, coûteux ; probablement côté serveur. Décision 2026-07-13 : l'analyse **qualitative multimodale** (NT-111) est retenue en premier ; NT-006 reste en Icebox, à réévaluer après retour d'usage de NT-111.
 
 ### NT-007 — Filtrer l'historique des sessions par exercice
 - **Thème** : Carnet de tir · **Portée** : app · **Dépendances** : NT-003, NT-022
@@ -196,7 +206,7 @@
 - **Thème** : Exercices · **Portée** : both · **Dépendances** : NT-020, NT-030
 - **Description** : À partir d'une analyse de session, le coach propose un exercice prêt à enregistrer.
 - **Critères d'acceptation** : à définir — l'analyse coach peut retourner un exercice structuré ; l'app permet de l'ajouter au catalogue.
-- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : dépend du format de sortie structuré du coach.
+- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : dépend du format de sortie structuré du coach. **Précisé/décomposé par NT-122 + NT-123** (thème 12), qui font référence.
 
 ### NT-024 — Stats d'exécution (fenêtres glissantes)
 - **Thème** : Exercices · **Portée** : app · **Dépendances** : NT-022
@@ -248,7 +258,7 @@
 - **Description** : Un écran dédié qui analyse l'ensemble de l'activité (plusieurs sessions, changements d'armes/calibres, régularité, comportements répétés) et propose des actions.
 - **Critères d'acceptation** : à définir — agrégation multi-sessions ; analyse coach globale ; suggestions d'actions.
 - **Priorité** : Should · **Statut** : À FAIRE.
-- **Notes** : `coach_screen.dart` existe mais est un placeholder « Coming soon ».
+- **Notes** : `coach_screen.dart` existe mais est un placeholder « Coming soon ». **Précisé/décomposé par NT-120 + NT-121** (thème 12), qui font référence.
 
 ### NT-034 — Affiner les prompts des personas coach
 - **Thème** : Coach IA · **Portée** : server · **Dépendances** : NT-032
@@ -463,7 +473,7 @@
 
 ### NT-074 — Saisie séries plein écran + navigation rapide
 - **Portée** : app · **Dépendances** : NT-002 · **Description** : Mode plein écran + next/prev pour réduire la friction de saisie (ancien P6).
-- **Critères d'acceptation** : saisie plein écran ; navigation rapide entre séries. · **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : inclut les idées de l'issue #5 — numpad/clavier rapide et navigation par swipe entre séries.
+- **Critères d'acceptation** : saisie plein écran ; navigation rapide entre séries. · **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : inclut les idées de l'issue #5 — numpad/clavier rapide et navigation par swipe entre séries. Complété par le thème 13 (NT-130/NT-131).
 
 ### NT-075 — Onboarding + aide contextuelle
 - **Portée** : app · **Dépendances** : — · **Description** : Mini-onboarding (3 écrans) + bouton « ? » contextuel (ancien P9).
@@ -495,6 +505,161 @@
 
 ---
 
+## Thème 10 — Disciplines officielles & TAR
+
+*Aligner l'app sur les disciplines officielles FFTir — en priorité le TAR armes de poing 25 m (épreuves 830/831/832). Référentiel détaillé : [`docs/specs/referentiel_tar_25m.md`](../specs/referentiel_tar_25m.md) (règlement CNS TAR 2025-2026).*
+
+| ID | Titre | Portée | VM | Prio | Est | Statut |
+|---|---|---|---|---|---|---|
+| NT-100 | Référentiel des disciplines officielles (TAR 25 m) | app | 5 | Must | M | À FAIRE |
+| NT-101 | Sessions & séries typées discipline | app | 5 | Must | M | À FAIRE |
+| NT-102 | Mode « match blanc » TAR | app | 4 | Should | L | À FAIRE |
+| NT-103 | Comparaison aux grilles de classement FFTir | app | 4 | Could | M | À FAIRE |
+| NT-104 | Stats & records par discipline | app | 4 | Should | M | À FAIRE |
+
+### NT-100 — Référentiel des disciplines officielles (TAR 25 m)
+- **Thème** : Disciplines & TAR · **Portée** : app · **Dépendances** : —
+- **Description** : Référentiel embarqué des épreuves officielles (830/831/832 en premier) — séquences essai/précision/vitesse, temps, cibles, scoring — pour que sessions, stats et coach parlent le langage de la discipline du tireur.
+- **Critères d'acceptation** : référentiel versionné par saison (asset YAML, seed [`referentiel_tar_25m.md`](../specs/referentiel_tar_25m.md)) ; épreuves 830, 831, 832 décrites (séquences, temps, cibles, scoring — gong = 5 pts en 2025-2026) ; dimensions des cibles C50, cible vitesse 25 m et gongs exposées aux autres features (NT-111 notamment).
+- **Priorité** : Must · **VM** : 5 · **Statut** : À FAIRE. · **Notes** : source règlement CNS TAR 2025-2026 (diffusion 12/01/2026) ; les règles évoluent chaque saison → champ `saison` obligatoire.
+
+### NT-101 — Sessions & séries typées discipline
+- **Thème** : Disciplines & TAR · **Portée** : app · **Dépendances** : NT-100, NT-001, NT-002
+- **Description** : Rattacher une session à une épreuve officielle, avec pré-remplissage du format (séquences, nb coups, temps), pour des données comparables entre elles et exploitables par le coach.
+- **Critères d'acceptation** : champ épreuve sur `ShootingSession` (additif Hive) ; type de séquence par série (essai/précision/vitesse) ; scoring adapté par série (pts/zone vs gongs tombés) ; les essais n'entrent pas dans les stats de score.
+- **Priorité** : Must · **VM** : 5 · **Statut** : À FAIRE. · **Notes** : le modèle `Series` actuel ne couvre ni gongs, ni temps imparti, ni type de séquence — ajouts additifs uniquement (typeIds/index stables).
+
+### NT-102 — Mode « match blanc » TAR
+- **Thème** : Disciplines & TAR · **Portée** : app · **Dépendances** : NT-101
+- **Description** : Dérouler une épreuve au format officiel (séquences guidées, chrono, décompte de coups) pour s'entraîner en conditions de match.
+- **Critères d'acceptation** : déroulé guidé 830/832 (essais 3 min → précision 7 min → vitesse 2×20 s puis 2×10 s) et 831 ; chrono par séquence ; score /200 calculé ; enregistrée comme session de catégorie match blanc.
+- **Priorité** : Should · **VM** : 4 · **Statut** : À FAIRE.
+
+### NT-103 — Comparaison aux grilles de classement FFTir
+- **Thème** : Disciplines & TAR · **Portée** : app · **Dépendances** : NT-101
+- **Description** : Situer les scores du tireur par rapport aux grilles de classement fédérales pour objectiver son niveau.
+- **Critères d'acceptation** : à définir — dépend du sourcing des grilles.
+- **Priorité** : Could · **VM** : 4 · **Statut** : À FAIRE. · **Notes** : les grilles par catégorie relèvent du **RGS FFTir**, pas du règlement TAR — sourcing dédié préalable.
+
+### NT-104 — Stats & records par discipline
+- **Thème** : Disciplines & TAR · **Portée** : app · **Dépendances** : NT-100, NT-010
+- **Description** : Suivre la progression séparément par épreuve (pistolet auto vs revolver, 830 vs 831), sans mélanger des formats non comparables.
+- **Critères d'acceptation** : filtres par épreuve dans stats et records ; records par épreuve ; le dashboard distingue les disciplines.
+- **Priorité** : Should · **VM** : 4 · **Statut** : À FAIRE.
+
+---
+
+## Thème 11 — Analyse de cible (photo)
+
+*Prolonge NT-005/NT-006 (thème 1) : exploiter la photo de cible pour le coaching. Approche **qualitative multimodale** retenue (décision 2026-07-13) ; l'extraction métrique CV (NT-006) reste en Icebox.*
+
+| ID | Titre | Portée | VM | Prio | Est | Statut |
+|---|---|---|---|---|---|---|
+| NT-110 | Métadonnées cible & photo par série | app | 3 | Should | S | À FAIRE |
+| NT-111 | Analyse qualitative de la photo par le coach (multimodal) | both | 4 | Should | M | À FAIRE |
+
+### NT-110 — Métadonnées cible & photo par série
+- **Thème** : Analyse de cible · **Portée** : app · **Dépendances** : NT-005
+- **Description** : Taguer la photo (type de cible, distance, série associée) — sans métadonnées, aucune analyse fiable n'est possible.
+- **Critères d'acceptation** : tag type de cible (C50, cible vitesse 25 m, gong — depuis NT-100), distance, série associée ; une photo non taguée reste une simple photo « mémoire ».
+- **Priorité** : Should · **VM** : 3 · **Statut** : À FAIRE.
+
+### NT-111 — Analyse qualitative de la photo par le coach (multimodal)
+- **Thème** : Analyse de cible · **Portée** : both · **Dépendances** : NT-005, NT-110, NT-030, NT-100
+- **Description** : Le serveur transmet la photo à un modèle multimodal (ex. Pixtral) avec les dimensions de zones du référentiel ; retour **qualitatif** (répartition, quadrant, hypothèse technique — ex. « groupé bas-gauche : anticipation du départ »), confronté à la saisie manuelle.
+- **Critères d'acceptation** : endpoint proxy dédié (JWT requis, rate-limité comme NT-062) ; prompt serveur incluant les specs de cible (zones C50) ; l'analyse **confronte** photo et saisie (points/groupement) sans la remplacer ; dégradation propre si photo inexploitable.
+- **Priorité** : Should · **VM** : 4 · **Statut** : À FAIRE. · **Notes** : préféré à la CV métrique (NT-006) — coût faible, valeur coaching réelle.
+
+---
+
+## Thème 12 — Coach : progression & génération
+
+*Précise et décompose NT-033 (thème 4) et NT-023 (thème 3) : analyse transverse de la progression et génération d'entités par le coach, avec validation humaine systématique (le coach propose, le tireur dispose).*
+
+| ID | Titre | Portée | VM | Prio | Est | Statut |
+|---|---|---|---|---|---|---|
+| NT-120 | Payload d'analyse transverse compact | app | — | Must (socle) | M | À FAIRE |
+| NT-121 | Écran Coach : analyse de progression | both | 5 | Should | L | À FAIRE |
+| NT-122 | Sortie coach structurée (JSON schema) | server | — | Must (socle) | M | À FAIRE |
+| NT-123 | Coach propose des exercices | both | 5 | Should | L | À FAIRE |
+| NT-124 | Coach propose des objectifs | both | 4 | Should | M | À FAIRE |
+| NT-125 | Suivi des recommandations du coach | both | 4 | Could | L | À FAIRE |
+| NT-126 | Plan d'entraînement | both | 5 | Could | L | À FAIRE |
+
+### NT-120 — Payload d'analyse transverse compact
+- **Thème** : Coach avancé · **Portée** : app · **Dépendances** : NT-101, NT-010
+- **Description** : Pré-agréger côté app (le `stats_service` calcule déjà tout) et n'envoyer au serveur que les agrégats + les N dernières sessions détaillées, par discipline — maîtrise du coût tokens et de la latence, et évite l'analyse « choux et carottes » entre disciplines.
+- **Critères d'acceptation** : fenêtre bornée et paramétrable (défaut : 10 sessions / 90 j) ; agrégats calculés localement ; taille de payload bornée et documentée.
+- **Priorité** : Must (socle du thème) · **Statut** : À FAIRE. · **Notes** : conditionne NT-121.
+
+### NT-121 — Écran Coach : analyse de progression
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-120, NT-030
+- **Description** : Écran Coach dédié : analyse de la progression sur les dernières sessions (par discipline), axes de travail identifiés, actions suggérées. Reprend et remplace le périmètre UX de NT-033.
+- **Critères d'acceptation** : analyse par discipline sur la fenêtre NT-120 ; axes de progression explicites ; suggestions d'actions ; `coach_screen.dart` remplace le placeholder « Coming soon ».
+- **Priorité** : Should · **VM** : 5 · **Statut** : À FAIRE.
+
+### NT-122 — Sortie coach structurée (JSON schema)
+- **Thème** : Coach avancé · **Portée** : server · **Dépendances** : NT-031
+- **Description** : Format de sortie structuré (structured outputs Mistral) conforme aux schémas `Exercise`/`Goal`, socle de toute génération d'entités par le coach.
+- **Critères d'acceptation** : schémas JSON versionnés alignés sur les entités app ; validation serveur des sorties ; gestion des erreurs de validation (retry / fallback texte).
+- **Priorité** : Must (socle du thème) · **Statut** : À FAIRE. · **Notes** : fait référence pour NT-023.
+
+### NT-123 — Coach propose des exercices
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-122, NT-020
+- **Description** : Depuis une analyse (session ou progression), le coach propose des exercices ; le tireur prévisualise, édite puis ajoute au catalogue. Précise NT-023.
+- **Critères d'acceptation** : écran de prévisualisation/édition avant insertion ; rapprochement/déduplication avec le catalogue existant (anti-inflation d'exercices quasi-dupliqués) ; refus possible sans effet de bord.
+- **Priorité** : Should · **VM** : 5 · **Statut** : À FAIRE.
+
+### NT-124 — Coach propose des objectifs
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-122, NT-012
+- **Description** : Même mécanique que NT-123 appliquée aux objectifs : objectif mesurable (métrique, comparateur, valeur cible) pré-rempli, aligné sur les axes de progression.
+- **Critères d'acceptation** : proposition conforme au schéma `Goal` ; validation/édition avant création ; lien possible avec les exercices proposés (NT-021).
+- **Priorité** : Should · **VM** : 4 · **Statut** : À FAIRE.
+
+### NT-125 — Suivi des recommandations du coach
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-121
+- **Description** : Le coach mémorise ses recommandations passées et mesure si elles ont été suivies et si elles ont porté — boucle de feedback qui évite les conseils répétitifs.
+- **Critères d'acceptation** : à définir — recommandations persistées ; statut suivie/non suivie ; effet mesuré sur les métriques visées ; réinjection dans le contexte des analyses suivantes.
+- **Priorité** : Could · **VM** : 4 · **Statut** : À FAIRE.
+
+### NT-126 — Plan d'entraînement
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-123, NT-124
+- **Description** : Générer un plan sur 2–4 semaines (sessions prévues + exercices) orienté vers un objectif TAR, en s'appuyant sur les entités existantes (sessions prévues, exercices, objectifs).
+- **Critères d'acceptation** : à définir — plan validé par le tireur avant création des entités ; s'appuie sur NT-123/NT-124.
+- **Priorité** : Could · **VM** : 5 · **Statut** : À FAIRE.
+
+---
+
+## Thème 13 — Saisie au stand
+
+*Réduire la friction de saisie en conditions réelles au pas de tir. Complète NT-074 (thème 8) — le pré-remplissage est le premier gisement de gain.*
+
+| ID | Titre | Portée | VM | Prio | Est | Statut |
+|---|---|---|---|---|---|---|
+| NT-130 | Templates de session | app | 4 | Must | S | À FAIRE |
+| NT-131 | Session live au stand | app | 4 | Should | M | À FAIRE |
+| NT-132 | Spike — saisie vocale d'une série | app | 2 | Could | S | À FAIRE |
+
+### NT-130 — Templates de session
+- **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : NT-001, NT-073
+- **Description** : Créer une session en 2 taps au stand depuis le « dernier setup » ou des favoris (arme, calibre, épreuve). Quick win : ~80 % du gain de friction pour un coût S.
+- **Critères d'acceptation** : création depuis le dernier setup ; favoris nommés ; pré-remplissage arme/calibre/épreuve (épreuve : si NT-101 livré) ; compatible avec la normalisation calibres (NT-073).
+- **Priorité** : Must · **VM** : 4 · **Statut** : À FAIRE.
+
+### NT-131 — Session live au stand
+- **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : NT-130
+- **Description** : Démarrer une session au stand et saisir série par série au fil du tir (avec chrono de repos), plutôt que de tout ressaisir après coup — aligne l'app sur l'usage réel au pas de tir.
+- **Critères d'acceptation** : démarrage d'une session « en cours » ; saisie série par série ; chrono de repos entre séries ; clôture = session réalisée standard.
+- **Priorité** : Should · **VM** : 4 · **Statut** : À FAIRE.
+
+### NT-132 — Spike — saisie vocale d'une série
+- **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : —
+- **Description** : Vérifier la faisabilité de la saisie vocale en environnement stand (détonations, casque de protection) avant tout investissement.
+- **Critères d'acceptation** : prototype + test en conditions réelles ; go/no-go documenté.
+- **Priorité** : Could · **VM** : 2 · **Statut** : À FAIRE. · **Notes** : spike timeboxé ; aucune implémentation produit sans go.
+
+---
+
 ## Backlog priorisé
 
 > **Dernière mise à jour** : 2026-07-07.
@@ -517,6 +682,13 @@
 | **S5** | UX & Performance | NT-074, NT-076 | app | — |
 | **S6** | Fonctionnalités avancées | NT-033, NT-023, NT-024, NT-015, NT-044 | both | — |
 | **Icebox** | Won't-now / pas prioritaire | NT-006, NT-045, NT-046, NT-047, NT-071, NT-090, NT-091 | — | — |
+
+> **Révision 2026-07-13** : les thèmes 10–13 ne sont pas encore ventilés en
+> sprints. Ordre recommandé après S4 (qui contient déjà NT-005, remonté Must) :
+> **NT-130** (quick win), puis **NT-100/NT-101** (socle disciplines), puis
+> **NT-120/NT-122** (socles coach) qui débloquent NT-121/NT-123/NT-124 en
+> parallèle. En S6, NT-033 et NT-023 sont remplacés par leurs déclinaisons
+> NT-120→NT-124 ; NT-110/NT-111 s'insèrent après NT-005 + NT-100.
 
 ---
 
@@ -673,3 +845,14 @@ de planification.*
 | Cadence | Senior + agentic dev (Claude Code), sprints de 2 semaines. |
 | Demo FFTir | **Début août 2026** — S1 (sécurité) et S2 (onboarding + multi-personas) sont bloquants. |
 | NT-075 (Onboarding) | **Remonté en S2** — critique pour la première impression en demo FFTir. |
+
+### Décisions prises (2026-07-13)
+
+| Sujet | Décision |
+|---|---|
+| Priorité produit | Progression sur les **disciplines officielles**, en premier lieu le **TAR armes de poing 25 m** (épreuves 830/831/832). |
+| NT-005 (photo) | Remonté **Could → Must** — socle du thème 11 ; reste planifié en S4. |
+| Analyse photo | Approche **qualitative multimodale** (NT-111) retenue ; NT-006 (CV métrique) maintenu en Icebox, à réévaluer après retour d'usage. |
+| Référentiel TAR | Versionné par saison ; seed extrait du règlement CNS TAR 2025-2026 → [`docs/specs/referentiel_tar_25m.md`](../specs/referentiel_tar_25m.md). |
+| Estimation | Ajout d'une **Valeur métier (VM 1–5)** sur les thèmes 10+, en complément de MoSCoW + S/M/L (dev solo + agentic : le facteur limitant est la valeur/le risque, pas l'effort). |
+| NT-033 / NT-023 | Précisés et décomposés par les items du **thème 12** (NT-120→NT-126), qui font référence. |

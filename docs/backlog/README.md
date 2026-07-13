@@ -58,7 +58,9 @@ En cas d'ambiguïté → `À VÉRIFIER` (ne pas inventer un statut).
 
 1. Carnet de tir · 2. Statistiques & Objectifs · 3. Exercices · 4. Coach IA ·
 5. Auth & Compte · 6. Qualité & Observabilité · 7. Sécurité & Secrets ·
-8. Plateforme & Déploiement · 9. Idées / hors-scope.
+8. Plateforme & Déploiement · 9. Idées / hors-scope ·
+10. Disciplines officielles & TAR · 11. Analyse de cible (photo) ·
+12. Coach : progression & génération · 13. Saisie au stand.
 
 ## Convention d'usage dans Claude Code
 
