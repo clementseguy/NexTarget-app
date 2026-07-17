@@ -29,8 +29,8 @@ et ses vues dérivées. Il pilote le développement, y compris depuis Claude Cod
 3. **Sens de mise à jour** : on modifie **toujours** le backlog unifié d'abord,
    puis on répercute dans la ou les vues concernées. Jamais l'inverse.
 4. **Cohérence des statuts** : un même ID a le **même statut global** partout ; une
-   vue peut préciser un statut *par côté* en note (ex. NT-044 : serveur FAIT / app
-   À FAIRE) mais ne le contredit pas.
+   vue peut préciser un statut *par côté* en note (ex. NT-048 : serveur FAIT /
+   adoption app à câbler) mais ne le contredit pas.
 5. **IDs stables, jamais réutilisés.** Un item abandonné passe en `Won't-now` ou est
    marqué obsolète — son ID n'est pas recyclé. Les trous de numérotation par thème
    sont volontaires (réservés à l'insertion).
@@ -58,7 +58,9 @@ En cas d'ambiguïté → `À VÉRIFIER` (ne pas inventer un statut).
 
 1. Carnet de tir · 2. Statistiques & Objectifs · 3. Exercices · 4. Coach IA ·
 5. Auth & Compte · 6. Qualité & Observabilité · 7. Sécurité & Secrets ·
-8. Plateforme & Déploiement · 9. Idées / hors-scope.
+8. Plateforme & Déploiement · 9. Idées / hors-scope ·
+10. Disciplines officielles & TAR · 11. Analyse de cible (photo) ·
+12. Coach : progression & génération · 13. Saisie au stand.
 
 ## Convention d'usage dans Claude Code
 

@@ -7,7 +7,7 @@
 > uniquement dans cette vue (règle de sync : [README.md](README.md)).
 
 **Repo** : NexTarget-app (Flutter/Dart, Hive, SonarCloud, dart_code_metrics)
-**Dernière projection** : 2026-07-07 (état du code)
+**Dernière projection** : 2026-07-13 (enrichissement thèmes 10–13 ; état du code : 2026-07-07)
 
 ## Items app
 
@@ -17,7 +17,7 @@
 | NT-002 | Saisir des séries détaillées | app | Must | M | FAIT | `Series`, `session_form` |
 | NT-003 | Historique & détail des sessions | app | Must | M | FAIT | `sessions_history_screen`, `session_detail` |
 | NT-004 | Synthèse libre du tireur | app | Should | S | FAIT | `ShootingSession.synthese` |
-| NT-005 | Attacher une photo de la cible | app | Could | M | À FAIRE | — |
+| NT-005 | Attacher une photo de la cible | app | Must | M | À FAIRE | Could → Must (2026-07-13), socle thème 11 |
 | NT-006 | Analyse d'image de la cible | both | Won't-now | L | À FAIRE | capture côté app, analyse côté serveur |
 | NT-007 | Filtrer l'historique des sessions par exercice | app | Could | S | À FAIRE | issue #5 |
 | NT-010 | Tableau de bord statistiques | app | Must | M | FAIT | `dashboard_service`, `widgets/dashboard` |
@@ -39,7 +39,7 @@
 | NT-040 | Authentification OAuth Google | both | Must | M | FAIT | `auth_service.dart`, `auth_provider` |
 | NT-041 | Authentification optionnelle | app | Must | S | FAIT | mode déconnecté préservé |
 | NT-042 | Profil utilisateur (nom/avatar/niveau) | both | Should | M | FAIT | `profile_screen.dart` — édition à vérifier |
-| NT-044 | Authentification OAuth Facebook | both | Could | M | À FAIRE | serveur prêt ; bouton app non câblé (basse prio) |
+| NT-044 | Authentification OAuth Facebook | both | Could | M | À FAIRE | serveur : code présent, à valider (tests mockés) ; bouton app non câblé ; non prioritaire |
 | NT-045 | Stats publiques / partage de profil | both | Won't-now | M | À FAIRE | — |
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE | — |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE | — |
@@ -57,9 +57,26 @@
 | NT-090 | Thème ASCII Art | app | Won't-now | M | À FAIRE | `docs/specs/ascii_art_theme.md` |
 | NT-091 | Règles de sécurité FFTir | app | Won't-now | S | À FAIRE | — |
 | NT-092 | Thèmes visuels (thème clair « France ») | app | Could | S | FAIT | — |
+| NT-100 | Référentiel des disciplines officielles (TAR 25 m) | app | Must | M | À FAIRE | seed `docs/specs/referentiel_tar_25m.md` |
+| NT-101 | Sessions & séries typées discipline | app | Must | M | À FAIRE | ajouts Hive additifs (séquence, temps, gongs) |
+| NT-102 | Mode « match blanc » TAR | app | Should | L | À FAIRE | déroulé guidé 830/831/832, chrono |
+| NT-103 | Comparaison aux grilles de classement FFTir | app | Could | M | À FAIRE | sourcing RGS FFTir préalable |
+| NT-104 | Stats & records par discipline | app | Should | M | À FAIRE | filtres/records par épreuve |
+| NT-110 | Métadonnées cible & photo par série | app | Should | S | À FAIRE | type de cible, distance, série |
+| NT-111 | Analyse qualitative photo par le coach | both | Should | M | À FAIRE | envoi photo au proxy multimodal |
+| NT-120 | Payload d'analyse transverse compact | app | Must | M | À FAIRE | agrégats + N dernières sessions, par discipline |
+| NT-121 | Écran Coach : analyse de progression | both | Should | L | À FAIRE | remplace le périmètre UX de NT-033 |
+| NT-123 | Coach propose des exercices | both | Should | L | À FAIRE | préviz/édition + déduplication (précise NT-023) |
+| NT-124 | Coach propose des objectifs | both | Should | M | À FAIRE | validation avant création |
+| NT-125 | Suivi des recommandations du coach | both | Could | L | À FAIRE | — |
+| NT-126 | Plan d'entraînement | both | Could | L | À FAIRE | dépend NT-123/NT-124 |
+| NT-130 | Templates de session | app | Must | S | À FAIRE | quick win — dernier setup + favoris |
+| NT-131 | Session live au stand | app | Should | M | À FAIRE | saisie au fil du tir + chrono repos |
+| NT-132 | Spike — saisie vocale d'une série | app | Could | S | À FAIRE | go/no-go en environnement stand |
 
 ## Prochaines actions app (hors FAIT), par priorité
 
-- **Should** — NT-033 (écran Coach transverse), NT-042 (édition profil à confirmer).
-- **Could** — NT-007, NT-014, NT-015, NT-016, NT-023, NT-024, NT-025, NT-044, NT-056, NT-057, NT-073, NT-074, NT-076.
-- **Won't-now** — NT-005/006, NT-045, NT-046, NT-047, NT-090, NT-091.
+- **Must** — NT-005 (photo de cible), NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session).
+- **Should** — NT-042 (édition profil à confirmer), NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-131. NT-033 : voir NT-120/NT-121.
+- **Could** — NT-007, NT-014, NT-015, NT-016, NT-024, NT-025, NT-044, NT-056, NT-057, NT-073, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132. NT-023 : voir NT-122/NT-123.
+- **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.

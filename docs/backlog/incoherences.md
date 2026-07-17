@@ -41,10 +41,10 @@
 - **Résolution (Claude, auto — le code fait foi).** Profil enrichi acté (NT-042 = FAIT). Le backlog v0.1 est périmé sur ce point.
 - **Impact.** NT-042 = FAIT ; `AGENTS.md` serveur + backlog serveur à corriger (I6).
 
-### I4 — Facebook : serveur prêt, app absente
-- **Constat.** Serveur : `api/auth_facebook.py` fonctionnel. App : seul `signInWithGoogle` est câblé (`auth_service.dart`).
-- **Résolution (utilisateur, 2026-07-07).** « Facebook plus tard, optionnelle » : reste au backlog en **priorité basse**.
-- **Impact.** NT-044 : serveur = FAIT, app = À FAIRE (Could). Statut global À VÉRIFIER tant que l'app n'est pas alignée.
+### I4 — Facebook : code serveur présent mais à valider, app absente
+- **Constat.** Serveur : `api/auth_facebook.py` contient le flow (`/start` + `/callback`, échange de code, Graph API) mais **reste à valider** — couvert uniquement par des **tests mockés** (`tests/test_oauth_flows.py`), pas encore éprouvé contre une vraie app Facebook (credentials non configurés). App : seul `signInWithGoogle` est câblé (`auth_service.dart`).
+- **Résolution (utilisateur, 2026-07-07, précisée 2026-07-13).** « Facebook plus tard, optionnelle » : **non prioritaire**. Le code serveur présent mais non validé ne compte pas comme livré.
+- **Impact.** NT-044 = **À FAIRE** (Could) des deux côtés : serveur à valider, app à câbler.
 
 ### I5 — Multi-personas coach : annoncé, non livré
 - **Constat.** L'ancien backlog app prévoit « coach neutre / coach cool ». Le code n'a qu'un `coach_neutre.yaml`, mais le paramètre `prompt_variant` et le mapping `_VARIANT_FILES` sont déjà en place (app + serveur).

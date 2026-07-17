@@ -11,7 +11,7 @@
 > pointer vers lui (voir gouvernance).
 
 **Repo** : NexTarget-server (FastAPI + SQLModel + SQLite, OAuth + proxy IA)
-**Dernière projection** : 2026-07-07 (état du code)
+**Dernière projection** : 2026-07-13 (enrichissement thèmes 11–12 ; état du code : 2026-07-07)
 
 > ⚠️ **Le serveur n'est plus « OAuth-only ».** Il expose aussi le **proxy Coach IA**
 > (`/coach/analyze-session`). Les anciens statuts « M1/M2 supprimés/décalés » sont
@@ -26,10 +26,17 @@
 | NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | À FAIRE | `_VARIANT_FILES` prêt ; 1 seule variante livrée |
 | NT-033 | Écran "Coach" transverse (endpoint agrégé) | both | Should | L | À FAIRE | nécessitera un endpoint d'analyse multi-sessions |
 | NT-034 | Affiner les prompts des personas coach | server | Could | S | À FAIRE | itération contenu `coach_neutre`/`coach_cool` (recette S2) |
+| NT-111 | Analyse qualitative photo par le coach | both | Should | M | À FAIRE | endpoint proxy multimodal (ex. Pixtral), JWT + rate limit, specs cible dans le prompt |
+| NT-121 | Écran Coach : analyse de progression | both | Should | L | À FAIRE | endpoint d'analyse multi-sessions (payload agrégé NT-120) — remplace NT-033 |
+| NT-122 | Sortie coach structurée (JSON schema) | server | Must | M | À FAIRE | structured outputs conformes aux schémas `Exercise`/`Goal`, versionnés |
+| NT-123 | Coach propose des exercices | both | Should | L | À FAIRE | génération via NT-122 (précise NT-023) |
+| NT-124 | Coach propose des objectifs | both | Should | M | À FAIRE | génération via NT-122 |
+| NT-125 | Suivi des recommandations du coach | both | Could | L | À FAIRE | recos réinjectées dans le contexte d'analyse |
+| NT-126 | Plan d'entraînement | both | Could | L | À FAIRE | dépend NT-123/NT-124 |
 | NT-040 | Authentification OAuth Google | both | Must | M | FAIT | `api/auth_google.py`, `/auth/token` |
 | NT-042 | Profil utilisateur (nom/avatar/niveau) | both | Should | M | FAIT | `models/user.py` (champs profil) |
 | NT-043 | Endpoint `/users/me` | server | Must | S | FAIT | `api/users.py` |
-| NT-044 | Authentification OAuth Facebook | both | Could | M | FAIT | `api/auth_facebook.py` (côté app : à câbler) |
+| NT-044 | Authentification OAuth Facebook | both | Could | M | À FAIRE | code `api/auth_facebook.py` présent, à valider (tests mockés seulement, non éprouvé contre une vraie app FB) ; côté app non câblé ; non prioritaire |
 | NT-045 | Stats publiques / partage de profil | both | Won't-now | M | À FAIRE | — |
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE | — |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE | roadmap v0.2 |
