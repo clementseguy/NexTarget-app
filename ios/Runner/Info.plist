@@ -49,6 +49,10 @@
 	<true/>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>NexTarget utilise l'appareil photo pour prendre en photo la cible en fin de session de tir.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>NexTarget accède à vos photos pour attacher une photo de la cible à une session de tir.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

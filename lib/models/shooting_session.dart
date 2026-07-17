@@ -11,6 +11,7 @@ class ShootingSession {
   String? synthese;
   String category; // entraînement / match / test matériel
   List<String> exercises; // exercise IDs linked to this session (can be empty)
+  String? photoPath; // chemin local (persistant) de la photo de la cible (NT-005)
 
   ShootingSession({
     this.id,
@@ -23,6 +24,7 @@ class ShootingSession {
     this.synthese,
     this.category = 'entraînement',
     List<String>? exercises,
+    this.photoPath,
   }) : exercises = exercises ?? <String>[];
 
   Map<String, dynamic> toMap() {
@@ -37,6 +39,7 @@ class ShootingSession {
       'synthese': synthese,
       'category': category,
       'exercises': exercises,
+      'photoPath': photoPath,
     };
   }
 
@@ -59,8 +62,12 @@ class ShootingSession {
       exercises: (map['exercises'] is List)
           ? (map['exercises'] as List).whereType<String>().toList()
           : <String>[],
+      photoPath: map['photoPath'] as String?,
     );
   }
+
+  /// Indique si une photo de la cible est associée à cette session
+  bool get hasPhoto => (photoPath != null && photoPath!.trim().isNotEmpty);
 
   /// Indique si une analyse coach est disponible
   bool get hasAnalysis => (analyse != null && analyse!.trim().isNotEmpty);
