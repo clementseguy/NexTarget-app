@@ -662,6 +662,11 @@
 
 ## Backlog priorisé
 
+> ⚠️ **Plan historique.** Ce bloc reflète la planification établie avant
+> l'enrichissement des thèmes 10–13 et contient plusieurs items désormais
+> `FAIT`. Le plan courant de priorisation métier, dépendances et sprints
+> livrables est maintenu dans [`plan-sprints.md`](plan-sprints.md).
+
 > **Dernière mise à jour** : 2026-07-07.
 > Découpage en sprints de 2 semaines. Chaque sprint livre un produit (app +
 > serveur) cohérent, fonctionnel, sans régression. Les items FAIT ne figurent pas
