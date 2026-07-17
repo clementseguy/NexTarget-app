@@ -18,6 +18,7 @@ et ses vues dérivées. Il pilote le développement, y compris depuis Claude Cod
 | [`backlog-unifie.md`](backlog-unifie.md) | **LA source de vérité.** Tous les items produit (NT-XXX), groupés par thème. |
 | [`vue-app.md`](vue-app.md) | Projection des items de portée `app`/`both`. |
 | [`vue-serveur.md`](vue-serveur.md) | Projection des items de portée `server`/`both`. À copier dans le repo serveur. |
+| [`plan-sprints.md`](plan-sprints.md) | Vue de pilotage : tri métier + dépendances + planification par sprints livrables. |
 | [`incoherences.md`](incoherences.md) | Journal des écarts backlogs ⇄ code et des décisions. |
 
 ## Règle de synchronisation (impérative)

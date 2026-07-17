@@ -16,6 +16,7 @@ void main() {
         category: 'match',
         series: [Series(distance: 10, points: 50, groupSize: 20)],
         exercises: ['ex1'],
+        photoPath: '/tmp/session_photos/target_abc.jpg',
       );
       final map = ss.toMap();
       final ss2 = ShootingSession.fromMap(Map<String, dynamic>.from(map));
@@ -29,6 +30,8 @@ void main() {
       expect(ss2.exercises, ['ex1']);
       expect(ss2.hasAnalysis, isTrue);
       expect(ss2.hasSynthese, isTrue);
+      expect(ss2.photoPath, '/tmp/session_photos/target_abc.jpg');
+      expect(ss2.hasPhoto, isTrue);
     });
 
     test('fromMap tolerates missing/empty series and exercises', () {
@@ -41,6 +44,15 @@ void main() {
       expect(ss.category, 'entraînement');
       expect(ss.hasAnalysis, isFalse);
       expect(ss.hasSynthese, isFalse);
+      expect(ss.photoPath, isNull);
+      expect(ss.hasPhoto, isFalse);
+    });
+
+    test('hasPhoto is false for a blank photoPath', () {
+      final ss = ShootingSession(
+        weapon: 'P', caliber: '22LR', series: const [], photoPath: '   ',
+      );
+      expect(ss.hasPhoto, isFalse);
     });
   });
 }

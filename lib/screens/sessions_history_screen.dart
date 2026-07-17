@@ -1,9 +1,12 @@
 import '../widgets/session_card.dart';
 import 'package:flutter/material.dart';
 import '../services/session_service.dart';
+import '../services/exercise_service.dart';
 import '../constants/session_constants.dart';
 import 'session_detail_screen.dart';
 import '../models/shooting_session.dart';
+import '../models/exercise.dart';
+import '../utils/session_filters.dart';
 
 
 class SessionsHistoryScreen extends StatefulWidget {
@@ -15,8 +18,11 @@ class SessionsHistoryScreen extends StatefulWidget {
 
 class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
   final SessionService _sessionService = SessionService();
-  late Future<List<ShootingSession>> _sessionsFuture;
+  final ExerciseService _exerciseService = ExerciseService();
+  late Future<(List<ShootingSession>, List<Exercise>)> _dataFuture;
   String _filter = 'realized'; // realized | planned
+  // Filtre exercice (NT-007), combinable avec _filter. null = "Tous les exercices".
+  String? _exerciseFilter;
 
   /// Onglet actif, exposé pour que le bouton + (AppNavigator) crée une
   /// session du même statut que l'onglet affiché.
@@ -30,8 +36,14 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
 
   void refreshSessions() {
     setState(() {
-      _sessionsFuture = _sessionService.getAllSessions();
+      _dataFuture = _loadData();
     });
+  }
+
+  Future<(List<ShootingSession>, List<Exercise>)> _loadData() async {
+    final sessions = await _sessionService.getAllSessions();
+    final exercises = await _exerciseService.listAll();
+    return (sessions, exercises);
   }
 
   @override
@@ -42,15 +54,23 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<ShootingSession>>(
-        future: _sessionsFuture,
+    return FutureBuilder<(List<ShootingSession>, List<Exercise>)>(
+        future: _dataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
-      final all = (snapshot.data ?? []);
-      final realizedAll = all.where((s) => (s.status == SessionConstants.statusRealisee) && (s.date != null)).toList();
-      final plannedAll = all.where((s) => s.status == SessionConstants.statusPrevue).toList();
+      final all = snapshot.data?.$1 ?? <ShootingSession>[];
+      final exercises = snapshot.data?.$2 ?? <Exercise>[];
+      // Un exercice lié à une session peut avoir été supprimé depuis (aucune
+      // suppression en cascade côté ExerciseService) : si le filtre actif ne
+      // correspond plus à un exercice existant, on retombe silencieusement
+      // sur "Tous les exercices" plutôt que de planter le DropdownButtonFormField.
+      final effectiveExerciseFilter = exercises.any((e) => e.id == _exerciseFilter) ? _exerciseFilter : null;
+      final bool hasExerciseFilter = effectiveExerciseFilter != null;
+      final exerciseFiltered = SessionFilters.byExercise(all, effectiveExerciseFilter);
+      final realizedAll = exerciseFiltered.where((s) => (s.status == SessionConstants.statusRealisee) && (s.date != null)).toList();
+      final plannedAll = exerciseFiltered.where((s) => s.status == SessionConstants.statusPrevue).toList();
 
       List<ShootingSession> sessions = realizedAll;
       List<ShootingSession> planned = plannedAll;
@@ -116,6 +136,27 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
                             ],
                           ),
                         ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                          child: DropdownButtonFormField<String?>(
+                            initialValue: effectiveExerciseFilter,
+                            isExpanded: true,
+                            decoration: const InputDecoration(
+                              labelText: 'Filtrer par exercice',
+                              prefixIcon: Icon(Icons.filter_alt_outlined),
+                              isDense: true,
+                              border: OutlineInputBorder(),
+                            ),
+                            items: [
+                              const DropdownMenuItem<String?>(value: null, child: Text('Tous les exercices')),
+                              ...exercises.map((e) => DropdownMenuItem<String?>(
+                                    value: e.id,
+                                    child: Text(e.name, overflow: TextOverflow.ellipsis),
+                                  )),
+                            ],
+                            onChanged: (id) => setState(() => _exerciseFilter = id),
+                          ),
+                        ),
                         if (_filter == 'realized')
                           _SummaryHeader(nbSessions: nbSessions, totalSeries: totalSeries, avgSeries: avgSeries, daysActive: daysActive)
                         else
@@ -137,9 +178,13 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
                           children: [
                             Icon(Icons.pending_actions, size: 48, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
                             SizedBox(height: 12),
-                            Text('Aucune session prévue', style: TextStyle(fontWeight: FontWeight.w600)),
+                            Text(hasExerciseFilter ? 'Aucune session prévue pour cet exercice' : 'Aucune session prévue', style: TextStyle(fontWeight: FontWeight.w600)),
                             SizedBox(height: 8),
-                            Text('Crée une session prévue depuis le +', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
+                            Text(
+                              hasExerciseFilter ? 'Essaie un autre exercice ou réinitialise le filtre.' : 'Crée une session prévue depuis le +',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                            ),
                           ],
                         ),
                       );
@@ -154,9 +199,13 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
                           children: [
                             Icon(Icons.insights_outlined, size: 48, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
                             SizedBox(height: 12),
-                            Text('Aucune session réalisée', style: TextStyle(fontWeight: FontWeight.w600)),
+                            Text(hasExerciseFilter ? 'Aucune session réalisée pour cet exercice' : 'Aucune session réalisée', style: TextStyle(fontWeight: FontWeight.w600)),
                             SizedBox(height: 8),
-                            Text('Utilise le bouton + pour ajouter ta première.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
+                            Text(
+                              hasExerciseFilter ? 'Essaie un autre exercice ou réinitialise le filtre.' : 'Utilise le bouton + pour ajouter ta première.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                            ),
                           ],
                         ),
                       );

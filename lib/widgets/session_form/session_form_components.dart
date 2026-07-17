@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 /// Composants réutilisables pour session_form
@@ -313,6 +314,129 @@ class ExercisesSelector extends StatelessWidget {
                   onSelected: (_) => onToggle(ex.id),
                 );
               }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Sélecteur/aperçu de la photo de la cible attachée à la session (NT-005).
+/// Propose systématiquement les deux modes de capture (galerie ET appareil photo).
+class SessionPhotoField extends StatelessWidget {
+  final String? photoPath;
+  final bool isBusy;
+  final VoidCallback onPickFromGallery;
+  final VoidCallback onPickFromCamera;
+  final VoidCallback onRemove;
+
+  /// Permet d'injecter un [ImageProvider] alternatif (utilisé par les tests
+  /// widgets pour éviter le décodage réel de fichier via [FileImage], qui ne
+  /// se résout jamais en environnement headless). Par défaut, comportement
+  /// inchangé : [FileImage] sur [photoPath].
+  final ImageProvider Function(String path)? imageProviderBuilder;
+
+  const SessionPhotoField({
+    super.key,
+    required this.photoPath,
+    required this.onPickFromGallery,
+    required this.onPickFromCamera,
+    required this.onRemove,
+    this.isBusy = false,
+    this.imageProviderBuilder,
+  });
+
+  bool get _hasPhoto => photoPath != null && photoPath!.trim().isNotEmpty;
+
+  ImageProvider _resolveImageProvider() =>
+      (imageProviderBuilder ?? (path) => FileImage(File(path)))(photoPath!);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: const [
+                Icon(Icons.photo_camera_outlined, color: Colors.amberAccent, size: 20),
+                SizedBox(width: 8),
+                Text('Photo de la cible', style: TextStyle(fontWeight: FontWeight.w600)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (isBusy)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.0),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              )
+            else if (_hasPhoto) ...[
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image(
+                      image: _resolveImageProvider(),
+                      width: double.infinity,
+                      height: 180,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: double.infinity,
+                        height: 180,
+                        color: Colors.black12,
+                        alignment: Alignment.center,
+                        child: const Text('Photo introuvable', style: TextStyle(color: Colors.white70)),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: IconButton.filled(
+                      icon: const Icon(Icons.close, size: 18),
+                      tooltip: 'Supprimer la photo',
+                      onPressed: onRemove,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ] else
+              const Padding(
+                padding: EdgeInsets.only(bottom: 4.0),
+                child: Text(
+                  'Aucune photo pour le moment',
+                  style: TextStyle(color: Colors.white54, fontSize: 12),
+                ),
+              ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: isBusy ? null : onPickFromGallery,
+                    icon: const Icon(Icons.photo_library_outlined),
+                    label: const Text('Galerie'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: isBusy ? null : onPickFromCamera,
+                    icon: const Icon(Icons.camera_alt_outlined),
+                    label: Text(_hasPhoto ? 'Reprendre' : 'Appareil photo'),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

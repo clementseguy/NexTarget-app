@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
@@ -426,6 +427,87 @@ class SessionSyntheseSection extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Section photo de la cible (NT-005)
+class SessionPhotoSection extends StatelessWidget {
+  final String photoPath;
+
+  /// Permet d'injecter un [ImageProvider] alternatif (utilisé par les tests
+  /// widgets pour éviter le décodage réel de fichier via [FileImage], qui ne
+  /// se résout jamais en environnement headless). Par défaut, comportement
+  /// inchangé : [FileImage] sur [photoPath].
+  final ImageProvider Function(String path)? imageProviderBuilder;
+
+  const SessionPhotoSection({
+    super.key,
+    required this.photoPath,
+    this.imageProviderBuilder,
+  });
+
+  ImageProvider _resolveImageProvider() =>
+      (imageProviderBuilder ?? (path) => FileImage(File(path)))(photoPath);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.photo_camera_outlined, size: 18, color: Theme.of(context).colorScheme.secondary),
+                const SizedBox(width: 8),
+                const Text('Photo de la cible', style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: GestureDetector(
+                onTap: () => _showFullScreen(context),
+                child: Image(
+                  image: _resolveImageProvider(),
+                  width: double.infinity,
+                  height: 220,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: double.infinity,
+                    height: 120,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
+                    alignment: Alignment.center,
+                    child: const Text('Photo introuvable'),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showFullScreen(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        insetPadding: const EdgeInsets.all(12),
+        child: InteractiveViewer(
+          child: Image(
+            image: _resolveImageProvider(),
+            errorBuilder: (context, error, stackTrace) => const Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Text('Photo introuvable'),
+            ),
+          ),
         ),
       ),
     );

@@ -137,6 +137,10 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
         padding: EdgeInsets.all(16),
         children: [
           SessionHeaderCard(session: session, series: series, planned: isPlanned),
+          if (session.hasPhoto) ...[
+            SizedBox(height: 16),
+            SessionPhotoSection(photoPath: session.photoPath!),
+          ],
           if (session.exercises.isNotEmpty) ...[
             SizedBox(height: 16),
             SessionExercisesSection(
