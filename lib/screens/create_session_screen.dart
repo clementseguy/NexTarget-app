@@ -1,20 +1,26 @@
-
 import 'package:flutter/material.dart';
 import '../widgets/session_form.dart';
 import '../models/shooting_session.dart';
 
-
 import '../services/session_service.dart';
-
+import '../services/session_template_service.dart';
 
 class CreateSessionScreen extends StatelessWidget {
   final Map<String, dynamic>? initialSessionData;
   final bool isEdit;
-  const CreateSessionScreen({super.key, this.initialSessionData, this.isEdit = false});
+  final SessionService? sessionService;
+  final SessionTemplateService? templateService;
+  const CreateSessionScreen({
+    super.key,
+    this.initialSessionData,
+    this.isEdit = false,
+    this.sessionService,
+    this.templateService,
+  });
 
   @override
   Widget build(BuildContext context) {
-  final formKey = GlobalKey<SessionFormState>();
+    final formKey = GlobalKey<SessionFormState>();
     ShootingSession? pendingSession; // tampon local avant sauvegarde
     return StatefulBuilder(
       builder: (ctx, setLocalState) {
@@ -34,11 +40,15 @@ class CreateSessionScreen extends StatelessWidget {
                   }
                   try {
                     final s = pendingSession!;
+                    final sessions = sessionService ?? SessionService();
+                    final templates =
+                        templateService ?? SessionTemplateService();
                     if (isEdit) {
-                      await SessionService().updateSession(s);
+                      await sessions.updateSession(s);
                     } else {
-                      await SessionService().addSession(s);
+                      await sessions.addSession(s);
                     }
+                    await templates.recordLastSetup(s);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Session enregistrée')),

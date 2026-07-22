@@ -33,7 +33,9 @@ class RollingStatsService implements IRollingStatsService {
       final d = s.date;
       if (d == null) continue;
       // total points per session
-      final totalPoints = s.series.fold<int>(0, (acc, e) => acc + e.points);
+      final totalPoints = s.series
+          .where((e) => e.isScoreCounted)
+          .fold<int>(0, (acc, e) => acc + e.scoredPoints);
       if (d.isAfter(limit60)) {
         sum60 += totalPoints.toDouble();
         count60++;
@@ -44,16 +46,17 @@ class RollingStatsService implements IRollingStatsService {
       }
     }
 
-  final double avg60 = count60 == 0 ? 0 : (sum60 / count60);
-  final double avg30 = count30 == 0 ? 0 : (sum30 / count30);
-  final double delta = avg30 - avg60;
+    final double avg60 = count60 == 0 ? 0 : (sum60 / count60);
+    final double avg30 = count30 == 0 ? 0 : (sum30 / count30);
+    final double delta = avg30 - avg60;
 
-    AppLogger.I.debug('Rolling stats: avg30=$avg30 avg60=$avg60 delta=$delta sessions30=$count30 sessions60=$count60');
+    AppLogger.I.debug(
+        'Rolling stats: avg30=$avg30 avg60=$avg60 delta=$delta sessions30=$count30 sessions60=$count60');
 
     return RollingStatsSnapshot(
-  avg30: avg30.toDouble(),
-  avg60: avg60.toDouble(),
-  delta: delta.toDouble(),
+      avg30: avg30.toDouble(),
+      avg60: avg60.toDouble(),
+      delta: delta.toDouble(),
       sessions30: count30,
       sessions60: count60,
     );

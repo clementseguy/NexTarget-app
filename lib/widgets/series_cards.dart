@@ -8,24 +8,37 @@ class ValueChip extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
-  const ValueChip({super.key, required this.icon, required this.label, required this.value, required this.color});
+  const ValueChip(
+      {super.key,
+      required this.icon,
+      required this.label,
+      required this.value,
+      required this.color});
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-  color: color.withValues(alpha: 0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(10),
-  border: Border.all(color: color.withValues(alpha: 0.35), width: 0.8),
+        border: Border.all(color: color.withValues(alpha: 0.35), width: 0.8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 10,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6))),
           const SizedBox(width: 4),
-          Text(value, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 12, fontWeight: FontWeight.w600, color: color)),
         ],
       ),
     );
@@ -38,12 +51,21 @@ class SeriesDisplayCard extends StatelessWidget {
   final int index;
   final bool highlightBestPoints;
   final bool highlightBestGroup;
-  const SeriesDisplayCard({super.key, required this.series, required this.index, this.highlightBestPoints = false, this.highlightBestGroup = false});
+  const SeriesDisplayCard(
+      {super.key,
+      required this.series,
+      required this.index,
+      this.highlightBestPoints = false,
+      this.highlightBestGroup = false});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final borderColor = highlightBestPoints ? Colors.amberAccent : highlightBestGroup ? Colors.tealAccent : colorScheme.onSurface.withValues(alpha: 0.12);
+    final borderColor = highlightBestPoints
+        ? Colors.amberAccent
+        : highlightBestGroup
+            ? Colors.tealAccent
+            : colorScheme.onSurface.withValues(alpha: 0.12);
     final cardBg = Theme.of(context).cardColor;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -52,7 +74,9 @@ class SeriesDisplayCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: borderColor.withValues(alpha: 0.55), width: highlightBestPoints || highlightBestGroup ? 1.2 : 0.6),
+          border: Border.all(
+              color: borderColor.withValues(alpha: 0.55),
+              width: highlightBestPoints || highlightBestGroup ? 1.2 : 0.6),
           color: cardBg,
         ),
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -61,8 +85,18 @@ class SeriesDisplayCard extends StatelessWidget {
           children: [
             LayoutBuilder(builder: (context, constraints) {
               final badges = <Widget>[];
-              if (highlightBestPoints) badges.add(_Badge(label: 'Meilleurs points', icon: Icons.star, color: Colors.amberAccent));
-              if (highlightBestGroup) badges.add(_Badge(label: 'Meilleur groupement', icon: Icons.bubble_chart, color: Colors.tealAccent));
+              if (highlightBestPoints) {
+                badges.add(_Badge(
+                    label: 'Meilleurs points',
+                    icon: Icons.star,
+                    color: Colors.amberAccent));
+              }
+              if (highlightBestGroup) {
+                badges.add(_Badge(
+                    label: 'Meilleur groupement',
+                    icon: Icons.bubble_chart,
+                    color: Colors.tealAccent));
+              }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -70,8 +104,12 @@ class SeriesDisplayCard extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 15,
-                        backgroundColor: colorScheme.primary.withValues(alpha: 0.85),
-                        child: Text('${index + 1}', style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onPrimary)),
+                        backgroundColor:
+                            colorScheme.primary.withValues(alpha: 0.85),
+                        child: Text('${index + 1}',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.onPrimary)),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -101,15 +139,49 @@ class SeriesDisplayCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                ValueChip(icon: Icons.bolt, label: 'Coups', value: '${series.shotCount}', color: Colors.orangeAccent),
-                ValueChip(icon: Icons.social_distance, label: 'Distance', value: '${series.distance.toStringAsFixed(0)}m', color: Colors.lightBlueAccent),
-                ValueChip(icon: Icons.score, label: 'Points', value: '${series.points}', color: Colors.pinkAccent),
-                ValueChip(icon: Icons.circle, label: 'Groupement', value: '${series.groupSize.toStringAsFixed(1)} cm', color: Colors.tealAccent),
+                ValueChip(
+                    icon: Icons.bolt,
+                    label: 'Coups',
+                    value: '${series.shotCount}',
+                    color: Colors.orangeAccent),
+                ValueChip(
+                    icon: Icons.social_distance,
+                    label: 'Distance',
+                    value: '${series.distance.toStringAsFixed(0)}m',
+                    color: Colors.lightBlueAccent),
+                if (series.scoringMode == SeriesScoringMode.gongsTombes)
+                  ValueChip(
+                      icon: Icons.adjust,
+                      label: 'Gongs',
+                      value:
+                          '${series.gongsHit ?? 0} (${series.scoredPoints} pts)',
+                      color: Colors.pinkAccent)
+                else
+                  ValueChip(
+                      icon: Icons.score,
+                      label: 'Points',
+                      value: '${series.points}',
+                      color: Colors.pinkAccent),
+                ValueChip(
+                    icon: Icons.circle,
+                    label: 'Groupement',
+                    value: '${series.groupSize.toStringAsFixed(1)} cm',
+                    color: Colors.tealAccent),
+                if (series.sequenceType != null)
+                  ValueChip(
+                      icon: Icons.timer_outlined,
+                      label: _sequenceLabel(series.sequenceType!),
+                      value:
+                          series.timeLimitLabel ?? series.targetType ?? 'TAR',
+                      color: Colors.purpleAccent),
               ],
             ),
             if (series.comment.trim().isNotEmpty) ...[
               const SizedBox(height: 10),
-              Text(series.comment.trim(), style: TextStyle(fontSize: 12.5, color: colorScheme.onSurface.withValues(alpha: 0.7))),
+              Text(series.comment.trim(),
+                  style: TextStyle(
+                      fontSize: 12.5,
+                      color: colorScheme.onSurface.withValues(alpha: 0.7))),
             ],
           ],
         ),
@@ -119,7 +191,9 @@ class SeriesDisplayCard extends StatelessWidget {
 }
 
 class _Badge extends StatelessWidget {
-  final String label; final IconData icon; final Color color;
+  final String label;
+  final IconData icon;
+  final Color color;
   const _Badge({required this.label, required this.icon, required this.color});
   @override
   Widget build(BuildContext context) {
@@ -127,16 +201,18 @@ class _Badge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       margin: const EdgeInsets.only(left: 6),
       decoration: BoxDecoration(
-  color: color.withValues(alpha: 0.17),
+        color: color.withValues(alpha: 0.17),
         borderRadius: BorderRadius.circular(12),
-  border: Border.all(color: color.withValues(alpha: 0.6), width: 0.8),
+        border: Border.all(color: color.withValues(alpha: 0.6), width: 0.8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: color)),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 10.5, fontWeight: FontWeight.w600, color: color)),
         ],
       ),
     );
@@ -151,19 +227,38 @@ class SeriesEditCard extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onDuplicate;
   final VoidCallback? onChanged;
-  const SeriesEditCard({super.key, required this.index, required this.controllers, required this.canDelete, required this.onDelete, required this.onDuplicate, this.onChanged});
+  const SeriesEditCard(
+      {super.key,
+      required this.index,
+      required this.controllers,
+      required this.canDelete,
+      required this.onDelete,
+      required this.onDuplicate,
+      this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     InputDecoration fieldDec(String label, {String? suffix}) => InputDecoration(
-      labelText: label,
-      suffixText: suffix,
-      isDense: true,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    );
+          labelText: label,
+          suffixText: suffix,
+          isDense: true,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        );
 
-    void notify() { if (onChanged != null) onChanged!(); }
+    void notify() {
+      if (onChanged != null) onChanged!();
+    }
+
+    void notifyGongsChanged() {
+      controllers.syncGongPoints();
+      notify();
+    }
+
+    final parsedShotCount =
+        int.tryParse(controllers.shotCountController.text.trim()) ?? 0;
+    final gongsMax = parsedShotCount > 0 ? parsedShotCount.toDouble() : 10.0;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -179,10 +274,23 @@ class SeriesEditCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 15,
                   backgroundColor: Colors.amberAccent.withValues(alpha: 0.85),
-                  child: Text('${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                  child: Text('${index + 1}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.black)),
                 ),
                 const SizedBox(width: 10),
-                Text('Série ${index + 1}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text('Série ${index + 1}',
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                if (controllers.sequenceType != null) ...[
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: _TarSeriesBadge(
+                      sequenceType: controllers.sequenceType!,
+                      targetType: controllers.targetType,
+                      timeLimitLabel: controllers.timeLimitLabel,
+                    ),
+                  ),
+                ],
                 const Spacer(),
                 _PriseSelector(
                   initial: controllers.handMethod,
@@ -192,14 +300,23 @@ class SeriesEditCard extends StatelessWidget {
                   },
                 ),
                 const SizedBox(width: 4),
-                IconButton(onPressed: onDuplicate, icon: const Icon(Icons.copy, size: 18), tooltip: 'Dupliquer'),
-                if (canDelete) IconButton(onPressed: onDelete, icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20), tooltip: 'Supprimer'),
+                IconButton(
+                    onPressed: onDuplicate,
+                    icon: const Icon(Icons.copy, size: 18),
+                    tooltip: 'Dupliquer'),
+                if (canDelete)
+                  IconButton(
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete_outline,
+                          color: Colors.redAccent, size: 20),
+                      tooltip: 'Supprimer'),
               ],
             ),
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: _StepperField(
+                Expanded(
+                    child: _StepperField(
                   controller: controllers.shotCountController,
                   focusNode: controllers.shotCountFocus,
                   label: 'Coups',
@@ -207,10 +324,12 @@ class SeriesEditCard extends StatelessWidget {
                   max: 200,
                   step: 1,
                   width: 80,
-                  onChanged: notify,
+                  onChanged:
+                      controllers.isGongScoring ? notifyGongsChanged : notify,
                 )),
                 const SizedBox(width: 8),
-                Expanded(child: _StepperField(
+                Expanded(
+                    child: _StepperField(
                   controller: controllers.distanceController,
                   focusNode: controllers.distanceFocus,
                   label: 'Distance',
@@ -223,16 +342,30 @@ class SeriesEditCard extends StatelessWidget {
                   onChanged: notify,
                 )),
                 const SizedBox(width: 8),
-                Expanded(child: _StepperField(
-                  controller: controllers.pointsController,
-                  focusNode: controllers.pointsFocus,
-                  label: 'Points',
-                  min: 0,
-                  max: 4000,
-                  step: 1,
-                  width: 90,
-                  onChanged: notify,
-                )),
+                if (controllers.isGongScoring)
+                  Expanded(
+                      child: _StepperField(
+                    controller: controllers.gongsHitController,
+                    focusNode: controllers.gongsHitFocus,
+                    label: 'Gongs',
+                    min: 0,
+                    max: gongsMax,
+                    step: 1,
+                    width: 90,
+                    onChanged: notifyGongsChanged,
+                  ))
+                else
+                  Expanded(
+                      child: _StepperField(
+                    controller: controllers.pointsController,
+                    focusNode: controllers.pointsFocus,
+                    label: 'Points',
+                    min: 0,
+                    max: 4000,
+                    step: 1,
+                    width: 90,
+                    onChanged: notify,
+                  )),
               ],
             ),
             const SizedBox(height: 10),
@@ -281,7 +414,17 @@ class _StepperField extends StatefulWidget {
   final String? suffix;
   final bool decimal;
   final VoidCallback onChanged;
-  const _StepperField({required this.controller, required this.focusNode, required this.label, required this.min, required this.max, required this.step, required this.width, this.suffix, this.decimal = false, required this.onChanged});
+  const _StepperField(
+      {required this.controller,
+      required this.focusNode,
+      required this.label,
+      required this.min,
+      required this.max,
+      required this.step,
+      required this.width,
+      this.suffix,
+      this.decimal = false,
+      required this.onChanged});
   @override
   State<_StepperField> createState() => _StepperFieldState();
 }
@@ -291,20 +434,54 @@ class _StepperFieldState extends State<_StepperField> {
   @override
   void initState() {
     super.initState();
-    _value = double.tryParse(widget.controller.text.replaceAll(',', '.')) ?? widget.min;
-    widget.controller.text = widget.decimal ? _value.toStringAsFixed( widget.step < 1 ? 1 : 0) : _value.toStringAsFixed(0);
+    _value = double.tryParse(widget.controller.text.replaceAll(',', '.')) ??
+        widget.min;
+    widget.controller.text = widget.decimal
+        ? _value.toStringAsFixed(widget.step < 1 ? 1 : 0)
+        : _value.toStringAsFixed(0);
+  }
+
+  @override
+  void didUpdateWidget(covariant _StepperField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller ||
+        oldWidget.min != widget.min ||
+        oldWidget.max != widget.max) {
+      _value = double.tryParse(widget.controller.text.replaceAll(',', '.')) ??
+          widget.min;
+      _value = _value.clamp(widget.min, widget.max);
+      final str = widget.decimal
+          ? _value.toStringAsFixed(widget.step < 1 ? 1 : 0)
+          : _value.toStringAsFixed(0);
+      if (widget.controller.text != str) {
+        widget.controller.text = str;
+      }
+    }
   }
 
   void _apply() {
-    final str = widget.decimal ? _value.toStringAsFixed( widget.step < 1 ? 1 : 0) : _value.toStringAsFixed(0);
+    final str = widget.decimal
+        ? _value.toStringAsFixed(widget.step < 1 ? 1 : 0)
+        : _value.toStringAsFixed(0);
     if (widget.controller.text != str) {
       widget.controller.text = str;
     }
     widget.onChanged();
   }
 
-  void _inc() { setState(() { _value = (_value + widget.step).clamp(widget.min, widget.max); }); _apply(); }
-  void _dec() { setState(() { _value = (_value - widget.step).clamp(widget.min, widget.max); }); _apply(); }
+  void _inc() {
+    setState(() {
+      _value = (_value + widget.step).clamp(widget.min, widget.max);
+    });
+    _apply();
+  }
+
+  void _dec() {
+    setState(() {
+      _value = (_value - widget.step).clamp(widget.min, widget.max);
+    });
+    _apply();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -324,7 +501,8 @@ class _StepperFieldState extends State<_StepperField> {
               controller: widget.controller,
               focusNode: widget.focusNode,
               decoration: decoration,
-              keyboardType: TextInputType.numberWithOptions(decimal: widget.decimal),
+              keyboardType:
+                  TextInputType.numberWithOptions(decimal: widget.decimal),
               onChanged: (t) {
                 final parsed = double.tryParse(t.replaceAll(',', '.'));
                 if (parsed != null) {
@@ -348,8 +526,66 @@ class _StepperFieldState extends State<_StepperField> {
   }
 }
 
+class _TarSeriesBadge extends StatelessWidget {
+  final TarSequenceType sequenceType;
+  final String? targetType;
+  final String? timeLimitLabel;
+
+  const _TarSeriesBadge({
+    required this.sequenceType,
+    this.targetType,
+    this.timeLimitLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = sequenceType == TarSequenceType.essai
+        ? Colors.blueGrey
+        : sequenceType == TarSequenceType.precision
+            ? Colors.lightBlueAccent
+            : Colors.deepOrangeAccent;
+    final details = [
+      if (targetType != null && targetType!.trim().isNotEmpty) targetType!,
+      if (timeLimitLabel != null && timeLimitLabel!.trim().isNotEmpty)
+        timeLimitLabel!,
+    ].join(' - ');
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.5), width: 0.8),
+      ),
+      child: Text(
+        details.isEmpty
+            ? _sequenceLabel(sequenceType)
+            : '${_sequenceLabel(sequenceType)} - $details',
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
+        style: TextStyle(
+          color: color,
+          fontSize: 10.5,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+String _sequenceLabel(TarSequenceType type) {
+  switch (type) {
+    case TarSequenceType.essai:
+      return 'Essai';
+    case TarSequenceType.precision:
+      return 'Precision';
+    case TarSequenceType.vitesse:
+      return 'Vitesse';
+  }
+}
+
 class _MiniIconBtn extends StatelessWidget {
-  final IconData icon; final VoidCallback onTap;
+  final IconData icon;
+  final VoidCallback onTap;
   const _MiniIconBtn({required this.icon, required this.onTap});
   @override
   Widget build(BuildContext context) {
@@ -376,21 +612,25 @@ class _PriseBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final isOne = method == HandMethod.oneHand;
     final color = isOne ? Colors.deepOrangeAccent : Colors.lightGreenAccent;
-  final Widget icon = isOne ? const Icon(Icons.front_hand, size: 13, color: null) : const TwoFistsIcon(size: 15);
+    final Widget icon = isOne
+        ? const Icon(Icons.front_hand, size: 13, color: null)
+        : const TwoFistsIcon(size: 15);
     return Container(
       margin: const EdgeInsets.only(left: 6),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
-  color: color.withValues(alpha: 0.16),
+        color: color.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(10),
-  border: Border.all(color: color.withValues(alpha: 0.55), width: 0.8),
+        border: Border.all(color: color.withValues(alpha: 0.55), width: 0.8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           IconTheme(data: IconThemeData(color: color, size: 13), child: icon),
           const SizedBox(width: 3),
-            Text(isOne ? '1 main' : '2 mains', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color)),
+          Text(isOne ? '1 main' : '2 mains',
+              style: TextStyle(
+                  fontSize: 10, fontWeight: FontWeight.w600, color: color)),
         ],
       ),
     );
@@ -408,8 +648,16 @@ class _PriseSelector extends StatefulWidget {
 class _PriseSelectorState extends State<_PriseSelector> {
   late String _value;
   @override
-  void initState() { super.initState(); _value = widget.initial; }
-  void _set(String v) { setState(() => _value = v); widget.onChanged(v); }
+  void initState() {
+    super.initState();
+    _value = widget.initial;
+  }
+
+  void _set(String v) {
+    setState(() => _value = v);
+    widget.onChanged(v);
+  }
+
   @override
   Widget build(BuildContext context) {
     return ToggleButtons(
@@ -418,8 +666,12 @@ class _PriseSelectorState extends State<_PriseSelector> {
       constraints: const BoxConstraints(minHeight: 30, minWidth: 40),
       onPressed: (i) => _set(i == 0 ? 'one' : 'two'),
       children: const [
-        Padding(padding: EdgeInsets.symmetric(horizontal:6), child: Icon(Icons.front_hand, size:16)),
-         Padding(padding: EdgeInsets.symmetric(horizontal:6), child: TwoFistsIcon(size:16)),
+        Padding(
+            padding: EdgeInsets.symmetric(horizontal: 6),
+            child: Icon(Icons.front_hand, size: 16)),
+        Padding(
+            padding: EdgeInsets.symmetric(horizontal: 6),
+            child: TwoFistsIcon(size: 16)),
       ],
     );
   }
@@ -441,9 +693,10 @@ class TwoFistsIcon extends StatelessWidget {
           Positioned(
             left: 0,
             top: 0,
-            child: Icon(Icons.front_hand, size: size * 0.88, color: color.withValues(alpha: 0.85)),
+            child: Icon(Icons.front_hand,
+                size: size * 0.88, color: color.withValues(alpha: 0.85)),
           ),
-            Positioned(
+          Positioned(
             left: size * 0.5,
             top: 0,
             child: Icon(Icons.front_hand, size: size, color: color),

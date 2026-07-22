@@ -1,0 +1,85 @@
+referentiel:
+  source: "Reglement TAR FFTir 2025-2026"
+  saison: "2025-2026"
+  version_doc: "2026-01-12"
+
+epreuves:
+  - code: "830"
+    nom: "Pistolet / Revolver - armes recentes"
+    distance_m: 25
+    position: debout
+    coups_total: 35
+    coups_par_chargeur: 5
+    score_max: 200
+    contraintes_arme:
+      calibre_mm: [7.62, 11.60]
+      visee: "fixe et ouverte"
+      detente_min_kg: 1.360
+      canon_max_cm: {pistolet: 13, revolver: 15.5}
+    sequences:
+      - {type: essai, cible: C50, coups: 5, tenue: "1 ou 2 mains", temps: "3 min"}
+      - {type: precision, cible: C50, coups: 10, tenue: "1 main bras franc", temps: "7 min", series: "2x5"}
+      - {type: vitesse, cible: gong, coups: 10, tenue: "1 ou 2 mains", temps: "2 x 20 s", series: "2x5"}
+      - {type: vitesse, cible: gong, coups: 10, tenue: "1 ou 2 mains", temps: "2 x 10 s", series: "2x5"}
+    scoring: {precision: "pts/zone ISSF", gong_tombe_pts: 5}
+
+  - code: "832"
+    nom: "Pistolet / Revolver - armes authentiques"
+    identique_a: "830"
+
+  - code: "831"
+    nom: "Vitesse reglementaire"
+    distance_m: 25
+    position: debout
+    coups_total: 25
+    coups_par_chargeur: 5
+    score_max: 200
+    sequences:
+      - {type: essai, cible: cible_vitesse_25m, coups: 5, tenue: "1 ou 2 mains", temps: "20 s"}
+      - {type: vitesse, cible: cible_vitesse_25m, coups: 10, tenue: "1 ou 2 mains", temps: "2 x 20 s", series: "2x5"}
+      - {type: vitesse, cible: cible_vitesse_25m, coups: 10, tenue: "1 ou 2 mains", temps: "2 x 10 s", series: "2x5"}
+    scoring: {tout: "pts/zone"}
+
+cibles:
+  C50:
+    format_mm: [550, 520]
+    zones_diametre_mm:
+      mouche: 50
+      "10": 100
+      "9": 180
+      "8": 260
+      "7": 340
+      "6": 420
+      "5": 500
+  cible_vitesse_25m:
+    format_mm: [550, 520]
+    zones_diametre_mm:
+      mouche: 25
+      "10": 50
+      "9": 100
+      "8": 150
+      "7": 200
+      "6": 250
+      "5": 300
+      "4": 350
+      "3": 400
+      "2": 450
+      "1": 500
+  gong:
+    nombre: 5
+    format_mm: [200, 200]
+    espacement_bord_a_bord_cm: 20
+    hauteur_centre_25m_m: 1.40
+
+regles_comptage:
+  jauge: interdite
+  hors_zone: "coup manque (0)"
+  cibles_par_match: 2
+  departage_egalite:
+    - "meilleure serie de 10 en vitesse, puis en precision"
+    - "nombre de 10, puis de 9, de 8..."
+    - "nombre de mouches"
+  penalites:
+    coup_en_trop: "annule + -2 pts"
+    coup_hors_temps: "compte 0, meilleur impact retire, -2 pts (precision)"
+  position_pret_vitesse: "bras abaisse a 45 deg max de la verticale"

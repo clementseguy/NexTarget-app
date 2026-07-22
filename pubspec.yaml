@@ -53,3 +53,4 @@ flutter:
   assets:
     - assets/app_logo.png # conservé temporairement (legacy)
     - assets/config.yaml
+    - assets/disciplines_tar.yaml

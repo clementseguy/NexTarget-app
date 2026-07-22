@@ -9,7 +9,8 @@ class SeriesStat {
   final double groupSize;
   final double distance;
   final String category;
-  final int seriesIndexInSession; // position de la série dans sa session (1-based)
+  final int
+      seriesIndexInSession; // position de la série dans sa session (1-based)
   final HandMethod handMethod; // prise (1 main / 2 mains)
   SeriesStat({
     required this.date,
@@ -38,14 +39,16 @@ class StatsService implements IStatsService {
     final List<SeriesStat> list = [];
     // Strict chronological ordering: by date then by intra-session order (F14)
     final ordered = List<ShootingSession>.from(realized)
-      ..sort((a, b) => (a.date ?? DateTime(1970)).compareTo(b.date ?? DateTime(1970)));
+      ..sort((a, b) =>
+          (a.date ?? DateTime(1970)).compareTo(b.date ?? DateTime(1970)));
     for (final s in ordered) {
       final date = s.date ?? DateTime.fromMillisecondsSinceEpoch(0);
       for (int i = 0; i < s.series.length; i++) {
         final serie = s.series[i];
+        if (!serie.isScoreCounted) continue;
         list.add(SeriesStat(
           date: date,
-          points: serie.points,
+          points: serie.scoredPoints,
           groupSize: serie.groupSize,
           distance: serie.distance,
           category: s.category,
@@ -78,9 +81,11 @@ class StatsService implements IStatsService {
 
   // Public KPIs
   @override
-  double averagePointsLast30Days() => _avgPoints(_filterLast(const Duration(days: 30)));
+  double averagePointsLast30Days() =>
+      _avgPoints(_filterLast(const Duration(days: 30)));
   @override
-  double averageGroupSizeLast30Days() => _avgGroupSize(_filterLast(const Duration(days: 30)));
+  double averageGroupSizeLast30Days() =>
+      _avgGroupSize(_filterLast(const Duration(days: 30)));
 
   @override
   SeriesStat? bestSeriesByPoints() {
@@ -96,13 +101,17 @@ class StatsService implements IStatsService {
   int sessionsCountCurrentMonth() {
     final now = _now;
     final realized = SessionFilters.realizedWithDate(sessions);
-    return realized.where((s) => s.date!.year == now.year && s.date!.month == now.month).length;
+    return realized
+        .where((s) => s.date!.year == now.year && s.date!.month == now.month)
+        .length;
   }
 
   // Moyenne mobile des points (window par défaut 3)
   @override
   List<double> movingAveragePoints({int window = 3}) {
-    if (_series.isEmpty || window <= 1) return _series.map((e) => e.points.toDouble()).toList();
+    if (_series.isEmpty || window <= 1) {
+      return _series.map((e) => e.points.toDouble()).toList();
+    }
     final List<double> result = [];
     final values = _series.map((e) => e.points.toDouble()).toList();
     for (int i = 0; i < values.length; i++) {
@@ -117,11 +126,12 @@ class StatsService implements IStatsService {
   // ===== Phase 2 Metrics =====
   double _stdDev(List<SeriesStat> list) {
     if (list.length < 2) return 0;
-    final mean = list.fold<int>(0, (a,b)=> a + b.points) / list.length;
+    final mean = list.fold<int>(0, (a, b) => a + b.points) / list.length;
     final variance = list.fold<double>(0, (acc, e) {
-      final diff = e.points - mean;
-      return acc + diff * diff;
-    }) / list.length;
+          final diff = e.points - mean;
+          return acc + diff * diff;
+        }) /
+        list.length;
     return variance <= 0 ? 0 : variance.sqrtNewton();
   }
 
@@ -143,7 +153,11 @@ class StatsService implements IStatsService {
     final currentWindow = now.subtract(const Duration(days: 30));
     final previousWindowStart = now.subtract(const Duration(days: 60));
     final curr = _series.where((s) => s.date.isAfter(currentWindow)).toList();
-    final prev = _series.where((s) => s.date.isAfter(previousWindowStart) && s.date.isBefore(currentWindow)).toList();
+    final prev = _series
+        .where((s) =>
+            s.date.isAfter(previousWindowStart) &&
+            s.date.isBefore(currentWindow))
+        .toList();
     if (curr.length < 5 || prev.length < 5) return double.nan; // insuffisant
     final avgCurr = _avgPoints(curr);
     final avgPrev = _avgPoints(prev);
@@ -152,9 +166,9 @@ class StatsService implements IStatsService {
   }
 
   @override
-  Map<double,int> distanceDistribution({bool last30 = true}) {
-    final list = last30 ? _filterLast(const Duration(days:30)) : _series;
-    final Map<double,int> counts = {};
+  Map<double, int> distanceDistribution({bool last30 = true}) {
+    final list = last30 ? _filterLast(const Duration(days: 30)) : _series;
+    final Map<double, int> counts = {};
     for (final s in list) {
       final d = double.parse(s.distance.toStringAsFixed(0));
       counts[d] = (counts[d] ?? 0) + 1;
@@ -163,17 +177,17 @@ class StatsService implements IStatsService {
   }
 
   @override
-  Map<String,int> categoryDistribution({bool sessionsOnly = true}) {
+  Map<String, int> categoryDistribution({bool sessionsOnly = true}) {
     // sessionsOnly = true : compte par session (pas par série)
     if (sessionsOnly) {
-      final Map<String,int> counts = {};
+      final Map<String, int> counts = {};
       for (final sess in SessionFilters.realizedWithDate(sessions)) {
         final cat = sess.category;
         counts[cat] = (counts[cat] ?? 0) + 1;
       }
       return counts;
     } else {
-      final Map<String,int> counts = {};
+      final Map<String, int> counts = {};
       for (final s in _series) {
         counts[s.category] = (counts[s.category] ?? 0) + 1;
       }
@@ -183,13 +197,14 @@ class StatsService implements IStatsService {
 
   @override
   List<PointBucket> pointBuckets({int bucketSize = 10, bool last30 = true}) {
-    final list = last30 ? _filterLast(const Duration(days:30)) : _series;
+    final list = last30 ? _filterLast(const Duration(days: 30)) : _series;
     if (list.isEmpty) return [];
-    final maxP = list.map((e)=> e.points).reduce((a,b)=> a>b?a:b);
+    final maxP = list.map((e) => e.points).reduce((a, b) => a > b ? a : b);
     final List<PointBucket> buckets = [];
     for (int start = 0; start <= maxP; start += bucketSize) {
       final end = start + bucketSize - 1;
-      final count = list.where((e) => e.points >= start && e.points <= end).length;
+      final count =
+          list.where((e) => e.points >= start && e.points <= end).length;
       buckets.add(PointBucket(start: start, end: end, count: count));
     }
     return buckets;
@@ -206,6 +221,7 @@ class StatsService implements IStatsService {
     // _series is already sorted by date ASC
     return _series.sublist(start, len);
   }
+
   @override
   int currentDayStreak() {
     final dates = <DateTime>{};
@@ -216,10 +232,10 @@ class StatsService implements IStatsService {
       }
     }
     if (dates.isEmpty) return 0;
-    final sorted = dates.toList()..sort((a,b)=> b.compareTo(a)); // desc
+    final sorted = dates.toList()..sort((a, b) => b.compareTo(a)); // desc
     int streak = 1;
-    for (int i=0; i<sorted.length-1; i++) {
-      final diff = sorted[i].difference(sorted[i+1]).inDays;
+    for (int i = 0; i < sorted.length - 1; i++) {
+      final diff = sorted[i].difference(sorted[i + 1]).inDays;
       if (diff == 1) {
         streak++;
       } else {
@@ -232,7 +248,8 @@ class StatsService implements IStatsService {
   @override
   double bestGroupSize() {
     if (_series.isEmpty) return 0;
-    final positives = _series.where((s)=> s.groupSize > 0).map((e)=> e.groupSize).toList();
+    final positives =
+        _series.where((s) => s.groupSize > 0).map((e) => e.groupSize).toList();
     if (positives.isEmpty) return 0;
     positives.sort();
     return positives.first;
@@ -242,7 +259,10 @@ class StatsService implements IStatsService {
   bool lastSeriesIsRecordPoints() {
     if (_series.length < 2) return false;
     final last = _series.last;
-    final prevMax = _series.sublist(0, _series.length -1).map((e)=> e.points).fold<int>(0, (a,b)=> b>a? b: a);
+    final prevMax = _series
+        .sublist(0, _series.length - 1)
+        .map((e) => e.points)
+        .fold<int>(0, (a, b) => b > a ? b : a);
     return last.points > prevMax;
   }
 
@@ -251,9 +271,12 @@ class StatsService implements IStatsService {
     if (_series.length < 2) return false;
     final last = _series.last;
     if (last.groupSize <= 0) return false;
-    final previous = _series.sublist(0, _series.length -1).where((e)=> e.groupSize > 0).map((e)=> e.groupSize);
+    final previous = _series
+        .sublist(0, _series.length - 1)
+        .where((e) => e.groupSize > 0)
+        .map((e) => e.groupSize);
     if (previous.isEmpty) return false;
-    final prevMin = previous.reduce((a,b)=> a<b? a:b);
+    final prevMin = previous.reduce((a, b) => a < b ? a : b);
     return last.groupSize < prevMin;
   }
 
@@ -261,21 +284,26 @@ class StatsService implements IStatsService {
   int sessionsThisWeek() {
     final now = _now;
     final start = _startOfWeek(now);
-    final end = start.add(const Duration(days:7));
+    final end = start.add(const Duration(days: 7));
     return SessionFilters.realizedWithDate(sessions)
-      .where((s)=> s.date!.isAfter(start.subtract(const Duration(milliseconds:1))) && s.date!.isBefore(end))
-      .length;
+        .where((s) =>
+            s.date!.isAfter(start.subtract(const Duration(milliseconds: 1))) &&
+            s.date!.isBefore(end))
+        .length;
   }
 
   @override
   int sessionsPreviousWeek() {
     final now = _now;
     final startCurrent = _startOfWeek(now);
-    final startPrev = startCurrent.subtract(const Duration(days:7));
+    final startPrev = startCurrent.subtract(const Duration(days: 7));
     final endPrev = startCurrent;
     return SessionFilters.realizedWithDate(sessions)
-      .where((s)=> s.date!.isAfter(startPrev.subtract(const Duration(milliseconds:1))) && s.date!.isBefore(endPrev))
-      .length;
+        .where((s) =>
+            s.date!
+                .isAfter(startPrev.subtract(const Duration(milliseconds: 1))) &&
+            s.date!.isBefore(endPrev))
+        .length;
   }
 
   @override
@@ -284,7 +312,8 @@ class StatsService implements IStatsService {
   DateTime _startOfWeek(DateTime d) {
     // Start Monday
     final int diff = d.weekday - DateTime.monday; // 0 for Monday
-    final start = DateTime(d.year, d.month, d.day).subtract(Duration(days: diff));
+    final start =
+        DateTime(d.year, d.month, d.day).subtract(Duration(days: diff));
     return start;
   }
 
@@ -297,7 +326,7 @@ extension _SqrtExt on double {
     if (this <= 0) return 0;
     double x = this;
     double guess = this / 2.0;
-    for (int i=0;i<6;i++) {
+    for (int i = 0; i < 6; i++) {
       guess = 0.5 * (guess + x / guess);
     }
     return guess;

@@ -11,7 +11,9 @@ class ShootingSession {
   String? synthese;
   String category; // entraînement / match / test matériel
   List<String> exercises; // exercise IDs linked to this session (can be empty)
-  String? photoPath; // chemin local (persistant) de la photo de la cible (NT-005)
+  String? photoPath; // chemin local persistant de la photo de cible (NT-005)
+  String? disciplineCode; // epreuve TAR officielle: 830 / 831 / 832
+  String? disciplineSeason; // saison du referentiel associe, ex. 2025-2026
 
   ShootingSession({
     this.id,
@@ -25,6 +27,8 @@ class ShootingSession {
     this.category = 'entraînement',
     List<String>? exercises,
     this.photoPath,
+    this.disciplineCode,
+    this.disciplineSeason,
   }) : exercises = exercises ?? <String>[];
 
   Map<String, dynamic> toMap() {
@@ -40,15 +44,18 @@ class ShootingSession {
       'category': category,
       'exercises': exercises,
       'photoPath': photoPath,
+      'discipline_code': disciplineCode,
+      'discipline_season': disciplineSeason,
     };
   }
 
   static ShootingSession fromMap(Map<String, dynamic> map) {
     final rawSeries = map['series'];
-    final List<Series> seriesList =
-        (rawSeries is List)
-            ? rawSeries.map((e) => Series.fromMap(Map<String, dynamic>.from(e))).toList()
-            : <Series>[];
+    final List<Series> seriesList = (rawSeries is List)
+        ? rawSeries
+            .map((e) => Series.fromMap(Map<String, dynamic>.from(e)))
+            .toList()
+        : <Series>[];
     return ShootingSession(
       id: map['id'] as int?,
       date: map['date'] != null ? DateTime.tryParse(map['date']) : null,
@@ -63,6 +70,8 @@ class ShootingSession {
           ? (map['exercises'] as List).whereType<String>().toList()
           : <String>[],
       photoPath: map['photoPath'] as String?,
+      disciplineCode: map['discipline_code'] as String?,
+      disciplineSeason: map['discipline_season'] as String?,
     );
   }
 
@@ -71,6 +80,9 @@ class ShootingSession {
 
   /// Indique si une analyse coach est disponible
   bool get hasAnalysis => (analyse != null && analyse!.trim().isNotEmpty);
+
   /// Indique si une synthèse tireur est disponible
   bool get hasSynthese => (synthese != null && synthese!.trim().isNotEmpty);
+  bool get hasDiscipline =>
+      disciplineCode != null && disciplineCode!.trim().isNotEmpty;
 }

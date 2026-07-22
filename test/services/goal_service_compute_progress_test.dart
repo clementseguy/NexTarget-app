@@ -8,32 +8,66 @@ import 'package:tir_sportif/repositories/session_repository.dart';
 
 class _MemGoalRepo implements GoalRepository {
   final Map<String, Goal> _store = {};
-  @override Future<void> delete(String id) async { _store.remove(id); }
-  @override Future<void> deleteAll() async { _store.clear(); }
-  @override Future<List<Goal>> getAll() async => _store.values.toList();
-  @override Future<void> put(Goal goal) async { _store[goal.id] = goal; }
+  @override
+  Future<void> delete(String id) async {
+    _store.remove(id);
+  }
+
+  @override
+  Future<void> deleteAll() async {
+    _store.clear();
+  }
+
+  @override
+  Future<List<Goal>> getAll() async => _store.values.toList();
+  @override
+  Future<void> put(Goal goal) async {
+    _store[goal.id] = goal;
+  }
 }
 
 class _MemSessionRepo implements SessionRepository {
   final List<ShootingSession> list;
   _MemSessionRepo(this.list);
-  @override Future<void> clearAll() async {}
-  @override Future<void> delete(int id) async {}
-  @override Future<List<ShootingSession>> getAll() async => list;
-  @override Future<int> insert(ShootingSession session) async => 1;
-  @override Future<bool> update(ShootingSession session, {bool preserveExistingSeriesIfEmpty = true}) async => true;
+  @override
+  Future<void> clearAll() async {}
+  @override
+  Future<void> delete(int id) async {}
+  @override
+  Future<List<ShootingSession>> getAll() async => list;
+  @override
+  Future<int> insert(ShootingSession session) async => 1;
+  @override
+  Future<bool> update(ShootingSession session,
+          {bool preserveExistingSeriesIfEmpty = true}) async =>
+      true;
 }
 
 void main() {
   group('GoalService._computeProgress via recomputeAllProgress', () {
-    test('averagePoints + greaterOrEqual: progress clamped 0..1 and achieved sets date', () async {
+    test(
+        'averagePoints + greaterOrEqual: progress clamped 0..1 and achieved sets date',
+        () async {
       final now = DateTime(2025, 10, 7);
       final sessions = [
-        ShootingSession(weapon: 'P', caliber: '22LR', date: now.subtract(const Duration(days: 1)), status: 'réalisée', series: [Series(distance: 10, points: 10, groupSize: 30), Series(distance: 10, points: 20, groupSize: 20)])
+        ShootingSession(
+            weapon: 'P',
+            caliber: '22LR',
+            date: now.subtract(const Duration(days: 1)),
+            status: 'réalisée',
+            series: [
+              Series(distance: 10, points: 10, groupSize: 30),
+              Series(distance: 10, points: 20, groupSize: 20)
+            ])
       ];
       final goals = _MemGoalRepo();
-      final svc = GoalService(sessionRepository: _MemSessionRepo(sessions), goalRepository: goals);
-      final g = Goal(title: 'Avg>=15', metric: GoalMetric.averagePoints, comparator: GoalComparator.greaterOrEqual, targetValue: 15);
+      final svc = GoalService(
+          sessionRepository: _MemSessionRepo(sessions), goalRepository: goals);
+      final g = Goal(
+          title: 'Avg>=15',
+          metric: GoalMetric.averagePoints,
+          comparator: GoalComparator.greaterOrEqual,
+          targetValue: 15);
       await goals.put(g);
       await svc.recomputeAllProgress();
       final updated = (await goals.getAll()).first;
@@ -42,15 +76,204 @@ void main() {
       expect(updated.status, anyOf(GoalStatus.achieved, GoalStatus.active));
     });
 
-    test('groupSize + lessOrEqual: progress target/value and improvementDelta with previous window', () async {
+    test('score metrics exclude trial series and score TAR gongs', () async {
+      final now = DateTime(2025, 10, 7);
+      final sessions = [
+        ShootingSession(
+          weapon: 'P',
+          caliber: '9mm',
+          date: now,
+          status: 'réalisée',
+          disciplineCode: '830',
+          disciplineSeason: '2025-2026',
+          series: [
+            Series(
+              distance: 25,
+              points: 50,
+              groupSize: 12,
+              sequenceType: TarSequenceType.essai,
+            ),
+            Series(
+              distance: 25,
+              points: 90,
+              groupSize: 10,
+              sequenceType: TarSequenceType.precision,
+            ),
+            Series(
+              distance: 25,
+              points: 0,
+              groupSize: 0,
+              sequenceType: TarSequenceType.vitesse,
+              scoringMode: SeriesScoringMode.gongsTombes,
+              gongsHit: 4,
+            ),
+          ],
+        ),
+        ShootingSession(
+          weapon: 'P',
+          caliber: '9mm',
+          date: now,
+          status: 'réalisée',
+          disciplineCode: '830',
+          disciplineSeason: '2025-2026',
+          series: [
+            Series(
+              distance: 25,
+              points: 40,
+              groupSize: 14,
+              sequenceType: TarSequenceType.essai,
+            ),
+          ],
+        ),
+      ];
+      final goals = _MemGoalRepo();
+      final svc = GoalService(
+        sessionRepository: _MemSessionRepo(sessions),
+        goalRepository: goals,
+      );
+      await goals.put(Goal(
+        title: 'AvgScore',
+        metric: GoalMetric.averagePoints,
+        comparator: GoalComparator.greaterOrEqual,
+        targetValue: 1,
+      ));
+      await goals.put(Goal(
+        title: 'TotalScore',
+        metric: GoalMetric.totalPoints,
+        comparator: GoalComparator.greaterOrEqual,
+        targetValue: 1,
+      ));
+      await goals.put(Goal(
+        title: 'AvgSessionScore',
+        metric: GoalMetric.averageSessionPoints,
+        comparator: GoalComparator.greaterOrEqual,
+        targetValue: 1,
+      ));
+      await goals.put(Goal(
+        title: 'BestSeriesScore',
+        metric: GoalMetric.bestSeriesPoints,
+        comparator: GoalComparator.greaterOrEqual,
+        targetValue: 1,
+      ));
+      await goals.put(Goal(
+        title: 'BestSessionScore',
+        metric: GoalMetric.bestSessionPoints,
+        comparator: GoalComparator.greaterOrEqual,
+        targetValue: 1,
+      ));
+
+      await svc.recomputeAllProgress();
+
+      final byTitle = {
+        for (final goal in await goals.getAll()) goal.title: goal
+      };
+      expect(byTitle['AvgScore']!.lastMeasuredValue, 55);
+      expect(byTitle['TotalScore']!.lastMeasuredValue, 110);
+      expect(byTitle['AvgSessionScore']!.lastMeasuredValue, 55);
+      expect(byTitle['BestSeriesScore']!.lastMeasuredValue, 90);
+      expect(byTitle['BestSessionScore']!.lastMeasuredValue, 110);
+    });
+
+    test('score metric previous window excludes trials and scores gongs',
+        () async {
+      final now = DateTime.now();
+      final previous = ShootingSession(
+        weapon: 'P',
+        caliber: '9mm',
+        date: now.subtract(const Duration(days: 50)),
+        status: 'réalisée',
+        disciplineCode: '830',
+        disciplineSeason: '2025-2026',
+        series: [
+          Series(
+            distance: 25,
+            points: 100,
+            groupSize: 10,
+            sequenceType: TarSequenceType.essai,
+          ),
+          Series(
+            distance: 25,
+            points: 50,
+            groupSize: 8,
+            sequenceType: TarSequenceType.precision,
+          ),
+        ],
+      );
+      final current = ShootingSession(
+        weapon: 'P',
+        caliber: '9mm',
+        date: now.subtract(const Duration(days: 5)),
+        status: 'réalisée',
+        disciplineCode: '830',
+        disciplineSeason: '2025-2026',
+        series: [
+          Series(
+            distance: 25,
+            points: 200,
+            groupSize: 10,
+            sequenceType: TarSequenceType.essai,
+          ),
+          Series(
+            distance: 25,
+            points: 0,
+            groupSize: 0,
+            sequenceType: TarSequenceType.vitesse,
+            scoringMode: SeriesScoringMode.gongsTombes,
+            gongsHit: 5,
+          ),
+        ],
+      );
+      final goals = _MemGoalRepo();
+      final svc = GoalService(
+        sessionRepository: _MemSessionRepo([previous, current]),
+        goalRepository: goals,
+      );
+      final g = Goal(
+        title: 'AvgScoreRolling',
+        metric: GoalMetric.averagePoints,
+        comparator: GoalComparator.greaterOrEqual,
+        targetValue: 50,
+        period: GoalPeriod.rollingMonth,
+      );
+      await goals.put(g);
+
+      await svc.recomputeAllProgress();
+
+      final updated = (await goals.getAll()).first;
+      expect(updated.lastMeasuredValue, 25);
+      expect(updated.previousMeasuredValue, 50);
+      expect(updated.improvementDelta, -25);
+      expect(updated.lastProgress, 0.5);
+    });
+
+    test(
+        'groupSize + lessOrEqual: progress target/value and improvementDelta with previous window',
+        () async {
       final now = DateTime.now();
       // previous window (31-60 days): worse (bigger) group size
-      final prev = ShootingSession(weapon: 'P', caliber: '22LR', date: now.subtract(const Duration(days: 50)), status: 'réalisée', series: [Series(distance: 10, points: 10, groupSize: 30)]);
+      final prev = ShootingSession(
+          weapon: 'P',
+          caliber: '22LR',
+          date: now.subtract(const Duration(days: 50)),
+          status: 'réalisée',
+          series: [Series(distance: 10, points: 10, groupSize: 30)]);
       // current window (0-30 days): better (smaller) group size
-      final curr = ShootingSession(weapon: 'P', caliber: '22LR', date: now.subtract(const Duration(days: 5)), status: 'réalisée', series: [Series(distance: 10, points: 10, groupSize: 20)]);
+      final curr = ShootingSession(
+          weapon: 'P',
+          caliber: '22LR',
+          date: now.subtract(const Duration(days: 5)),
+          status: 'réalisée',
+          series: [Series(distance: 10, points: 10, groupSize: 20)]);
       final goals = _MemGoalRepo();
-      final svc = GoalService(sessionRepository: _MemSessionRepo([prev, curr]), goalRepository: goals);
-      final g = Goal(title: 'Group<=25', metric: GoalMetric.groupSize, comparator: GoalComparator.lessOrEqual, targetValue: 25, period: GoalPeriod.rollingMonth);
+      final svc = GoalService(
+          sessionRepository: _MemSessionRepo([prev, curr]),
+          goalRepository: goals);
+      final g = Goal(
+          title: 'Group<=25',
+          metric: GoalMetric.groupSize,
+          comparator: GoalComparator.lessOrEqual,
+          targetValue: 25,
+          period: GoalPeriod.rollingMonth);
       await goals.put(g);
       await svc.recomputeAllProgress();
       final updated = (await goals.getAll()).first;
@@ -64,11 +287,29 @@ void main() {
 
     test('averageSessionPoints computes average of session averages', () async {
       final now = DateTime(2025, 10, 7);
-      final s1 = ShootingSession(weapon: 'P', caliber: '22LR', date: now, status: 'réalisée', series: [Series(distance: 10, points: 10, groupSize: 30), Series(distance: 10, points: 20, groupSize: 20)]);
-      final s2 = ShootingSession(weapon: 'P', caliber: '22LR', date: now, status: 'réalisée', series: [Series(distance: 10, points: 30, groupSize: 20)]);
+      final s1 = ShootingSession(
+          weapon: 'P',
+          caliber: '22LR',
+          date: now,
+          status: 'réalisée',
+          series: [
+            Series(distance: 10, points: 10, groupSize: 30),
+            Series(distance: 10, points: 20, groupSize: 20)
+          ]);
+      final s2 = ShootingSession(
+          weapon: 'P',
+          caliber: '22LR',
+          date: now,
+          status: 'réalisée',
+          series: [Series(distance: 10, points: 30, groupSize: 20)]);
       final goals = _MemGoalRepo();
-      final svc = GoalService(sessionRepository: _MemSessionRepo([s1, s2]), goalRepository: goals);
-      final g = Goal(title: 'AvgSession>=20', metric: GoalMetric.averageSessionPoints, comparator: GoalComparator.greaterOrEqual, targetValue: 20);
+      final svc = GoalService(
+          sessionRepository: _MemSessionRepo([s1, s2]), goalRepository: goals);
+      final g = Goal(
+          title: 'AvgSession>=20',
+          metric: GoalMetric.averageSessionPoints,
+          comparator: GoalComparator.greaterOrEqual,
+          targetValue: 20);
       await goals.put(g);
       await svc.recomputeAllProgress();
       final updated = (await goals.getAll()).first;
@@ -77,15 +318,27 @@ void main() {
       expect(updated.lastProgress! >= 1.0, isTrue);
     });
 
-    test('totalPoints metric sums series and achieves when >= target', () async {
+    test('totalPoints metric sums series and achieves when >= target',
+        () async {
       final now = DateTime.now();
       final s = ShootingSession(
-        weapon: 'P', caliber: '22LR', date: now, status: 'réalisée',
-        series: [Series(distance: 10, points: 15, groupSize: 20), Series(distance: 10, points: 10, groupSize: 18)],
+        weapon: 'P',
+        caliber: '22LR',
+        date: now,
+        status: 'réalisée',
+        series: [
+          Series(distance: 10, points: 15, groupSize: 20),
+          Series(distance: 10, points: 10, groupSize: 18)
+        ],
       );
       final goals = _MemGoalRepo();
-      final svc = GoalService(sessionRepository: _MemSessionRepo([s]), goalRepository: goals);
-      final g = Goal(title: 'Total>=25', metric: GoalMetric.totalPoints, comparator: GoalComparator.greaterOrEqual, targetValue: 25);
+      final svc = GoalService(
+          sessionRepository: _MemSessionRepo([s]), goalRepository: goals);
+      final g = Goal(
+          title: 'Total>=25',
+          metric: GoalMetric.totalPoints,
+          comparator: GoalComparator.greaterOrEqual,
+          targetValue: 25);
       await goals.put(g);
       await svc.recomputeAllProgress();
       final updated = (await goals.getAll()).first;
@@ -99,11 +352,29 @@ void main() {
 
     test('bestSessionPoints picks highest session total', () async {
       final now = DateTime.now();
-      final s1 = ShootingSession(weapon: 'P', caliber: '22LR', date: now, status: 'réalisée', series: [Series(distance: 10, points: 10, groupSize: 20)]);
-      final s2 = ShootingSession(weapon: 'P', caliber: '22LR', date: now, status: 'réalisée', series: [Series(distance: 10, points: 30, groupSize: 20), Series(distance: 10, points: 5, groupSize: 15)]);
+      final s1 = ShootingSession(
+          weapon: 'P',
+          caliber: '22LR',
+          date: now,
+          status: 'réalisée',
+          series: [Series(distance: 10, points: 10, groupSize: 20)]);
+      final s2 = ShootingSession(
+          weapon: 'P',
+          caliber: '22LR',
+          date: now,
+          status: 'réalisée',
+          series: [
+            Series(distance: 10, points: 30, groupSize: 20),
+            Series(distance: 10, points: 5, groupSize: 15)
+          ]);
       final goals = _MemGoalRepo();
-      final svc = GoalService(sessionRepository: _MemSessionRepo([s1, s2]), goalRepository: goals);
-      final g = Goal(title: 'BestSess>=34', metric: GoalMetric.bestSessionPoints, comparator: GoalComparator.greaterOrEqual, targetValue: 34);
+      final svc = GoalService(
+          sessionRepository: _MemSessionRepo([s1, s2]), goalRepository: goals);
+      final g = Goal(
+          title: 'BestSess>=34',
+          metric: GoalMetric.bestSessionPoints,
+          comparator: GoalComparator.greaterOrEqual,
+          targetValue: 34);
       await goals.put(g);
       await svc.recomputeAllProgress();
       final updated = (await goals.getAll()).first;
@@ -111,16 +382,27 @@ void main() {
       expect(updated.lastProgress! >= 1.0, isTrue);
     });
 
-    test('bestGroupSize finds minimal positive and achieves for <= comparator', () async {
+    test('bestGroupSize finds minimal positive and achieves for <= comparator',
+        () async {
       final now = DateTime.now();
-      final s = ShootingSession(weapon: 'P', caliber: '22LR', date: now, status: 'réalisée', series: [
-        Series(distance: 10, points: 10, groupSize: 12),
-        Series(distance: 10, points: 10, groupSize: 8),
-        Series(distance: 10, points: 10, groupSize: 9),
-      ]);
+      final s = ShootingSession(
+          weapon: 'P',
+          caliber: '22LR',
+          date: now,
+          status: 'réalisée',
+          series: [
+            Series(distance: 10, points: 10, groupSize: 12),
+            Series(distance: 10, points: 10, groupSize: 8),
+            Series(distance: 10, points: 10, groupSize: 9),
+          ]);
       final goals = _MemGoalRepo();
-      final svc = GoalService(sessionRepository: _MemSessionRepo([s]), goalRepository: goals);
-      final g = Goal(title: 'BestGroup<=9', metric: GoalMetric.bestGroupSize, comparator: GoalComparator.lessOrEqual, targetValue: 9);
+      final svc = GoalService(
+          sessionRepository: _MemSessionRepo([s]), goalRepository: goals);
+      final g = Goal(
+          title: 'BestGroup<=9',
+          metric: GoalMetric.bestGroupSize,
+          comparator: GoalComparator.lessOrEqual,
+          targetValue: 9);
       await goals.put(g);
       await svc.recomputeAllProgress();
       final updated = (await goals.getAll()).first;
@@ -128,12 +410,24 @@ void main() {
       expect(updated.lastProgress, 1);
     });
 
-    test('empty series edge: groupSize average remains null, progress stays null', () async {
+    test(
+        'empty series edge: groupSize average remains null, progress stays null',
+        () async {
       final now = DateTime.now();
-      final s = ShootingSession(weapon: 'P', caliber: '22LR', date: now, status: 'réalisée', series: []);
+      final s = ShootingSession(
+          weapon: 'P',
+          caliber: '22LR',
+          date: now,
+          status: 'réalisée',
+          series: []);
       final goals = _MemGoalRepo();
-      final svc = GoalService(sessionRepository: _MemSessionRepo([s]), goalRepository: goals);
-      final g = Goal(title: 'AvgGroup<=10', metric: GoalMetric.groupSize, comparator: GoalComparator.lessOrEqual, targetValue: 10);
+      final svc = GoalService(
+          sessionRepository: _MemSessionRepo([s]), goalRepository: goals);
+      final g = Goal(
+          title: 'AvgGroup<=10',
+          metric: GoalMetric.groupSize,
+          comparator: GoalComparator.lessOrEqual,
+          targetValue: 10);
       await goals.put(g);
       await svc.recomputeAllProgress();
       final updated = (await goals.getAll()).first;
@@ -141,12 +435,24 @@ void main() {
       expect(updated.lastProgress, isNull);
     });
 
-    test('achieved date is set once when reaching target from active', () async {
+    test('achieved date is set once when reaching target from active',
+        () async {
       final now = DateTime.now();
-      final s = ShootingSession(weapon: 'P', caliber: '22LR', date: now, status: 'réalisée', series: [Series(distance: 10, points: 50, groupSize: 10)]);
+      final s = ShootingSession(
+          weapon: 'P',
+          caliber: '22LR',
+          date: now,
+          status: 'réalisée',
+          series: [Series(distance: 10, points: 50, groupSize: 10)]);
       final goals = _MemGoalRepo();
-      final svc = GoalService(sessionRepository: _MemSessionRepo([s]), goalRepository: goals);
-      final g = Goal(title: 'Avg>=40', metric: GoalMetric.averagePoints, comparator: GoalComparator.greaterOrEqual, targetValue: 40, status: GoalStatus.active);
+      final svc = GoalService(
+          sessionRepository: _MemSessionRepo([s]), goalRepository: goals);
+      final g = Goal(
+          title: 'Avg>=40',
+          metric: GoalMetric.averagePoints,
+          comparator: GoalComparator.greaterOrEqual,
+          targetValue: 40,
+          status: GoalStatus.active);
       await goals.put(g);
       await svc.recomputeAllProgress();
       var updated = (await goals.getAll()).first;

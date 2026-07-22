@@ -3,16 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../forms/series_form_data.dart';
 import '../services/preferences_service.dart';
+import '../services/session_template_service.dart';
 import '../utils/caliber_autocomplete.dart';
-import '../config/app_config.dart';
 import 'series_cards.dart';
 import '../models/shooting_session.dart';
 import '../constants/session_constants.dart';
 import '../models/series.dart';
+import '../models/tar_referential.dart';
 import '../models/exercise.dart';
 import '../services/exercise_service.dart';
 import '../interfaces/session_photo_service_interface.dart';
 import '../services/session_photo_service.dart';
+import '../services/tar_referential_service.dart';
 import 'session_form/session_form_components.dart';
 
 class SessionForm extends StatefulWidget {
@@ -20,12 +22,14 @@ class SessionForm extends StatefulWidget {
   final void Function(ShootingSession session) onSave;
   final bool isEdit;
   final ISessionPhotoService? photoService;
+  final TarReferentialService? tarReferentialService;
   const SessionForm({
     super.key,
     this.initialSessionData,
     required this.onSave,
     this.isEdit = false,
     this.photoService,
+    this.tarReferentialService,
   });
 
   static SessionFormState? of(BuildContext context) {
@@ -54,30 +58,352 @@ class SessionFormState extends State<SessionForm> {
   List<Exercise> _allExercises = [];
   final Set<String> _selectedExerciseIds = <String>{};
   bool _loadingExercises = true;
+  late final TarReferentialService _tarReferentialService =
+      widget.tarReferentialService ?? TarReferentialService();
+  TarReferential? _tarReferential;
+  String? _selectedDisciplineCode;
+  String? _selectedDisciplineSeason;
+  bool _prefillInitialDisciplineWhenReady = false;
   // Photo de la cible (NT-005)
-  late final ISessionPhotoService _photoService = widget.photoService ?? SessionPhotoService();
+  late final ISessionPhotoService _photoService =
+      widget.photoService ?? SessionPhotoService();
   String? _photoPath;
   String? _initialPhotoPath;
   bool _photoBusy = false;
+
+  String? _initialDisciplineCode() {
+    final session = widget.initialSessionData?['session'];
+    if (session is! Map) return null;
+    final value = session['discipline_code'] ?? session['disciplineCode'];
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
+  }
+
+  String? _initialDisciplineSeason() {
+    final session = widget.initialSessionData?['session'];
+    if (session is! Map) return null;
+    final value = session['discipline_season'] ?? session['disciplineSeason'];
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
+  }
+
+  SeriesFormData _seriesFormDataFromRaw(dynamic raw) {
+    if (raw is Series) {
+      return SeriesFormData(
+        shotCount: raw.shotCount,
+        distance: raw.distance,
+        points: raw.points,
+        groupSize: raw.groupSize,
+        comment: raw.comment,
+        handMethod: raw.handMethod,
+        sequenceType: raw.sequenceType,
+        scoringMode: raw.scoringMode,
+        targetType: raw.targetType,
+        timeLimitLabel: raw.timeLimitLabel,
+        timeLimitSeconds: raw.timeLimitSeconds,
+        gongsHit: raw.gongsHit,
+        gongPointValue: raw.gongPointValue,
+      );
+    }
+    final map = raw is Map ? raw : const <dynamic, dynamic>{};
+    final scoringMode = _scoringModeFromValue(
+      map['scoring_mode'] ?? map['scoringMode'],
+    );
+    final gongsHit = _readInt(map['gongs_hit'] ?? map['gongsHit']);
+    final gongPointValue =
+        _readInt(map['gong_point_value'] ?? map['gongPointValue']) ?? 5;
+    final points = _readInt(map['points']) ??
+        (scoringMode == SeriesScoringMode.gongsTombes && gongsHit != null
+            ? gongsHit * gongPointValue
+            : 0);
+
+    return SeriesFormData(
+      shotCount: _readInt(map['shot_count'] ?? map['shotCount']) ?? 5,
+      distance: _readDouble(map['distance']) ?? 25,
+      points: points,
+      groupSize: _readDouble(map['group_size'] ?? map['groupSize']) ?? 0,
+      comment: map['comment']?.toString() ?? '',
+      handMethod: _handMethodFromValue(map['hand_method'] ?? map['handMethod']),
+      sequenceType:
+          _sequenceTypeFromValue(map['sequence_type'] ?? map['sequenceType']),
+      scoringMode: scoringMode,
+      targetType: _cleanString(map['target_type'] ?? map['targetType']),
+      timeLimitLabel:
+          _cleanString(map['time_limit_label'] ?? map['timeLimitLabel']),
+      timeLimitSeconds:
+          _readInt(map['time_limit_seconds'] ?? map['timeLimitSeconds']),
+      gongsHit: gongsHit,
+      gongPointValue: gongPointValue,
+    );
+  }
+
+  SeriesFormControllers _controllersFromData(SeriesFormData data) {
+    final controller = SeriesFormControllers(
+      shotCount: data.shotCount,
+      distance: data.distance,
+      points: data.points,
+      groupSize: data.groupSize,
+      comment: data.comment,
+      handMethod: data.handMethod == HandMethod.oneHand ? 'one' : 'two',
+      sequenceType: data.sequenceType,
+      scoringMode: data.scoringMode,
+      targetType: data.targetType,
+      timeLimitLabel: data.timeLimitLabel,
+      timeLimitSeconds: data.timeLimitSeconds,
+      gongsHit: data.gongsHit,
+      gongPointValue: data.gongPointValue,
+    );
+    controller.syncGongPoints();
+    return controller;
+  }
+
+  Future<void> _loadTarReferential() async {
+    try {
+      final referential = await _tarReferentialService.load();
+      if (!mounted) return;
+      setState(() {
+        _tarReferential = referential;
+        if (_selectedDisciplineCode != null) {
+          _selectedDisciplineSeason ??= referential.metadata.season;
+        }
+        if (_prefillInitialDisciplineWhenReady &&
+            _selectedDisciplineCode != null) {
+          final discipline =
+              referential.resolvedDisciplineByCode(_selectedDisciplineCode!);
+          if (discipline != null) {
+            _replaceSeriesFromDiscipline(discipline);
+          }
+          _prefillInitialDisciplineWhenReady = false;
+        }
+      });
+    } catch (_) {
+      // Le formulaire reste utilisable sans referentiel charge.
+    }
+  }
+
+  void _onDisciplineChanged(String? code) {
+    final referential = _tarReferential;
+    setState(() {
+      _selectedDisciplineCode = code;
+      _selectedDisciplineSeason =
+          code == null ? null : referential?.metadata.season;
+      if (code == null) {
+        _prefillInitialDisciplineWhenReady = false;
+        return;
+      }
+      if (referential == null) {
+        _prefillInitialDisciplineWhenReady = true;
+        return;
+      }
+      final discipline = referential.resolvedDisciplineByCode(code);
+      if (discipline != null) {
+        _replaceSeriesFromDiscipline(discipline);
+      }
+      _prefillInitialDisciplineWhenReady = false;
+    });
+  }
+
+  void _replaceSeriesFromDiscipline(TarDiscipline discipline) {
+    for (final controller in _seriesControllers) {
+      controller.dispose();
+    }
+    _series = _seriesFromDiscipline(discipline);
+    _seriesControllers = _series.map(_controllersFromData).toList();
+  }
+
+  List<SeriesFormData> _seriesFromDiscipline(TarDiscipline discipline) {
+    final distance = (discipline.distanceMeters ?? 25).toDouble();
+    final gongPointValue = _readInt(discipline.scoring['gong_tombe_pts']) ?? 5;
+    return discipline.sequences.map((sequence) {
+      final scoringMode = sequence.target == 'gong'
+          ? SeriesScoringMode.gongsTombes
+          : SeriesScoringMode.pointsZone;
+      return SeriesFormData(
+        shotCount: sequence.shots,
+        distance: distance,
+        points: 0,
+        groupSize: 0,
+        comment: '',
+        handMethod: _handMethodFromStance(sequence.stance),
+        sequenceType: _sequenceTypeFromValue(sequence.type),
+        scoringMode: scoringMode,
+        targetType: sequence.target,
+        timeLimitLabel: sequence.time,
+        timeLimitSeconds: _timeLimitSeconds(sequence.time),
+        gongsHit: scoringMode == SeriesScoringMode.gongsTombes ? 0 : null,
+        gongPointValue: gongPointValue,
+      );
+    }).toList();
+  }
+
+  List<DropdownMenuItem<String?>> _disciplineItems() {
+    final items = <DropdownMenuItem<String?>>[
+      const DropdownMenuItem<String?>(
+        value: null,
+        child: Text('Aucune épreuve TAR'),
+      ),
+    ];
+    final referential = _tarReferential;
+    if (referential == null) {
+      final code = _selectedDisciplineCode;
+      if (code != null) {
+        items.add(DropdownMenuItem<String?>(
+          value: code,
+          child: Text('$code - chargement...'),
+        ));
+      }
+      return items;
+    }
+
+    for (final code in const ['830', '831', '832']) {
+      final discipline = referential.resolvedDisciplineByCode(code);
+      if (discipline == null) continue;
+      items.add(DropdownMenuItem<String?>(
+        value: code,
+        child: Text('$code - ${discipline.name}'),
+      ));
+    }
+    final selectedCode = _selectedDisciplineCode;
+    if (selectedCode != null &&
+        !items.any((item) => item.value == selectedCode)) {
+      items.add(DropdownMenuItem<String?>(
+        value: selectedCode,
+        child: Text('$selectedCode - epreuve inconnue'),
+      ));
+    }
+    return items;
+  }
+
+  Series _buildSeries(int index) {
+    final controller = _seriesControllers[index];
+    controller.syncGongPoints();
+    final shotCount = _readInt(controller.shotCountController.text) ?? 0;
+    final distance = _readDouble(controller.distanceController.text) ?? 0;
+    final groupSize = _readDouble(controller.groupSizeController.text) ?? 0;
+    final gongsHit = controller.isGongScoring
+        ? _readInt(controller.gongsHitController.text) ?? 0
+        : controller.gongsHit;
+    final points = controller.isGongScoring
+        ? (gongsHit ?? 0) * controller.gongPointValue
+        : _readInt(controller.pointsController.text) ?? 0;
+
+    return Series(
+      shotCount: shotCount,
+      distance: distance,
+      points: points,
+      groupSize: groupSize,
+      comment: controller.commentController.text.trim(),
+      handMethod: controller.handMethod == 'one'
+          ? HandMethod.oneHand
+          : HandMethod.twoHands,
+      sequenceType: controller.sequenceType,
+      scoringMode: controller.scoringMode,
+      targetType: controller.targetType,
+      timeLimitLabel: controller.timeLimitLabel,
+      timeLimitSeconds: controller.timeLimitSeconds,
+      gongsHit: controller.isGongScoring ? gongsHit : null,
+      gongPointValue: controller.gongPointValue,
+    );
+  }
+
+  static TarSequenceType? _sequenceTypeFromValue(dynamic value) {
+    if (value is TarSequenceType) return value;
+    switch (value?.toString()) {
+      case 'essai':
+        return TarSequenceType.essai;
+      case 'precision':
+        return TarSequenceType.precision;
+      case 'vitesse':
+        return TarSequenceType.vitesse;
+      default:
+        return null;
+    }
+  }
+
+  static SeriesScoringMode _scoringModeFromValue(dynamic value) {
+    if (value is SeriesScoringMode) return value;
+    switch (value?.toString()) {
+      case 'gongs_tombes':
+      case 'gongsTombes':
+        return SeriesScoringMode.gongsTombes;
+      case 'points_zone':
+      case 'pointsZone':
+      default:
+        return SeriesScoringMode.pointsZone;
+    }
+  }
+
+  static HandMethod _handMethodFromValue(dynamic value) {
+    if (value is HandMethod) return value;
+    return value?.toString() == 'one'
+        ? HandMethod.oneHand
+        : HandMethod.twoHands;
+  }
+
+  static HandMethod _handMethodFromStance(String stance) {
+    final normalized = stance.toLowerCase();
+    return normalized.contains('1 main') && !normalized.contains('1 ou 2')
+        ? HandMethod.oneHand
+        : HandMethod.twoHands;
+  }
+
+  static int? _timeLimitSeconds(String label) {
+    final normalized = label.toLowerCase().replaceAll('×', 'x');
+    final unit = normalized.contains('min') ? 'min' : 's';
+    final matches = RegExp(r'(\d+)').allMatches(normalized).toList();
+    if (matches.isEmpty) return null;
+    final value = int.tryParse(matches.last.group(1) ?? '');
+    if (value == null) return null;
+    return unit == 'min' ? value * 60 : value;
+  }
+
+  static int? _readInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value.trim());
+    return null;
+  }
+
+  static double? _readDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      return double.tryParse(value.trim().replaceAll(',', '.'));
+    }
+    return null;
+  }
+
+  static String? _cleanString(dynamic value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
+  }
 
   @override
   void initState() {
     super.initState();
     _weaponController = TextEditingController();
     _caliberController = TextEditingController();
-  if (widget.initialSessionData != null) {
+    _selectedDisciplineCode = _initialDisciplineCode();
+    _selectedDisciplineSeason = _initialDisciplineSeason();
+    if (widget.initialSessionData != null) {
       final session = widget.initialSessionData!['session'];
       final seriesRaw = widget.initialSessionData!['series'];
       final List<dynamic> series = (seriesRaw is List) ? seriesRaw : [];
-      _date = session['date'] != null && session['date'] != '' ? DateTime.tryParse(session['date']) : null;
+      _prefillInitialDisciplineWhenReady =
+          !widget.isEdit && series.isEmpty && _selectedDisciplineCode != null;
+      _date = session['date'] != null && session['date'] != ''
+          ? DateTime.tryParse(session['date'])
+          : null;
       _weaponController.text = session['weapon'] ?? '';
       final existingCal = (session['caliber'] as String?);
-      _caliberController.text = pickInitialCaliber(existing: existingCal, defaultCaliber: PreferencesService().getDefaultCaliber());
-  _syntheseController = TextEditingController(text: session['synthese'] ?? '');
-  _category = session['category'] ?? SessionConstants.categoryEntrainement;
-  _status = session['status'] ?? SessionConstants.statusRealisee;
-  _photoPath = session['photoPath'] as String?;
-  _initialPhotoPath = _photoPath;
+      _caliberController.text = pickInitialCaliber(
+          existing: existingCal,
+          defaultCaliber: PreferencesService().getDefaultCaliber());
+      _syntheseController =
+          TextEditingController(text: session['synthese'] ?? '');
+      _category = session['category'] ?? SessionConstants.categoryEntrainement;
+      _status = session['status'] ?? SessionConstants.statusRealisee;
+      _photoPath = session['photoPath'] as String?;
+      _initialPhotoPath = _photoPath;
       // Preload existing exercises list from session map if any
       final existingEx = session['exercises'];
       if (existingEx is List) {
@@ -85,32 +411,21 @@ class SessionFormState extends State<SessionForm> {
           if (e is String) _selectedExerciseIds.add(e);
         }
       }
-      _series = series.map((s) => SeriesFormData(
-        shotCount: s['shot_count'] ?? 5,
-        distance: (s['distance'] as num?)?.toDouble() ?? 25,
-        points: s['points'] ?? 0,
-        groupSize: (s['group_size'] as num?)?.toDouble() ?? 0,
-        comment: s['comment'] ?? '',
-      )).toList();
+      _series = series.map(_seriesFormDataFromRaw).toList();
       if (_series.isEmpty) _series = [SeriesFormData(distance: 25)];
     } else {
-  _caliberController.text = pickInitialCaliber(existing: null, defaultCaliber: PreferencesService().getDefaultCaliber());
+      _caliberController.text = pickInitialCaliber(
+          existing: null,
+          defaultCaliber: PreferencesService().getDefaultCaliber());
       _series = [SeriesFormData(distance: 25)];
       _date = null;
-  _syntheseController = TextEditingController();
-  _category = SessionConstants.categoryEntrainement;
-  _status = SessionConstants.statusRealisee;
+      _syntheseController = TextEditingController();
+      _category = SessionConstants.categoryEntrainement;
+      _status = SessionConstants.statusRealisee;
     }
     final defaultMethod = PreferencesService().getDefaultHandMethod();
-    _seriesControllers = _series.map((s) => SeriesFormControllers(
-      shotCount: s.shotCount,
-      distance: s.distance,
-      points: s.points,
-      groupSize: s.groupSize,
-      comment: s.comment,
-      handMethod: 'two',
-    )).toList();
-    for (int i=0;i<_seriesControllers.length;i++) {
+    _seriesControllers = _series.map(_controllersFromData).toList();
+    for (int i = 0; i < _seriesControllers.length; i++) {
       // Try detect existing map method using initialSessionData raw map if provided
       if (widget.initialSessionData != null) {
         final rawSeries = widget.initialSessionData!['series'];
@@ -126,20 +441,29 @@ class SessionFormState extends State<SessionForm> {
           }
         }
       }
-      _seriesControllers[i].handMethod = defaultMethod == HandMethod.oneHand ? 'one' : 'two';
+      if (_series[i].handMethod != HandMethod.twoHands) {
+        _seriesControllers[i].handMethod = 'one';
+        continue;
+      }
+      _seriesControllers[i].handMethod =
+          defaultMethod == HandMethod.oneHand ? 'one' : 'two';
     }
     _lastCaliberText = _caliberController.text;
     _caliberFocus.addListener(() {
       if (_caliberFocus.hasFocus) {
         setState(() => _showAllCaliberOptions = true);
         final val = _caliberController.value;
-        _caliberController.value = val.copyWith(text: val.text, selection: val.selection);
+        _caliberController.value =
+            val.copyWith(text: val.text, selection: val.selection);
       } else {
-        if (_showAllCaliberOptions) setState(() => _showAllCaliberOptions = false);
+        if (_showAllCaliberOptions) {
+          setState(() => _showAllCaliberOptions = false);
+        }
       }
     });
     // Load exercises asynchronously
     _loadExercises();
+    _loadTarReferential();
   }
 
   /// Ouvre la galerie ou l'appareil photo, stocke la photo choisie localement
@@ -177,12 +501,13 @@ class SessionFormState extends State<SessionForm> {
       final list = await _exerciseService.listAll();
       if (mounted) {
         setState(() {
-          _allExercises = list..sort((a,b)=> a.priority.compareTo(b.priority));
+          _allExercises = list
+            ..sort((a, b) => a.priority.compareTo(b.priority));
           _loadingExercises = false;
         });
       }
     } catch (_) {
-      if (mounted) setState(()=> _loadingExercises = false);
+      if (mounted) setState(() => _loadingExercises = false);
     }
   }
 
@@ -214,7 +539,10 @@ class SessionFormState extends State<SessionForm> {
         points: 0,
         groupSize: 0,
         comment: '',
-        handMethod: PreferencesService().getDefaultHandMethod() == HandMethod.oneHand ? 'one' : 'two',
+        handMethod:
+            PreferencesService().getDefaultHandMethod() == HandMethod.oneHand
+                ? 'one'
+                : 'two',
       ));
     });
     // Après rebuild, focus précis via FocusNodes
@@ -229,25 +557,100 @@ class SessionFormState extends State<SessionForm> {
         {'ctrl': c.commentController, 'focus': c.commentFocus},
       ];
       for (final item in ordered) {
-        final TextEditingController ctrl = item['ctrl'] as TextEditingController;
+        final TextEditingController ctrl =
+            item['ctrl'] as TextEditingController;
         final FocusNode node = item['focus'] as FocusNode;
         final text = ctrl.text.trim();
         if (text.isEmpty || text == '0') {
           FocusScope.of(context).requestFocus(node);
-          ctrl.selection = TextSelection(baseOffset: 0, extentOffset: text.length);
+          ctrl.selection =
+              TextSelection(baseOffset: 0, extentOffset: text.length);
           break;
         }
       }
     });
   }
 
+  Future<void> _saveCurrentSetupFavorite() async {
+    final weapon = _weaponController.text.trim();
+    final caliber = canonicalizeCaliber(_caliberController.text);
+    if (weapon.isEmpty && caliber.isEmpty && _selectedDisciplineCode == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Renseignez au moins une arme ou un calibre.')),
+      );
+      return;
+    }
+
+    final suggestedName =
+        [weapon, caliber].where((v) => v.isNotEmpty).join(' - ');
+    final nameController = TextEditingController(
+      text: suggestedName.isEmpty ? 'Setup' : suggestedName,
+    );
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Nom du favori'),
+          content: TextField(
+            controller: nameController,
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'Nom'),
+            textInputAction: TextInputAction.done,
+            onSubmitted: (value) => Navigator.pop(dialogContext, value),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, nameController.text),
+              child: const Text('Enregistrer'),
+            ),
+          ],
+        );
+      },
+    );
+    nameController.dispose();
+    final cleanName = name?.trim();
+    if (cleanName == null || cleanName.isEmpty) return;
+
+    final setupSession = ShootingSession(
+      weapon: weapon,
+      caliber: caliber,
+      series: const [],
+      status: _status,
+      category: _category,
+      disciplineCode: _selectedDisciplineCode,
+      disciplineSeason: _selectedDisciplineSeason,
+    );
+    await SessionTemplateService().saveFavoriteFromSession(
+      setupSession,
+      name: cleanName,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Favori enregistré: $cleanName')),
+    );
+  }
+
   // _save supprimé (logique de validation déplacée dans callback externe si nécessaire)
   bool validateAndBuild() {
     if (!_formKey.currentState!.validate()) return false;
     if (_status == SessionConstants.statusRealisee) {
-      if (_series.isEmpty || _series.every((s) => s.shotCount == 0 && s.distance == 0 && s.points == 0 && s.groupSize == 0 && s.comment.isEmpty)) {
+      if (_series.isEmpty ||
+          _series.every((s) =>
+              s.shotCount == 0 &&
+              s.distance == 0 &&
+              s.points == 0 &&
+              s.groupSize == 0 &&
+              s.comment.isEmpty)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Veuillez ajouter au moins une série à la session réalisée.')),
+          SnackBar(
+              content: Text(
+                  'Veuillez ajouter au moins une série à la session réalisée.')),
         );
         return false;
       }
@@ -270,20 +673,15 @@ class SessionFormState extends State<SessionForm> {
       id: existingId,
       date: _date,
       weapon: _weaponController.text,
-      caliber: _caliberController.text,
-  status: _status,
-      series: List.generate(_series.length, (i) => Series(
-        shotCount: int.tryParse(_seriesControllers[i].shotCountController.text) ?? 0,
-        distance: double.tryParse(_seriesControllers[i].distanceController.text) ?? 0,
-        points: int.tryParse(_seriesControllers[i].pointsController.text) ?? 0,
-        groupSize: double.tryParse(_seriesControllers[i].groupSizeController.text) ?? 0,
-        comment: _seriesControllers[i].commentController.text.trim(),
-        handMethod: _seriesControllers[i].handMethod == 'one' ? HandMethod.oneHand : HandMethod.twoHands,
-      )),
+      caliber: canonicalizeCaliber(_caliberController.text),
+      status: _status,
+      series: List.generate(_seriesControllers.length, _buildSeries),
       synthese: _syntheseController.text,
       category: _category,
       exercises: _selectedExerciseIds.toList(),
       photoPath: _photoPath,
+      disciplineCode: _selectedDisciplineCode,
+      disciplineSeason: _selectedDisciplineSeason,
     );
     widget.onSave(session);
     return true;
@@ -291,20 +689,24 @@ class SessionFormState extends State<SessionForm> {
 
   @override
   Widget build(BuildContext context) {
-    final totalPoints = _seriesControllers.fold<int>(0, (a,c){
+    final totalPoints = _seriesControllers.fold<int>(0, (a, c) {
+      c.syncGongPoints();
       final v = int.tryParse(c.pointsController.text) ?? 0;
       return a + v;
     });
-    final double avgPoints = _seriesControllers.isEmpty ? 0.0 : totalPoints / _seriesControllers.length;
+    final double avgPoints = _seriesControllers.isEmpty
+        ? 0.0
+        : totalPoints / _seriesControllers.length;
     double? dominantDistance;
     if (_seriesControllers.isNotEmpty) {
-      final distances = <double,int>{};
+      final distances = <double, int>{};
       for (final c in _seriesControllers) {
         final d = double.tryParse(c.distanceController.text) ?? 0;
-        if (d>0) distances[d] = (distances[d]??0)+1;
+        if (d > 0) distances[d] = (distances[d] ?? 0) + 1;
       }
       if (distances.isNotEmpty) {
-        dominantDistance = distances.entries.reduce((a,b)=> a.value>=b.value? a:b).key;
+        dominantDistance =
+            distances.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
       }
     }
     return Form(
@@ -321,7 +723,7 @@ class SessionFormState extends State<SessionForm> {
                 firstDate: DateTime(2020),
                 lastDate: DateTime(2100),
               );
-              if (picked != null) setState(()=> _date = picked);
+              if (picked != null) setState(() => _date = picked);
             },
             seriesCount: _seriesControllers.length,
             totalPoints: totalPoints,
@@ -334,10 +736,13 @@ class SessionFormState extends State<SessionForm> {
               Expanded(
                 child: TextFormField(
                   controller: _weaponController,
-                  decoration: InputDecoration(labelText: 'Arme (optionnel si prévue)'),
-                  validator: (v){
-                    if (_status == SessionConstants.statusPrevue) return null; // optional
-                    if (v==null||v.isEmpty) return 'Requis';
+                  decoration:
+                      InputDecoration(labelText: 'Arme (optionnel si prévue)'),
+                  validator: (v) {
+                    if (_status == SessionConstants.statusPrevue) {
+                      return null; // optional
+                    }
+                    if (v == null || v.isEmpty) return 'Requis';
                     return null;
                   },
                 ),
@@ -348,34 +753,45 @@ class SessionFormState extends State<SessionForm> {
                   textEditingController: _caliberController,
                   focusNode: _caliberFocus,
                   optionsBuilder: (TextEditingValue textEditingValue) {
-                    final list = AppConfig.I.calibers;
+                    final list = normalizedCaliberOptions();
                     if (_showAllCaliberOptions) return list;
                     final q = textEditingValue.text.trim();
                     if (q.isEmpty) return list; // show all when empty
-                    return list.where((c) => c.toLowerCase().contains(q.toLowerCase()));
+                    return list.where(
+                        (c) => c.toLowerCase().contains(q.toLowerCase()));
                   },
                   fieldViewBuilder: (context, ctrl, focus, onFieldSubmitted) {
                     return TextFormField(
                       controller: ctrl,
                       focusNode: focus,
                       decoration: const InputDecoration(labelText: 'Calibre'),
-                      validator: (v)=> v==null||v.isEmpty? 'Requis': null,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Requis' : null,
                       onChanged: (txt) {
-                        if (_showAllCaliberOptions) setState(() => _showAllCaliberOptions = false);
-                        final wasDeletion = txt.length < _lastCaliberText.length;
+                        if (_showAllCaliberOptions) {
+                          setState(() => _showAllCaliberOptions = false);
+                        }
+                        final wasDeletion =
+                            txt.length < _lastCaliberText.length;
                         _lastCaliberText = txt;
                         if (wasDeletion) return;
                         final res = suggestFor(txt);
-                        if (res.autoReplacement != null && ctrl.text != res.autoReplacement) {
+                        if (res.autoReplacement != null &&
+                            ctrl.text != res.autoReplacement) {
                           ctrl.value = ctrl.value.copyWith(
                             text: res.autoReplacement,
-                            selection: TextSelection.collapsed(offset: res.autoReplacement!.length),
+                            selection: TextSelection.collapsed(
+                                offset: res.autoReplacement!.length),
                           );
                           _lastCaliberText = res.autoReplacement!;
                         }
                       },
                       onFieldSubmitted: (_) => onFieldSubmitted(),
                     );
+                  },
+                  onSelected: (value) {
+                    _caliberController.text = canonicalizeCaliber(value);
+                    _lastCaliberText = _caliberController.text;
                   },
                   optionsViewBuilder: (context, onSelected, options) {
                     final opts = options.toList();
@@ -386,7 +802,8 @@ class SessionFormState extends State<SessionForm> {
                         elevation: 4.0,
                         borderRadius: BorderRadius.circular(8),
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxHeight: 220, minWidth: 220),
+                          constraints: const BoxConstraints(
+                              maxHeight: 220, minWidth: 220),
                           child: ListView.builder(
                             padding: EdgeInsets.zero,
                             itemCount: opts.length,
@@ -398,7 +815,10 @@ class SessionFormState extends State<SessionForm> {
                                 onTap: () {
                                   if (opt == 'Autre') {
                                     final val = 'Autre : ';
-                                    _caliberController.value = TextEditingValue(text: val, selection: TextSelection.collapsed(offset: val.length));
+                                    _caliberController.value = TextEditingValue(
+                                        text: val,
+                                        selection: TextSelection.collapsed(
+                                            offset: val.length));
                                   } else {
                                     onSelected(opt);
                                   }
@@ -415,21 +835,57 @@ class SessionFormState extends State<SessionForm> {
             ],
           ),
           SizedBox(height: 16),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: _saveCurrentSetupFavorite,
+              icon: const Icon(Icons.star_border),
+              label: const Text('Favori'),
+            ),
+          ),
+          SizedBox(height: 16),
+          DropdownButtonFormField<String?>(
+            initialValue: _selectedDisciplineCode,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              labelText: 'Épreuve TAR 25 m',
+            ),
+            items: _disciplineItems(),
+            selectedItemBuilder: (context) => _disciplineItems()
+                .map((item) => Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        item.value == null ? 'Aucune épreuve TAR' : item.value!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ))
+                .toList(),
+            onChanged: _onDisciplineChanged,
+          ),
+          SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: _category,
             decoration: InputDecoration(labelText: 'Catégorie'),
-            items: SessionConstants.categories.map((c)=> DropdownMenuItem(value: c, child: Text(c))).toList(),
-            onChanged: (v)=> setState(()=> _category = v ?? SessionConstants.categoryEntrainement),
+            items: SessionConstants.categories
+                .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                .toList(),
+            onChanged: (v) => setState(
+                () => _category = v ?? SessionConstants.categoryEntrainement),
           ),
           SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: _status,
             decoration: InputDecoration(labelText: 'Statut'),
             items: [
-              DropdownMenuItem(value: SessionConstants.statusRealisee, child: Text('Réalisée')),
-              DropdownMenuItem(value: SessionConstants.statusPrevue, child: Text('Prévue')),
+              DropdownMenuItem(
+                  value: SessionConstants.statusRealisee,
+                  child: Text('Réalisée')),
+              DropdownMenuItem(
+                  value: SessionConstants.statusPrevue, child: Text('Prévue')),
             ],
-            onChanged: (v)=> setState(()=> _status = v ?? SessionConstants.statusRealisee),
+            onChanged: (v) =>
+                setState(() => _status = v ?? SessionConstants.statusRealisee),
           ),
           // No direct goal link; exercises link goals indirectly.
           SizedBox(height: 24),
@@ -453,9 +909,11 @@ class SessionFormState extends State<SessionForm> {
             children: [
               Icon(Icons.list_alt, size: 18, color: Colors.amberAccent),
               SizedBox(width: 8),
-              Text('Séries', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text('Séries',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               Spacer(),
-              Text('${_seriesControllers.length}', style: TextStyle(fontSize: 12, color: Colors.white70)),
+              Text('${_seriesControllers.length}',
+                  style: TextStyle(fontSize: 12, color: Colors.white70)),
             ],
           ),
           SizedBox(height: 8),
@@ -481,18 +939,25 @@ class SessionFormState extends State<SessionForm> {
                     points: int.tryParse(c.pointsController.text) ?? 0,
                     groupSize: double.tryParse(c.groupSizeController.text) ?? 0,
                     comment: c.commentController.text,
+                    handMethod: c.handMethod == 'one'
+                        ? HandMethod.oneHand
+                        : HandMethod.twoHands,
+                    sequenceType: c.sequenceType,
+                    scoringMode: c.scoringMode,
+                    targetType: c.targetType,
+                    timeLimitLabel: c.timeLimitLabel,
+                    timeLimitSeconds: c.timeLimitSeconds,
+                    gongsHit: int.tryParse(c.gongsHitController.text),
+                    gongPointValue: c.gongPointValue,
                   );
                   _series.insert(i + 1, newData);
-                  _seriesControllers.insert(i + 1, SeriesFormControllers(
-                    shotCount: newData.shotCount,
-                    distance: newData.distance,
-                    points: newData.points,
-                    groupSize: newData.groupSize,
-                    comment: newData.comment,
-                    handMethod: c.handMethod,
-                  ));
+                  _seriesControllers.insert(
+                      i + 1, _controllersFromData(newData));
                 });
               },
+              onChanged: () => setState(() {
+                c.syncGongPoints();
+              }),
             );
           }),
           SizedBox(height: 12),
@@ -502,8 +967,10 @@ class SessionFormState extends State<SessionForm> {
             label: Text('Ajouter une série'),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.amberAccent,
-              side: BorderSide(color: Colors.amberAccent.withValues(alpha: 0.6)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              side:
+                  BorderSide(color: Colors.amberAccent.withValues(alpha: 0.6)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
               padding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
             ),
           ),

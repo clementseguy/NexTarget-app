@@ -24,8 +24,25 @@ void main() {
   });
 
   test('pickInitialCaliber prefers existing, else default, else empty', () {
-    expect(pickInitialCaliber(existing: '.22 LR', defaultCaliber: ''), '.22 LR');
-    expect(pickInitialCaliber(existing: '', defaultCaliber: '.45 ACP'), '.45 ACP');
+    expect(pickInitialCaliber(existing: '22LR', defaultCaliber: ''), '.22 LR');
+    expect(
+        pickInitialCaliber(existing: '', defaultCaliber: '.45 ACP'), '.45 ACP');
     expect(pickInitialCaliber(existing: null, defaultCaliber: null), '');
+  });
+
+  test('canonicalizeCaliber normalizes known calibers and preserves unknowns',
+      () {
+    expect(canonicalizeCaliber('22lr'), '.22 LR');
+    expect(canonicalizeCaliber('9 x 19 mm'), '9mm (9x19)');
+    expect(canonicalizeCaliber('.38'), '.38');
+    expect(canonicalizeCaliber('  custom wildcat  '), 'custom wildcat');
+  });
+
+  test('normalizedCaliberOptions de-duplicates configured calibers', () {
+    expect(normalizedCaliberOptions(), containsAll(['.22 LR', '9mm (9x19)']));
+    expect(
+      normalizedCaliberOptions().map((c) => c.toLowerCase()).toSet().length,
+      normalizedCaliberOptions().length,
+    );
   });
 }

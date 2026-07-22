@@ -1,4 +1,5 @@
 import '../models/goal.dart';
+import '../models/series.dart';
 import '../models/shooting_session.dart';
 import '../repositories/session_repository.dart';
 import '../repositories/hive_session_repository.dart';
@@ -27,7 +28,8 @@ class GoalService implements IGoalService {
   final SessionRepository _sessions;
   final GoalRepository _goals;
 
-  GoalService({SessionRepository? sessionRepository, GoalRepository? goalRepository})
+  GoalService(
+      {SessionRepository? sessionRepository, GoalRepository? goalRepository})
       : _sessions = sessionRepository ?? HiveSessionRepository(),
         _goals = goalRepository ?? HiveGoalRepository();
 
@@ -75,7 +77,7 @@ class GoalService implements IGoalService {
   Future<List<Goal>> topActiveGoals(int n) async {
     final all = await _goals.getAll();
     final filtered = all.where((g) => g.status == GoalStatus.active).toList();
-    filtered.sort((a,b){
+    filtered.sort((a, b) {
       final pa = a.lastProgress ?? 0;
       final pb = b.lastProgress ?? 0;
       if (pb.compareTo(pa) != 0) return pb.compareTo(pa);
@@ -87,12 +89,12 @@ class GoalService implements IGoalService {
 
   Future<int> countActiveGoals() async {
     final all = await _goals.getAll();
-    return all.where((g)=> g.status == GoalStatus.active).length;
+    return all.where((g) => g.status == GoalStatus.active).length;
   }
 
   Future<int> countAchievedGoals() async {
     final all = await _goals.getAll();
-    return all.where((g)=> g.status == GoalStatus.achieved).length;
+    return all.where((g) => g.status == GoalStatus.achieved).length;
   }
 
   /// Count goals achieved within the last [days] days (inclusive).
@@ -108,6 +110,7 @@ class GoalService implements IGoalService {
       return !d.isBefore(threshold) && !d.isAfter(now);
     }).length;
   }
+
   /// --- Lot B additions ---
   /// Calcule toutes les stats macro en un seul passage sur la liste des objectifs.
   Future<MacroAchievementStats> macroAchievementStats() async {
@@ -119,7 +122,10 @@ class GoalService implements IGoalService {
     final t90 = now.subtract(const Duration(days: 90));
     int totalCompleted = 0;
     int totalActive = 0;
-    int c7 = 0; int c30 = 0; int c60 = 0; int c90 = 0;
+    int c7 = 0;
+    int c30 = 0;
+    int c60 = 0;
+    int c90 = 0;
     for (final g in all) {
       if (g.status == GoalStatus.achieved) {
         totalCompleted++;
@@ -143,6 +149,7 @@ class GoalService implements IGoalService {
       completedLast90: c90,
     );
   }
+
   /// --- End Lot B additions ---
   // --- End Lot A additions ---
 
@@ -185,58 +192,39 @@ class GoalService implements IGoalService {
     double? value;
     switch (goal.metric) {
       case GoalMetric.averagePoints:
-        final allSeries = filtered.expand((s) => s.series);
-        final points = allSeries.map((s) => s.points.toDouble()).toList();
-        if (points.isNotEmpty) value = points.reduce((a,b)=>a+b) / points.length;
+        value = _averageScorePoints(filtered);
         break;
       case GoalMetric.sessionCount:
         value = filtered.length.toDouble();
         break;
       case GoalMetric.totalPoints:
-        final allSeries = filtered.expand((s) => s.series);
-        final points = allSeries.map((s) => s.points.toDouble()).toList();
-        value = points.isEmpty ? 0 : points.reduce((a,b)=>a+b);
+        value = _totalScorePoints(filtered);
         break;
       case GoalMetric.groupSize:
         final allSeries = filtered.expand((s) => s.series);
         final groups = allSeries.map((s) => s.groupSize).toList();
-        if (groups.isNotEmpty) value = groups.reduce((a,b)=>a+b) / groups.length;
+        if (groups.isNotEmpty) {
+          value = groups.reduce((a, b) => a + b) / groups.length;
+        }
         break;
       case GoalMetric.averageSessionPoints:
         // Moyenne des points moyens par session (chaque session: somme points séries / nb séries)
-        if (filtered.isNotEmpty) {
-          double sum = 0;
-            int count = 0;
-            for (final s in filtered) {
-              if (s.series.isEmpty) continue;
-              final pts = s.series.map((e) => e.points.toDouble()).reduce((a,b)=>a+b);
-              sum += pts / s.series.length;
-              count++;
-            }
-            if (count > 0) value = sum / count;
-        }
+        value = _averageSessionScorePoints(filtered);
         break;
       case GoalMetric.bestSeriesPoints:
-        final allSeries = filtered.expand((s)=> s.series).toList();
-        if (allSeries.isNotEmpty) {
-          value = allSeries.map((s)=> s.points.toDouble()).reduce((a,b)=> a>b?a:b);
-        }
+        value = _bestSeriesScorePoints(filtered);
         break;
       case GoalMetric.bestSessionPoints:
         if (filtered.isNotEmpty) {
-          double best = 0;
-          for (final s in filtered) {
-            if (s.series.isEmpty) continue;
-            final total = s.series.map((e)=> e.points.toDouble()).reduce((a,b)=> a+b);
-            if (total > best) best = total;
-          }
-          value = best;
+          value = _bestSessionScorePoints(filtered);
         }
         break;
       case GoalMetric.bestGroupSize:
-        final allSeries2 = filtered.expand((s)=> s.series).toList();
+        final allSeries2 = filtered.expand((s) => s.series).toList();
         if (allSeries2.isNotEmpty) {
-          value = allSeries2.map((s)=> s.groupSize).reduce((a,b)=> a<b?a:b);
+          value = allSeries2
+              .map((s) => s.groupSize)
+              .reduce((a, b) => a < b ? a : b);
         }
         break;
     }
@@ -261,11 +249,13 @@ class GoalService implements IGoalService {
       progress = progress.clamp(0, 1);
     }
 
-  var status = goal.status;
+    var status = goal.status;
     DateTime? achievementDate = goal.achievementDate;
     if (progress != null) {
-      final achieved = (goal.comparator == GoalComparator.greaterOrEqual && value! >= goal.targetValue) ||
-          (goal.comparator == GoalComparator.lessOrEqual && value! <= goal.targetValue);
+      final achieved = (goal.comparator == GoalComparator.greaterOrEqual &&
+              value! >= goal.targetValue) ||
+          (goal.comparator == GoalComparator.lessOrEqual &&
+              value! <= goal.targetValue);
       if (achieved && status == GoalStatus.active) {
         status = GoalStatus.achieved;
         achievementDate ??= DateTime.now();
@@ -292,43 +282,91 @@ class GoalService implements IGoalService {
     );
   }
 
-  double? _computeMetricValue(GoalMetric metric, List<ShootingSession> sessions) {
+  double? _computeMetricValue(
+      GoalMetric metric, List<ShootingSession> sessions) {
     if (sessions.isEmpty) return null;
     switch (metric) {
       case GoalMetric.averagePoints:
-        final allSeries = sessions.expand((s) => s.series);
-        final points = allSeries.map((s) => s.points.toDouble()).toList();
-        if (points.isNotEmpty) return points.reduce((a,b)=>a+b) / points.length;
-        return null;
+        return _averageScorePoints(sessions);
       case GoalMetric.sessionCount:
         return sessions.length.toDouble();
       case GoalMetric.totalPoints:
-        final allSeries = sessions.expand((s) => s.series);
-        final points = allSeries.map((s) => s.points.toDouble()).toList();
-        return points.isEmpty ? 0 : points.reduce((a,b)=>a+b);
+        return _totalScorePoints(sessions);
       case GoalMetric.groupSize:
         final allSeries = sessions.expand((s) => s.series);
         final groups = allSeries.map((s) => s.groupSize).toList();
-        if (groups.isNotEmpty) return groups.reduce((a,b)=>a+b) / groups.length;
+        if (groups.isNotEmpty) {
+          return groups.reduce((a, b) => a + b) / groups.length;
+        }
         return null;
       case GoalMetric.averageSessionPoints:
-        double sum = 0; int count = 0; for (final s in sessions) { if (s.series.isEmpty) continue; final pts = s.series.map((e)=>e.points.toDouble()).reduce((a,b)=>a+b); sum += pts / s.series.length; count++; }
-        if (count>0) {
-          return sum / count;
-        } else {
-          return null;
-        }
+        return _averageSessionScorePoints(sessions);
       case GoalMetric.bestSeriesPoints:
-        final allSeries = sessions.expand((s)=> s.series).toList();
-        if (allSeries.isNotEmpty) return allSeries.map((s)=> s.points.toDouble()).reduce((a,b)=> a>b?a:b);
-        return null;
+        return _bestSeriesScorePoints(sessions);
       case GoalMetric.bestSessionPoints:
-        double best = 0; for (final s in sessions){ if (s.series.isEmpty) continue; final total = s.series.map((e)=> e.points.toDouble()).reduce((a,b)=> a+b); if (total>best) best = total; }
-        return best;
+        return _bestSessionScorePoints(sessions);
       case GoalMetric.bestGroupSize:
-        final allSeries2 = sessions.expand((s)=> s.series).toList();
-        if (allSeries2.isNotEmpty) return allSeries2.map((s)=> s.groupSize).reduce((a,b)=> a<b?a:b);
+        final allSeries2 = sessions.expand((s) => s.series).toList();
+        if (allSeries2.isNotEmpty) {
+          return allSeries2
+              .map((s) => s.groupSize)
+              .reduce((a, b) => a < b ? a : b);
+        }
         return null;
     }
+  }
+
+  Iterable<Series> _scoreSeries(List<ShootingSession> sessions) {
+    return sessions.expand((s) => s.series).where((s) => s.isScoreCounted);
+  }
+
+  double? _averageScorePoints(List<ShootingSession> sessions) {
+    final points =
+        _scoreSeries(sessions).map((s) => s.scoredPoints.toDouble()).toList();
+    if (points.isEmpty) return null;
+    return points.reduce((a, b) => a + b) / points.length;
+  }
+
+  double _totalScorePoints(List<ShootingSession> sessions) {
+    final points =
+        _scoreSeries(sessions).map((s) => s.scoredPoints.toDouble()).toList();
+    return points.isEmpty ? 0 : points.reduce((a, b) => a + b);
+  }
+
+  double? _averageSessionScorePoints(List<ShootingSession> sessions) {
+    double sum = 0;
+    int count = 0;
+    for (final session in sessions) {
+      final scoreSeries =
+          session.series.where((s) => s.isScoreCounted).toList();
+      if (scoreSeries.isEmpty) continue;
+      final pts = scoreSeries
+          .map((s) => s.scoredPoints.toDouble())
+          .reduce((a, b) => a + b);
+      sum += pts / scoreSeries.length;
+      count++;
+    }
+    return count > 0 ? sum / count : null;
+  }
+
+  double? _bestSeriesScorePoints(List<ShootingSession> sessions) {
+    final points =
+        _scoreSeries(sessions).map((s) => s.scoredPoints.toDouble()).toList();
+    if (points.isEmpty) return null;
+    return points.reduce((a, b) => a > b ? a : b);
+  }
+
+  double _bestSessionScorePoints(List<ShootingSession> sessions) {
+    double best = 0;
+    for (final session in sessions) {
+      final scoreSeries =
+          session.series.where((s) => s.isScoreCounted).toList();
+      if (scoreSeries.isEmpty) continue;
+      final total = scoreSeries
+          .map((s) => s.scoredPoints.toDouble())
+          .reduce((a, b) => a + b);
+      if (total > best) best = total;
+    }
+    return best;
   }
 }
