@@ -1,5 +1,6 @@
 import '../forms/series_form_controllers.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../forms/series_form_data.dart';
 import '../services/preferences_service.dart';
 import '../utils/caliber_autocomplete.dart';
@@ -10,13 +11,22 @@ import '../constants/session_constants.dart';
 import '../models/series.dart';
 import '../models/exercise.dart';
 import '../services/exercise_service.dart';
+import '../interfaces/session_photo_service_interface.dart';
+import '../services/session_photo_service.dart';
 import 'session_form/session_form_components.dart';
 
 class SessionForm extends StatefulWidget {
   final Map<String, dynamic>? initialSessionData;
   final void Function(ShootingSession session) onSave;
   final bool isEdit;
-  const SessionForm({super.key, this.initialSessionData, required this.onSave, this.isEdit = false});
+  final ISessionPhotoService? photoService;
+  const SessionForm({
+    super.key,
+    this.initialSessionData,
+    required this.onSave,
+    this.isEdit = false,
+    this.photoService,
+  });
 
   static SessionFormState? of(BuildContext context) {
     return context.findAncestorStateOfType<SessionFormState>();
@@ -44,6 +54,11 @@ class SessionFormState extends State<SessionForm> {
   List<Exercise> _allExercises = [];
   final Set<String> _selectedExerciseIds = <String>{};
   bool _loadingExercises = true;
+  // Photo de la cible (NT-005)
+  late final ISessionPhotoService _photoService = widget.photoService ?? SessionPhotoService();
+  String? _photoPath;
+  String? _initialPhotoPath;
+  bool _photoBusy = false;
 
   @override
   void initState() {
@@ -61,6 +76,8 @@ class SessionFormState extends State<SessionForm> {
   _syntheseController = TextEditingController(text: session['synthese'] ?? '');
   _category = session['category'] ?? SessionConstants.categoryEntrainement;
   _status = session['status'] ?? SessionConstants.statusRealisee;
+  _photoPath = session['photoPath'] as String?;
+  _initialPhotoPath = _photoPath;
       // Preload existing exercises list from session map if any
       final existingEx = session['exercises'];
       if (existingEx is List) {
@@ -123,6 +140,36 @@ class SessionFormState extends State<SessionForm> {
     });
     // Load exercises asynchronously
     _loadExercises();
+  }
+
+  /// Ouvre la galerie ou l'appareil photo, stocke la photo choisie localement
+  /// et remplace la photo précédemment sélectionnée dans ce formulaire (le cas
+  /// échéant). La photo déjà persistée en base (si édition) n'est nettoyée
+  /// qu'après un enregistrement réussi, côté [SessionService.updateSession].
+  Future<void> _pickPhoto(ImageSource source) async {
+    setState(() => _photoBusy = true);
+    try {
+      final newPath = await _photoService.pickAndStore(source);
+      if (newPath == null) return;
+      final oldPath = _photoPath;
+      // Ne supprimer immédiatement que les fichiers temporaires créés pendant
+      // cette édition (jamais persistés) ; la photo initiale reste intacte
+      // tant que l'utilisateur n'a pas confirmé l'enregistrement du formulaire.
+      if (oldPath != null && oldPath != _initialPhotoPath) {
+        await _photoService.deleteIfExists(oldPath);
+      }
+      if (mounted) setState(() => _photoPath = newPath);
+    } finally {
+      if (mounted) setState(() => _photoBusy = false);
+    }
+  }
+
+  Future<void> _removePhoto() async {
+    final oldPath = _photoPath;
+    if (oldPath != null && oldPath != _initialPhotoPath) {
+      await _photoService.deleteIfExists(oldPath);
+    }
+    if (mounted) setState(() => _photoPath = null);
   }
 
   Future<void> _loadExercises() async {
@@ -236,6 +283,7 @@ class SessionFormState extends State<SessionForm> {
       synthese: _syntheseController.text,
       category: _category,
       exercises: _selectedExerciseIds.toList(),
+      photoPath: _photoPath,
     );
     widget.onSave(session);
     return true;
@@ -460,6 +508,14 @@ class SessionFormState extends State<SessionForm> {
             ),
           ),
           SizedBox(height: 28),
+          SessionPhotoField(
+            photoPath: _photoPath,
+            isBusy: _photoBusy,
+            onPickFromGallery: () => _pickPhoto(ImageSource.gallery),
+            onPickFromCamera: () => _pickPhoto(ImageSource.camera),
+            onRemove: _removePhoto,
+          ),
+          SizedBox(height: 24),
           SyntheseCard(
             controller: _syntheseController,
             status: _status,
