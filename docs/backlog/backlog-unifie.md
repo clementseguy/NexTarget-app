@@ -856,7 +856,7 @@ de planification.*
 | Sujet | Décision |
 |---|---|
 | Priorité produit | Progression sur les **disciplines officielles**, en premier lieu le **TAR armes de poing 25 m** (épreuves 830/831/832). |
-| NT-005 (photo) | Remonté **Could → Must** — socle du thème 11 ; reste planifié en S4. |
+| NT-005 (photo) | Remonté **Could → Must** — socle du thème 11 ; livré le 2026-07-17 (PR #12). |
 | Analyse photo | Approche **qualitative multimodale** (NT-111) retenue ; NT-006 (CV métrique) maintenu en Icebox, à réévaluer après retour d'usage. |
 | Référentiel TAR | Versionné par saison ; seed extrait du règlement CNS TAR 2025-2026 → [`docs/specs/referentiel_tar_25m.md`](../specs/referentiel_tar_25m.md). |
 | Estimation | Ajout d'une **Valeur métier (VM 1–5)** sur les thèmes 10+, en complément de MoSCoW + S/M/L (dev solo + agentic : le facteur limitant est la valeur/le risque, pas l'effort). |
