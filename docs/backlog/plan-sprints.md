@@ -5,6 +5,12 @@
 > ordonne les items non livrés par valeur métier, dépendances et capacité à
 > produire une version stable en fin de sprint.
 
+> ✅ **Livrés depuis l'établissement de ce plan** : **NT-005** (photo de la cible)
+> et **NT-007** (filtre historique par exercice) ont été implémentés et fusionnés
+> dans `main` le 2026-07-17 (PR #12). Ils restent listés ci-dessous marqués `✅`
+> pour préserver la lisibilité des dépendances (ex. NT-111 dépend de NT-005) ;
+> ils ne sont plus à replanifier.
+
 ## Hypothèses
 
 - Sprints de 2 semaines.
@@ -36,7 +42,7 @@
 |---|---|---|---|---|
 | 1 | NT-100, NT-101 | Socle métier TAR : rend les sessions comparables et exploitables par stats/coach. | NT-001, NT-002 | app |
 | 2 | NT-073, NT-130 | Réduit fortement la friction de saisie au stand ; prépare les templates par épreuve. | NT-001, NT-101 optionnel | app |
-| 3 | NT-005, NT-110 | Photo cible exploitable : mémoire visuelle puis contexte fiable pour le coach. | NT-001, NT-100 | app |
+| 3 | NT-005 ✅, NT-110 | Photo cible exploitable : mémoire visuelle puis contexte fiable pour le coach. | NT-001, NT-100 | app |
 | 4 | NT-104 | Restitution immédiate de la progression par discipline. | NT-100, NT-010 | app |
 | 5 | NT-120, NT-121 | Donne un vrai écran Coach transverse, à forte valeur métier. | NT-101, NT-010, NT-030 | both |
 | 6 | NT-122 | Socle serveur pour que le coach produise des entités validables. | NT-031 | server |
@@ -46,7 +52,7 @@
 | 10 | NT-125, NT-126 | Boucle longue : suivi des recommandations puis plan d'entraînement. | NT-121, NT-123, NT-124 | both |
 | 11 | NT-024, NT-015, NT-014, NT-016 | Raffinement stats/objectifs/exercices après les axes TAR et coach. | NT-022, NT-021, NT-010, NT-012 | app |
 | 12 | NT-056, NT-057, NT-076 | Dette qualité/performance app, à caler dans un sprint de stabilisation. | — | app |
-| 13 | NT-034, NT-025, NT-007 | Améliorations utiles mais non structurantes. | NT-032, NT-020, NT-022 | app/server |
+| 13 | NT-034, NT-025, NT-007 ✅ | Améliorations utiles mais non structurantes. | NT-032, NT-020, NT-022 | app/server |
 | 14 | NT-044, NT-103, NT-132 | Opportunistes ou à instruire : Facebook, grilles FFTir, spike vocal. | sourcing/config terrain | both/app |
 | Infra | NT-071 | À déclencher avant multi-instance ou montée de charge serveur, pas bloquant pour le cycle fonctionnel court. | — | server |
 
@@ -75,7 +81,7 @@ des photos de cible correctement contextualisées.
 | Ordre | Item | Feature | App | Serveur |
 |---|---|---|---|---|
 | 1 | NT-104 | Stats & records par discipline | filtres, records par épreuve, dashboard distinct | — |
-| 2 | NT-005 | Photo de cible sur session | prise/sélection, stockage local, détail session | — |
+| 2 | NT-005 ✅ | Photo de cible sur session (livré PR #12) | prise/sélection, stockage local, détail session | — |
 | 3 | NT-110 | Métadonnées cible & photo par série | cible/distance/série associée | — |
 
 **Version stable attendue** : photos seulement locales et taguées ; aucune
@@ -173,7 +179,7 @@ réversible par suppression des entités créées.
 | Besoin login social autre que Google | NT-044 | Valider le flow Facebook contre une vraie app Facebook puis câbler le bouton app. |
 | Besoin classement officiel fédéral | NT-103 | Sourcer les grilles RGS FFTir avant estimation définitive. |
 | Hypothèse de saisie mains libres au stand | NT-132 | Spike timeboxé uniquement, avec go/no-go en conditions réelles. |
-| Besoin de confort catalogue exercices | NT-025, NT-007 | À insérer dans un sprint app si faible coût réel confirmé. |
+| Besoin de confort catalogue exercices | NT-025, ~~NT-007~~ ✅ | NT-007 livré (PR #12) ; reste NT-025, à insérer dans un sprint app si faible coût réel confirmé. |
 
 ## Icebox
 

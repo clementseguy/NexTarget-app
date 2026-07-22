@@ -59,9 +59,9 @@
 | NT-002 | Saisir des séries détaillées | app | Must | M | FAIT |
 | NT-003 | Historique & détail des sessions | app | Must | M | FAIT |
 | NT-004 | Synthèse libre du tireur par session | app | Should | S | FAIT |
-| NT-005 | Attacher une photo de la cible | app | Must | M | À FAIRE |
+| NT-005 | Attacher une photo de la cible | app | Must | M | FAIT |
 | NT-006 | Analyse d'image de la cible (dispersion/score) | both | Won't-now | L | À FAIRE |
-| NT-007 | Filtrer l'historique des sessions par exercice | app | Could | S | À FAIRE |
+| NT-007 | Filtrer l'historique des sessions par exercice | app | Could | S | FAIT |
 
 ### NT-001 — Enregistrer une session de tir
 - **Thème** : Carnet de tir
@@ -96,7 +96,7 @@
 - **Description** : Ajouter une photo de la cible en fin de session pour mémoire visuelle et future analyse.
 - **Portée** : app · **Dépendances** : NT-001
 - **Critères d'acceptation** : sélection/prise de photo, stockage local associé à la session, affichage dans le détail.
-- **Priorité** : Must (Could → Must, décision 2026-07-13 : socle du thème 11) · **Statut** : À FAIRE. · **Notes** : préalable à NT-110/NT-111 (et NT-006, Icebox).
+- **Priorité** : Must (Could → Must, décision 2026-07-13 : socle du thème 11) · **Statut** : FAIT (PR #12, 2026-07-17) — `SessionPhotoService`, `migration_4_add_photo_path_field`, `ShootingSession.photoPath`, `SessionPhotoField` (formulaire) & `SessionPhotoSection` (détail). · **Notes** : préalable à NT-110/NT-111 (et NT-006, Icebox).
 
 ### NT-006 — Analyse d'image de la cible
 - **Thème** : Carnet de tir
@@ -109,7 +109,7 @@
 - **Thème** : Carnet de tir · **Portée** : app · **Dépendances** : NT-003, NT-022
 - **Description** : Retrouver dans l'historique les sessions où un exercice donné a été travaillé.
 - **Critères d'acceptation** : filtre par exercice dans l'historique ; combinable avec le filtre réalisées/prévues.
-- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue GitHub #5 (tracking v0.3), 2026-07-09.
+- **Priorité** : Could · **Statut** : FAIT (PR #12, 2026-07-17) — `SessionFilters.byExercise`, sélecteur d'exercice dans `sessions_history_screen` (combinable avec le filtre réalisées/prévues). · **Notes** : repris de l'issue GitHub #5 (tracking v0.3), 2026-07-09.
 
 ---
 
