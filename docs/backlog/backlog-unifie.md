@@ -35,7 +35,7 @@
 |---|---|
 | 1. Carnet de tir | NT-001 → NT-007 |
 | 2. Statistiques & Objectifs | NT-010 → NT-016 |
-| 3. Exercices | NT-020 → NT-025 |
+| 3. Exercices | NT-020 → NT-026 |
 | 4. Coach IA | NT-030 → NT-034 |
 | 5. Auth & Compte | NT-040 → NT-048 |
 | 6. Qualité & Observabilité | NT-050 → NT-057 |
@@ -183,6 +183,7 @@
 | NT-023 | Création d'exercice par le coach | both | Could | L | À FAIRE |
 | NT-024 | Stats d'exécution (fenêtres glissantes) | app | Could | M | À FAIRE |
 | NT-025 | Niveau de difficulté d'exercice | app | Could | S | À FAIRE |
+| NT-026 | Supprimer un exercice depuis l'interface | app | Could | S | À FAIRE |
 
 ### NT-020 — Gérer des exercices (CRUD)
 - **Thème** : Exercices · **Portée** : app · **Dépendances** : —
@@ -219,6 +220,13 @@
 - **Description** : Classer les exercices par difficulté (beginner/advanced/expert).
 - **Critères d'acceptation** : champ difficulté sur `Exercise` ; filtrable.
 - **Priorité** : Could · **Statut** : À FAIRE.
+
+### NT-026 — Supprimer un exercice depuis l'interface
+- **Thème** : Exercices · **Portée** : app · **Dépendances** : NT-020, NT-022
+- **Description** : Permettre au tireur de supprimer depuis la liste un exercice devenu inutile, sans supprimer ni rendre inaccessibles les sessions qui y étaient associées.
+- **Critères d'acceptation** : action « Supprimer » accessible depuis l'interface des exercices ; confirmation explicite avant suppression ; suppression effective du catalogue ; les sessions existantes ne sont pas supprimées ; **test manuel obligatoire : supprimer un exercice utilisé par des sessions, puis vérifier que l'historique revient proprement à « Tous les exercices », sans erreur**.
+- **Priorité** : Could (faible, mais planifié) · **Estimation** : S · **Statut** : À FAIRE.
+- **Notes** : créé à la suite de la recette NT-007 du 2026-07-24. La suppression existe déjà dans `ExerciseService` et le repository Hive, mais aucune action ne l'expose dans l'UI. Ce manque n'est pas bloquant pour la validation de NT-007.
 
 ---
 

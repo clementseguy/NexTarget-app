@@ -7,7 +7,7 @@
 > uniquement dans cette vue (règle de sync : [README.md](README.md)).
 
 **Repo** : NexTarget-app (Flutter/Dart, Hive, SonarCloud, dart_code_metrics)
-**Dernière projection** : 2026-07-13 (enrichissement thèmes 10–13 ; état du code : 2026-07-07)
+**Dernière projection** : 2026-07-24 (ajout NT-026 à la suite de la recette NT-007)
 
 ## Items app
 
@@ -33,6 +33,7 @@
 | NT-023 | Création d'exercice par le coach | both | Could | L | À FAIRE | consomme sortie coach (NT-030) |
 | NT-024 | Stats d'exécution (fenêtres glissantes) | app | Could | M | À FAIRE | `usageCount` / `lastPerformedAt` |
 | NT-025 | Niveau de difficulté d'exercice | app | Could | S | À FAIRE | — |
+| NT-026 | Supprimer un exercice depuis l'interface | app | Could | S | À FAIRE | confirmation ; sessions conservées ; recette du filtre NT-007 après suppression |
 | NT-030 | Analyse d'une session par le coach IA | both | Must | M | FAIT | `ServerCoachAnalysisService` (si connecté) |
 | NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | FAIT | préférence `coach_persona` (Paramètres uniquement), envoi `prompt_variant` |
 | NT-033 | Écran "Coach" transverse | both | Should | L | À FAIRE | `coach_screen.dart` = placeholder |
@@ -78,5 +79,5 @@
 
 - **Must** — NT-005 (photo de cible), NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session).
 - **Should** — NT-042 (édition profil à confirmer), NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-131. NT-033 : voir NT-120/NT-121.
-- **Could** — NT-007, NT-014, NT-015, NT-016, NT-024, NT-025, NT-044, NT-056, NT-057, NT-073, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132. NT-023 : voir NT-122/NT-123.
+- **Could** — NT-007, NT-014, NT-015, NT-016, NT-024, NT-025, NT-026, NT-044, NT-056, NT-057, NT-073, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132. NT-023 : voir NT-122/NT-123.
 - **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.

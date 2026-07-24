@@ -52,7 +52,7 @@
 | 10 | NT-125, NT-126 | Boucle longue : suivi des recommandations puis plan d'entraînement. | NT-121, NT-123, NT-124 | both |
 | 11 | NT-024, NT-015, NT-014, NT-016 | Raffinement stats/objectifs/exercices après les axes TAR et coach. | NT-022, NT-021, NT-010, NT-012 | app |
 | 12 | NT-056, NT-057, NT-076 | Dette qualité/performance app, à caler dans un sprint de stabilisation. | — | app |
-| 13 | NT-034, NT-025, NT-007 ✅ | Améliorations utiles mais non structurantes. | NT-032, NT-020, NT-022 | app/server |
+| 13 | NT-034, NT-025, NT-026, NT-007 ✅ | Améliorations utiles mais non structurantes ; NT-026 est de faible priorité mais reste planifié. | NT-032, NT-020, NT-022 | app/server |
 | 14 | NT-044, NT-103, NT-132 | Opportunistes ou à instruire : Facebook, grilles FFTir, spike vocal. | sourcing/config terrain | both/app |
 | Infra | NT-071 | À déclencher avant multi-instance ou montée de charge serveur, pas bloquant pour le cycle fonctionnel court. | — | server |
 
@@ -152,6 +152,7 @@ mesurables dans le temps.
 | 1 | NT-125 | Suivi des recommandations | statut suivie/non suivie, consultation | réinjection dans contexte coach |
 | 2 | NT-024 | Stats d'exécution exercices | usageCount, lastPerformedAt, fenêtres glissantes | — |
 | 3 | NT-015 | Recos Objectifs ⇄ Exercices | suggestions locales selon objectifs en retard | — |
+| 4 | NT-026 | Suppression d'un exercice | action UI avec confirmation ; sessions conservées ; retour sûr du filtre NT-007 à « Tous les exercices » | — |
 
 **Version stable attendue** : le coach voit si ses conseils ont été appliqués,
 mais aucun plan multi-semaines automatique.
@@ -179,7 +180,7 @@ réversible par suppression des entités créées.
 | Besoin login social autre que Google | NT-044 | Valider le flow Facebook contre une vraie app Facebook puis câbler le bouton app. |
 | Besoin classement officiel fédéral | NT-103 | Sourcer les grilles RGS FFTir avant estimation définitive. |
 | Hypothèse de saisie mains libres au stand | NT-132 | Spike timeboxé uniquement, avec go/no-go en conditions réelles. |
-| Besoin de confort catalogue exercices | NT-025, ~~NT-007~~ ✅ | NT-007 livré (PR #12) ; reste NT-025, à insérer dans un sprint app si faible coût réel confirmé. |
+| Besoin de confort catalogue exercices | NT-025, NT-026, ~~NT-007~~ ✅ | NT-007 livré (PR #12) ; NT-026 est planifié à faible priorité en Sprint 7, avec recette des références de sessions orphelines. |
 
 ## Icebox
 
