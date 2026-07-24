@@ -51,15 +51,15 @@
 | NT-057 | Nettoyage des widgets dupliqués | app | Could | S | À FAIRE | issue #5 ; MainNavigation déjà supprimé |
 | NT-061 | Coach connecté uniquement (retrait clé client) | both | Must | M | FAIT | `CoachAnalysisService` direct supprimé ; rotation clé = action manuelle |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT | `lib/migrations/` (script cohérence : à faire) |
-| NT-073 | Normalisation calibres + dernier calibre | app | Could | S | À FAIRE | — |
+| NT-073 | Normalisation calibres + dernier calibre | app | Could | S | À FAIRE | prototype abandonné ; reprise après design, voir REX TAR/saisie rapide |
 | NT-074 | Saisie séries plein écran + navigation | app | Could | M | À FAIRE | — |
 | NT-075 | Onboarding + aide contextuelle | app | Could | M | FAIT | `OnboardingGate` (3 écrans) + `HelpButton` ; ajustements recette 2026-07-09 |
 | NT-076 | Cache stats + compactage Hive | app | Could | M | À FAIRE | — |
 | NT-090 | Thème ASCII Art | app | Won't-now | M | À FAIRE | `docs/specs/ascii_art_theme.md` |
 | NT-091 | Règles de sécurité FFTir | app | Won't-now | S | À FAIRE | — |
 | NT-092 | Thèmes visuels (thème clair « France ») | app | Could | S | FAIT | — |
-| NT-100 | Référentiel des disciplines officielles (TAR 25 m) | app | Must | M | À FAIRE | seed `docs/specs/referentiel_tar_25m.md` |
-| NT-101 | Sessions & séries typées discipline | app | Must | M | À FAIRE | ajouts Hive additifs (séquence, temps, gongs) |
+| NT-100 | Référentiel des disciplines officielles (TAR 25 m) | app | Must | M | À FAIRE | seed existant ; prototype non fusionné abandonné, design préalable requis |
+| NT-101 | Sessions & séries typées discipline | app | Must | M | À FAIRE | prototype non fusionné abandonné ; parcours TAR à concevoir avant reprise |
 | NT-102 | Mode « match blanc » TAR | app | Should | L | À FAIRE | déroulé guidé 830/831/832, chrono |
 | NT-103 | Comparaison aux grilles de classement FFTir | app | Could | M | À FAIRE | sourcing RGS FFTir préalable |
 | NT-104 | Stats & records par discipline | app | Should | M | À FAIRE | filtres/records par épreuve |
@@ -71,7 +71,7 @@
 | NT-124 | Coach propose des objectifs | both | Should | M | À FAIRE | validation avant création |
 | NT-125 | Suivi des recommandations du coach | both | Could | L | À FAIRE | — |
 | NT-126 | Plan d'entraînement | both | Could | L | À FAIRE | dépend NT-123/NT-124 |
-| NT-130 | Templates de session | app | Must | S | À FAIRE | quick win — dernier setup + favoris |
+| NT-130 | Templates de session | app | Must | S | À FAIRE | prototype abandonné : ne pas ajouter d'étape au parcours classique |
 | NT-131 | Session live au stand | app | Should | M | À FAIRE | saisie au fil du tir + chrono repos |
 | NT-132 | Spike — saisie vocale d'une série | app | Could | S | À FAIRE | go/no-go en environnement stand |
 

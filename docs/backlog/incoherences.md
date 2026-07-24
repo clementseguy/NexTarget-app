@@ -19,6 +19,7 @@
 | I4 | Facebook : **serveur prêt**, **app non câblée** | App = À FAIRE, priorité **basse**, reste au backlog | Utilisateur (2026-07-07) | NT-044 (serveur FAIT / app À FAIRE, Could) |
 | I5 | « Plusieurs coachs (neutre/cool) » annoncé, **un seul livré** | Item À FAIRE ; scaffold multi-variant conservé | Claude (auto) | NT-032 = À FAIRE, Should |
 | I6 | `AGENTS.md` serveur **périmé** (dit « aucune IA », « pas de rate limiting », « User minimal ») | À réécrire pour refléter le code | Claude (auto) | Tâche doc (voir plus bas) |
+| I7 | Prototype NT-100/101/073/130 techniquement avancé mais parcours utilisateur confus et plus complexe | PR fermée sans fusion ; branche abandonnée ; reprise depuis `dev` après design UX validé | Utilisateur (2026-07-24) | Items maintenus À FAIRE ; [REX dédié](rex-tar-saisie-rapide-2026-07-24.md) obligatoire avant reprise |
 
 ---
 
@@ -54,6 +55,11 @@
 - **Constat.** Le fichier décrit un serveur « OAuth-only », « sans fonctionnalités IA », « Pas de rate limiting (prévu v0.2) », « User(id, email, provider, is_active, created_at) ». Les quatre sont contredits par le code (proxy coach, rate limiter actif, profil enrichi).
 - **Résolution (Claude, auto).** Réécrire l'`AGENTS.md` serveur pour refléter l'état réel (proxy IA, rate limiting, profil enrichi), **sans toucher aux règles de sécurité non négociables** qui, elles, restent valides.
 - **Impact.** Tâche documentaire (hors item produit) — à réaliser lors du nettoyage du repo serveur. Voir aussi la note dans [vue-serveur.md](vue-serveur.md).
+
+### I7 — Prototype TAR et saisie rapide abandonné après recette UX
+- **Constat.** La branche `feat/NT-100-NT-101-NT-073-NT-130-socle-tar-saisie-rapide` implémentait un référentiel TAR, des séries typées, la normalisation des calibres et des templates. La recette a montré que le menu « Vide », l'exposition simultanée des concepts TAR/templates, l'usage insuffisamment explicite des couleurs et l'absence de restitution TAR en lecture dégradaient le parcours principal.
+- **Résolution (utilisateur, 2026-07-24).** PR fermée sans fusion et branche abandonnée. Ne pas corriger le prototype point par point ni le cherry-picker globalement. Repartir ultérieurement de `dev`, après conception et validation des quatre parcours : session classique, session TAR, dernier réglage/favori et consultation TAR.
+- **Impact.** NT-100, NT-101, NT-073 et NT-130 restent **À FAIRE**. Le [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md) définit les principes UX, critères de succès et conditions de reprise ; le plan impose désormais une étape de design avant le développement.
 
 ---
 

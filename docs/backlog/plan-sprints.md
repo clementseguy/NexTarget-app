@@ -11,6 +11,13 @@
 > pour préserver la lisibilité des dépendances (ex. NT-111 dépend de NT-005) ;
 > ils ne sont plus à replanifier.
 
+> ⚠️ **Prototype abandonné le 2026-07-24** : la branche regroupant NT-100,
+> NT-101, NT-073 et NT-130 a été fermée sans fusion après échec de la recette UX.
+> Les quatre items restent **À FAIRE**. Toute reprise part de `dev` et commence
+> par la validation des parcours du
+> [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md) ; aucun
+> cherry-pick global du prototype `117ca83`.
+
 ## Hypothèses
 
 - Sprints de 2 semaines.
@@ -65,13 +72,16 @@ TAR, avec calibres normalisés et création rapide depuis un setup favori.
 
 | Ordre | Item | Feature | App | Serveur |
 |---|---|---|---|---|
+| 0 | Design UX | Parcours classique, TAR, dernier réglage/favori et consultation TAR | wireframes/prototype validés avant code | — |
 | 1 | NT-100 | Référentiel TAR 25 m versionné | seed YAML, services de lecture | — |
 | 2 | NT-101 | Sessions et séries typées discipline | migrations Hive, formulaires, scoring essai/précision/vitesse/gongs | — |
 | 3 | NT-073 | Normalisation calibres + dernier calibre | référentiel calibres, pré-remplissage | — |
 | 4 | NT-130 | Templates de session | dernier setup, favoris, création en 2 taps | — |
 
 **Version stable attendue** : aucun écran coach nouveau ; focus carnet. Les
-sessions existantes restent lisibles après migration.
+sessions existantes restent lisibles après migration. Le parcours classique
+n'ajoute aucune étape ; les informations TAR sont explicites en saisie comme en
+consultation. Le développement ne commence qu'après validation de l'ordre 0.
 
 ### Sprint 2 — Restitution TAR & photo cible
 
