@@ -88,7 +88,7 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 - **Async** : `async/await`, gérer explicitement les erreurs réseau (voir les
   services coach : `TimeoutException`, `SocketException`, codes HTTP).
 - **Logging** : utiliser `services/logger.dart` (`AppLogger`), **pas** `print`.
-  ⚠️ Il reste des `print('[DEBUG] …')` hérités dans le code coach : ne pas en
+  ATTENTION : il reste des `print('[DEBUG] …')` hérités dans le code coach -> ne pas en
   ajouter, et les retirer si tu touches ces fichiers.
 - **Dépréciations** : ne pas introduire de `withOpacity(` (déprécié ; le
   pré-commit le signale) — préférer `.withValues(...)`.
@@ -155,15 +155,15 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
   - **`main`** : branche de **production**, taggée à chaque **release**. Jamais de commit direct.
   - **`dev`** : branche d'**intégration** ; reçoit les features validées.
   - Toute branche de développement part de **`dev`** (jamais de `main`) et suit la
-    convention `type/NT-XXX-slug` (ex. `feat/NT-061-coach-connecte-uniquement`).
-    Pour un lot multi-features, une branche `feature/<code_nom_feature>` regroupant
+    convention `type/NT-XXX-slug` (ex. `feature/NT-061-coach-connecte-uniquement`).
+    Pour un lot multi-features, une branche `features/<codes_noms_features>` regroupant
     les IDs concernés est acceptée.
 - **Cycle de développement d'une (ou plusieurs) feature(s)** :
   1. Créer la branche depuis **`dev`**.
   2. Développer, puis ouvrir une **PR de la branche vers `dev`** (merge après revue + CI verte).
   3. Pour livrer : ouvrir une **PR de `dev` vers `main`**, accompagnée d'une **release**
      (bump de version dans `pubspec.yaml`, `CHANGELOG.md`, tag).
-- **Commit** : sujet préfixé par l'ID — `feat(coach): NT-032 persona coach cool`.
+- **Commit** : sujet préfixé par l'ID — Exemple : `feat(coach): NT-032 persona coach cool`.
 - **PR** : titre `[NT-XXX] …`, corps listant les IDs + critères d'acceptation cochés ;
   la CI (« Test & SonarCloud ») s'exécute sur la PR.
 - **Definition of Done** : voir [`docs/backlog/README.md`](docs/backlog/README.md).
