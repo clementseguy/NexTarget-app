@@ -14,6 +14,7 @@ import '../constants/session_constants.dart';
 import '../data/local_db_hive.dart';
 import '../models/goal.dart';
 import '../widgets/help_button.dart';
+import '../widgets/app_bar_title.dart';
 
 /// Classe responsable de la gestion des routes nommées de l'application
 class AppRouter {
@@ -148,15 +149,10 @@ class AppNavigator extends StatelessWidget {
   AppBar _buildSessionsAppBar(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
-      centerTitle: true,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.track_changes, color: Colors.amber),
-          SizedBox(width: 10),
-          Text('Mes sessions'),
-        ],
+      centerTitle: false,
+      title: const AppBarTitle(
+        icon: Icons.track_changes,
+        label: 'Sessions',
       ),
       actions: [
         const HelpButton(
