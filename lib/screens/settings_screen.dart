@@ -8,6 +8,7 @@ import '../services/backup_service.dart';
 import '../services/session_service.dart';
 import '../config/app_config.dart';
 import '../widgets/series_cards.dart'; // Pour TwoFistsIcon
+import '../widgets/app_bar_title.dart';
 import '../providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_theme.dart';
@@ -38,7 +39,11 @@ class SettingsScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
-            title: Text('Paramètres'),
+            centerTitle: false,
+            title: const AppBarTitle(
+              icon: Icons.settings,
+              label: 'Paramètres',
+            ),
             actions: [
               if (authProvider.isLoading)
                 const Padding(
