@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Tableau de bord'),
+        title: const Text('Synthèse'),
         centerTitle: true,
         actions: [
           IconButton(

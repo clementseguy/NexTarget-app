@@ -120,7 +120,7 @@ class AppNavigator extends StatelessWidget {
             items: const [
               BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Coach'),
               BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'Exercices'),
-              BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Tableau de bord'),
+              BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Synthèse'),
               BottomNavigationBarItem(icon: Icon(Icons.track_changes), label: 'Sessions'),
               BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Paramètres'),
             ],

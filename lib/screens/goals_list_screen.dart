@@ -179,9 +179,8 @@ class _GoalsListScreenState extends State<GoalsListScreen> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 buildDefaultDragHandles: false,
-                onReorder: (oldIndex, newIndex) async {
+                onReorderItem: (oldIndex, newIndex) async {
                   setState(() {
-                    if (newIndex > oldIndex) newIndex -= 1;
                     final item = _goals.removeAt(oldIndex);
                     _goals.insert(newIndex, item);
                   });

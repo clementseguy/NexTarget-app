@@ -348,7 +348,11 @@ class _FiltersBar extends StatelessWidget {
             ),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 220),
-              transitionBuilder: (child, anim) => SizeTransition(sizeFactor: anim, axisAlignment: -1.0, child: child),
+              transitionBuilder: (child, anim) => SizeTransition(
+                sizeFactor: anim,
+                alignment: AlignmentDirectional.topStart,
+                child: child,
+              ),
               child: !expanded ? const SizedBox.shrink() : Padding(
                 key: const ValueKey('filters-body'),
                 padding: const EdgeInsets.fromLTRB(4, 6, 4, 4),
