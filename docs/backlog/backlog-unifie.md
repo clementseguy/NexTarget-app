@@ -291,7 +291,7 @@
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE |
 | NT-048 | Refresh tokens + rotation | server | Should | M | FAIT |
-| NT-049 | Interface d’administration read-only des utilisateurs | server | Should | M | À FAIRE |
+| NT-049 | Interface d’administration read-only des utilisateurs | server | Should | M | FAIT |
 
 ### NT-040 — Authentification OAuth Google
 - **Thème** : Auth & Compte · **Portée** : both · **Dépendances** : —
@@ -349,21 +349,21 @@
 - **Thème** : Auth & Compte · **Portée** : server · **Dépendances** : NT-040, NT-042
 - **Description** : En tant qu'administrateur NexTarget, consulter dans une page d'administration légère et sécurisée les utilisateurs inscrits afin de diagnostiquer les authentifications OAuth, sans exposer de secret ni permettre de mutation des données.
 - **Critères d'acceptation** :
-  - [ ] une route d'administration dédiée affiche une page HTML serveur simple ;
-  - [ ] toutes les routes d'administration sont protégées par des identifiants administrateur fournis exclusivement par variables d'environnement ;
-  - [ ] aucun identifiant administrateur, mot de passe ou secret n'est codé en dur, persisté en base, inclus dans le HTML ou écrit dans les logs ;
-  - [ ] l'interface affiche uniquement les champs utilisateur réellement présents et utiles au diagnostic : ID interne, email, provider, nom affiché, statut, avatar et date de création ;
-  - [ ] aucun champ inexistant n'est ajouté uniquement pour l'affichage ;
-  - [ ] aucun access token, refresh token, secret OAuth, mot de passe, hash ou clé API n'est exposé ;
-  - [ ] l'interface et ses routes ne proposent aucune insertion, modification, suppression ni autre action métier ;
-  - [ ] les réponses administrateur empêchent raisonnablement la mise en cache et l'indexation et utilisent des en-têtes de sécurité adaptés ;
-  - [ ] l'accès sans authentification ou avec de mauvais identifiants est refusé ;
-  - [ ] l'accès avec les bons identifiants permet de consulter les utilisateurs ;
-  - [ ] aucune méthode ni route susceptible de muter les données n'est disponible sous le préfixe d'administration ;
-  - [ ] la configuration locale et Render ainsi que la procédure d'accès sont documentées ;
-  - [ ] le fonctionnement actuel du login Google est audité et les constats sont documentés.
-- **Priorité** : Should · **Estimation** : M · **Statut** : À FAIRE.
-- **Notes** : lot serveur autonome à implémenter rapidement pour vérifier le contenu réel de la base et diagnostiquer le comportement OAuth. Toute correction fonctionnelle du login Google identifiée pendant l'audit reste hors périmètre et doit faire l'objet d'une validation explicite.
+  - [x] une route d'administration dédiée affiche une page HTML serveur simple ;
+  - [x] toutes les routes d'administration sont protégées par des identifiants administrateur fournis exclusivement par variables d'environnement ;
+  - [x] aucun identifiant administrateur, mot de passe ou secret n'est codé en dur, persisté en base, inclus dans le HTML ou écrit dans les logs ;
+  - [x] l'interface affiche uniquement les champs utilisateur réellement présents et utiles au diagnostic : ID interne, email, provider, nom affiché, statut, avatar et date de création ;
+  - [x] aucun champ inexistant n'est ajouté uniquement pour l'affichage ;
+  - [x] aucun access token, refresh token, secret OAuth, mot de passe, hash ou clé API n'est exposé ;
+  - [x] l'interface et ses routes ne proposent aucune insertion, modification, suppression ni autre action métier ;
+  - [x] les réponses administrateur empêchent raisonnablement la mise en cache et l'indexation et utilisent des en-têtes de sécurité adaptés ;
+  - [x] l'accès sans authentification ou avec de mauvais identifiants est refusé ;
+  - [x] l'accès avec les bons identifiants permet de consulter les utilisateurs ;
+  - [x] aucune méthode ni route susceptible de muter les données n'est disponible sous le préfixe d'administration ;
+  - [x] la configuration locale et Render ainsi que la procédure d'accès sont documentées ;
+  - [x] le fonctionnement actuel du login Google est audité et les constats sont documentés.
+- **Priorité** : Should · **Estimation** : M · **Statut** : FAIT.
+- **Notes** : développement livré côté `NexTarget-server` sous la forme d'une page d'administration read-only exposée par `GET /app/admin/users`. Toute correction fonctionnelle du login Google identifiée pendant l'audit reste hors périmètre et doit faire l'objet d'une validation explicite.
 
 ---
 

@@ -24,8 +24,14 @@ Le **quoi/pourquoi** vit dans le backlog unifié, pas ici :
 
 - **Backlog** : [`docs/backlog/backlog-unifie.md`](docs/backlog/backlog-unifie.md) — items `NT-XXX`.
 - **Vue app** : [`docs/backlog/vue-app.md`](docs/backlog/vue-app.md).
+- **Vue serveur canonique** : [`docs/backlog/vue-serveur.md`](docs/backlog/vue-serveur.md).
 - **Gouvernance / DoD / convention d'IDs** : [`docs/backlog/README.md`](docs/backlog/README.md).
 - **Écarts & décisions** : [`docs/backlog/incoherences.md`](docs/backlog/incoherences.md).
+
+Le backlog et ses vues se modifient **uniquement dans `NexTarget-app`**. Le repo
+`NexTarget-server` peut pointer vers la vue serveur canonique, mais ne maintient
+ni copie synchronisée ni backlog concurrent : aucune synchronisation inverse
+depuis le serveur n'est attendue.
 
 En cas de conflit entre ce fichier et le backlog sur le périmètre produit, **le
 backlog prime**. Cet `AGENTS.md` fait autorité sur le **comment** (architecture,

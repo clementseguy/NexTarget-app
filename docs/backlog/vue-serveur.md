@@ -6,12 +6,12 @@
 > repo NexTarget-app) ; ce fichier en découle. Aucune information produit ne doit
 > exister uniquement ici. Règle de sync : [README.md](README.md).
 >
-> ℹ️ Ce fichier est destiné à être **copié dans le repo NexTarget-server**
-> (ex. `docs/specs/vue-serveur.md`) ; le backlog du serveur ne fait plus que
-> pointer vers lui (voir gouvernance).
+> ℹ️ Ce fichier est la **vue serveur canonique** et reste maintenu dans
+> `NexTarget-app`. Le repo `NexTarget-server` pointe vers lui sans en maintenir
+> de copie ; aucune synchronisation inverse n'est attendue (voir gouvernance).
 
 **Repo** : NexTarget-server (FastAPI + SQLModel + SQLite, OAuth + proxy IA)
-**Dernière projection** : 2026-08-27 (ajout NT-049 ; état du code connu : 2026-07-24)
+**Dernière projection** : 2026-08-27 (NT-049 livré côté serveur)
 
 > ⚠️ **Le serveur n'est plus « OAuth-only ».** Il expose aussi le **proxy Coach IA**
 > (`/coach/analyze-session`). Les anciens statuts « M1/M2 supprimés/décalés » sont
@@ -41,7 +41,7 @@
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE | — |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE | roadmap v0.2 |
 | NT-048 | Refresh tokens + rotation | server | Should | M | FAIT | `/auth/token/refresh` + `/revoke`, rotation + détection de rejeu |
-| NT-049 | Interface d’administration read-only des utilisateurs | server | Should | M | À FAIRE | Page HTML admin protégée par secrets d'environnement, consultation uniquement ; audit du login Google documenté |
+| NT-049 | Interface d’administration read-only des utilisateurs | server | Should | M | FAIT | `GET /app/admin/users` : page HTML admin protégée, consultation uniquement ; audit du login Google documenté |
 | NT-053 | Logging structuré + tracing | server | Should | M | FAIT | logs JSON + corrélation X-Request-ID (sans OTel) |
 | NT-054 | Tests OAuth mockés | server | Should | M | FAIT | `test_oauth_flows.py` : flows complets Google/Facebook mockés |
 | NT-055 | CI serveur (tests + couverture) | server | Should | S | FAIT | `.github/workflows/ci.yml` (pytest + cov, Python 3.11) |
@@ -59,8 +59,7 @@
 ## Prochaines actions serveur (hors FAIT), par priorité
 
 - **Must** — (aucun ; la rotation manuelle de la clé Mistral reste à faire côté ops, cf. NT-061).
-- **Should (lot autonome prioritaire)** — NT-049 (interface admin read-only et audit du login Google), à implémenter seule rapidement pour vérifier la base.
-- **Should (suite)** — NT-071 (Postgres/Alembic), NT-033 (coach avancé).
+- **Should** — NT-071 (Postgres/Alembic), NT-033 (coach avancé).
 - **Won't-now** — NT-045, NT-046, NT-047, NT-006.
 
 ## Note de cohérence documentaire
