@@ -11,6 +11,10 @@
 > pour préserver la lisibilité des dépendances (ex. NT-111 dépend de NT-005) ;
 > ils ne sont plus à replanifier.
 
+> ✅ **Lot serveur livré** : **NT-049** est implémenté sous la forme de la page
+> d'administration read-only `GET /app/admin/users`. Il reste listé ci-dessous
+> marqué `✅` pour conserver l'historique de la priorisation.
+
 > ⚠️ **Prototype abandonné le 2026-07-24** : la branche regroupant NT-100,
 > NT-101, NT-073 et NT-130 a été fermée sans fusion après échec de la recette UX.
 > Les quatre items restent **À FAIRE**. Toute reprise part de `dev` et commence
@@ -47,7 +51,7 @@
 
 | Rang | Items | Pourquoi maintenant | Dépendances clés | Portée |
 |---|---|---|---|---|
-| 0 | NT-049 | Diagnostic immédiat et sécurisé de la base utilisateurs et du comportement OAuth ; lot serveur volontairement isolé pour une livraison rapide. | NT-040, NT-042 | server |
+| 0 | NT-049 ✅ | Diagnostic immédiat et sécurisé de la base utilisateurs et du comportement OAuth ; lot serveur autonome livré. | NT-040, NT-042 | server |
 | 1 | NT-100, NT-101 | Socle métier TAR : rend les sessions comparables et exploitables par stats/coach. | NT-001, NT-002 | app |
 | 2 | NT-073, NT-130 | Réduit fortement la friction de saisie au stand ; prépare les templates par épreuve. | NT-001, NT-101 optionnel | app |
 | 3 | NT-005 ✅, NT-110 | Photo cible exploitable : mémoire visuelle puis contexte fiable pour le coach. | NT-001, NT-100 | app |
@@ -68,15 +72,15 @@
 
 ### Lot serveur autonome — Diagnostic OAuth
 
-**Objectif livrable** : permettre à l'administrateur de vérifier rapidement et
+**Objectif livré** : permettre à l'administrateur de vérifier rapidement et
 en lecture seule les utilisateurs réellement inscrits, puis de documenter le
 comportement actuel du login Google avant toute correction fonctionnelle.
 
 | Ordre | Item | Feature | App | Serveur |
 |---|---|---|---|---|
-| 1 | NT-049 | Interface d'administration read-only des utilisateurs | — | page HTML sécurisée par secrets d'environnement, consultation sans mutation, protections de réponse, documentation locale/Render et audit Google |
+| 1 | NT-049 ✅ | Interface d'administration read-only des utilisateurs | — | `GET /app/admin/users`, page HTML sécurisée par secrets d'environnement, consultation sans mutation, protections de réponse, documentation locale/Render et audit Google |
 
-**Version stable attendue** : NT-049 est implémenté et livré seul, sans être
+**Version stable livrée** : NT-049 est implémenté et livré seul, sans être
 couplé à un autre lot. L'interface ne révèle aucun secret et n'offre aucun chemin
 de mutation ; les éventuelles corrections OAuth découvertes sont arbitrées et
 planifiées séparément.

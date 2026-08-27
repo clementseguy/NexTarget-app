@@ -6,6 +6,7 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ### Documentation
 - Ajout de NT-049, interface d'administration serveur read-only des utilisateurs destinée au diagnostic OAuth, et planification dans un lot serveur autonome prioritaire.
+- Passage de NT-049 à `FAIT` après livraison de la page read-only `GET /app/admin/users`, actualisation de la vue serveur et clarification de la gouvernance : le backlog et sa vue serveur canonique sont maintenus uniquement dans `NexTarget-app`.
 
 ## [0.5.0] - 2026-07-09
 
