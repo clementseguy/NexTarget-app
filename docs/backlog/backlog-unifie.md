@@ -37,7 +37,7 @@
 | 2. Statistiques & Objectifs | NT-010 → NT-016 |
 | 3. Exercices | NT-020 → NT-026 |
 | 4. Coach IA | NT-030 → NT-034 |
-| 5. Auth & Compte | NT-040 → NT-048 |
+| 5. Auth & Compte | NT-040 → NT-049 |
 | 6. Qualité & Observabilité | NT-050 → NT-057 |
 | 7. Sécurité & Secrets | NT-060 → NT-066 |
 | 8. Plateforme & Déploiement | NT-070 → NT-076 |
