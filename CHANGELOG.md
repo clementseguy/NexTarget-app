@@ -2,6 +2,11 @@
 
 Toutes les modifications notables de ce projet seront listées ici.
 
+## [Non publié]
+
+### Documentation
+- Ajout de NT-049, interface d'administration serveur read-only des utilisateurs destinée au diagnostic OAuth, et planification dans un lot serveur autonome prioritaire.
+
 ## [0.5.0] - 2026-07-09
 
 ### Sprint S2 (Demo-ready)

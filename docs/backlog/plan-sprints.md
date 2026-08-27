@@ -47,6 +47,7 @@
 
 | Rang | Items | Pourquoi maintenant | Dépendances clés | Portée |
 |---|---|---|---|---|
+| 0 | NT-049 | Diagnostic immédiat et sécurisé de la base utilisateurs et du comportement OAuth ; lot serveur volontairement isolé pour une livraison rapide. | NT-040, NT-042 | server |
 | 1 | NT-100, NT-101 | Socle métier TAR : rend les sessions comparables et exploitables par stats/coach. | NT-001, NT-002 | app |
 | 2 | NT-073, NT-130 | Réduit fortement la friction de saisie au stand ; prépare les templates par épreuve. | NT-001, NT-101 optionnel | app |
 | 3 | NT-005 ✅, NT-110 | Photo cible exploitable : mémoire visuelle puis contexte fiable pour le coach. | NT-001, NT-100 | app |
@@ -64,6 +65,21 @@
 | Infra | NT-071 | À déclencher avant multi-instance ou montée de charge serveur, pas bloquant pour le cycle fonctionnel court. | — | server |
 
 ## Plan par sprint
+
+### Lot serveur autonome — Diagnostic OAuth
+
+**Objectif livrable** : permettre à l'administrateur de vérifier rapidement et
+en lecture seule les utilisateurs réellement inscrits, puis de documenter le
+comportement actuel du login Google avant toute correction fonctionnelle.
+
+| Ordre | Item | Feature | App | Serveur |
+|---|---|---|---|---|
+| 1 | NT-049 | Interface d'administration read-only des utilisateurs | — | page HTML sécurisée par secrets d'environnement, consultation sans mutation, protections de réponse, documentation locale/Render et audit Google |
+
+**Version stable attendue** : NT-049 est implémenté et livré seul, sans être
+couplé à un autre lot. L'interface ne révèle aucun secret et n'offre aucun chemin
+de mutation ; les éventuelles corrections OAuth découvertes sont arbitrées et
+planifiées séparément.
 
 ### Sprint 1 — Socle TAR & saisie rapide
 
@@ -205,10 +221,6 @@ réversible par suppression des entités créées.
 
 ## Points de cohérence à corriger
 
-- `vue-serveur.md` indique encore NT-032 à faire alors que le backlog unifié le
-  marque `FAIT`. La projection serveur doit être resynchronisée.
-- Les "Prochaines actions serveur" de `vue-serveur.md` listent plusieurs items
-  déjà `FAIT` dans le backlog unifié (`NT-048`, `NT-053`, `NT-054`, `NT-055`).
 - Le bloc "Backlog priorisé" du backlog unifié est historique et mélange items
   livrés, anciens sprints et nouveaux thèmes. Il devrait être remplacé par un
   lien vers ce plan ou régénéré depuis celui-ci après validation produit.
