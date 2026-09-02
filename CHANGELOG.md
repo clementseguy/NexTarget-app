@@ -4,6 +4,8 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Non publié]
 
+## [0.6.0] - 2026-09-02
+
 ### Added
 - NT-008/NT-009/NT-017 : râtelier d'armes personnel.
     - `Weapon`/`WeaponService`/`HiveWeaponRepository` (box Hive `weapons`, `migration_5_create_weapons_box`) : CRUD simple (ajout, renommage, suppression) dans `Paramètres > Préférences Tir` (`WeaponRackSection`), noms obligatoires et uniques après normalisation (espaces/casse ignorés).
