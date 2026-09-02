@@ -31,13 +31,13 @@
 
 ## ✨ Fonctionnalités
 
-- 🎯 **Carnet de tir complet** — sessions (arme, calibre, catégorie), séries détaillées (coups, distance, points, groupement, prise 1/2 mains), sessions prévues et assistant de conversion en réalisées.
-- 📊 **Statistiques riches** — records, moyennes glissantes 30/60 j, évolution score & groupement, distributions, corrélations, indice de régularité.
-- 🏆 **Objectifs mesurables** — cibles chiffrées (score, groupement…), progression automatique, hauts faits.
-- 🏋️ **Exercices** — catalogue d'entraînements (stand/maison) avec consignes, reliés aux objectifs et aux sessions ; planification en un geste.
-- 🤖 **Coach IA** — analyse personnalisée de chaque séance (via [NexTarget-server](https://github.com/clementseguy/NexTarget-server) et Mistral), ton **neutre** ou **cool** au choix. Nécessite un compte (connexion Google) ; **aucune clé API côté client**.
-- 🇫🇷 **Thèmes** — sombre « Classique » et clair « France ».
-- 🔒 **Vie privée par défaut** — stockage local (Hive), compte optionnel, export/import JSON.
+- **Carnet de tir complet** — sessions (arme, calibre, catégorie), séries détaillées (coups, distance, points, groupement, prise 1/2 mains), sessions prévues et assistant de conversion en réalisées.
+- **Statistiques riches** — records, moyennes glissantes 30/60 j, évolution score & groupement, distributions, corrélations, indice de régularité.
+- **Objectifs mesurables** — cibles chiffrées (score, groupement…), progression automatique, hauts faits.
+- **Exercices** — catalogue d'entraînements (stand/maison) avec consignes, reliés aux objectifs et aux sessions ; planification en un geste.
+- **Coach IA** — analyse personnalisée de chaque séance (via [NexTarget-server](https://github.com/clementseguy/NexTarget-server) et Mistral), ton **neutre** ou **cool** au choix. Nécessite un compte (connexion Google) ; **aucune clé API côté client**.
+- **Thèmes** — sombre « Classique » et clair « France ».
+- **Vie privée par défaut** — stockage local (Hive), compte optionnel, export/import JSON.
 
 ## 🚀 Démarrage rapide
 
