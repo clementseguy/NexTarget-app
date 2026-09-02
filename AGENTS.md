@@ -99,6 +99,10 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 - **Dépréciations** : ne pas introduire de `withOpacity(` (déprécié ; le
   pré-commit le signale) — préférer `.withValues(...)`.
 - **UI** : Material, textes en français, thématisable (`theme/`).
+- **Aucun émoji** : ni dans le code (commentaires, docstrings, messages de log,
+  textes affichés à l'utilisateur), ni dans la documentation (`*.md`, `AGENTS.md`
+  inclus), ni dans les messages de commit/PR. Ce dépôt est de la documentation
+  technique, pas un post LinkedIn — texte brut uniquement.
 
 ## HTTP & Auth
 - Client HTTP : package `http`. Pour les appels **authentifiés**, utiliser
@@ -175,6 +179,7 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 3. Migration + test de migration ajoutés si le schéma Hive a changé.
 4. Statut de l'item mis à jour dans `docs/backlog/` + `CHANGELOG.md`.
 5. Aucun secret, token ou clé dans le diff ; aucun nouveau `print`/`withOpacity`.
+6. Aucun émoji dans le diff (code, doc, `CHANGELOG.md`, message de commit/PR).
 
 ## Workflow Git (rappel gouvernance)
 
