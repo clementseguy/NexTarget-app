@@ -8,10 +8,11 @@
 
 [![Release](https://img.shields.io/github/v/tag/clementseguy/NexTarget-app?label=release&color=f5b301)](https://github.com/clementseguy/NexTarget-app/tags)
 [![Flutter](https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=clementseguy_NexTarget-app&metric=alert_status)](https://sonarcloud.io/summary/overall?id=clementseguy_NexTarget-app)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=clementseguy_NexTarget-app&metric=coverage)](https://sonarcloud.io/summary/overall?id=clementseguy_NexTarget-app)
 [![Maintainability](https://sonarcloud.io/api/project_badges/measure?project=clementseguy_NexTarget-app&metric=sqale_rating)](https://sonarcloud.io/summary/overall?id=clementseguy_NexTarget-app)
 [![Security](https://sonarcloud.io/api/project_badges/measure?project=clementseguy_NexTarget-app&metric=security_rating)](https://sonarcloud.io/summary/overall?id=clementseguy_NexTarget-app)
+[![Reliability](https://sonarcloud.io/api/project_badges/measure?project=clementseguy_NexTarget-app&metric=reliability_rating)](https://sonarcloud.io/summary/overall?id=clementseguy_NexTarget-app)
+[![Duplication](https://sonarcloud.io/api/project_badges/measure?project=clementseguy_NexTarget-app&metric=duplicated_lines_density)](https://sonarcloud.io/summary/overall?id=clementseguy_NexTarget-app)
 
 *Fonctionne 100 % hors-ligne · vos données restent sur votre téléphone · le coach IA en option avec un compte*
 
@@ -19,7 +20,7 @@
 
 ---
 
-## 📱 Aperçu
+## Aperçu
 
 | Onboarding | Tableau de bord | Sessions |
 |:---:|:---:|:---:|
@@ -29,9 +30,10 @@
 |:---:|:---:|:---:|
 | ![Détail de session](docs/assets/screenshots/session_detail.png) | ![Paramètres](docs/assets/screenshots/settings.png) | ![Thème France](docs/assets/screenshots/theme_france.png) |
 
-## ✨ Fonctionnalités
+## Fonctionnalités
 
 - **Carnet de tir complet** — sessions (arme, calibre, catégorie), séries détaillées (coups, distance, points, groupement, prise 1/2 mains), sessions prévues et assistant de conversion en réalisées.
+- **Râtelier d'armes** — gérez vos armes une seule fois (Paramètres > Préférences Tir), retrouvez-les par autocomplétion en saisie de session, et suivez le volume de tirs par arme dans Statistiques > Avancé.
 - **Statistiques riches** — records, moyennes glissantes 30/60 j, évolution score & groupement, distributions, corrélations, indice de régularité.
 - **Objectifs mesurables** — cibles chiffrées (score, groupement…), progression automatique, hauts faits.
 - **Exercices** — catalogue d'entraînements (stand/maison) avec consignes, reliés aux objectifs et aux sessions ; planification en un geste.
@@ -39,7 +41,7 @@
 - **Thèmes** — sombre « Classique » et clair « France ».
 - **Vie privée par défaut** — stockage local (Hive), compte optionnel, export/import JSON.
 
-## 🚀 Démarrage rapide
+## Démarrage rapide
 
 ```bash
 # Prérequis : Flutter 3.35+ (https://docs.flutter.dev/get-started/install)
@@ -53,7 +55,7 @@ Build APK de release (aucun secret à injecter) :
 ./scripts/build_apk.sh
 ```
 
-## 🧠 Coach IA (connecté uniquement)
+## Coach IA (connecté uniquement)
 
 L'analyse coach passe **exclusivement** par [NexTarget-server](https://github.com/clementseguy/NexTarget-server)
 (`POST /coach/analyze-session`, JWT requis). Le serveur détient la clé Mistral et
@@ -66,17 +68,17 @@ Pour une recette contre un serveur local : `base_url: "http://localhost:8000"`
 + `adb reverse tcp:8000 tcp:8000` (ne pas committer cette valeur).
 Un fichier `assets/config.example.yaml` est fourni comme modèle.
 
-## 🛠️ Qualité
+## Qualité
 
 | Garde-fou | Détail |
 |---|---|
 | Analyse statique | `flutter_lints` actif, zéro issue exigé (`flutter analyze --fatal-infos` en CI) |
-| Tests | 220+ tests unitaires & widgets (`flutter test`) |
+| Tests | 324 tests unitaires & widgets (`flutter test`) |
 | CI | GitHub Actions + SonarCloud (push `dev`/`main`, PR vers `main`) |
 | Pré-commit | `./scripts/verify_before_commit.sh` (analyse + tests, variante `fast`) — hook : `ln -sf ../../scripts/verify_before_commit.sh .git/hooks/pre-commit` |
 | Recette manuelle | [Cahier de recette](docs/tests/cahier_recette.md) généré depuis `docs/tests/cahier_recette.yaml` (`dart run scripts/generate_cahier_recette.dart`), à rejouer avant toute MR vers `main` |
 
-## 📚 Documentation
+## Documentation
 
 - [Backlog unifié](docs/backlog/backlog-unifie.md) — source de vérité produit (items `NT-XXX`)
 - [Notes de version](docs/releases/) · [CHANGELOG](CHANGELOG.md)
