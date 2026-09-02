@@ -122,7 +122,7 @@ void main() {
     });
 
     test(
-        'panne réseau pendant le renouvellement réactif : garde la réponse 401 sans boucle',
+        'panne réseau pendant le renouvellement réactif : propage l\'exception sans requalifier en 401',
         () async {
       when(mockAuthService.getValidAccessToken())
           .thenAnswer((_) async => 'stale');
@@ -132,10 +132,12 @@ void main() {
 
       final request =
           http.Request('GET', Uri.parse('https://api.test.com/data'));
-      final response = await authenticatedClient.send(request);
 
-      expect(response.statusCode, 401);
-      // Aucun rejeu : un seul envoi réseau.
+      await expectLater(
+        authenticatedClient.send(request),
+        throwsA(isA<NetworkUnavailableException>()),
+      );
+      // Aucun rejeu : un seul envoi réseau, jamais de boucle.
       verify(mockInnerClient.send(any)).called(1);
     });
 

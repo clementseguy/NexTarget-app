@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -342,7 +343,8 @@ void main() {
   });
 
   group('logout', () {
-    test('tente la révocation serveur puis efface tout, même en cas de succès',
+    test(
+        'tente la révocation serveur en arrière-plan puis efface tout localement, même en cas de succès',
         () async {
       store['auth_token_set'] = jsonEncode({
         'access_token': 'a',
@@ -357,20 +359,23 @@ void main() {
             .toIso8601String(),
         'email': 'tireur@example.com',
       });
-      var revokeCalled = false;
+      final revokeCalled = Completer<void>();
       final client = MockClient((req) async {
         expect(req.url.path, '/auth/token/revoke');
         expect(jsonDecode(req.body)['refresh_token'], 'r');
-        revokeCalled = true;
+        if (!revokeCalled.isCompleted) revokeCalled.complete();
         return http.Response('', 204);
       });
 
       await buildService(client).logout();
 
-      expect(revokeCalled, isTrue);
+      // Le nettoyage local est immédiat, sans attendre la révocation réseau.
       expect(store.containsKey('auth_token_set'), isFalse);
       expect(store.containsKey('jwt_token'), isFalse);
       expect(store.containsKey('user_email'), isFalse);
+
+      // La révocation serveur est bien tentée en arrière-plan (best effort).
+      await revokeCalled.future.timeout(const Duration(seconds: 1));
     });
 
     test(
@@ -388,7 +393,7 @@ void main() {
     });
 
     test(
-        'attend un refresh en cours pour ne pas laisser une rotation le ressusciter',
+        'ne laisse pas une rotation en cours ressusciter une session terminée par logout',
         () async {
       store['auth_token_set'] = jsonEncode({
         'access_token': 'about_to_expire',
@@ -403,14 +408,10 @@ void main() {
             .toIso8601String(),
         'email': 'tireur@example.com',
       });
+      final refreshResponse = Completer<http.Response>();
       final client = MockClient((req) async {
         if (req.url.path == '/auth/token/refresh') {
-          await Future<void>.delayed(const Duration(milliseconds: 30));
-          return http.Response(
-            jsonEncode(
-                exchangePayload(access: 'access_2', refresh: 'refresh_2')),
-            200,
-          );
+          return refreshResponse.future;
         }
         // /auth/token/revoke
         return http.Response('', 204);
@@ -418,11 +419,54 @@ void main() {
 
       final service = buildService(client);
       final refreshFuture = service.getValidAccessToken();
-      // Laisse le refresh démarrer avant de déclencher le logout concurrent.
+      // Laisse le refresh démarrer (lecture du token) avant le logout concurrent.
       await Future<void>.delayed(const Duration(milliseconds: 5));
-      await Future.wait([refreshFuture, service.logout()]);
 
-      // Le logout doit avoir eu le dernier mot : plus aucune session locale.
+      final stopwatch = Stopwatch()..start();
+      await service.logout();
+      stopwatch.stop();
+
+      // Le logout ne doit jamais attendre la rotation en cours ni le réseau.
+      expect(stopwatch.elapsedMilliseconds, lessThan(200));
+      expect(store.containsKey('auth_token_set'), isFalse);
+
+      // La rotation en cours se termine ensuite avec succès côté serveur,
+      // mais ne doit pas ressusciter de session locale après le logout.
+      refreshResponse.complete(http.Response(
+        jsonEncode(exchangePayload(access: 'access_2', refresh: 'refresh_2')),
+        200,
+      ));
+      await expectLater(refreshFuture, throwsA(isA<SessionExpiredException>()));
+      expect(store.containsKey('auth_token_set'), isFalse);
+    });
+
+    test('ne bloque pas sur une révocation serveur qui ne répond jamais',
+        () async {
+      store['auth_token_set'] = jsonEncode({
+        'access_token': 'a',
+        'refresh_token': 'r',
+        'access_expires_at': DateTime.now()
+            .toUtc()
+            .add(const Duration(hours: 1))
+            .toIso8601String(),
+        'refresh_expires_at': DateTime.now()
+            .toUtc()
+            .add(const Duration(days: 30))
+            .toIso8601String(),
+        'email': 'tireur@example.com',
+      });
+      // Simule une connexion acceptée qui ne répond jamais dans un délai
+      // raisonnable (le timeout de la requête est de 15 s).
+      final client = MockClient((req) async {
+        await Future<void>.delayed(const Duration(seconds: 2));
+        return http.Response('', 204);
+      });
+
+      final stopwatch = Stopwatch()..start();
+      await buildService(client).logout();
+      stopwatch.stop();
+
+      expect(stopwatch.elapsedMilliseconds, lessThan(200));
       expect(store.containsKey('auth_token_set'), isFalse);
     });
   });

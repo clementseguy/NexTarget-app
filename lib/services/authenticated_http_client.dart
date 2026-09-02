@@ -1,6 +1,5 @@
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
-import 'auth_session_exceptions.dart';
 
 /// HTTP Client wrapper qui injecte un access token valide (NT-048).
 ///
@@ -51,14 +50,12 @@ class AuthenticatedHttpClient extends http.BaseClient {
       return response;
     }
 
-    final String newToken;
-    try {
-      newToken = await _authService.forceRefreshAfterUnauthorized();
-    } on NetworkUnavailableException {
-      // Pas de renouvellement possible pour l'instant : on garde la réponse
-      // d'origine, sans nouvelle tentative ni boucle.
-      return response;
-    }
+    // Le renouvellement réactif partage le même mécanisme (single-flight)
+    // que le proactif. Une panne réseau ici doit rester une
+    // NetworkUnavailableException : ne jamais la requalifier en 401, sous
+    // peine de faire croire à une session invalide à l'appelant (qui la
+    // traiterait comme expirée et supprimerait un refresh token valide).
+    final newToken = await _authService.forceRefreshAfterUnauthorized();
 
     return _innerClient.send(_cloneWithToken(request, bodyBytes, newToken));
   }

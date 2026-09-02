@@ -27,9 +27,11 @@ class AuthProvider extends ChangeNotifier {
   /// Verifie au demarrage si l utilisateur a un token valide
   ///
   /// NT-048 : une panne réseau ne doit ni effacer les tokens locaux ni être
-  /// traitée comme une session invalide ; elle se traduit ici par un statut
-  /// "non authentifié" transitoire (le carnet reste utilisable hors ligne,
-  /// et la prochaine vérification réussie restaure l'état connecté).
+  /// traitée comme une session invalide. Comme un token est présent (sinon
+  /// aucun appel réseau n'aurait été tenté), l'utilisateur reste considéré
+  /// connecté ; le carnet reste utilisable hors ligne et les fonctionnalités
+  /// connectées (profil, Coach) signalent leur propre indisponibilité réseau
+  /// lors de leurs appels.
   Future<void> checkAuthStatus() async {
     _isLoading = true;
     notifyListeners();
@@ -55,8 +57,9 @@ class AuthProvider extends ChangeNotifier {
       _isAuthenticated = false;
       _currentUser = null;
     } on NetworkUnavailableException {
-      _isAuthenticated = false;
-      _currentUser = null;
+      // Session non vérifiable pour l'instant (hors ligne) : on NE
+      // désauthentifie PAS un token local existant.
+      _isAuthenticated = true;
     } catch (e) {
       AppLogger.I.error('AUTH: erreur lors de la vérification du statut', e);
       _isAuthenticated = false;

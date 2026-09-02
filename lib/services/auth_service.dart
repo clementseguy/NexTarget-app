@@ -75,6 +75,11 @@ class AuthService {
   // simultanées du même refresh token.
   Future<String>? _refreshFuture;
 
+  // Incrémenté à chaque logout() : garde-fou non bloquant contre une rotation
+  // déjà en vol qui écrirait une nouvelle paire de tokens après un logout
+  // (cf. _doRefresh). Ne remplace pas le single-flight, le complète.
+  int _sessionGeneration = 0;
+
   AuthService({
     required String authBaseUrl,
     String? callbackScheme,
@@ -304,6 +309,7 @@ class AuthService {
   }
 
   Future<String> _doRefresh() async {
+    final generation = _sessionGeneration;
     final set = await _readTokenSet();
     if (set == null || set.refreshToken == null) {
       await _clearAll();
@@ -335,6 +341,13 @@ class AuthService {
       // Erreur serveur inattendue : transitoire, on ne touche pas aux tokens.
       throw NetworkUnavailableException(
           'Erreur serveur (${response.statusCode}).');
+    }
+
+    if (generation != _sessionGeneration) {
+      // Un logout() a eu lieu pendant cette rotation : ne pas ressusciter
+      // une session que l'utilisateur vient de terminer localement.
+      throw SessionExpiredException(
+          'Session terminée pendant le renouvellement.');
     }
 
     final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -385,6 +398,11 @@ class AuthService {
       return false;
     } on SessionExpiredException {
       return false;
+    } on NetworkUnavailableException {
+      // Panne réseau : ni confirmée ni infirmée, on ne touche pas aux tokens.
+      // Propagée pour que l'appelant distingue ce cas d'une session invalide
+      // (ne doit pas déconnecter l'utilisateur).
+      rethrow;
     } catch (e) {
       AppLogger.I.error('AUTH: erreur lors de la vérification du token', e);
       return false;
@@ -466,39 +484,44 @@ class AuthService {
     }
   }
 
-  /// Déconnexion : tente la révocation serveur en best effort (échec
-  /// silencieux si le réseau ou le serveur est indisponible), puis efface
-  /// systématiquement toutes les données d'authentification locales.
+  /// Déconnexion : efface immédiatement (sans attendre le réseau) toutes les
+  /// données d'authentification locales, puis tente la révocation serveur en
+  /// best effort en arrière-plan (sans bloquer l'appelant ni l'UI dessus).
   ///
-  /// Attend d'abord tout renouvellement en cours pour éviter qu'une rotation
-  /// concurrente ne réécrive des tokens juste après le nettoyage local.
+  /// Incrémente d'abord un compteur de génération : toute rotation déjà en
+  /// vol (single-flight) qui obtiendrait sa réponse après ce point ne
+  /// persistera pas de nouveaux tokens (cf. `_doRefresh`), sans que ce
+  /// logout ait besoin d'attendre cette rotation.
   Future<void> logout() async {
-    if (_refreshFuture != null) {
-      try {
-        await _refreshFuture;
-      } catch (_) {
-        // Peu importe l'issue du refresh en cours : le nettoyage local a
-        // lieu dans tous les cas juste après.
-      }
+    _sessionGeneration++;
+
+    String? refreshToken;
+    try {
+      refreshToken = (await _readTokenSet())?.refreshToken;
+    } catch (e) {
+      // Lecture locale impossible : le nettoyage ci-dessous a lieu quand même.
+      AppLogger.I.debug('AUTH: lecture des tokens indisponible au logout');
     }
 
+    await _clearAll();
+
+    if (refreshToken != null) {
+      unawaited(_revokeOnServer(refreshToken));
+    }
+  }
+
+  Future<void> _revokeOnServer(String refreshToken) async {
     try {
-      final set = await _readTokenSet();
-      final refreshToken = set?.refreshToken;
-      if (refreshToken != null) {
-        await _httpClient
-            .post(
-              Uri.parse('$_authBaseUrl/auth/token/revoke'),
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode({'refresh_token': refreshToken}),
-            )
-            .timeout(const Duration(seconds: 15));
-      }
+      await _httpClient
+          .post(
+            Uri.parse('$_authBaseUrl/auth/token/revoke'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'refresh_token': refreshToken}),
+          )
+          .timeout(const Duration(seconds: 15));
     } catch (e) {
       AppLogger.I.debug(
           'AUTH: révocation serveur indisponible au logout (best effort)');
-    } finally {
-      await _clearAll();
     }
   }
 }
