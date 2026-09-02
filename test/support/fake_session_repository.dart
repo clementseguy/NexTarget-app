@@ -17,6 +17,10 @@ class FakeSessionRepository implements SessionRepository {
   /// 1-based : simule l'échec de la Nième mise à jour (utile pour tester un rollback).
   int? failOnUpdateCallNumber;
 
+  // Jamais réutilisé, y compris après suppression : imite les clés Hive
+  // (`Box.add`), qui ne sont jamais recyclées.
+  int _nextId = 1;
+
   @override
   Future<void> clearAll() async => sessions.clear();
 
@@ -29,9 +33,11 @@ class FakeSessionRepository implements SessionRepository {
 
   @override
   Future<int> insert(ShootingSession session) async {
-    final id = sessions.length + 1;
+    final id = _nextId++;
     session.id = id;
-    sessions.add(session);
+    // Clone avant stockage : HiveSessionRepository ne conserve qu'un snapshot
+    // (session.toMap()), jamais l'instance de l'appelant.
+    sessions.add(ShootingSession.fromMap(session.toMap()));
     return id;
   }
 
@@ -42,7 +48,18 @@ class FakeSessionRepository implements SessionRepository {
       throw StateError('Échec simulé de mise à jour de session (FakeSessionRepository)');
     }
     final idx = sessions.indexWhere((s) => s.id == session.id);
-    if (idx != -1) sessions[idx] = session;
+    if (idx == -1) return false;
+
+    // Comme HiveSessionRepository : si la session fournie n'a pas de série et
+    // qu'on doit préserver l'existant, on conserve les séries déjà stockées
+    // et on signale le fallback en retournant true.
+    if (preserveExistingSeriesIfEmpty && session.series.isEmpty && sessions[idx].series.isNotEmpty) {
+      session.series = sessions[idx].series;
+      sessions[idx] = ShootingSession.fromMap(session.toMap());
+      return true;
+    }
+
+    sessions[idx] = ShootingSession.fromMap(session.toMap());
     return false;
   }
 }
