@@ -4,6 +4,10 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Non publié]
 
+### Documentation
+- Cadrage détaillé du lot NT-014/NT-048/NT-073/NT-133 et alignement des vues app/serveur et du plan de sprints.
+- NT-061 : clôture documentaire après confirmation de la rotation de la clé Mistral et audit du client ; aucun appel Mistral direct, prompt, secret ou fallback local ne subsiste dans l'app. Les notes des anciennes versions restent conservées comme historique.
+
 ## [0.6.0] - 2026-09-02
 
 ### Added

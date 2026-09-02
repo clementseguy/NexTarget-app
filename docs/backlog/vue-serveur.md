@@ -11,7 +11,7 @@
 > de copie ; aucune synchronisation inverse n'est attendue (voir gouvernance).
 
 **Repo** : NexTarget-server (FastAPI + SQLModel + PostgreSQL en production, SQLite en développement/tests, OAuth + proxy IA)
-**Dernière projection** : 2026-09-02 (NT-071 livré dans la release produit v0.6.0 ; composant serveur v0.3.0)
+**Dernière projection** : 2026-09-02 (NT-048 reclassé `both / EN COURS` : serveur livré, adoption app restante ; clôture NT-061 clarifiée)
 
 > Important : **le serveur n'est plus « OAuth-only ».** Il expose aussi le **proxy Coach IA**
 > (`/coach/analyze-session`). Les anciens statuts « M1/M2 supprimés/décalés » sont
@@ -40,13 +40,13 @@
 | NT-045 | Stats publiques / partage de profil | both | Won't-now | M | À FAIRE | — |
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE | — |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE | roadmap v0.2 |
-| NT-048 | Refresh tokens + rotation | server | Should | M | FAIT | `/auth/token/refresh` + `/revoke`, rotation + détection de rejeu |
+| NT-048 | Refresh tokens + rotation | both | Should | M | EN COURS | côté serveur FAIT : expiration glissante 30 j, `/refresh`, `/revoke`, rotation et détection de rejeu ; adoption app restante |
 | NT-049 | Interface d’administration read-only des utilisateurs | server | Should | M | FAIT | `GET /app/admin/users` : page HTML admin protégée, consultation uniquement ; audit du login Google documenté |
 | NT-053 | Logging structuré + tracing | server | Should | M | FAIT | logs JSON + corrélation X-Request-ID (sans OTel) |
 | NT-054 | Tests OAuth mockés | server | Should | M | FAIT | `test_oauth_flows.py` : flows complets Google/Facebook mockés |
 | NT-055 | CI serveur (tests + couverture) | server | Should | S | FAIT | `.github/workflows/ci.yml` (pytest + cov, Python 3.11) |
 | NT-060 | Proxy Mistral (clé hors client) | server | Must | M | FAIT | `services/mistral_client.py`, `core/config.py` |
-| NT-061 | Coach connecté uniquement + rotation clé | both | Must | M | FAIT | code livré (S1) ; rotation clé = action manuelle |
+| NT-061 | Coach connecté uniquement + rotation clé | both | Must | M | FAIT | audit de clôture validé ; clé historique rotée ; proxy Mistral serveur conservé comme chemin légitime unique |
 | NT-062 | Rate limiting endpoint coach | server | Must | S | FAIT | `services/rate_limiter.py` (10/5min) |
 | NT-063 | State OAuth à usage unique (CSRF) | server | Must | S | FAIT | `services/oauth_state.py` |
 | NT-064 | Vérification du type de token JWT | server | Must | S | FAIT | `core/security.py`, `api/deps.py` |
@@ -63,9 +63,13 @@
 - **Could** — NT-034, NT-044, NT-125, NT-126.
 - **Won't-now** — NT-045, NT-046, NT-047, NT-006.
 
+NT-048 est globalement `EN COURS`, mais son côté serveur est terminé. Aucun
+travail serveur supplémentaire n'est planifié sauf écart de contrat démontré
+pendant l'adoption par l'app.
+
 ## Note de cohérence documentaire
 
-L'`AGENTS.md` du serveur est **périmé** sur 3 points (il décrit un état antérieur) :
-« aucune fonctionnalité IA », « pas de rate limiting », « User minimal (email + provider) ».
-Le code contredit les trois (proxy coach, rate limiter, profil enrichi). À corriger —
-suivi dans [incoherences.md](incoherences.md) I3/I6.
+L'`AGENTS.md` du serveur décrit désormais correctement le proxy Coach, le rate
+limiting, le profil enrichi et PostgreSQL. Les anciennes specs conservées sous
+`docs/specs/_archive/` restent historiques et ne constituent pas la source de
+vérité. Voir [incoherences.md](incoherences.md) I1, I3 et I6.

@@ -177,7 +177,7 @@ existante.
 ### NT-073
 
 - La normalisation réduit les doublons sans modifier une saisie inconnue.
-- Le dernier calibre est repris de manière prévisible et reste modifiable.
+- Le calibre par défaut explicite est repris de manière prévisible et reste modifiable ; aucun « dernier calibre utilisé » implicite n'est mémorisé.
 - Cette reprise n'ajoute aucune étape au parcours.
 
 ### NT-130

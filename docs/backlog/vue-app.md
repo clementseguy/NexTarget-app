@@ -7,7 +7,7 @@
 > uniquement dans cette vue (règle de sync : [README.md](README.md)).
 
 **Repo** : NexTarget-app (Flutter/Dart, Hive, SonarCloud, dart_code_metrics)
-**Dernière projection** : 2026-09-02 (NT-133 ajouté ; NT-008, NT-009, NT-017 et NT-058 livrés en v0.6.0)
+**Dernière projection** : 2026-09-02 (cadrage détaillé NT-014, NT-048, NT-073 et NT-133 ; clôture NT-061 clarifiée)
 
 ## Items app
 
@@ -26,7 +26,7 @@
 | NT-011 | Statistiques explicatives / évolution | app | Should | M | FAIT | `stats_service`, `evolution_chart` |
 | NT-012 | Objectifs mesurables | app | Must | M | FAIT | `Goal`, `goal_service` |
 | NT-013 | Hauts faits (records) | app | Should | S | FAIT | `GoalMetric` (best*) |
-| NT-014 | Comparatif 30j vs 90j + sparkline | app | Could | M | EN COURS | comparaison et delta présents ; cohérence calcul/filtres/libellés/tests à vérifier, sparkline à ajouter |
+| NT-014 | Comparatif 30j vs 90j + sparkline | app | Could | M | EN COURS | score et groupement indépendants ; deltas absolu/relatif ; un point par session, sparkline à partir de 5 sessions exploitables ; UI mobile et deux thèmes |
 | NT-015 | Recommandations Objectifs ⇄ Exercices | app | Could | M | À FAIRE | dépend NT-012, NT-021 |
 | NT-016 | Objectifs enrichis : statuts étendus, journal, vue détail | app | Could | M | À FAIRE | issue #5 |
 | NT-017 | Compteur de tirs par arme du râtelier | app | Should | S | FAIT | livré en v0.6.0 ; compteurs simples en bas de Statistiques > Avancé ; étendu par NT-133 aux tirs des sessions libres réalisées |
@@ -42,20 +42,21 @@
 | NT-033 | Écran "Coach" transverse | both | Should | L | À FAIRE | `coach_screen.dart` = placeholder |
 | NT-040 | Authentification OAuth Google | both | Must | M | FAIT | `auth_service.dart`, `auth_provider` |
 | NT-041 | Authentification optionnelle | app | Must | S | FAIT | mode déconnecté préservé |
-| NT-042 | Profil utilisateur (nom/avatar/niveau) | both | Should | M | FAIT | `profile_screen.dart` — édition à vérifier |
+| NT-042 | Profil utilisateur (nom/avatar/niveau) | both | Should | M | FAIT | affichage du profil et édition du niveau ; édition du pseudo explicitement hors périmètre |
 | NT-044 | Authentification OAuth Facebook | both | Could | M | À FAIRE | serveur : code présent, à valider (tests mockés) ; bouton app non câblé ; non prioritaire |
 | NT-045 | Stats publiques / partage de profil | both | Won't-now | M | À FAIRE | — |
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE | — |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE | — |
+| NT-048 | Refresh tokens + rotation | both | Should | M | EN COURS | serveur livré ; stockage sécurisé, renouvellement proactif, single-flight, retry unique et résilience hors ligne à câbler dans l'app |
 | NT-050 | SonarCloud + Quality Gate | app | Must | M | FAIT | `sonar-project.properties`, CI |
 | NT-051 | Analyse statique & lint (durcir) | app | Should | S | FAIT | `flutter_lints` actif, zéro issue, step CI `analyze --fatal-infos` |
 | NT-052 | Cahier de recette généré | app | Should | S | FAIT | `scripts/generate_cahier_recette.dart` |
 | NT-056 | Harmonisation des erreurs réseau | app | Could | S | À FAIRE | issue #5 ; coach déjà conforme |
 | NT-057 | Nettoyage des widgets dupliqués | app | Could | S | À FAIRE | issue #5 ; MainNavigation déjà supprimé |
 | NT-058 | Fakes de repository partagés pour les tests | app | Should | S | FAIT | `test/support/` (`FakeSessionRepository`, `captureError`) ; déclenché par NT-008 |
-| NT-061 | Coach connecté uniquement (retrait clé client) | both | Must | M | FAIT | `CoachAnalysisService` direct supprimé ; rotation clé = action manuelle |
+| NT-061 | Coach connecté uniquement (retrait clé client) | both | Must | M | FAIT | audit de clôture validé : chemin serveur unique, aucun fallback client, clé historique rotée et docs actives clarifiées |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT | `lib/migrations/` (script cohérence : à faire) |
-| NT-073 | Normalisation calibres + dernier calibre | app | Could | S | EN COURS | liste, autocomplétion et calibre par défaut présents ; dernier calibre utilisé et cohérence à finaliser |
+| NT-073 | Calibre par défaut + normalisation statistique | app | Could | S | EN COURS | préférence facultative parmi les calibres connus ; saisie libre sans autoremplacement ; alias connus regroupés sans réécriture |
 | NT-074 | Saisie séries plein écran + navigation | app | Could | M | À FAIRE | — |
 | NT-075 | Onboarding + aide contextuelle | app | Could | M | FAIT | `OnboardingGate` (3 écrans) + `HelpButton` ; ajustements recette 2026-07-09 |
 | NT-076 | Cache stats + compactage Hive | app | Could | M | À FAIRE | — |
@@ -78,12 +79,12 @@
 | NT-130 | Templates de session | app | Must | S | À FAIRE | prototype abandonné : ne pas ajouter d'étape au parcours classique |
 | NT-131 | Session live au stand | app | Should | M | À FAIRE | saisie au fil du tir + chrono repos |
 | NT-132 | Spike — saisie vocale d'une série | app | Could | S | À FAIRE | go/no-go en environnement stand |
-| NT-133 | Sessions libres sans séries ni scores | app | Must | L | À FAIRE | `SimpleShootingSession` ; action flottante secondaire visible ; aucune session libre planifiée ; cartes, stats et sauvegardes polymorphes |
+| NT-133 | Sessions libres sans séries ni scores | app | Must | L | À FAIRE | arme/calibre obligatoires, catégorie entraînement/match/test matériel, distance entière, synthèse/photo/exercices facultatifs, sans Coach |
 
 ## Prochaines actions app (hors FAIT), par priorité
 
-- **En cours** — NT-014, NT-073.
+- **En cours** — NT-014, NT-048, NT-073.
 - **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session), NT-133 (sessions libres).
-- **Should** — NT-042 (édition profil à confirmer), NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-131. NT-033 : voir NT-120/NT-121.
+- **Should** — NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-131. NT-033 : voir NT-120/NT-121. NT-048 conserve cette priorité mais est déjà en cours.
 - **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132. NT-023 : voir NT-122/NT-123. NT-014 et NT-073 conservent cette priorité mais sont déjà en cours.
 - **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.

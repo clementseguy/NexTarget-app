@@ -6,7 +6,7 @@
 > gouvernance dans [`README.md`](README.md), historique des arbitrages dans
 > [`incoherences.md`](incoherences.md).
 
-- **Statuts** : les statuts reflètent l'**état réel du code** au 2026-07-07, pas
+- **Statuts** : les statuts reflètent l'**état réel du code** au 2026-09-02, pas
   les intentions des anciens backlogs.
 - **IDs** : `NT-XXX`, stables, jamais réutilisés. Les trous de numérotation sont
   volontaires (réservés à l'insertion future dans un thème).
@@ -32,6 +32,12 @@
 >
 > Enrichissement fonctionnel du **2026-09-02** : sessions libres sans séries,
 > score ni groupement (NT-133). Statuts code inchangés.
+>
+> Cadrage produit du **2026-09-02** : critères détaillés de NT-014, NT-073,
+> NT-048 et NT-133 validés ; NT-048 devient un item `both / EN COURS` tant que
+> l'app ne consomme pas les refresh tokens déjà livrés par le serveur. L'audit
+> de clôture de NT-061 confirme l'absence de chemin Mistral direct côté client
+> et la rotation de la clé historique.
 
 ## Légende des statuts
 
@@ -183,9 +189,20 @@
 
 ### NT-014 — Comparatif glissant 30j vs 90j + sparkline
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-010
-- **Description** : Comparer la moyenne des 30 derniers jours à celle des 90 derniers jours (fenêtres glissantes emboîtées), afficher le delta `moyenne 30j - moyenne 90j` et intégrer une petite sparkline aux cartes existantes (ancien P7).
-- **Critères d'acceptation** : comparaison calculée uniquement à partir des sessions réalisées ; fenêtres 30j et 90j fondées sur la même métrique et la même population ; bornes temporelles, cas sans données, unité et signe du delta cohérents entre service, modèle, libellés UI, documentation et tests ; delta calculé et affiché ; sparkline sur au moins une carte.
-- **Priorité** : Could · **Statut** : EN COURS — la comparaison 30j/90j et le delta absolu sont déjà présents dans le tableau de bord ; restent à vérifier et harmoniser le calcul, les filtres, les bornes temporelles, les libellés, la documentation et les tests, puis à ajouter la sparkline.
+- **Description** : Comparer globalement les performances récentes aux 90 derniers jours au moyen de deux métriques indépendantes : moyenne des points par série et moyenne du groupement par série. La fenêtre 90 jours inclut les 30 derniers jours. Présenter pour chaque métrique les deux moyennes, le delta absolu, le delta relatif et une sparkline mobile lisible (ancien P7).
+- **Critères d'acceptation** :
+  - seules les sessions réalisées et détaillées contribuent aux calculs ; les sessions prévues et les sessions libres NT-133 sont exclues ;
+  - la fenêtre récente couvre les 30 derniers jours et la fenêtre de référence les 90 derniers jours, 30 derniers jours inclus ; les bornes temporelles sont explicites, déterministes et identiques entre service, UI, documentation et tests ;
+  - le comparatif n'est affiché que s'il existe au moins une série dans les 30 derniers jours et au moins une autre série entre J-90 et J-31 ;
+  - le score est la moyenne des points par série ; une série réalisée à zéro point reste une donnée valide ;
+  - le groupement est la moyenne des groupements par série ; une série sans groupement cohérent et strictement positif est ignorée uniquement pour cette métrique, mais reste prise en compte pour le score et les autres statistiques ;
+  - score et groupement sont présentés séparément, sans statut synthétique ni règle d'interdépendance ; une baisse du groupement est affichée comme une amélioration, par exemple `-4 cm · +14 % d'amélioration`, en conservant l'unité actuelle de l'app ;
+  - chaque métrique affiche les valeurs 30 j et 90 j, le delta absolu et le pourcentage calculé par rapport à la moyenne 90 j ; les divisions par zéro et données insuffisantes produisent un état explicite, jamais une valeur trompeuse ;
+  - chaque sparkline utilise un point par session réalisée, représentant la moyenne des séries exploitables de cette session pour la métrique concernée ; elle est masquée tant que moins de cinq sessions sont exploitables pour cette métrique ;
+  - l'interface reprend la structure validée à deux lignes, reste compacte sur mobile et lisible dans les deux thèmes, sans dépendre uniquement de la couleur ;
+  - aucun libellé automatique « amélioration », « baisse » ou « stagnation » n'est déduit de seuils métier : les courbes, signes, unités et deltas restent factuels ;
+  - les calculs utilisent une horloge injectable, ne reposent pas sur une limite silencieuse de séries et sont couverts par des tests déterministes des bornes, populations, valeurs nulles et scénarios divergents.
+- **Priorité** : Could · **Statut** : EN COURS — une première comparaison 30j/90j et un delta absolu existent, mais la population minimale, le groupement, les pourcentages, la présentation mobile, les sparklines et les tests complets restent à livrer.
 
 ### NT-015 — Recommandations croisées Objectifs ⇄ Exercices
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-012, NT-021
@@ -327,7 +344,7 @@
 | NT-045 | Stats publiques / partage de profil | both | Won't-now | M | À FAIRE |
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE |
-| NT-048 | Refresh tokens + rotation | server | Should | M | FAIT |
+| NT-048 | Refresh tokens + rotation | both | Should | M | EN COURS |
 | NT-049 | Interface d’administration read-only des utilisateurs | server | Should | M | FAIT |
 
 ### NT-040 — Authentification OAuth Google
@@ -347,7 +364,7 @@
 - **Description** : Afficher nom/pseudo, avatar, niveau d'expérience (beginner/advanced/expert), date d'inscription.
 - **Critères d'acceptation** : serveur stocke `display_name`, `display_name_custom`, `avatar_url`, `experience_level` ; app les affiche.
 - **Statut** : FAIT — `models/user.py`, `profile_screen.dart`.
-- **Notes** : l'**édition** dans l'app (choix du niveau, pseudo custom) reste **À VÉRIFIER** ; à confirmer/compléter si absente.
+- **Notes** : l'app permet l'édition du niveau d'expérience. L'édition d'un pseudo personnalisé est explicitement exclue de NT-042 ; elle devra recevoir un item distinct si elle devient souhaitée.
 
 ### NT-043 — Endpoint `/users/me`
 - **Thème** : Auth & Compte · **Portée** : server · **Dépendances** : NT-040
@@ -378,9 +395,20 @@
 - **Critères d'acceptation** : à définir. · **Priorité** : Won't-now · **Statut** : À FAIRE. · **Notes** : roadmap serveur v0.2.
 
 ### NT-048 — Refresh tokens + rotation
-- **Thème** : Auth & Compte · **Portée** : server · **Dépendances** : NT-040
-- **Description** : Sessions plus longues sans re-login (refresh + rotation).
-- **Critères d'acceptation** : émission/rotation de refresh tokens ; révocation. · **Priorité** : Should · **Statut** : FAIT (2026-07-09, sprint S3) — `/auth/token/refresh` (rotation usage unique, rejeu ⇒ révocation de famille), `/auth/token/revoke` (logout idempotent), hash SHA-256 seul persisté ; champs additifs sur `/auth/token/exchange` (contrat client inchangé). L'adoption côté app (sessions longues sans re-login) reste à câbler — hors S3.
+- **Thème** : Auth & Compte · **Portée** : both · **Dépendances** : NT-040
+- **Description** : Maintenir la connexion aux fonctionnalités avancées sans imposer un nouveau login à l'expiration de l'access token, tout en préservant la promesse hors ligne du carnet et en détectant le rejeu d'un refresh token.
+- **Critères d'acceptation** :
+  - le serveur émet un refresh token opaque lors de l'échange OAuth, ne persiste que son hash SHA-256, applique une expiration glissante de 30 jours et une rotation à usage unique ;
+  - le rejeu d'un refresh token consommé révoque toute sa famille ; `/auth/token/revoke` reste idempotent et ne révèle pas l'existence d'un token ;
+  - l'app stocke access token, refresh token et informations d'expiration dans `flutter_secure_storage`, sans jamais les journaliser ; chaque paire issue d'une rotation remplace atomiquement la précédente ;
+  - l'app renouvelle proactivement l'access token juste avant son expiration ; après un `401`, elle peut effectuer un unique renouvellement et rejouer une seule fois la requête, sans boucle ;
+  - un mécanisme single-flight empêche deux requêtes concurrentes de consommer simultanément le même refresh token ;
+  - un refresh invalide, expiré, révoqué ou rejoué termine la session connectée et demande une reconnexion Google ; les installations existantes sans refresh token suivent cette même reconnexion unique ;
+  - une panne réseau ne supprime pas les tokens et ne déconnecte pas l'utilisateur : le carnet, les statistiques, objectifs et exercices restent disponibles hors ligne, tandis que le Coach indique clairement son indisponibilité ;
+  - le logout tente la révocation serveur en best effort, puis efface systématiquement tous les tokens et données d'authentification locales, même si le serveur est indisponible ;
+  - tous les appels authentifiés, notamment Coach et profil, utilisent le même mécanisme ; les erreurs temporaires restent distinguées d'une session réellement expirée ;
+  - les tests couvrent rotation, renouvellement proactif, retry unique, concurrence, rejeu, expiration, indisponibilité réseau, logout et migration depuis le stockage historique sans refresh token.
+- **Priorité** : Should · **Statut** : EN COURS — le serveur est livré et testé (`/auth/token/refresh`, `/auth/token/revoke`, rotation et détection de rejeu) ; l'adoption côté app et la résilience hors ligne restent à implémenter.
 
 ### NT-049 — Interface d’administration read-only des utilisateurs
 - **Thème** : Auth & Compte · **Portée** : server · **Dépendances** : NT-040, NT-042
@@ -490,8 +518,8 @@
   - l'analyse coach exige un utilisateur authentifié (message clair sinon) ;
   - la clé Mistral historique est révoquée/rotée ;
   - le carnet de tir reste utilisable hors-ligne (le coach seul devient online-only).
-- **Priorité** : Must · **Statut** : FAIT (code, 2026-07-07, sprint S1) — `CoachAnalysisService` direct supprimé, plus aucune clé/config Mistral côté client (`AppConfig`, `config.yaml`, `build_apk.sh` purgés), analyse gated par l'auth avec message clair + CTA login.
-- **Notes** : la **rotation de la clé Mistral historique** est une action manuelle (console Mistral + env Render) à réaliser par le mainteneur — hors code. Voir [incoherences.md](incoherences.md) I2.
+- **Priorité** : Must · **Statut** : FAIT (code, 2026-07-07, sprint S1 ; clôture auditée le 2026-09-02) — `CoachAnalysisService` direct supprimé, plus aucune clé/config/prompt Mistral côté client (`AppConfig`, `config.yaml`, `build_apk.sh` purgés), analyse protégée par l'auth avec message clair et CTA login ; la clé Mistral historique a été rotée par le mainteneur.
+- **Notes** : l'audit de clôture confirme que `ServerCoachAnalysisService` est l'unique chemin d'analyse dans l'app et qu'aucun appel local, proxy de secours ou fallback Mistral client ne subsiste. Le client serveur Mistral reste légitimement côté backend. Les documents actifs décrivant encore l'ancien build avec clé/prompt local ont été corrigés ; changelogs, release notes et specs versionnées restent conservés comme historique. Voir [incoherences.md](incoherences.md) I2.
 
 ### NT-062 — Rate limiting de l'endpoint coach
 - **Portée** : server · **Dépendances** : NT-060 · **Description** : Empêcher l'abus qui viderait le quota Mistral.
@@ -523,7 +551,7 @@
 | NT-070 | Déploiement serveur (Render) | server | Must | S | FAIT |
 | NT-071 | Migration SQLite → Postgres Neon + Alembic | server | Must | M | FAIT |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT |
-| NT-073 | Normalisation calibres + dernier calibre utilisé | app | Could | S | EN COURS |
+| NT-073 | Calibre par défaut + normalisation statistique | app | Could | S | EN COURS |
 | NT-074 | Saisie séries plein écran + navigation rapide | app | Could | M | À FAIRE |
 | NT-075 | Onboarding + aide contextuelle | app | Could | M | FAIT |
 | NT-076 | Cache stats + compactage Hive | app | Could | M | À FAIRE |
@@ -558,10 +586,20 @@
 - **Statut** : FAIT — `lib/migrations/` (`MigrationRunner`, `SchemaVersionStore`, migrations 2 & 3).
 - **Notes** : le **script de vérification de cohérence de schéma** (part du P5) reste À FAIRE — le tracer comme sous-tâche si besoin.
 
-### NT-073 — Normalisation calibres + dernier calibre utilisé
-- **Portée** : app · **Dépendances** : NT-001 · **Description** : Hygiène de données (ancien P10) : normaliser les calibres, persister le dernier utilisé.
-- **Critères d'acceptation** : liste de calibres normalisée ; pré-remplissage du dernier calibre. · **Priorité** : Could · **Statut** : EN COURS.
-- **Notes** : la liste configurable, l'autocomplétion et la préférence de calibre par défaut existent déjà ; la normalisation complète et la persistance du dernier calibre utilisé restent à finaliser et vérifier. Un prototype commun avec NT-100/101/130 a été abandonné le 2026-07-24 après recette UX ; respecter le [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md). Le pré-remplissage ne doit ajouter aucune étape au parcours classique.
+### NT-073 — Calibre par défaut + normalisation statistique
+- **Portée** : app · **Dépendances** : NT-001 · **Description** : Améliorer l'hygiène des données sans retirer la liberté de saisie : proposer une liste cohérente, permettre un calibre par défaut explicite et regrouper uniquement les alias connus dans les statistiques par calibre. Aucun « dernier calibre utilisé » n'est mémorisé.
+- **Critères d'acceptation** :
+  - la préférence « calibre par défaut » est facultative et ne peut contenir qu'une valeur du référentiel configuré ; vide, elle n'applique aucun préremplissage ;
+  - le calibre par défaut préremplit les nouvelles sessions réalisées et prévues ; l'édition conserve toujours la valeur enregistrée dans la session ;
+  - tous les parcours de saisie utilisent une autocomplétion centralisée proposant les calibres connus, sans autoremplacement ni écrasement de la saisie ; le champ de session reste libre ;
+  - l'entrée générique `Autre` est retirée du référentiel et des suggestions, puisqu'une valeur libre peut être saisie directement ;
+  - la normalisation de recherche et la résolution statistique sont deux opérations distinctes ; aucune valeur persistée, historique ou nouvellement saisie n'est réécrite vers un libellé canonique ;
+  - un calibre libre inconnu reste inclus dans toutes les statistiques globales de score, groupement et volume, mais est exclu des répartitions et regroupements par calibre ;
+  - les alias `9mm`, `9 mm`, `9x19`, `9 mm Para` et `9mm (9x19)` sont regroupés statistiquement sous le libellé canonique `9 mm` ; `.380 ACP` reste distinct et aucun regroupement avec `9 mm court` n'est introduit sans retour métier complémentaire ;
+  - le référentiel est validé et dédupliqué après normalisation ; les comportements sont cohérents dans les paramètres, la création et l'édition des sessions réalisées et prévues, ainsi que dans le wizard ;
+  - les tests couvrent préférence vide/valide/invalide, préremplissage, conservation à l'édition, saisie libre, absence d'autoremplacement, alias connus, valeur inconnue et exclusion limitée aux statistiques par calibre.
+- **Priorité** : Could · **Statut** : EN COURS — la liste configurable, une autocomplétion partielle et la préférence existent ; leur comportement doit être centralisé et aligné sur les règles ci-dessus.
+- **Notes** : un prototype commun avec NT-100/101/130 a été abandonné le 2026-07-24 après recette UX ; respecter le [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md). Le préremplissage ne doit ajouter aucune étape au parcours classique.
 
 ### NT-074 — Saisie séries plein écran + navigation rapide
 - **Portée** : app · **Dépendances** : NT-002 · **Description** : Mode plein écran + next/prev pour réduire la friction de saisie (ancien P6).
@@ -753,16 +791,18 @@
 - **Priorité** : Could · **VM** : 2 · **Statut** : À FAIRE. · **Notes** : spike timeboxé ; aucune implémentation produit sans go.
 
 ### NT-133 — Sessions libres sans séries ni scores
-- **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : NT-001, NT-003, NT-007, NT-022
-- **Description** : Permettre au tireur de consigner rapidement un entraînement réalisé sans saisir de séries, de scores ni de groupements : une date, une arme, un nombre total de tirs, une distance et des commentaires suffisent. Dans l'interface, ce type est nommé **« Session libre »**.
-- **Modèle métier et persistance** : `ShootingSession` devient le type racine abstrait commun ; les sessions actuelles sont représentées par `DetailedShootingSession` et le nouveau type par `SimpleShootingSession`, tous deux héritant de `ShootingSession`. `SimpleShootingSession` porte une date, une arme, un `shotCount`, une distance, des commentaires et les IDs des exercices associés ; il ne porte ni séries, ni score, ni groupement. Une session libre est toujours réalisée et appartient implicitement à la catégorie entraînement : sa planification et le choix d'une autre catégorie sont hors périmètre. Le nombre de tirs est un entier strictement positif, la distance est strictement positive et les commentaires sont facultatifs.
+- **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : NT-001, NT-003, NT-005, NT-007, NT-017, NT-022, NT-073
+- **Description** : Permettre au tireur de consigner rapidement une séance réalisée sans saisir de séries, de scores ni de groupements : une date, une arme, un calibre, un nombre total de tirs, une distance et une catégorie suffisent. La synthèse, la photo de cible et les exercices sont facultatifs. Dans l'interface, ce type est nommé **« Session libre »**.
+- **Modèle métier et persistance** : `ShootingSession` devient le type racine abstrait commun ; les sessions actuelles sont représentées par `DetailedShootingSession` et le nouveau type par `SimpleShootingSession`, tous deux héritant de `ShootingSession`. `SimpleShootingSession` porte une date, une arme obligatoire, un calibre obligatoire, un `shotCount`, une distance, une synthèse facultative, une catégorie, une photo facultative et les IDs des exercices associés ; il ne porte ni séries, ni score, ni groupement, ni analyse Coach. Une session libre est toujours réalisée et ne peut pas être planifiée. Sa catégorie est choisie parmi les valeurs existantes `entraînement`, `match` et `test matériel`. Le nombre de tirs est un entier strictement positif et la distance est un nombre entier strictement positif exprimé en mètres.
 - **Création et aide contextuelle** : dans l'écran Sessions, conserver le bouton flottant `+` actuel et son comportement direct pour créer une session détaillée réalisée ou prévue selon l'onglet actif ; ajouter à proximité une action flottante secondaire dédiée à la session libre, visible uniquement dans l'onglet des sessions réalisées. Les deux actions reprennent la même forme et la même structure, mais restent immédiatement distinguables par une couleur compatible avec le thème, une icône et une sémantique accessibles. Un label explicite peut être affiché lorsque l'espace disponible le permet et qu'il ne surcharge pas l'interface ; à défaut, tooltip et libellé d'accessibilité restent obligatoires. Aucun menu intermédiaire ni appui long n'est requis. L'aide contextuelle `?` de l'écran Sessions explique les deux actions et la différence entre session détaillée et session libre.
-- **Consultation et cartes** : création, consultation, modification et suppression d'une session libre sont possibles. Dans l'historique et les autres listes de sessions, le type est identifiable sans dépendre uniquement de la couleur : badge/libellé **« Libre »**, icône et accent visuel issus du `ColorScheme` du thème. Une carte de session libre affiche au minimum la date, l'arme, le nombre de tirs, la distance et, le cas échéant, le nombre d'exercices associés ; elle n'affiche ni score, ni groupement, ni extrait des commentaires. Les commentaires restent consultables dans le détail. Les cartes détaillées conservent leurs métriques propres et reçoivent une identification de type cohérente si nécessaire pour lever toute ambiguïté. Les deux thèmes de l'application garantissent contraste et lisibilité.
-- **Statistiques, filtres et exercices** : le nombre de sessions et les indicateurs d'assiduité incluent les deux sous-types réalisés ; les statistiques de score, de groupement et toute métrique fondée sur les séries ignorent les sessions libres ; les métriques de volume additionnent le `shotCount` direct des sessions libres et les `shotCount` des séries des sessions détaillées. Les filtres applicables aux sessions, notamment par exercice, fonctionnent avec les deux sous-types. Une session libre accepte zéro, un ou plusieurs exercices associés selon la mécanique existante.
+- **Saisie et cohérence des champs** : le calibre d'une session libre suit NT-073 : préremplissage éventuel depuis la préférence, autocomplétion sans autoremplacement et saisie libre conservée. Les formulaires de sessions libres et détaillées n'acceptent dorénavant que des distances entières strictement positives. Pour préserver les anciennes données et sauvegardes, le type numérique existant peut rester compatible avec les décimales historiques : aucune valeur passée n'est arrondie ou réécrite automatiquement, mais toute création ou modification applique la validation entière.
+- **Consultation et cartes** : création, consultation, modification et suppression d'une session libre sont possibles, ainsi que l'ajout, le remplacement et la suppression d'une photo de cible selon la mécanique existante. Dans l'historique et les autres listes de sessions, le type est identifiable sans dépendre uniquement de la couleur : badge/libellé **« Libre »**, icône et accent visuel issus du `ColorScheme` du thème. Une carte de session libre affiche au minimum la date, l'arme, le calibre, la catégorie, le nombre de tirs, la distance et, le cas échéant, le nombre d'exercices associés ; elle n'affiche ni score, ni groupement, ni extrait de la synthèse. La synthèse et la photo restent consultables dans le détail. Les cartes détaillées conservent leur présentation actuelle et ne reçoivent pas de badge « Détaillée ». Les deux thèmes de l'application garantissent contraste et lisibilité.
+- **Statistiques, filtres, objectifs et exercices** : le nombre de sessions, les objectifs fondés sur l'assiduité et les indicateurs d'assiduité incluent les deux sous-types réalisés, même sans exercice associé ; les statistiques de score, de groupement et toute métrique fondée sur les séries ignorent les sessions libres ; les métriques de volume additionnent le `shotCount` direct des sessions libres et les `shotCount` des séries des sessions détaillées. NT-017 inclut les tirs d'une session libre dans le compteur de son arme. Les statistiques par calibre appliquent la résolution NT-073 ; un calibre libre inconnu n'exclut pas la session des autres agrégats. Les filtres applicables aux sessions, notamment par catégorie et par exercice, fonctionnent avec les deux sous-types. Une session libre accepte zéro, un ou plusieurs exercices associés selon la mécanique existante.
 - **Import, export et rétrocompatibilité** : le format JSON exporté contient un discriminant stable `sessionType` valant `detailed` ou `simple`. Les anciennes données Hive et les anciens exports dépourvus de discriminant sont relus comme des sessions détaillées sans perte de données. L'import et l'export acceptent les sauvegardes contenant uniquement des sessions historiques ou un mélange des deux types ; un cycle export puis import conserve le sous-type et tous les champs de chaque session. L'évolution du format reste additive ; un discriminant inconnu produit une erreur explicite sans import partiel ni altération des données locales.
-- **Critères de qualité** : migration de schéma et test de migration ; tests de sérialisation des deux sous-types et des données historiques sans discriminant ; tests des validations `shotCount`/distance ; tests des agrégats et de l'exclusion des métriques de séries ; widget tests des deux actions flottantes, de l'onglet Prévues, des cartes dans les deux thèmes et de l'aide contextuelle ; cahier de recette mis à jour.
+- **Coach IA** : une session libre ne peut pas être envoyée à l'analyse Coach et son écran de détail ne propose pas cette action ; l'absence de séries, score et groupement ne doit produire ni payload artificiel ni donnée de substitution.
+- **Critères de qualité** : migration de schéma et test de migration ; tests de sérialisation des deux sous-types et des données historiques sans discriminant ; tests des champs obligatoires, des catégories et des validations `shotCount`/distance entière ; tests de la photo et de l'absence d'analyse Coach ; tests des agrégats, objectifs d'assiduité, compteurs NT-017 et exclusion des métriques de séries ; widget tests des deux actions flottantes, de l'onglet Prévues, des cartes dans les deux thèmes et de l'aide contextuelle ; cahier de recette mis à jour.
 - **Priorité** : Must · **VM** : 4 · **Estimation** : L · **Statut** : À FAIRE.
-- **Notes** : `SimpleShootingSession` est le nom technique retenu ; « Session libre » est exclusivement le label utilisateur. Préserver le parcours actuel du `+` est non négociable, conformément au [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md). NT-017 doit compter les tirs des deux sous-types après livraison de NT-133.
+- **Notes** : `SimpleShootingSession` est le nom technique retenu ; « Session libre » est exclusivement le label utilisateur. Le champ de commentaires réutilise la notion et le libellé de **synthèse** des sessions détaillées. Préserver le parcours actuel du `+` est non négociable, conformément au [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md).
 
 ---
 
