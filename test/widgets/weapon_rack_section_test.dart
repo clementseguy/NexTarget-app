@@ -158,5 +158,29 @@ void main() {
       expect(find.text('CZ 75 SP-01 Shadow'), findsOneWidget);
       expect(sessionRepo.sessions.single.weapon, 'CZ 75 SP-01 Shadow');
     });
+
+    testWidgets('reload() via GlobalKey rafraîchit la liste après une mutation externe (ex. import)', (tester) async {
+      final weaponRepo = _MemWeaponRepo();
+      final service = WeaponService(weaponRepository: weaponRepo, sessionRepository: _MemSessionRepo());
+      final key = GlobalKey<WeaponRackSectionState>();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(body: WeaponRackSection(key: key, weaponService: service)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Aucune arme enregistrée.'), findsOneWidget);
+
+      // Mutation "externe" (simule un import de sauvegarde) : ne passe pas
+      // par les actions CRUD de la section, qui n'en a donc pas connaissance.
+      await service.addWeapon('Glock 17');
+      expect(find.text('Glock 17'), findsNothing); // pas encore rafraîchi
+
+      await key.currentState?.reload();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Glock 17'), findsOneWidget);
+    });
   });
 }

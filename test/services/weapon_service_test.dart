@@ -113,6 +113,31 @@ void main() {
       expect((await service.listAll()).length, 1);
     });
 
+    test('deux ajouts concurrents du même nom normalisé : un seul aboutit (pas de doublon)', () async {
+      // Deux appels lancés sans attendre le premier (ex. double-tap) : sans
+      // sérialisation, les deux lectures d'unicité pourraient chacune voir
+      // "nom absent" avant qu'aucun des deux `put` n'ait eu lieu.
+      final first = service.addWeapon('CZ 75');
+      final second = service.addWeapon('cz 75'); // même nom normalisé
+
+      Object? firstError;
+      Object? secondError;
+      try {
+        await first;
+      } catch (e) {
+        firstError = e;
+      }
+      try {
+        await second;
+      } catch (e) {
+        secondError = e;
+      }
+
+      final validationErrors = [firstError, secondError].whereType<WeaponValidationException>();
+      expect(validationErrors, hasLength(1)); // exactement un des deux est rejeté
+      expect((await service.listAll()).length, 1); // jamais deux armes de même nom
+    });
+
     test('listAll trie par nom insensible à la casse', () async {
       await service.addWeapon('Zastava');
       await service.addWeapon('ares');

@@ -27,6 +27,11 @@ String _avatarInitial(Map<String, dynamic>? user) {
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
+  // Clé statique : un seul SettingsScreen est monté à la fois, elle permet de
+  // rafraîchir le râtelier après un import de sauvegarde sans faire de
+  // SettingsScreen un StatefulWidget.
+  static final _weaponRackKey = GlobalKey<WeaponRackSectionState>();
+
   @override
   Widget build(BuildContext context) {
     final backup = BackupService();
@@ -285,7 +290,7 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   const Divider(),
                   const SizedBox(height: 4),
-                  const WeaponRackSection(),
+                  WeaponRackSection(key: _weaponRackKey),
                 ],
               ),
             ),
@@ -381,6 +386,7 @@ class SettingsScreen extends StatelessWidget {
                         final content = await File(path).readAsString();
                         final imported = await backup.importSessionsFromJson(content);
                         final total = (await sessionService.getAllSessions()).length;
+                        await _weaponRackKey.currentState?.reload();
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('$imported sessions importées. Total: $total')),

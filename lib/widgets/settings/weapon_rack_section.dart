@@ -10,10 +10,10 @@ class WeaponRackSection extends StatefulWidget {
   const WeaponRackSection({super.key, this.weaponService});
 
   @override
-  State<WeaponRackSection> createState() => _WeaponRackSectionState();
+  State<WeaponRackSection> createState() => WeaponRackSectionState();
 }
 
-class _WeaponRackSectionState extends State<WeaponRackSection> {
+class WeaponRackSectionState extends State<WeaponRackSection> {
   late final WeaponService _service = widget.weaponService ?? WeaponService();
   final _addController = TextEditingController();
   List<Weapon> _weapons = [];
@@ -22,7 +22,7 @@ class _WeaponRackSectionState extends State<WeaponRackSection> {
   @override
   void initState() {
     super.initState();
-    _reload();
+    reload();
   }
 
   @override
@@ -31,7 +31,10 @@ class _WeaponRackSectionState extends State<WeaponRackSection> {
     super.dispose();
   }
 
-  Future<void> _reload() async {
+  /// Recharge le râtelier depuis le service. Public : permet à un appelant
+  /// externe (ex. import d'une sauvegarde depuis le même écran) de forcer un
+  /// rafraîchissement via un `GlobalKey<WeaponRackSectionState>`.
+  Future<void> reload() async {
     final list = await _service.listAll();
     if (!mounted) return;
     setState(() {
@@ -50,7 +53,7 @@ class _WeaponRackSectionState extends State<WeaponRackSection> {
     try {
       await _service.addWeapon(name);
       _addController.clear();
-      await _reload();
+      await reload();
     } on WeaponValidationException catch (e) {
       _showSnack(e.message);
     }
@@ -93,7 +96,7 @@ class _WeaponRackSectionState extends State<WeaponRackSection> {
 
     try {
       await _service.renameWeapon(weapon, proposedName);
-      await _reload();
+      await reload();
       _showSnack('Arme renommée.');
     } on WeaponValidationException catch (e) {
       _showSnack(e.message);
@@ -119,7 +122,7 @@ class _WeaponRackSectionState extends State<WeaponRackSection> {
     );
     if (confirmed != true) return;
     await _service.deleteWeapon(weapon.id);
-    await _reload();
+    await reload();
   }
 
   @override

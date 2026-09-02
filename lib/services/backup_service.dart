@@ -18,9 +18,17 @@ import '../services/weapon_service.dart';
 ///   "sessions": [ { sessionMap... }, ... ]
 /// }
 class BackupService {
-  final SessionService _sessionService = SessionService();
-  final GoalService _goalService = GoalService();
-  final WeaponService _weaponService = WeaponService();
+  final SessionService _sessionService;
+  final GoalService _goalService;
+  final WeaponService _weaponService;
+
+  BackupService({
+    SessionService? sessionService,
+    GoalService? goalService,
+    WeaponService? weaponService,
+  })  : _sessionService = sessionService ?? SessionService(),
+        _goalService = goalService ?? GoalService(),
+        _weaponService = weaponService ?? WeaponService();
   
   /// Lire un fichier JSON.
   /// 
@@ -136,20 +144,22 @@ class BackupService {
     // exports sans râtelier) ; fusionne avec le râtelier local existant sans
     // l'effacer, en respectant les mêmes règles de validation/déduplication
     // normalisée que la saisie manuelle.
-    try {
-      final weaponsRaw = decoded['weapons'];
-      if (weaponsRaw is List) {
-        for (final w in weaponsRaw) {
-          if (w is! Map) continue;
-          final name = w['name']?.toString() ?? '';
-          try {
-            await _weaponService.addWeapon(name);
-          } catch (_) {
-            // ignore nom invalide ou doublon normalisé déjà présent
-          }
+    final weaponsRaw = decoded['weapons'];
+    if (weaponsRaw is List) {
+      for (final w in weaponsRaw) {
+        if (w is! Map) continue;
+        final name = w['name']?.toString() ?? '';
+        try {
+          await _weaponService.addWeapon(name);
+        } on WeaponValidationException {
+          // Nom invalide ou doublon normalisé déjà présent : entrée ignorée
+          // sans bloquer le reste de l'import. Toute autre exception (ex.
+          // échec d'écriture Hive) n'est PAS avalée ici : elle remonte à
+          // l'appelant pour être signalée à l'utilisateur, plutôt que de
+          // terminer l'import en silence sur des armes manquantes.
         }
       }
-    } catch (_) {}
+    }
     return imported;
   }
 

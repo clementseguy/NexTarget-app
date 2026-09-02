@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import '../models/weapon.dart';
 import '../models/shooting_session.dart';
@@ -26,6 +27,20 @@ class WeaponService {
   WeaponService({WeaponRepository? weaponRepository, SessionRepository? sessionRepository})
       : _weapons = weaponRepository ?? HiveWeaponRepository(),
         _sessions = sessionRepository ?? HiveSessionRepository();
+
+  // Sérialise les opérations « vérifier l'unicité puis écrire » (addWeapon,
+  // renameWeapon) : sans cela, deux appels qui se chevauchent (double-tap,
+  // appels concurrents) peuvent chacun lire « nom absent » avant qu'aucun des
+  // deux `put` n'ait eu lieu, créant deux armes de même nom normalisé malgré
+  // la garantie d'unicité documentée.
+  Future<void> _writeLock = Future.value();
+
+  Future<T> _serialized<T>(Future<T> Function() action) {
+    final previous = _writeLock;
+    final completer = Completer<void>();
+    _writeLock = completer.future;
+    return previous.then((_) => action()).whenComplete(completer.complete);
+  }
 
   String _generateId() {
     final ts = DateTime.now().millisecondsSinceEpoch.toRadixString(36);
@@ -58,13 +73,13 @@ class WeaponService {
 
   /// Ajoute une arme au râtelier. Lève [WeaponValidationException] si le nom
   /// est vide après trim ou si une arme du même nom (normalisé) existe déjà.
-  Future<Weapon> addWeapon(String name) async {
-    final trimmed = _validateName(name);
-    await _checkUniqueName(trimmed);
-    final weapon = Weapon(id: _generateId(), name: trimmed, createdAt: DateTime.now());
-    await _weapons.put(weapon);
-    return weapon;
-  }
+  Future<Weapon> addWeapon(String name) => _serialized(() async {
+        final trimmed = _validateName(name);
+        await _checkUniqueName(trimmed);
+        final weapon = Weapon(id: _generateId(), name: trimmed, createdAt: DateTime.now());
+        await _weapons.put(weapon);
+        return weapon;
+      });
 
   /// Renomme [weapon] en [newName] et propage le changement aux sessions
   /// prévues et réalisées dont le champ `weapon` correspond exactement à
@@ -74,38 +89,38 @@ class WeaponService {
   /// Opération atomique du point de vue utilisateur : si une écriture échoue
   /// en cours de propagation, l'arme et les sessions déjà modifiées sont
   /// restaurées à leur état initial avant que l'exception ne soit relancée.
-  Future<Weapon> renameWeapon(Weapon weapon, String newName) async {
-    final trimmed = _validateName(newName);
-    await _checkUniqueName(trimmed, excludingId: weapon.id);
+  Future<Weapon> renameWeapon(Weapon weapon, String newName) => _serialized(() async {
+        final trimmed = _validateName(newName);
+        await _checkUniqueName(trimmed, excludingId: weapon.id);
 
-    final allSessions = await _sessions.getAll();
-    final affected = allSessions.where((s) => sameWeaponName(s.weapon, weapon.name)).toList();
-    final originalNames = <int?, String>{for (final s in affected) s.id: s.weapon};
+        final allSessions = await _sessions.getAll();
+        final affected = allSessions.where((s) => sameWeaponName(s.weapon, weapon.name)).toList();
+        final originalNames = <int?, String>{for (final s in affected) s.id: s.weapon};
 
-    final renamed = weapon.copyWith(name: trimmed);
-    final updatedSessions = <ShootingSession>[];
-    try {
-      await _weapons.put(renamed);
-      for (final s in affected) {
-        s.weapon = trimmed;
-        await _sessions.update(s, preserveExistingSeriesIfEmpty: false);
-        updatedSessions.add(s);
-      }
-      return renamed;
-    } catch (e) {
-      // Rollback complet : on restaure l'arme et les sessions déjà modifiées.
-      try {
-        await _weapons.put(weapon);
-      } catch (_) {}
-      for (final s in updatedSessions) {
-        s.weapon = originalNames[s.id] ?? s.weapon;
+        final renamed = weapon.copyWith(name: trimmed);
+        final updatedSessions = <ShootingSession>[];
         try {
-          await _sessions.update(s, preserveExistingSeriesIfEmpty: false);
-        } catch (_) {}
-      }
-      rethrow;
-    }
-  }
+          await _weapons.put(renamed);
+          for (final s in affected) {
+            s.weapon = trimmed;
+            await _sessions.update(s, preserveExistingSeriesIfEmpty: false);
+            updatedSessions.add(s);
+          }
+          return renamed;
+        } catch (e) {
+          // Rollback complet : on restaure l'arme et les sessions déjà modifiées.
+          try {
+            await _weapons.put(weapon);
+          } catch (_) {}
+          for (final s in updatedSessions) {
+            s.weapon = originalNames[s.id] ?? s.weapon;
+            try {
+              await _sessions.update(s, preserveExistingSeriesIfEmpty: false);
+            } catch (_) {}
+          }
+          rethrow;
+        }
+      });
 
   /// Supprime l'arme du râtelier sans modifier aucune session existante.
   Future<void> deleteWeapon(String id) => _weapons.delete(id);

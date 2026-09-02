@@ -2,8 +2,34 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:tir_sportif/models/weapon.dart';
+import 'package:tir_sportif/repositories/weapon_repository.dart';
 import 'package:tir_sportif/services/backup_service.dart';
 import 'package:tir_sportif/services/weapon_service.dart';
+import '../support/async_test_helpers.dart';
+
+/// Simule un échec de stockage (ex. Hive indisponible) sur le Nième `put`.
+class _FailingWeaponRepo implements WeaponRepository {
+  final List<Weapon> list = [];
+  int putCount = 0;
+  int? failOnPutNumber;
+
+  @override
+  Future<void> clear() async => list.clear();
+  @override
+  Future<void> delete(String id) async => list.removeWhere((w) => w.id == id);
+  @override
+  Future<List<Weapon>> getAll() async => List.of(list);
+  @override
+  Future<void> put(Weapon weapon) async {
+    putCount++;
+    if (failOnPutNumber != null && putCount == failOnPutNumber) {
+      throw StateError('Erreur de stockage simulée');
+    }
+    list.removeWhere((w) => w.id == weapon.id);
+    list.add(weapon);
+  }
+}
 
 void main() {
   group('BackupService import/export - râtelier (NT-008)', () {
@@ -92,6 +118,31 @@ void main() {
       expect(imported, 0);
       final rack = await weaponService.listAll();
       expect(rack.map((w) => w.name).toSet(), {'Revolver 357'}); // râtelier local intact
+    });
+
+    test('importSessionsFromJson laisse remonter une erreur de stockage au lieu de l\'avaler', () async {
+      final failingRepo = _FailingWeaponRepo()..failOnPutNumber = 2;
+      final weaponService = WeaponService(weaponRepository: failingRepo);
+      final svc = BackupService(weaponService: weaponService);
+      final payload = {
+        'format': 'mycoach-data',
+        'version': 3,
+        'sessions': <Map<String, dynamic>>[],
+        'weapons': [
+          {'id': 'w1', 'name': 'Glock 17', 'createdAt': DateTime(2026, 1, 1).toIso8601String()},
+          {'id': 'w2', 'name': 'CZ 75', 'createdAt': DateTime(2026, 1, 1).toIso8601String()}, // 2e put : échoue
+          {'id': 'w3', 'name': 'Revolver 357', 'createdAt': DateTime(2026, 1, 1).toIso8601String()},
+        ],
+      };
+
+      final error = await captureError(
+        () => svc.importSessionsFromJson(const JsonEncoder().convert(payload)),
+      );
+
+      expect(error, isA<StateError>());
+      // La 1re arme a été importée avant l'échec ; la 3e n'a jamais été tentée (abandon).
+      final rack = await weaponService.listAll();
+      expect(rack.map((w) => w.name).toSet(), {'Glock 17'});
     });
   });
 }
