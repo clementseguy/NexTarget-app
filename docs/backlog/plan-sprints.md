@@ -22,11 +22,13 @@
 > [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md) ; aucun
 > cherry-pick global du prototype `117ca83`.
 
-> **Priorité infrastructure du 2026-09-02** : NT-071 passe de Should/Icebox
-> à **Must** après constat de la perte des utilisateurs dans la base SQLite
-> éphémère de Render. La migration Render Free + Neon Postgres Free doit être
-> réalisée avant la reprise des développements fonctionnels destinés à la
-> production.
+> **Infrastructure livrée le 2026-09-02** : NT-071 est **FAIT** et livré dans
+> la release produit v0.6.0 (composant serveur v0.3.0). La production utilise
+> PostgreSQL Neon avec Alembic à la place du SQLite éphémère de Render.
+
+> **Enrichissement app du 2026-09-02** : NT-133 ajoute les sessions libres et
+> introduit le socle polymorphe commun aux sessions détaillées et simplifiées.
+> Il est placé avant les autres évolutions structurelles des sessions.
 
 ## Hypothèses
 
@@ -57,8 +59,9 @@
 
 | Rang | Items | Pourquoi maintenant | Dépendances clés | Portée |
 |---|---|---|---|---|
-| 0 | NT-071 | Corrige la perte des comptes et refresh tokens à chaque veille/redémarrage Render ; socle de fiabilité de la production. | NT-070 | server |
+| 0 | NT-071 (FAIT) | Corrige la perte des comptes et refresh tokens à chaque veille/redémarrage Render ; livré avec la release produit v0.6.0 (serveur v0.3.0). | NT-070 | server |
 | 0 | NT-049 (FAIT) | Diagnostic immédiat et sécurisé de la base utilisateurs et du comportement OAuth ; lot serveur autonome livré. | NT-040, NT-042 | server |
+| 1 | NT-133 | Ajoute une consignation d'entraînement sans séries et pose le type commun polymorphe avant les autres évolutions du modèle de session. | NT-001, NT-003, NT-007, NT-022 | app |
 | 1 | NT-100, NT-101 | Socle métier TAR : rend les sessions comparables et exploitables par stats/coach. | NT-001, NT-002 | app |
 | 2 | NT-073, NT-130 | Réduit fortement la friction de saisie au stand ; prépare les templates par épreuve. | NT-001, NT-101 optionnel | app |
 | 3 | NT-005 (FAIT), NT-110 | Photo cible exploitable : mémoire visuelle puis contexte fiable pour le coach. | NT-001, NT-100 | app |
@@ -91,23 +94,26 @@ couplé à un autre lot. L'interface ne révèle aucun secret et n'offre aucun c
 de mutation ; les éventuelles corrections OAuth découvertes sont arbitrées et
 planifiées séparément.
 
-### Sprint 1 — Socle TAR & saisie rapide
+### Sprint 1 — Socle sessions, TAR & saisie rapide
 
-**Objectif livrable** : l'utilisateur peut créer des sessions typées discipline
-TAR, avec calibres normalisés et création rapide depuis un setup favori.
+**Objectif livrable** : l'utilisateur peut consigner une session libre ou créer
+des sessions typées discipline TAR, avec calibres normalisés et création rapide
+depuis un setup favori.
 
 | Ordre | Item | Feature | App | Serveur |
 |---|---|---|---|---|
-| 0 | Design UX | Parcours classique, TAR, dernier réglage/favori et consultation TAR | wireframes/prototype validés avant code | — |
-| 1 | NT-100 | Référentiel TAR 25 m versionné | seed YAML, services de lecture | — |
-| 2 | NT-101 | Sessions et séries typées discipline | migrations Hive, formulaires, scoring essai/précision/vitesse/gongs | — |
-| 3 | NT-073 | Normalisation calibres + dernier calibre | référentiel calibres, pré-remplissage | — |
-| 4 | NT-130 | Templates de session | dernier setup, favoris, création en 2 taps | — |
+| 0 | Design UX | Parcours détaillé, libre, TAR, dernier réglage/favori et consultation des différents types | wireframes/prototype validés avant code | — |
+| 1 | NT-133 | Sessions libres sans séries ni scores | modèle polymorphe, migration, formulaire court, double action flottante, cartes/stats/sauvegardes adaptés | — |
+| 2 | NT-100 | Référentiel TAR 25 m versionné | seed YAML, services de lecture | — |
+| 3 | NT-101 | Sessions et séries typées discipline | migrations Hive, formulaires, scoring essai/précision/vitesse/gongs | — |
+| 4 | NT-073 | Normalisation calibres + dernier calibre | référentiel calibres, pré-remplissage | — |
+| 5 | NT-130 | Templates de session | dernier setup, favoris, création en 2 taps | — |
 
 **Version stable attendue** : aucun écran coach nouveau ; focus carnet. Les
 sessions existantes restent lisibles après migration. Le parcours classique
-n'ajoute aucune étape ; les informations TAR sont explicites en saisie comme en
-consultation. Le développement ne commence qu'après validation de l'ordre 0.
+n'ajoute aucune étape ; le bouton de session libre n'apparaît pas dans l'onglet
+Prévues ; les informations TAR sont explicites en saisie comme en consultation.
+Le développement ne commence qu'après validation de l'ordre 0.
 
 ### Sprint 2 — Restitution TAR & photo cible
 
@@ -211,7 +217,6 @@ réversible par suppression des entités créées.
 
 | Déclencheur | Items | Recommandation |
 |---|---|---|
-| Avant le prochain déploiement fonctionnel en production | NT-071 | Migrer SQLite vers Neon Postgres + Alembic ; valider la persistance après veille, redémarrage et redéploiement. |
 | Dette UI ou baisse de maintenabilité | NT-057, NT-076 | Planifier un sprint court de nettoyage/performance sans nouvelle feature métier. |
 | Besoin login social autre que Google | NT-044 | Valider le flow Facebook contre une vraie app Facebook puis câbler le bouton app. |
 | Besoin classement officiel fédéral | NT-103 | Sourcer les grilles RGS FFTir avant estimation définitive. |

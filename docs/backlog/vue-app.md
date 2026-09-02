@@ -7,7 +7,7 @@
 > uniquement dans cette vue (règle de sync : [README.md](README.md)).
 
 **Repo** : NexTarget-app (Flutter/Dart, Hive, SonarCloud, dart_code_metrics)
-**Dernière projection** : 2026-09-02 (NT-008, NT-009, NT-017 et NT-058 livrés)
+**Dernière projection** : 2026-09-02 (NT-133 ajouté ; NT-008, NT-009, NT-017 et NT-058 livrés en v0.6.0)
 
 ## Items app
 
@@ -20,8 +20,8 @@
 | NT-005 | Attacher une photo de la cible | app | Must | M | FAIT | livré par la PR #12 le 2026-07-17 |
 | NT-006 | Analyse d'image de la cible | both | Won't-now | L | À FAIRE | capture côté app, analyse côté serveur |
 | NT-007 | Filtrer l'historique des sessions par exercice | app | Could | S | FAIT | livré par la PR #12 le 2026-07-17 |
-| NT-008 | Gérer son râtelier d'armes | app | Must | M | FAIT | CRUD textuel dans Paramètres ; renommage propagé atomiquement aux sessions correspondantes ; export/import rétrocompatible |
-| NT-009 | Autocompléter l'arme d'une session depuis le râtelier | app | Must | M | FAIT | saisie libre prioritaire ; création/édition, prévue/réalisée et wizard |
+| NT-008 | Gérer son râtelier d'armes | app | Must | M | FAIT | livré en v0.6.0 ; CRUD textuel dans Paramètres ; renommage propagé atomiquement aux sessions correspondantes ; export/import rétrocompatible |
+| NT-009 | Autocompléter l'arme d'une session depuis le râtelier | app | Must | M | FAIT | livré en v0.6.0 ; saisie libre prioritaire ; création/édition, prévue/réalisée et wizard |
 | NT-010 | Tableau de bord statistiques | app | Must | M | FAIT | `dashboard_service`, `widgets/dashboard` |
 | NT-011 | Statistiques explicatives / évolution | app | Should | M | FAIT | `stats_service`, `evolution_chart` |
 | NT-012 | Objectifs mesurables | app | Must | M | FAIT | `Goal`, `goal_service` |
@@ -29,7 +29,7 @@
 | NT-014 | Comparatif 30j vs 60j + sparkline | app | Could | M | À FAIRE | — |
 | NT-015 | Recommandations Objectifs ⇄ Exercices | app | Could | M | À FAIRE | dépend NT-012, NT-021 |
 | NT-016 | Objectifs enrichis : statuts étendus, journal, vue détail | app | Could | M | À FAIRE | issue #5 |
-| NT-017 | Compteur de tirs par arme du râtelier | app | Should | S | FAIT | compteurs simples en bas de Statistiques > Avancé ; sessions réalisées uniquement |
+| NT-017 | Compteur de tirs par arme du râtelier | app | Should | S | FAIT | livré en v0.6.0 ; compteurs simples en bas de Statistiques > Avancé ; étendu par NT-133 aux tirs des sessions libres réalisées |
 | NT-020 | Gérer des exercices (CRUD) | app | Must | M | FAIT | `Exercise`, écrans list/form |
 | NT-021 | Lier exercices ↔ objectifs | app | Should | S | FAIT | `Exercise.goalIds` |
 | NT-022 | Lier exercices ↔ sessions | app | Should | S | FAIT | `ShootingSession.exercises` |
@@ -78,10 +78,11 @@
 | NT-130 | Templates de session | app | Must | S | À FAIRE | prototype abandonné : ne pas ajouter d'étape au parcours classique |
 | NT-131 | Session live au stand | app | Should | M | À FAIRE | saisie au fil du tir + chrono repos |
 | NT-132 | Spike — saisie vocale d'une série | app | Could | S | À FAIRE | go/no-go en environnement stand |
+| NT-133 | Sessions libres sans séries ni scores | app | Must | L | À FAIRE | `SimpleShootingSession` ; action flottante secondaire visible ; aucune session libre planifiée ; cartes, stats et sauvegardes polymorphes |
 
 ## Prochaines actions app (hors FAIT), par priorité
 
-- **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session).
+- **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session), NT-133 (sessions libres).
 - **Should** — NT-042 (édition profil à confirmer), NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-131. NT-033 : voir NT-120/NT-121.
 - **Could** — NT-014, NT-015, NT-016, NT-024, NT-025, NT-026, NT-044, NT-056, NT-057, NT-073, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132. NT-023 : voir NT-122/NT-123.
 - **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.

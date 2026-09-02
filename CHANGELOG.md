@@ -13,6 +13,7 @@ Toutes les modifications notables de ce projet seront listées ici.
     - `utils/weapon_autocomplete.dart` centralise la normalisation et l'autocomplétion, réutilisées par `WeaponAutocompleteField` dans le formulaire de session (`SessionForm`) et le wizard de conversion (`WizardIntroStep`) : la saisie libre reste toujours prioritaire.
     - Export JSON inclut le râtelier ; import rétrocompatible avec les anciens fichiers sans râtelier, fusionné sans effacer le râtelier local (`BackupService`).
     - `DashboardService.generateWeaponShotCounts` + `WeaponShotCountsCard` : compteur de tirs par arme du râtelier en toute dernière section de `Statistiques > Avancé`, calculé depuis les seules sessions réalisées (essais compris), sans graphe.
+- NT-071 : migration de la production de SQLite éphémère vers PostgreSQL Neon avec Alembic, livrée dans la release produit v0.6.0 via NexTarget-server v0.3.0 ; connexions et rôles runtime/migration séparés, migrations avant démarrage et procédures de sauvegarde/restauration/rollback documentées, sans changement du contrat d'API mobile.
 
 ### Quality
 - NT-058 : fakes de repository partagés pour les tests (`test/support/`).

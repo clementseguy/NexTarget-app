@@ -24,9 +24,14 @@
 > autocomplétion de l'arme des sessions et compteur de tirs par arme
 > (NT-008, NT-009, NT-017). Statuts code inchangés.
 >
-> Livraison du **2026-09-02** : NT-008, NT-009 et NT-017 passent à FAIT
-> (`WeaponService`, `WeaponRackSection`, `WeaponAutocompleteField`,
-> `DashboardService.generateWeaponShotCounts`).
+> Livraison produit **v0.6.0** du **2026-09-02** : NT-008, NT-009, NT-017 et
+> NT-071 passent à FAIT (`WeaponService`, `WeaponRackSection`,
+> `WeaponAutocompleteField`, `DashboardService.generateWeaponShotCounts`,
+> PostgreSQL Neon + Alembic). Le composant serveur correspondant est versionné
+> v0.3.0.
+>
+> Enrichissement fonctionnel du **2026-09-02** : sessions libres sans séries,
+> score ni groupement (NT-133). Statuts code inchangés.
 
 ## Légende des statuts
 
@@ -53,7 +58,7 @@
 | 10. Disciplines officielles & TAR | NT-100 → NT-104 |
 | 11. Analyse de cible (photo) | NT-110 → NT-111 |
 | 12. Coach : progression & génération | NT-120 → NT-126 |
-| 13. Saisie au stand | NT-130 → NT-132 |
+| 13. Saisie au stand | NT-130 → NT-133 |
 
 ---
 
@@ -125,14 +130,14 @@
 - **Thème** : Carnet de tir · **Portée** : app · **Dépendances** : —
 - **Description** : Dans `Paramètres > Préférences Tir`, le tireur gère rapidement son râtelier personnel afin de réutiliser les noms de ses armes sans ressaisie. Une arme reste volontairement un simple nom textuel : aucune gestion de marque, modèle, calibre, photo ou autre métadonnée.
 - **Critères d'acceptation** : ajout rapide, renommage et suppression depuis une interface mobile simple et immédiatement compréhensible ; nom obligatoire après suppression des espaces en début et fin ; unicité contrôlée sans tenir compte de la casse ni des espaces en début et fin ; persistance locale et fonctionnement hors-ligne ; confirmation explicite avant suppression ; supprimer une arme ne modifie ni ne supprime aucune session existante ; renommer une arme demande confirmation puis remplace aussi son nom dans toutes les sessions prévues et réalisées dont le champ `weapon` correspond exactement à l'ancien nom après normalisation (espaces en début/fin ignorés, casse ignorée), sans modifier les saisies seulement proches ; le renommage du râtelier et des sessions est atomique du point de vue utilisateur (aucun état partiellement mis à jour en cas d'échec) ; l'export JSON inclut le râtelier ; l'import accepte les anciens exports dépourvus de râtelier sans erreur et sans effacer le râtelier local existant ; les armes importées respectent les mêmes règles de validation et de déduplication normalisée.
-- **Priorité** : Must · **Estimation** : M · **Statut** : FAIT — `Weapon`, `HiveWeaponRepository` (box `weapons`), `WeaponService` (CRUD, renommage propagé avec rollback), `WeaponRackSection` (`Paramètres > Préférences Tir`), export/import JSON (`BackupService`), `migration_5_create_weapons_box`.
+- **Priorité** : Must · **Estimation** : M · **Statut** : FAIT — livré en v0.6.0 ; `Weapon`, `HiveWeaponRepository` (box `weapons`), `WeaponService` (CRUD, renommage propagé avec rollback), `WeaponRackSection` (`Paramètres > Préférences Tir`), export/import JSON (`BackupService`), `migration_5_create_weapons_box`.
 - **Notes** : conserver un modèle textuel simple, sans identifiant d'arme ni relation persistée session → arme. Le renommage propagé est le compromis retenu pour préserver les statistiques historiques sans complexifier le modèle de données. Tests de persistance, validation/déduplication, rollback du renommage et rétrocompatibilité import/export couverts.
 
 ### NT-009 — Autocompléter l'arme d'une session depuis le râtelier
 - **Thème** : Carnet de tir · **Portée** : app · **Dépendances** : NT-001, NT-008
 - **Description** : Lorsqu'il crée ou modifie une session, le tireur retrouve rapidement une arme de son râtelier grâce à l'autocomplétion, tout en conservant la liberté de saisir n'importe quel nom.
 - **Critères d'acceptation** : le champ `weapon` de `ShootingSession` reste textuel et accepte toujours une saisie libre ; pendant la frappe, les noms correspondants du râtelier sont proposés sans tenir compte de la casse ; sélectionner une proposition remplit le champ avec son nom complet ; aucune proposition ni complétion automatique ne doit écraser ou bloquer la saisie de l'utilisateur — s'il continue à taper une autre valeur, son texte est prioritaire ; comportement disponible pour la création et la modification des sessions prévues comme réalisées, y compris dans le wizard de session ; une valeur saisie librement qui correspond exactement à une arme après normalisation est traitée comme cette arme pour les usages dépendants, sans imposer sa sélection dans la liste ; UX utilisable au clavier et au toucher, sans ajouter d'étape au parcours standard.
-- **Priorité** : Must · **Estimation** : M · **Statut** : FAIT — `utils/weapon_autocomplete.dart` (normalisation + suggestions partagées), `WeaponAutocompleteField` réutilisé dans `SessionForm` et le wizard (`WizardIntroStep`).
+- **Priorité** : Must · **Estimation** : M · **Statut** : FAIT — livré en v0.6.0 ; `utils/weapon_autocomplete.dart` (normalisation + suggestions partagées), `WeaponAutocompleteField` réutilisé dans `SessionForm` et le wizard (`WizardIntroStep`).
 - **Notes** : logique commune d'autocomplétion centralisée dans `utils/weapon_autocomplete.dart`, réutilisée par tous les parcours de session pour éviter des comportements divergents. Exemple attendu : saisir `CZ` peut proposer `CZ 75 SP-01 Shadow` ; poursuivre avec `CZ 09` conserve `CZ 09`.
 
 ---
@@ -197,8 +202,8 @@
 ### NT-017 — Compteur de tirs par arme du râtelier
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-002, NT-008, NT-009
 - **Description** : Le tireur visualise le volume total de tirs réalisé avec chacune des armes actuellement présentes dans son râtelier.
-- **Critères d'acceptation** : dans `Statistiques > Avancé`, une section placée en toute dernière position affiche un simple compteur par arme du râtelier, sans graphe ; toutes les armes du râtelier sont affichées, y compris avec un compteur à zéro ; pour chaque arme, le total est la somme des `shotCount` de toutes les séries des seules sessions au statut `réalisée` dont le champ `weapon` correspond exactement au nom de l'arme après normalisation (espaces en début/fin ignorés, casse ignorée) ; les sessions prévues sont exclues ; tous les tirs des séries correspondantes sont comptés, essais compris, indépendamment des points ou scores ; le compteur est recalculé après ajout, modification ou suppression d'une session et après ajout, renommage ou suppression d'une arme ; supprimer une arme retire son compteur sans altérer les sessions.
-- **Priorité** : Should · **Estimation** : S · **Statut** : FAIT — `DashboardService.generateWeaponShotCounts`, `WeaponShotCountsCard` (dernière section de `Statistiques > Avancé`).
+- **Critères d'acceptation** : dans `Statistiques > Avancé`, une section placée en toute dernière position affiche un simple compteur par arme du râtelier, sans graphe ; toutes les armes du râtelier sont affichées, y compris avec un compteur à zéro ; pour chaque arme, le total est la somme des `shotCount` de toutes les séries des sessions détaillées réalisées dont le champ `weapon` correspond exactement au nom de l'arme après normalisation (espaces en début/fin ignorés, casse ignorée) ; les sessions prévues sont exclues ; tous les tirs des séries correspondantes sont comptés, essais compris, indépendamment des points ou scores ; le compteur est recalculé après ajout, modification ou suppression d'une session et après ajout, renommage ou suppression d'une arme ; supprimer une arme retire son compteur sans altérer les sessions. Lorsque NT-133 est livré, ce total inclut également le `shotCount` porté directement par chaque session libre de la même arme.
+- **Priorité** : Should · **Estimation** : S · **Statut** : FAIT — livré en v0.6.0 ; `DashboardService.generateWeaponShotCounts`, `WeaponShotCountsCard` (dernière section de `Statistiques > Avancé`).
 - **Notes** : calcul local à partir des sessions, sans graphe ni relation persistée session → arme. Exemple : deux sessions réalisées de 10 séries de 5 coups associées à `CZ 75 SP-01 Shadow` affichent `100 tirs`.
 
 ---
@@ -516,7 +521,7 @@
 | ID | Titre | Portée | Prio | Est | Statut |
 |---|---|---|---|---|---|
 | NT-070 | Déploiement serveur (Render) | server | Must | S | FAIT |
-| NT-071 | Migration SQLite → Postgres Neon + Alembic | server | Must | M | À FAIRE |
+| NT-071 | Migration SQLite → Postgres Neon + Alembic | server | Must | M | FAIT |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT |
 | NT-073 | Normalisation calibres + dernier calibre utilisé | app | Could | S | À FAIRE |
 | NT-074 | Saisie séries plein écran + navigation rapide | app | Could | M | À FAIRE |
@@ -544,8 +549,8 @@
   - une procédure de sauvegarde manuelle `pg_dump` via la connexion directe, de restauration et de rollback est documentée et testée avant la bascule ;
   - la documentation de déploiement, `.env.example` et `render.yaml` décrivent les deux URLs, leur usage, la gestion manuelle des secrets et la surveillance des quotas Neon Free ;
   - aucun workflow JavaScript Neon (`neon.ts`, `neon deploy`, MCP ou skills Neon) n'est introduit : le backend reste géré par Python, SQLModel et Alembic.
-- **Priorité** : Must (Should → Must, décision 2026-09-02 après constat de perte des utilisateurs en production) · **Estimation** : M · **Statut** : À FAIRE.
-- **Notes** : décision et diagnostic suivis dans l'issue serveur [#9](https://github.com/clementseguy/NexTarget-server/issues/9). Cette migration corrige la persistance relationnelle ; elle ne rend pas multi-instance les composants encore en mémoire (rate limiting NT-062 et state OAuth NT-063). La création d'un environnement Neon de staging et l'automatisation périodique des sauvegardes feront l'objet de tâches ultérieures si nécessaires.
+- **Priorité** : Must (Should → Must, décision 2026-09-02 après constat de perte des utilisateurs en production) · **Estimation** : M · **Statut** : FAIT — livré dans la release produit v0.6.0 (composant NexTarget-server v0.3.0) ; PostgreSQL Neon, Alembic, migrations avant démarrage, rôles runtime/propriétaire séparés et procédures de sauvegarde/rollback documentés.
+- **Notes** : décision et diagnostic suivis dans l'issue serveur [#9](https://github.com/clementseguy/NexTarget-server/issues/9). Cette migration corrige la persistance relationnelle ; elle ne rend pas multi-instance les composants encore en mémoire (rate limiting NT-062 et state OAuth NT-063). La création d'un environnement Neon de staging et l'automatisation périodique des sauvegardes feront l'objet de tâches ultérieures si nécessaires. Preuves de livraison : `NexTarget-server` (`alembic/`, `scripts/run_migrations.py`, `app/services/database.py`, `docs/tech/postgres_neon_migration.md`, tests de migration).
 
 ### NT-072 — Framework de migrations Hive
 - **Portée** : app · **Dépendances** : — · **Description** : Runner générique de migrations de schéma local (ancien P5).
@@ -726,6 +731,7 @@
 | NT-130 | Templates de session | app | 4 | Must | S | À FAIRE |
 | NT-131 | Session live au stand | app | 4 | Should | M | À FAIRE |
 | NT-132 | Spike — saisie vocale d'une série | app | 2 | Could | S | À FAIRE |
+| NT-133 | Sessions libres sans séries ni scores | app | 4 | Must | L | À FAIRE |
 
 ### NT-130 — Templates de session
 - **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : NT-001, NT-073
@@ -745,6 +751,18 @@
 - **Description** : Vérifier la faisabilité de la saisie vocale en environnement stand (détonations, casque de protection) avant tout investissement.
 - **Critères d'acceptation** : prototype + test en conditions réelles ; go/no-go documenté.
 - **Priorité** : Could · **VM** : 2 · **Statut** : À FAIRE. · **Notes** : spike timeboxé ; aucune implémentation produit sans go.
+
+### NT-133 — Sessions libres sans séries ni scores
+- **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : NT-001, NT-003, NT-007, NT-022
+- **Description** : Permettre au tireur de consigner rapidement un entraînement réalisé sans saisir de séries, de scores ni de groupements : une date, une arme, un nombre total de tirs, une distance et des commentaires suffisent. Dans l'interface, ce type est nommé **« Session libre »**.
+- **Modèle métier et persistance** : `ShootingSession` devient le type racine abstrait commun ; les sessions actuelles sont représentées par `DetailedShootingSession` et le nouveau type par `SimpleShootingSession`, tous deux héritant de `ShootingSession`. `SimpleShootingSession` porte une date, une arme, un `shotCount`, une distance, des commentaires et les IDs des exercices associés ; il ne porte ni séries, ni score, ni groupement. Une session libre est toujours réalisée et appartient implicitement à la catégorie entraînement : sa planification et le choix d'une autre catégorie sont hors périmètre. Le nombre de tirs est un entier strictement positif, la distance est strictement positive et les commentaires sont facultatifs.
+- **Création et aide contextuelle** : dans l'écran Sessions, conserver le bouton flottant `+` actuel et son comportement direct pour créer une session détaillée réalisée ou prévue selon l'onglet actif ; ajouter à proximité une action flottante secondaire dédiée à la session libre, visible uniquement dans l'onglet des sessions réalisées. Les deux actions reprennent la même forme et la même structure, mais restent immédiatement distinguables par une couleur compatible avec le thème, une icône et une sémantique accessibles. Un label explicite peut être affiché lorsque l'espace disponible le permet et qu'il ne surcharge pas l'interface ; à défaut, tooltip et libellé d'accessibilité restent obligatoires. Aucun menu intermédiaire ni appui long n'est requis. L'aide contextuelle `?` de l'écran Sessions explique les deux actions et la différence entre session détaillée et session libre.
+- **Consultation et cartes** : création, consultation, modification et suppression d'une session libre sont possibles. Dans l'historique et les autres listes de sessions, le type est identifiable sans dépendre uniquement de la couleur : badge/libellé **« Libre »**, icône et accent visuel issus du `ColorScheme` du thème. Une carte de session libre affiche au minimum la date, l'arme, le nombre de tirs, la distance et, le cas échéant, le nombre d'exercices associés ; elle n'affiche ni score, ni groupement, ni extrait des commentaires. Les commentaires restent consultables dans le détail. Les cartes détaillées conservent leurs métriques propres et reçoivent une identification de type cohérente si nécessaire pour lever toute ambiguïté. Les deux thèmes de l'application garantissent contraste et lisibilité.
+- **Statistiques, filtres et exercices** : le nombre de sessions et les indicateurs d'assiduité incluent les deux sous-types réalisés ; les statistiques de score, de groupement et toute métrique fondée sur les séries ignorent les sessions libres ; les métriques de volume additionnent le `shotCount` direct des sessions libres et les `shotCount` des séries des sessions détaillées. Les filtres applicables aux sessions, notamment par exercice, fonctionnent avec les deux sous-types. Une session libre accepte zéro, un ou plusieurs exercices associés selon la mécanique existante.
+- **Import, export et rétrocompatibilité** : le format JSON exporté contient un discriminant stable `sessionType` valant `detailed` ou `simple`. Les anciennes données Hive et les anciens exports dépourvus de discriminant sont relus comme des sessions détaillées sans perte de données. L'import et l'export acceptent les sauvegardes contenant uniquement des sessions historiques ou un mélange des deux types ; un cycle export puis import conserve le sous-type et tous les champs de chaque session. L'évolution du format reste additive ; un discriminant inconnu produit une erreur explicite sans import partiel ni altération des données locales.
+- **Critères de qualité** : migration de schéma et test de migration ; tests de sérialisation des deux sous-types et des données historiques sans discriminant ; tests des validations `shotCount`/distance ; tests des agrégats et de l'exclusion des métriques de séries ; widget tests des deux actions flottantes, de l'onglet Prévues, des cartes dans les deux thèmes et de l'aide contextuelle ; cahier de recette mis à jour.
+- **Priorité** : Must · **VM** : 4 · **Estimation** : L · **Statut** : À FAIRE.
+- **Notes** : `SimpleShootingSession` est le nom technique retenu ; « Session libre » est exclusivement le label utilisateur. Préserver le parcours actuel du `+` est non négociable, conformément au [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md). NT-017 doit compter les tirs des deux sous-types après livraison de NT-133.
 
 ---
 
@@ -778,7 +796,8 @@
 
 > **Révision 2026-07-13** : les thèmes 10–13 ne sont pas encore ventilés en
 > sprints. Ordre recommandé après S4 (qui contient déjà NT-005, remonté Must) :
-> **NT-130** (quick win), puis **NT-100/NT-101** (socle disciplines), puis
+> **NT-133** (socle polymorphe et session libre), **NT-130** (quick win), puis
+> **NT-100/NT-101** (socle disciplines), puis
 > **NT-120/NT-122** (socles coach) qui débloquent NT-121/NT-123/NT-124 en
 > parallèle. En S6, NT-033 et NT-023 sont remplacés par leurs déclinaisons
 > NT-120→NT-124 ; NT-110/NT-111 s'insèrent après NT-005 + NT-100.
@@ -951,6 +970,6 @@ de planification.*
 
 | Sujet | Décision |
 |---|---|
-| NT-071 (Postgres) | **Should → Must** — migrer la production de SQLite éphémère vers Neon Postgres Free (`nextarget-prod`, Frankfurt) avec Alembic ; bascule sur une base vide et reconnexion des utilisateurs. Voir l'issue serveur [#9](https://github.com/clementseguy/NexTarget-server/issues/9). |
+| NT-071 (Postgres) | **Should → Must, puis FAIT** — migration livrée dans la release produit v0.6.0 (NexTarget-server v0.3.0) : Neon Postgres Free (`nextarget-prod`, Frankfurt), Alembic, bascule sur une base vide et reconnexion des utilisateurs. Voir l'issue serveur [#9](https://github.com/clementseguy/NexTarget-server/issues/9). |
 | Estimation | Ajout d'une **Valeur métier (VM 1–5)** sur les thèmes 10+, en complément de MoSCoW + S/M/L (dev solo + agentic : le facteur limitant est la valeur/le risque, pas l'effort). |
 | NT-033 / NT-023 | Précisés et décomposés par les items du **thème 12** (NT-120→NT-126), qui font référence. |

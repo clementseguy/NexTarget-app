@@ -10,8 +10,8 @@
 > `NexTarget-app`. Le repo `NexTarget-server` pointe vers lui sans en maintenir
 > de copie ; aucune synchronisation inverse n'est attendue (voir gouvernance).
 
-**Repo** : NexTarget-server (FastAPI + SQLModel + SQLite, OAuth + proxy IA)
-**Dernière projection** : 2026-09-02 (spécification Neon/Alembic de NT-071)
+**Repo** : NexTarget-server (FastAPI + SQLModel + PostgreSQL en production, SQLite en développement/tests, OAuth + proxy IA)
+**Dernière projection** : 2026-09-02 (NT-071 livré dans la release produit v0.6.0 ; composant serveur v0.3.0)
 
 > Important : **le serveur n'est plus « OAuth-only ».** Il expose aussi le **proxy Coach IA**
 > (`/coach/analyze-session`). Les anciens statuts « M1/M2 supprimés/décalés » sont
@@ -53,12 +53,12 @@
 | NT-065 | Restreindre CORS par environnement | server | Should | S | FAIT | `CORS_ALLOW_ORIGINS` ; `*` en dev, aucune origine sinon |
 | NT-066 | Vérification du nonce Google | server | Should | S | FAIT | nonce OIDC vérifié au callback (400 sinon) |
 | NT-070 | Déploiement serveur (Render) | server | Must | S | FAIT | `render.yaml`, `docs/tech/render_setup.md` |
-| NT-071 | Migration SQLite → Postgres Neon + Alembic | server | Must | M | À FAIRE | Render Free + Neon Free Frankfurt ; base vide, URLs runtime/migration séparées, issue serveur #9 |
+| NT-071 | Migration SQLite → Postgres Neon + Alembic | server | Must | M | FAIT | livré avec v0.6.0 (serveur v0.3.0) ; Neon Frankfurt, Alembic, URLs et rôles runtime/migration séparés |
 | NT-006 | Analyse d'image de la cible | both | Won't-now | L | À FAIRE | vraisemblablement côté serveur |
 
 ## Prochaines actions serveur (hors FAIT), par priorité
 
-- **Must** — NT-071 (persistance PostgreSQL Neon + Alembic), NT-122 (sortie coach structurée).
+- **Must** — NT-122 (sortie coach structurée).
 - **Should** — NT-033 (voir NT-120/NT-121), NT-111, NT-121, NT-123, NT-124.
 - **Could** — NT-034, NT-044, NT-125, NT-126.
 - **Won't-now** — NT-045, NT-046, NT-047, NT-006.
