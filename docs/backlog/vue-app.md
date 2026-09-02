@@ -7,7 +7,7 @@
 > uniquement dans cette vue (règle de sync : [README.md](README.md)).
 
 **Repo** : NexTarget-app (Flutter/Dart, Hive, SonarCloud, dart_code_metrics)
-**Dernière projection** : 2026-09-02 (cadrage détaillé NT-014, NT-048, NT-073 et NT-133 ; clôture NT-061 clarifiée)
+**Dernière projection** : 2026-09-02 (cadrage détaillé NT-014, NT-073 et NT-133 ; clôture NT-061 clarifiée ; NT-048 passé FAIT après adoption app des refresh tokens)
 
 ## Items app
 
@@ -47,7 +47,7 @@
 | NT-045 | Stats publiques / partage de profil | both | Won't-now | M | À FAIRE | — |
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE | — |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE | — |
-| NT-048 | Refresh tokens + rotation | both | Should | M | EN COURS | serveur livré ; stockage sécurisé, renouvellement proactif, single-flight, retry unique et résilience hors ligne à câbler dans l'app |
+| NT-048 | Refresh tokens + rotation | both | Should | M | FAIT | `AuthService`/`AuthenticatedHttpClient` : stockage atomique, renouvellement proactif, single-flight, retry unique, résilience hors ligne, logout best effort ; Coach et profil unifiés |
 | NT-050 | SonarCloud + Quality Gate | app | Must | M | FAIT | `sonar-project.properties`, CI |
 | NT-051 | Analyse statique & lint (durcir) | app | Should | S | FAIT | `flutter_lints` actif, zéro issue, step CI `analyze --fatal-infos` |
 | NT-052 | Cahier de recette généré | app | Should | S | FAIT | `scripts/generate_cahier_recette.dart` |
@@ -83,8 +83,8 @@
 
 ## Prochaines actions app (hors FAIT), par priorité
 
-- **En cours** — NT-014, NT-048, NT-073.
+- **En cours** — NT-014, NT-073.
 - **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session), NT-133 (sessions libres).
-- **Should** — NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-131. NT-033 : voir NT-120/NT-121. NT-048 conserve cette priorité mais est déjà en cours.
+- **Should** — NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-131. NT-033 : voir NT-120/NT-121.
 - **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132. NT-023 : voir NT-122/NT-123. NT-014 et NT-073 conservent cette priorité mais sont déjà en cours.
 - **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.

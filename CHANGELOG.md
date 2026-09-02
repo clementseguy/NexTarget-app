@@ -4,9 +4,18 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Non publié]
 
+### Added
+- NT-048 : adoption app des refresh tokens (rotation) — le serveur était déjà livré.
+    - `AuthService` stocke access token, refresh token et expirations dans `flutter_secure_storage` sous une clé unique (remplacement atomique de la paire à chaque rotation) ; migration transparente depuis l'ancien stockage (accès + email seuls) vers une reconnexion Google unique.
+    - Renouvellement proactif de l'access token juste avant expiration, et unique renouvellement + rejeu de la requête après un `401` (`AuthenticatedHttpClient`), sans boucle ; mécanisme single-flight partagé entre appels concurrents pour ne jamais consommer deux fois le même refresh token.
+    - Requêtes rejouées depuis une copie neuve (jamais l'objet `BaseRequest` déjà finalisé), y compris pour un corps initialement streamé.
+    - Profil et Coach IA passent par le même mécanisme authentifié ; un refresh invalide/expiré/révoqué/rejoué termine la session (reconnexion Google requise) alors qu'une panne réseau préserve les tokens et ne déconnecte jamais (carnet, statistiques, objectifs et exercices restent utilisables hors ligne ; le Coach signale clairement son indisponibilité réseau).
+    - Déconnexion : révocation serveur (`/auth/token/revoke`) en best effort puis nettoyage local systématique, y compris hors ligne.
+
 ### Documentation
 - Cadrage détaillé du lot NT-014/NT-048/NT-073/NT-133 et alignement des vues app/serveur et du plan de sprints.
 - NT-061 : clôture documentaire après confirmation de la rotation de la clé Mistral et audit du client ; aucun appel Mistral direct, prompt, secret ou fallback local ne subsiste dans l'app. Les notes des anciennes versions restent conservées comme historique.
+- Cahier de recette : ajout de AUTH-01 à AUTH-04 (persistance longue durée, déconnexion, résilience réseau, migration installation historique) et précision de COACH-03 (message distinct session expirée / réseau indisponible).
 
 ## [0.6.0] - 2026-09-02
 

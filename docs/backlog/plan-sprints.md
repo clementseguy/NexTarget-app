@@ -103,7 +103,7 @@ deux incréments afin d'isoler la migration de sessions.
 | 1 | NT-061 (FAIT) | Clôture Coach connecté uniquement | aligner les documents actifs, confirmer l'absence de clé, prompt, appel direct ou fallback client | conserver le proxy Mistral légitime ; aucune réécriture historique |
 | 2 | NT-073 (EN COURS) | Calibre par défaut + normalisation statistique | préférence facultative, autocomplétion libre centralisée, alias 9 mm, exclusion des inconnus des seules stats par calibre | — |
 | 3 | NT-014 (EN COURS) | Comparatif 30 j vs 90 j | score et groupement indépendants, deltas absolus/relatifs, présentation mobile, sparklines à partir de cinq sessions | — |
-| 4 | NT-048 (EN COURS) | Sessions connectées durables | stockage sécurisé, refresh proactif, single-flight, retry unique, logout avec révocation best effort, mode hors ligne préservé | vérifier le contrat existant et ne le modifier que si un écart aux critères est démontré |
+| 4 | NT-048 (FAIT) | Sessions connectées durables | stockage sécurisé, refresh proactif, single-flight, retry unique, logout avec révocation best effort, mode hors ligne préservé | contrat existant réutilisé sans modification |
 
 **Version stable attendue** : les indicateurs 30/90 sont compréhensibles sur
 mobile dans les deux thèmes ; la saisie des calibres reste libre et cohérente ;

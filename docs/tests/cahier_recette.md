@@ -174,6 +174,52 @@ Objectif: Afficher le bloc de règles FFTir et vérifier sa lisibilité.
 Résultats attendus:
 - Le contenu est à jour et lisible (révision FFTir 2024)
 
+## AUTH-01 — Connexion Google – persistance longue durée (refresh token, NT-048)
+Objectif: Vérifier que la connexion reste active sans reconnexion manuelle après expiration de l'access token courant.
+Pré-requis:
+- Compte Google configuré
+Étapes:
+1. Se connecter avec Google depuis Paramètres
+2. Utiliser l'app normalement (profil, Coach) pendant une durée dépassant la validité de l'access token courant
+Résultats attendus:
+- Aucune demande de reconnexion: le renouvellement de l'access token est transparent
+- Le profil et le Coach restent accessibles sans interruption visible
+
+## AUTH-02 — Déconnexion – révocation serveur et nettoyage local (NT-048)
+Objectif: Vérifier qu'une déconnexion efface systématiquement la session locale, même si le serveur est injoignable.
+Pré-requis:
+- Utilisateur connecté
+Étapes:
+1. Depuis le profil, se déconnecter avec une connexion réseau fonctionnelle
+2. Se reconnecter, puis couper le réseau (mode avion) et se déconnecter à nouveau
+Résultats attendus:
+- Dans les deux cas, l'app repasse immédiatement en mode non connecté (bouton "Se connecter" visible)
+- Aucune donnée d'authentification ne subsiste localement après la déconnexion, même hors ligne
+
+## AUTH-03 — Résilience réseau – session connectée préservée hors ligne (NT-048)
+Objectif: Vérifier qu'une coupure réseau ne déconnecte jamais l'utilisateur et ne bloque pas le carnet.
+Pré-requis:
+- Utilisateur connecté
+Étapes:
+1. Couper le réseau (mode avion)
+2. Consulter le carnet de tir, les statistiques, les objectifs et les exercices
+3. Ouvrir une session réalisée et tenter de lancer l'analyse Coach
+4. Réactiver le réseau
+Résultats attendus:
+- Le carnet, les statistiques, les objectifs et les exercices restent pleinement utilisables hors ligne
+- Le Coach indique clairement son indisponibilité réseau (pas un message de session expirée)
+- L'utilisateur reste connecté (pas de retour forcé à l'écran de connexion) ; le Coach redevient utilisable une fois le réseau rétabli
+
+## AUTH-04 — Migration – installation existante sans refresh token (NT-048)
+Objectif: Vérifier qu'une installation connectée avant NT-048 (sans refresh token stocké) demande une unique reconnexion Google.
+Pré-requis:
+- Installation existante avec un access token stocké avant le déploiement de NT-048 (pas de refresh token)
+Étapes:
+1. Ouvrir l'app après la mise à jour et attendre l'expiration de l'ancien access token (ou solliciter le profil/Coach)
+Résultats attendus:
+- L'app demande une reconnexion Google une seule fois (message clair, pas de boucle ni de crash)
+- Après cette reconnexion, la persistance longue durée (AUTH-01) fonctionne normalement
+
 ## COACH-01 — Analyse coach – utilisateur connecté (via serveur)
 Objectif: Vérifier que l'analyse coach passe par NexTarget-server quand l'utilisateur est connecté, sans clé Mistral côté client.
 Pré-requis:
@@ -198,14 +244,15 @@ Résultats attendus:
 - Le reste de l'app (sessions, exercices, objectifs, stats) reste pleinement utilisable hors connexion
 
 ## COACH-03 — Analyse coach – gestion des erreurs (session expirée / serveur indisponible)
-Objectif: Vérifier qu'une erreur d'analyse reste claire et ne bloque pas l'app.
+Objectif: Vérifier qu'une erreur d'analyse reste claire, distingue session expirée et panne réseau, et ne bloque pas l'app.
 Pré-requis:
-- Utilisateur connecté avec un token expiré ou invalide (ou serveur temporairement indisponible)
+- Utilisateur connecté avec un refresh token invalide/expiré/révoqué (ou serveur temporairement indisponible / réseau coupé)
 Étapes:
-1. Lancer l'analyse coach dans ces conditions dégradées
+1. Lancer l'analyse coach avec une session dont la reconnexion échoue (refresh invalide): un message "Session expirée, reconnectez-vous." s'affiche
+2. Lancer l'analyse coach hors ligne (réseau coupé): un message distinct d'indisponibilité réseau s'affiche (pas "session expirée")
 Résultats attendus:
-- Un message d'erreur clair s'affiche ("Session expirée, reconnectez-vous." ou équivalent)
-- Aucun crash, l'app reste utilisable ensuite
+- Les deux messages sont clairement différenciés (session à reconnecter vs réseau indisponible)
+- Aucun crash, l'app reste utilisable ensuite ; hors ligne, l'utilisateur n'est pas déconnecté (cf. AUTH-03)
 
 ## COACH-04 — Coach – sélection du ton (neutre / cool) (NT-032)
 Objectif: Vérifier la sélection de la persona du coach et son effet sur l'analyse.

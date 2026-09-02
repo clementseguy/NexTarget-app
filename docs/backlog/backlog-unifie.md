@@ -34,10 +34,12 @@
 > score ni groupement (NT-133). Statuts code inchangés.
 >
 > Cadrage produit du **2026-09-02** : critères détaillés de NT-014, NT-073,
-> NT-048 et NT-133 validés ; NT-048 devient un item `both / EN COURS` tant que
-> l'app ne consomme pas les refresh tokens déjà livrés par le serveur. L'audit
-> de clôture de NT-061 confirme l'absence de chemin Mistral direct côté client
-> et la rotation de la clé historique.
+> NT-048 et NT-133 validés. NT-048 est passé `both / FAIT` le **2026-09-02**
+> après livraison de l'adoption app des refresh tokens (stockage sécurisé,
+> renouvellement proactif, single-flight, retry unique, résilience hors ligne,
+> logout best effort) sur la même branche que ce cadrage. L'audit de clôture
+> de NT-061 confirme l'absence de chemin Mistral direct côté client et la
+> rotation de la clé historique.
 
 ## Légende des statuts
 
@@ -344,7 +346,7 @@
 | NT-045 | Stats publiques / partage de profil | both | Won't-now | M | À FAIRE |
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE |
-| NT-048 | Refresh tokens + rotation | both | Should | M | EN COURS |
+| NT-048 | Refresh tokens + rotation | both | Should | M | FAIT |
 | NT-049 | Interface d’administration read-only des utilisateurs | server | Should | M | FAIT |
 
 ### NT-040 — Authentification OAuth Google
@@ -408,7 +410,22 @@
   - le logout tente la révocation serveur en best effort, puis efface systématiquement tous les tokens et données d'authentification locales, même si le serveur est indisponible ;
   - tous les appels authentifiés, notamment Coach et profil, utilisent le même mécanisme ; les erreurs temporaires restent distinguées d'une session réellement expirée ;
   - les tests couvrent rotation, renouvellement proactif, retry unique, concurrence, rejeu, expiration, indisponibilité réseau, logout et migration depuis le stockage historique sans refresh token.
-- **Priorité** : Should · **Statut** : EN COURS — le serveur est livré et testé (`/auth/token/refresh`, `/auth/token/revoke`, rotation et détection de rejeu) ; l'adoption côté app et la résilience hors ligne restent à implémenter.
+- **Priorité** : Should · **Estimation** : M · **Statut** : FAIT.
+- **Notes** : côté serveur, livré et testé (`/auth/token/exchange`, `/auth/token/refresh`,
+  `/auth/token/revoke`, rotation, détection de rejeu, révocation de famille) ;
+  aucune modification serveur n'a été nécessaire lors de l'adoption app (contrat
+  vérifié conforme). Côté app (2026-09-02, branche
+  `feat/NT-048-refresh-tokens-rotation`) : `AuthService` stocke la paire
+  access/refresh + expirations dans `flutter_secure_storage` sous une clé unique
+  (remplacement atomique) ; `AuthenticatedHttpClient` assure le renouvellement
+  proactif, le single-flight, le retry unique après `401` et le rejeu sûr des
+  requêtes (jamais de `BaseRequest` déjà finalisé, y compris pour un corps
+  streamed) ; Coach et profil partagent ce même mécanisme ; les installations
+  historiques sans refresh token déclenchent une reconnexion Google unique ;
+  une panne réseau préserve les tokens sans déconnecter l'utilisateur (carnet,
+  stats, objectifs, exercices utilisables hors ligne). Tests ajoutés :
+  `test/services/auth_service_test.dart`, `auth_service_refresh_test.dart`,
+  `authenticated_http_client_test.dart`.
 
 ### NT-049 — Interface d’administration read-only des utilisateurs
 - **Thème** : Auth & Compte · **Portée** : server · **Dépendances** : NT-040, NT-042
