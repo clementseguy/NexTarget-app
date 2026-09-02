@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../screens/coach_screen.dart';
@@ -164,14 +165,15 @@ class AppNavigator extends StatelessWidget {
             'Un appui long sur une carte permet de la supprimer.',
           ],
         ),
-        IconButton(
-          icon: Icon(Icons.bolt, color: Colors.amber),
-          tooltip: 'Ajouter 3 sessions aléatoires',
-          onPressed: () async {
-            await LocalDatabaseHive().insertRandomSessions(count: 3, status: 'réalisée');
-            _historyKey.currentState?.refreshSessions();
-          },
-        ),
+        if (kDebugMode)
+          IconButton(
+            icon: Icon(Icons.bolt, color: Colors.amber),
+            tooltip: 'Ajouter 3 sessions aléatoires',
+            onPressed: () async {
+              await LocalDatabaseHive().insertRandomSessions(count: 3, status: 'réalisée');
+              _historyKey.currentState?.refreshSessions();
+            },
+          ),
         IconButton(
           icon: Icon(Icons.refresh),
           tooltip: 'Recharger',
