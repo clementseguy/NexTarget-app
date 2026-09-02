@@ -11,7 +11,7 @@
 > de copie ; aucune synchronisation inverse n'est attendue (voir gouvernance).
 
 **Repo** : NexTarget-server (FastAPI + SQLModel + PostgreSQL en production, SQLite en développement/tests, OAuth + proxy IA)
-**Dernière projection** : 2026-09-02 (NT-048 reclassé `both / EN COURS` : serveur livré, adoption app restante ; clôture NT-061 clarifiée)
+**Dernière projection** : 2026-09-02 (NT-048 passé `both / FAIT` : adoption app des refresh tokens livrée, contrat serveur inchangé ; clôture NT-061 clarifiée)
 
 > Important : **le serveur n'est plus « OAuth-only ».** Il expose aussi le **proxy Coach IA**
 > (`/coach/analyze-session`). Les anciens statuts « M1/M2 supprimés/décalés » sont
@@ -40,7 +40,7 @@
 | NT-045 | Stats publiques / partage de profil | both | Won't-now | M | À FAIRE | — |
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE | — |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE | roadmap v0.2 |
-| NT-048 | Refresh tokens + rotation | both | Should | M | EN COURS | côté serveur FAIT : expiration glissante 30 j, `/refresh`, `/revoke`, rotation et détection de rejeu ; adoption app restante |
+| NT-048 | Refresh tokens + rotation | both | Should | M | FAIT | expiration glissante 30 j, `/refresh`, `/revoke`, rotation et détection de rejeu ; contrat vérifié conforme et inchangé lors de l'adoption app |
 | NT-049 | Interface d’administration read-only des utilisateurs | server | Should | M | FAIT | `GET /app/admin/users` : page HTML admin protégée, consultation uniquement ; audit du login Google documenté |
 | NT-053 | Logging structuré + tracing | server | Should | M | FAIT | logs JSON + corrélation X-Request-ID (sans OTel) |
 | NT-054 | Tests OAuth mockés | server | Should | M | FAIT | `test_oauth_flows.py` : flows complets Google/Facebook mockés |
@@ -63,9 +63,8 @@
 - **Could** — NT-034, NT-044, NT-125, NT-126.
 - **Won't-now** — NT-045, NT-046, NT-047, NT-006.
 
-NT-048 est globalement `EN COURS`, mais son côté serveur est terminé. Aucun
-travail serveur supplémentaire n'est planifié sauf écart de contrat démontré
-pendant l'adoption par l'app.
+NT-048 est désormais `FAIT` des deux côtés : le contrat serveur n'a pas eu
+besoin d'évoluer pour l'adoption app (vérifié le 2026-09-02).
 
 ## Note de cohérence documentaire
 

@@ -6,6 +6,7 @@
 import 'dart:async' as _i3;
 
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i4;
 import 'package:tir_sportif/services/auth_service.dart' as _i2;
 
 // ignore_for_file: type=lint
@@ -53,6 +54,36 @@ class MockAuthService extends _i1.Mock implements _i2.AuthService {
       ) as _i3.Future<Map<String, dynamic>>);
 
   @override
+  _i3.Future<String> getValidAccessToken() => (super.noSuchMethod(
+        Invocation.method(
+          #getValidAccessToken,
+          [],
+        ),
+        returnValue: _i3.Future<String>.value(_i4.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getValidAccessToken,
+            [],
+          ),
+        )),
+      ) as _i3.Future<String>);
+
+  @override
+  _i3.Future<String> forceRefreshAfterUnauthorized() => (super.noSuchMethod(
+        Invocation.method(
+          #forceRefreshAfterUnauthorized,
+          [],
+        ),
+        returnValue: _i3.Future<String>.value(_i4.dummyValue<String>(
+          this,
+          Invocation.method(
+            #forceRefreshAfterUnauthorized,
+            [],
+          ),
+        )),
+      ) as _i3.Future<String>);
+
+  @override
   _i3.Future<String?> getToken() => (super.noSuchMethod(
         Invocation.method(
           #getToken,
@@ -69,6 +100,15 @@ class MockAuthService extends _i1.Mock implements _i2.AuthService {
         ),
         returnValue: _i3.Future<String?>.value(),
       ) as _i3.Future<String?>);
+
+  @override
+  _i3.Future<bool> hasToken() => (super.noSuchMethod(
+        Invocation.method(
+          #hasToken,
+          [],
+        ),
+        returnValue: _i3.Future<bool>.value(false),
+      ) as _i3.Future<bool>);
 
   @override
   _i3.Future<bool> isAuthenticated() => (super.noSuchMethod(
@@ -110,13 +150,4 @@ class MockAuthService extends _i1.Mock implements _i2.AuthService {
         returnValue: _i3.Future<void>.value(),
         returnValueForMissingStub: _i3.Future<void>.value(),
       ) as _i3.Future<void>);
-
-  @override
-  _i3.Future<bool> hasToken() => (super.noSuchMethod(
-        Invocation.method(
-          #hasToken,
-          [],
-        ),
-        returnValue: _i3.Future<bool>.value(false),
-      ) as _i3.Future<bool>);
 }
