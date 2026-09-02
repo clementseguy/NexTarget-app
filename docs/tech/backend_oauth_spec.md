@@ -1,5 +1,14 @@
 # Spécifications Backend OAuth pour NexTarget
 
+> **Document historique.** Ce brouillon de spécification (token transmis en
+> fragment d'URL `#access_token=...`, exemples de code Node.js/Flask) décrit une
+> étape de conception antérieure au backend FastAPI réellement livré. Le
+> comportement implémenté (redirection `nextarget://callback?token=...` en
+> query, JWT signé côté serveur) est décrit dans
+> `NexTarget-server/docs/tech/architecture.md`, `NexTarget-server/AGENTS.md` et
+> [`oauth_mobile_callback_issue.md`](oauth_mobile_callback_issue.md). Conservé
+> comme trace de conception ; ne pas suivre pour une implémentation actuelle.
+
 ## ⚠️ Problème actuel
 
 Le backend retourne le JSON directement au lieu de rediriger vers l'app avec le custom URL scheme.
