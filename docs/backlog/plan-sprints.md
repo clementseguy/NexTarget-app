@@ -17,7 +17,9 @@
 
 > **Prototype abandonné le 2026-07-24** : la branche regroupant NT-100,
 > NT-101, NT-073 et NT-130 a été fermée sans fusion après échec de la recette UX.
-> Les quatre items restent **À FAIRE**. Toute reprise part de `dev` et commence
+> NT-100, NT-101 et NT-130 restent **À FAIRE** ; NT-073 a depuis été repris et
+> est **EN COURS**. Toute reprise du périmètre TAR/templates part de `dev` et
+> commence
 > par la validation des parcours du
 > [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md) ; aucun
 > cherry-pick global du prototype `117ca83`.
@@ -106,7 +108,7 @@ depuis un setup favori.
 | 1 | NT-133 | Sessions libres sans séries ni scores | modèle polymorphe, migration, formulaire court, double action flottante, cartes/stats/sauvegardes adaptés | — |
 | 2 | NT-100 | Référentiel TAR 25 m versionné | seed YAML, services de lecture | — |
 | 3 | NT-101 | Sessions et séries typées discipline | migrations Hive, formulaires, scoring essai/précision/vitesse/gongs | — |
-| 4 | NT-073 | Normalisation calibres + dernier calibre | référentiel calibres, pré-remplissage | — |
+| 4 | NT-073 (EN COURS) | Normalisation calibres + dernier calibre | référentiel calibres, pré-remplissage | — |
 | 5 | NT-130 | Templates de session | dernier setup, favoris, création en 2 taps | — |
 
 **Version stable attendue** : aucun écran coach nouveau ; focus carnet. Les
@@ -207,7 +209,7 @@ compléter les raffinements statistiques.
 | Ordre | Item | Feature | App | Serveur |
 |---|---|---|---|---|
 | 1 | NT-126 | Plan d'entraînement | prévisualisation, validation, création sessions/exercices/objectifs | génération plan structurée |
-| 2 | NT-014 | Comparatif 30 j vs 60 j + sparkline | dashboard enrichi | — |
+| 2 | NT-014 (EN COURS) | Comparatif 30 j vs 90 j + sparkline | dashboard enrichi ; cohérence du calcul 30j/90j vérifiée | — |
 | 3 | NT-016 | Objectifs enrichis | statuts étendus, journal, vue détail, migration | — |
 
 **Version stable attendue** : le plan est optionnel, validé avant création et

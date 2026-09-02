@@ -152,7 +152,7 @@
 | NT-011 | Statistiques explicatives / évolution | app | Should | M | FAIT |
 | NT-012 | Objectifs mesurables | app | Must | M | FAIT |
 | NT-013 | Hauts faits (records) | app | Should | S | FAIT |
-| NT-014 | Comparatif glissant 30j vs 60j + sparkline | app | Could | M | À FAIRE |
+| NT-014 | Comparatif glissant 30j vs 90j + sparkline | app | Could | M | EN COURS |
 | NT-015 | Recommandations croisées Objectifs ⇄ Exercices | app | Could | M | À FAIRE |
 | NT-016 | Objectifs enrichis : statuts étendus, journal, vue détail | app | Could | M | À FAIRE |
 | NT-017 | Compteur de tirs par arme du râtelier | app | Should | S | FAIT |
@@ -181,11 +181,11 @@
 - **Critères d'acceptation** : métriques `bestSeriesPoints`, `bestSessionPoints`, `bestGroupSize` calculées et affichées.
 - **Statut** : FAIT — enum `GoalMetric` (champs 5-7).
 
-### NT-014 — Comparatif glissant 30j vs 60j + sparkline
+### NT-014 — Comparatif glissant 30j vs 90j + sparkline
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-010
-- **Description** : Delta % 30j vs 60j avec petite sparkline intégrée aux cartes existantes (ancien P7).
-- **Critères d'acceptation** : delta calculé et affiché ; sparkline sur au moins une carte.
-- **Priorité** : Could · **Statut** : À FAIRE.
+- **Description** : Comparer la moyenne des 30 derniers jours à celle des 90 derniers jours (fenêtres glissantes emboîtées), afficher le delta `moyenne 30j - moyenne 90j` et intégrer une petite sparkline aux cartes existantes (ancien P7).
+- **Critères d'acceptation** : comparaison calculée uniquement à partir des sessions réalisées ; fenêtres 30j et 90j fondées sur la même métrique et la même population ; bornes temporelles, cas sans données, unité et signe du delta cohérents entre service, modèle, libellés UI, documentation et tests ; delta calculé et affiché ; sparkline sur au moins une carte.
+- **Priorité** : Could · **Statut** : EN COURS — la comparaison 30j/90j et le delta absolu sont déjà présents dans le tableau de bord ; restent à vérifier et harmoniser le calcul, les filtres, les bornes temporelles, les libellés, la documentation et les tests, puis à ajouter la sparkline.
 
 ### NT-015 — Recommandations croisées Objectifs ⇄ Exercices
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-012, NT-021
@@ -523,7 +523,7 @@
 | NT-070 | Déploiement serveur (Render) | server | Must | S | FAIT |
 | NT-071 | Migration SQLite → Postgres Neon + Alembic | server | Must | M | FAIT |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT |
-| NT-073 | Normalisation calibres + dernier calibre utilisé | app | Could | S | À FAIRE |
+| NT-073 | Normalisation calibres + dernier calibre utilisé | app | Could | S | EN COURS |
 | NT-074 | Saisie séries plein écran + navigation rapide | app | Could | M | À FAIRE |
 | NT-075 | Onboarding + aide contextuelle | app | Could | M | FAIT |
 | NT-076 | Cache stats + compactage Hive | app | Could | M | À FAIRE |
@@ -560,8 +560,8 @@
 
 ### NT-073 — Normalisation calibres + dernier calibre utilisé
 - **Portée** : app · **Dépendances** : NT-001 · **Description** : Hygiène de données (ancien P10) : normaliser les calibres, persister le dernier utilisé.
-- **Critères d'acceptation** : liste de calibres normalisée ; pré-remplissage du dernier calibre. · **Priorité** : Could · **Statut** : À FAIRE.
-- **Notes** : un prototype commun avec NT-100/101/130 a été abandonné le 2026-07-24 après recette UX ; repartir de `dev` et respecter le [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md). Le pré-remplissage ne doit ajouter aucune étape au parcours classique.
+- **Critères d'acceptation** : liste de calibres normalisée ; pré-remplissage du dernier calibre. · **Priorité** : Could · **Statut** : EN COURS.
+- **Notes** : la liste configurable, l'autocomplétion et la préférence de calibre par défaut existent déjà ; la normalisation complète et la persistance du dernier calibre utilisé restent à finaliser et vérifier. Un prototype commun avec NT-100/101/130 a été abandonné le 2026-07-24 après recette UX ; respecter le [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md). Le pré-remplissage ne doit ajouter aucune étape au parcours classique.
 
 ### NT-074 — Saisie séries plein écran + navigation rapide
 - **Portée** : app · **Dépendances** : NT-002 · **Description** : Mode plein écran + next/prev pour réduire la friction de saisie (ancien P6).
@@ -878,7 +878,7 @@ tokens fonctionnels, logs structurés en JSON.
 | 1 | NT-005 | Attacher une photo de la cible | app | Could | M |
 | 2 | NT-025 | Niveau de difficulté d'exercice | app | Could | S |
 | 3 | NT-073 | Normalisation calibres + dernier calibre utilisé | app | Could | S |
-| 4 | NT-014 | Comparatif glissant 30j vs 60j + sparkline | app | Could | M |
+| 4 | NT-014 | Comparatif glissant 30j vs 90j + sparkline | app | Could | M |
 
 **Justification** :
 - NT-005 enrichit visuellement le carnet (photo = mémoire visuelle) et prépare

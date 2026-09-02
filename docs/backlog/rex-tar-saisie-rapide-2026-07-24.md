@@ -12,6 +12,10 @@ fait partie de `dev`.
 
 Le prototype est abandonné. Les quatre items restent **À FAIRE**.
 
+> **Mise à jour du 2026-09-02** : cette phrase décrit l'état au moment de la
+> décision. NT-073 a depuis été repris indépendamment et est **EN COURS** ;
+> NT-100, NT-101 et NT-130 restent **À FAIRE**.
+
 La branche a démontré la faisabilité technique de plusieurs éléments
 (référentiel YAML, persistance de la discipline, génération de séries TAR,
 normalisation des calibres et stockage de setups), mais n'a pas démontré leur
@@ -194,4 +198,3 @@ existante.
 5. Mettre à jour le cahier de recette avant la PR.
 6. Ne réutiliser du prototype abandonné que des idées ou données revues
    explicitement ; aucun cherry-pick global.
-
