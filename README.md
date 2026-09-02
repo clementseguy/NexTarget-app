@@ -8,10 +8,11 @@
 
 [![Release](https://img.shields.io/github/v/tag/clementseguy/NexTarget-app?label=release&color=f5b301)](https://github.com/clementseguy/NexTarget-app/tags)
 [![Flutter](https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=clementseguy_NexTarget-app&metric=alert_status)](https://sonarcloud.io/summary/overall?id=clementseguy_NexTarget-app)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=clementseguy_NexTarget-app&metric=coverage)](https://sonarcloud.io/summary/overall?id=clementseguy_NexTarget-app)
 [![Maintainability](https://sonarcloud.io/api/project_badges/measure?project=clementseguy_NexTarget-app&metric=sqale_rating)](https://sonarcloud.io/summary/overall?id=clementseguy_NexTarget-app)
 [![Security](https://sonarcloud.io/api/project_badges/measure?project=clementseguy_NexTarget-app&metric=security_rating)](https://sonarcloud.io/summary/overall?id=clementseguy_NexTarget-app)
+[![Reliability](https://sonarcloud.io/api/project_badges/measure?project=clementseguy_NexTarget-app&metric=reliability_rating)](https://sonarcloud.io/summary/overall?id=clementseguy_NexTarget-app)
+[![Duplication](https://sonarcloud.io/api/project_badges/measure?project=clementseguy_NexTarget-app&metric=duplicated_lines_density)](https://sonarcloud.io/summary/overall?id=clementseguy_NexTarget-app)
 
 *Fonctionne 100 % hors-ligne · vos données restent sur votre téléphone · le coach IA en option avec un compte*
 
