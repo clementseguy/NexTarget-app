@@ -121,8 +121,29 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 - **Attendu pour toute évolution** : au moins un test nominal + un cas d'erreur.
   Nouveau service/logique → test unitaire. Nouvel écran → widget test. Changement de
   schéma → test de migration.
+- **Fakes de repository (`test/support/`, NT-058)** : pour un `SessionRepository`
+  en mémoire, utiliser/étendre `test/support/fake_session_repository.dart`
+  (`FakeSessionRepository`) plutôt que d'écrire un nouveau fake ad hoc.
+  **Impératif : `getAll()` doit cloner** chaque élément (ex.
+  `ShootingSession.fromMap(s.toMap())`), jamais `List.of(...)` seul — un fake qui
+  partage les références d'objets mutables peut laisser un état incohérent si le
+  code testé mute un champ avant un `update()` qui échoue (rollback), contrairement
+  à `HiveSessionRepository` qui reconstruit toujours des objets frais. Ce défaut a
+  provoqué un débogage long et trompeur lors de NT-008 (le message d'échec de
+  `expect()` semblait accuser le mauvais code). Un stub en lecture seule qui
+  renvoie une liste fixe (sans `insert`/`update` réels) n'a pas besoin de ce
+  clonage et peut rester ad hoc.
+- **Erreurs async (`test/support/async_test_helpers.dart`)** : pour vérifier
+  qu'une fonction `async` lève une exception, utiliser `captureError(() => ...)`
+  (awaited) plutôt que `expect(() => asyncFn(), throwsA(...))` **non awaité** —
+  ce dernier peut laisser un travail asynchrone en suspens qui se résout pendant
+  le test suivant, avec un message d'échec attribué à la mauvaise assertion.
+  `await expectLater(future, throwsA(...))` (Future direct, pas de closure) reste
+  une alternative correcte.
 - **Lancement** : `flutter test` (tout) ou `flutter test --coverage` (rapport LCOV
-  pour SonarCloud).
+  pour SonarCloud). Pendant un débogage, cibler un fichier/test précis
+  (`flutter test test/xxx_test.dart --plain-name "..."`) avant de relancer toute
+  la suite.
 - **Régénérer les mocks** après changement d'interface mockée :
   `dart run build_runner build --delete-conflicting-outputs`.
 

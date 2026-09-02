@@ -12,6 +12,12 @@ Toutes les modifications notables de ce projet seront listées ici.
     - Export JSON inclut le râtelier ; import rétrocompatible avec les anciens fichiers sans râtelier, fusionné sans effacer le râtelier local (`BackupService`).
     - `DashboardService.generateWeaponShotCounts` + `WeaponShotCountsCard` : compteur de tirs par arme du râtelier en toute dernière section de `Statistiques > Avancé`, calculé depuis les seules sessions réalisées (essais compris), sans graphe.
 
+### Quality
+- NT-058 : fakes de repository partagés pour les tests (`test/support/`).
+    - `FakeSessionRepository` clone chaque session lue (comme `HiveSessionRepository`), évitant qu'une mutation en mémoire avant un `update()` en échec ne « persiste » silencieusement (bug détecté lors du développement de NT-008 — rollback du renommage d'arme).
+    - `captureError()` (`test/support/async_test_helpers.dart`) pour tester une exception async sans le piège `expect(() => asyncFn(), throwsA(...))` non awaité.
+    - `test/goal_service_lot_a_test.dart` migré vers le fake partagé à titre d'exemple ; convention documentée dans `AGENTS.md`.
+
 ### Documentation
 - Ajout de NT-049, interface d'administration serveur read-only des utilisateurs destinée au diagnostic OAuth, et planification dans un lot serveur autonome prioritaire.
 - Passage de NT-049 à `FAIT` après livraison de la page read-only `GET /app/admin/users`, actualisation de la vue serveur et clarification de la gouvernance : le backlog et sa vue serveur canonique sont maintenus uniquement dans `NexTarget-app`.
