@@ -5,11 +5,28 @@
 > ordonne les items non livrés par valeur métier, dépendances et capacité à
 > produire une version stable en fin de sprint.
 
-> ✅ **Livrés depuis l'établissement de ce plan** : **NT-005** (photo de la cible)
+> **Livrés depuis l'établissement de ce plan** : **NT-005** (photo de la cible)
 > et **NT-007** (filtre historique par exercice) ont été implémentés et fusionnés
-> dans `main` le 2026-07-17 (PR #12). Ils restent listés ci-dessous marqués `✅`
+> dans `main` le 2026-07-17 (PR #12). Ils restent listés ci-dessous avec le statut `FAIT`
 > pour préserver la lisibilité des dépendances (ex. NT-111 dépend de NT-005) ;
 > ils ne sont plus à replanifier.
+
+> **Lot serveur livré** : **NT-049** est implémenté sous la forme de la page
+> d'administration read-only `GET /app/admin/users`. Il reste listé ci-dessous
+> avec le statut `FAIT` pour conserver l'historique de la priorisation.
+
+> **Prototype abandonné le 2026-07-24** : la branche regroupant NT-100,
+> NT-101, NT-073 et NT-130 a été fermée sans fusion après échec de la recette UX.
+> Les quatre items restent **À FAIRE**. Toute reprise part de `dev` et commence
+> par la validation des parcours du
+> [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md) ; aucun
+> cherry-pick global du prototype `117ca83`.
+
+> **Priorité infrastructure du 2026-09-02** : NT-071 passe de Should/Icebox
+> à **Must** après constat de la perte des utilisateurs dans la base SQLite
+> éphémère de Render. La migration Render Free + Neon Postgres Free doit être
+> réalisée avant la reprise des développements fonctionnels destinés à la
+> production.
 
 ## Hypothèses
 
@@ -40,9 +57,11 @@
 
 | Rang | Items | Pourquoi maintenant | Dépendances clés | Portée |
 |---|---|---|---|---|
+| 0 | NT-071 | Corrige la perte des comptes et refresh tokens à chaque veille/redémarrage Render ; socle de fiabilité de la production. | NT-070 | server |
+| 0 | NT-049 (FAIT) | Diagnostic immédiat et sécurisé de la base utilisateurs et du comportement OAuth ; lot serveur autonome livré. | NT-040, NT-042 | server |
 | 1 | NT-100, NT-101 | Socle métier TAR : rend les sessions comparables et exploitables par stats/coach. | NT-001, NT-002 | app |
 | 2 | NT-073, NT-130 | Réduit fortement la friction de saisie au stand ; prépare les templates par épreuve. | NT-001, NT-101 optionnel | app |
-| 3 | NT-005 ✅, NT-110 | Photo cible exploitable : mémoire visuelle puis contexte fiable pour le coach. | NT-001, NT-100 | app |
+| 3 | NT-005 (FAIT), NT-110 | Photo cible exploitable : mémoire visuelle puis contexte fiable pour le coach. | NT-001, NT-100 | app |
 | 4 | NT-104 | Restitution immédiate de la progression par discipline. | NT-100, NT-010 | app |
 | 5 | NT-120, NT-121 | Donne un vrai écran Coach transverse, à forte valeur métier. | NT-101, NT-010, NT-030 | both |
 | 6 | NT-122 | Socle serveur pour que le coach produise des entités validables. | NT-031 | server |
@@ -52,11 +71,25 @@
 | 10 | NT-125, NT-126 | Boucle longue : suivi des recommandations puis plan d'entraînement. | NT-121, NT-123, NT-124 | both |
 | 11 | NT-024, NT-015, NT-014, NT-016 | Raffinement stats/objectifs/exercices après les axes TAR et coach. | NT-022, NT-021, NT-010, NT-012 | app |
 | 12 | NT-056, NT-057, NT-076 | Dette qualité/performance app, à caler dans un sprint de stabilisation. | — | app |
-| 13 | NT-034, NT-025, NT-007 ✅ | Améliorations utiles mais non structurantes. | NT-032, NT-020, NT-022 | app/server |
+| 13 | NT-034, NT-025, NT-026, NT-007 (FAIT) | Améliorations utiles mais non structurantes ; NT-026 est de faible priorité mais reste planifié. | NT-032, NT-020, NT-022 | app/server |
 | 14 | NT-044, NT-103, NT-132 | Opportunistes ou à instruire : Facebook, grilles FFTir, spike vocal. | sourcing/config terrain | both/app |
-| Infra | NT-071 | À déclencher avant multi-instance ou montée de charge serveur, pas bloquant pour le cycle fonctionnel court. | — | server |
 
 ## Plan par sprint
+
+### Lot serveur autonome — Diagnostic OAuth
+
+**Objectif livré** : permettre à l'administrateur de vérifier rapidement et
+en lecture seule les utilisateurs réellement inscrits, puis de documenter le
+comportement actuel du login Google avant toute correction fonctionnelle.
+
+| Ordre | Item | Feature | App | Serveur |
+|---|---|---|---|---|
+| 1 | NT-049 | Interface d'administration read-only des utilisateurs | — | `GET /app/admin/users`, page HTML sécurisée par secrets d'environnement, consultation sans mutation, protections de réponse, documentation locale/Render et audit Google |
+
+**Version stable livrée** : NT-049 est implémenté et livré seul, sans être
+couplé à un autre lot. L'interface ne révèle aucun secret et n'offre aucun chemin
+de mutation ; les éventuelles corrections OAuth découvertes sont arbitrées et
+planifiées séparément.
 
 ### Sprint 1 — Socle TAR & saisie rapide
 
@@ -65,13 +98,16 @@ TAR, avec calibres normalisés et création rapide depuis un setup favori.
 
 | Ordre | Item | Feature | App | Serveur |
 |---|---|---|---|---|
+| 0 | Design UX | Parcours classique, TAR, dernier réglage/favori et consultation TAR | wireframes/prototype validés avant code | — |
 | 1 | NT-100 | Référentiel TAR 25 m versionné | seed YAML, services de lecture | — |
 | 2 | NT-101 | Sessions et séries typées discipline | migrations Hive, formulaires, scoring essai/précision/vitesse/gongs | — |
 | 3 | NT-073 | Normalisation calibres + dernier calibre | référentiel calibres, pré-remplissage | — |
 | 4 | NT-130 | Templates de session | dernier setup, favoris, création en 2 taps | — |
 
 **Version stable attendue** : aucun écran coach nouveau ; focus carnet. Les
-sessions existantes restent lisibles après migration.
+sessions existantes restent lisibles après migration. Le parcours classique
+n'ajoute aucune étape ; les informations TAR sont explicites en saisie comme en
+consultation. Le développement ne commence qu'après validation de l'ordre 0.
 
 ### Sprint 2 — Restitution TAR & photo cible
 
@@ -81,7 +117,7 @@ des photos de cible correctement contextualisées.
 | Ordre | Item | Feature | App | Serveur |
 |---|---|---|---|---|
 | 1 | NT-104 | Stats & records par discipline | filtres, records par épreuve, dashboard distinct | — |
-| 2 | NT-005 ✅ | Photo de cible sur session (livré PR #12) | prise/sélection, stockage local, détail session | — |
+| 2 | NT-005 (FAIT) | Photo de cible sur session (livré PR #12) | prise/sélection, stockage local, détail session | — |
 | 3 | NT-110 | Métadonnées cible & photo par série | cible/distance/série associée | — |
 
 **Version stable attendue** : photos seulement locales et taguées ; aucune
@@ -152,6 +188,7 @@ mesurables dans le temps.
 | 1 | NT-125 | Suivi des recommandations | statut suivie/non suivie, consultation | réinjection dans contexte coach |
 | 2 | NT-024 | Stats d'exécution exercices | usageCount, lastPerformedAt, fenêtres glissantes | — |
 | 3 | NT-015 | Recos Objectifs ⇄ Exercices | suggestions locales selon objectifs en retard | — |
+| 4 | NT-026 | Suppression d'un exercice | action UI avec confirmation ; sessions conservées ; retour sûr du filtre NT-007 à « Tous les exercices » | — |
 
 **Version stable attendue** : le coach voit si ses conseils ont été appliqués,
 mais aucun plan multi-semaines automatique.
@@ -174,12 +211,12 @@ réversible par suppression des entités créées.
 
 | Déclencheur | Items | Recommandation |
 |---|---|---|
-| Avant ouverture publique plus large ou multi-instance Render | NT-071 | Migrer SQLite vers Postgres + Alembic avant de dépendre d'un rate-limit/state partagé. |
+| Avant le prochain déploiement fonctionnel en production | NT-071 | Migrer SQLite vers Neon Postgres + Alembic ; valider la persistance après veille, redémarrage et redéploiement. |
 | Dette UI ou baisse de maintenabilité | NT-057, NT-076 | Planifier un sprint court de nettoyage/performance sans nouvelle feature métier. |
 | Besoin login social autre que Google | NT-044 | Valider le flow Facebook contre une vraie app Facebook puis câbler le bouton app. |
 | Besoin classement officiel fédéral | NT-103 | Sourcer les grilles RGS FFTir avant estimation définitive. |
 | Hypothèse de saisie mains libres au stand | NT-132 | Spike timeboxé uniquement, avec go/no-go en conditions réelles. |
-| Besoin de confort catalogue exercices | NT-025, ~~NT-007~~ ✅ | NT-007 livré (PR #12) ; reste NT-025, à insérer dans un sprint app si faible coût réel confirmé. |
+| Besoin de confort catalogue exercices | NT-025, NT-026, NT-007 (FAIT) | NT-007 livré (PR #12) ; NT-026 est planifié à faible priorité en Sprint 7, avec recette des références de sessions orphelines. |
 
 ## Icebox
 
@@ -194,10 +231,6 @@ réversible par suppression des entités créées.
 
 ## Points de cohérence à corriger
 
-- `vue-serveur.md` indique encore NT-032 à faire alors que le backlog unifié le
-  marque `FAIT`. La projection serveur doit être resynchronisée.
-- Les "Prochaines actions serveur" de `vue-serveur.md` listent plusieurs items
-  déjà `FAIT` dans le backlog unifié (`NT-048`, `NT-053`, `NT-054`, `NT-055`).
 - Le bloc "Backlog priorisé" du backlog unifié est historique et mélange items
   livrés, anciens sprints et nouveaux thèmes. Il devrait être remplacé par un
   lien vers ce plan ou régénéré depuis celui-ci après validation produit.

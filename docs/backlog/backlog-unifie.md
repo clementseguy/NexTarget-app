@@ -19,6 +19,14 @@
 
 > Enrichissement fonctionnel du **2026-07-13** (thèmes 10–13 : disciplines
 > TAR, analyse de cible, coach avancé, saisie au stand). Statuts code inchangés.
+>
+> Enrichissement fonctionnel du **2026-09-02** : râtelier personnel,
+> autocomplétion de l'arme des sessions et compteur de tirs par arme
+> (NT-008, NT-009, NT-017). Statuts code inchangés.
+>
+> Livraison du **2026-09-02** : NT-008, NT-009 et NT-017 passent à FAIT
+> (`WeaponService`, `WeaponRackSection`, `WeaponAutocompleteField`,
+> `DashboardService.generateWeaponShotCounts`).
 
 ## Légende des statuts
 
@@ -33,12 +41,12 @@
 
 | Thème | Items |
 |---|---|
-| 1. Carnet de tir | NT-001 → NT-007 |
-| 2. Statistiques & Objectifs | NT-010 → NT-016 |
-| 3. Exercices | NT-020 → NT-025 |
+| 1. Carnet de tir | NT-001 → NT-009 |
+| 2. Statistiques & Objectifs | NT-010 → NT-017 |
+| 3. Exercices | NT-020 → NT-026 |
 | 4. Coach IA | NT-030 → NT-034 |
-| 5. Auth & Compte | NT-040 → NT-048 |
-| 6. Qualité & Observabilité | NT-050 → NT-057 |
+| 5. Auth & Compte | NT-040 → NT-049 |
+| 6. Qualité & Observabilité | NT-050 → NT-058 |
 | 7. Sécurité & Secrets | NT-060 → NT-066 |
 | 8. Plateforme & Déploiement | NT-070 → NT-076 |
 | 9. Idées / hors-scope | NT-090 → NT-092 |
@@ -62,6 +70,8 @@
 | NT-005 | Attacher une photo de la cible | app | Must | M | FAIT |
 | NT-006 | Analyse d'image de la cible (dispersion/score) | both | Won't-now | L | À FAIRE |
 | NT-007 | Filtrer l'historique des sessions par exercice | app | Could | S | FAIT |
+| NT-008 | Gérer son râtelier d'armes | app | Must | M | FAIT |
+| NT-009 | Autocompléter l'arme d'une session depuis le râtelier | app | Must | M | FAIT |
 
 ### NT-001 — Enregistrer une session de tir
 - **Thème** : Carnet de tir
@@ -111,6 +121,20 @@
 - **Critères d'acceptation** : filtre par exercice dans l'historique ; combinable avec le filtre réalisées/prévues.
 - **Priorité** : Could · **Statut** : FAIT (PR #12, 2026-07-17) — `SessionFilters.byExercise`, sélecteur d'exercice dans `sessions_history_screen` (combinable avec le filtre réalisées/prévues). · **Notes** : repris de l'issue GitHub #5 (tracking v0.3), 2026-07-09.
 
+### NT-008 — Gérer son râtelier d'armes
+- **Thème** : Carnet de tir · **Portée** : app · **Dépendances** : —
+- **Description** : Dans `Paramètres > Préférences Tir`, le tireur gère rapidement son râtelier personnel afin de réutiliser les noms de ses armes sans ressaisie. Une arme reste volontairement un simple nom textuel : aucune gestion de marque, modèle, calibre, photo ou autre métadonnée.
+- **Critères d'acceptation** : ajout rapide, renommage et suppression depuis une interface mobile simple et immédiatement compréhensible ; nom obligatoire après suppression des espaces en début et fin ; unicité contrôlée sans tenir compte de la casse ni des espaces en début et fin ; persistance locale et fonctionnement hors-ligne ; confirmation explicite avant suppression ; supprimer une arme ne modifie ni ne supprime aucune session existante ; renommer une arme demande confirmation puis remplace aussi son nom dans toutes les sessions prévues et réalisées dont le champ `weapon` correspond exactement à l'ancien nom après normalisation (espaces en début/fin ignorés, casse ignorée), sans modifier les saisies seulement proches ; le renommage du râtelier et des sessions est atomique du point de vue utilisateur (aucun état partiellement mis à jour en cas d'échec) ; l'export JSON inclut le râtelier ; l'import accepte les anciens exports dépourvus de râtelier sans erreur et sans effacer le râtelier local existant ; les armes importées respectent les mêmes règles de validation et de déduplication normalisée.
+- **Priorité** : Must · **Estimation** : M · **Statut** : FAIT — `Weapon`, `HiveWeaponRepository` (box `weapons`), `WeaponService` (CRUD, renommage propagé avec rollback), `WeaponRackSection` (`Paramètres > Préférences Tir`), export/import JSON (`BackupService`), `migration_5_create_weapons_box`.
+- **Notes** : conserver un modèle textuel simple, sans identifiant d'arme ni relation persistée session → arme. Le renommage propagé est le compromis retenu pour préserver les statistiques historiques sans complexifier le modèle de données. Tests de persistance, validation/déduplication, rollback du renommage et rétrocompatibilité import/export couverts.
+
+### NT-009 — Autocompléter l'arme d'une session depuis le râtelier
+- **Thème** : Carnet de tir · **Portée** : app · **Dépendances** : NT-001, NT-008
+- **Description** : Lorsqu'il crée ou modifie une session, le tireur retrouve rapidement une arme de son râtelier grâce à l'autocomplétion, tout en conservant la liberté de saisir n'importe quel nom.
+- **Critères d'acceptation** : le champ `weapon` de `ShootingSession` reste textuel et accepte toujours une saisie libre ; pendant la frappe, les noms correspondants du râtelier sont proposés sans tenir compte de la casse ; sélectionner une proposition remplit le champ avec son nom complet ; aucune proposition ni complétion automatique ne doit écraser ou bloquer la saisie de l'utilisateur — s'il continue à taper une autre valeur, son texte est prioritaire ; comportement disponible pour la création et la modification des sessions prévues comme réalisées, y compris dans le wizard de session ; une valeur saisie librement qui correspond exactement à une arme après normalisation est traitée comme cette arme pour les usages dépendants, sans imposer sa sélection dans la liste ; UX utilisable au clavier et au toucher, sans ajouter d'étape au parcours standard.
+- **Priorité** : Must · **Estimation** : M · **Statut** : FAIT — `utils/weapon_autocomplete.dart` (normalisation + suggestions partagées), `WeaponAutocompleteField` réutilisé dans `SessionForm` et le wizard (`WizardIntroStep`).
+- **Notes** : logique commune d'autocomplétion centralisée dans `utils/weapon_autocomplete.dart`, réutilisée par tous les parcours de session pour éviter des comportements divergents. Exemple attendu : saisir `CZ` peut proposer `CZ 75 SP-01 Shadow` ; poursuivre avec `CZ 09` conserve `CZ 09`.
+
 ---
 
 ## Thème 2 — Statistiques & Objectifs
@@ -126,6 +150,7 @@
 | NT-014 | Comparatif glissant 30j vs 60j + sparkline | app | Could | M | À FAIRE |
 | NT-015 | Recommandations croisées Objectifs ⇄ Exercices | app | Could | M | À FAIRE |
 | NT-016 | Objectifs enrichis : statuts étendus, journal, vue détail | app | Could | M | À FAIRE |
+| NT-017 | Compteur de tirs par arme du râtelier | app | Should | S | FAIT |
 
 ### NT-010 — Tableau de bord statistiques
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-002
@@ -167,7 +192,14 @@
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-012
 - **Description** : Cycle de vie d'objectif plus riche que l'actuel `active/achieved/failed` : statuts étendus (ex. planned/in_progress/achieved/abandoned), journal des changements de statut (avec dates), vue détail dédiée.
 - **Critères d'acceptation** : statuts étendus persistés (migration Hive + adapters régénérés) ; historique des transitions consultable ; écran détail d'un objectif.
-- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue GitHub #5 (tracking v0.3), 2026-07-09. ⚠️ champ Hive : ajout additif d'états uniquement (typeIds/index stables).
+- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue GitHub #5 (tracking v0.3), 2026-07-09. Attention : champ Hive additif uniquement (typeIds/index stables).
+
+### NT-017 — Compteur de tirs par arme du râtelier
+- **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-002, NT-008, NT-009
+- **Description** : Le tireur visualise le volume total de tirs réalisé avec chacune des armes actuellement présentes dans son râtelier.
+- **Critères d'acceptation** : dans `Statistiques > Avancé`, une section placée en toute dernière position affiche un simple compteur par arme du râtelier, sans graphe ; toutes les armes du râtelier sont affichées, y compris avec un compteur à zéro ; pour chaque arme, le total est la somme des `shotCount` de toutes les séries des seules sessions au statut `réalisée` dont le champ `weapon` correspond exactement au nom de l'arme après normalisation (espaces en début/fin ignorés, casse ignorée) ; les sessions prévues sont exclues ; tous les tirs des séries correspondantes sont comptés, essais compris, indépendamment des points ou scores ; le compteur est recalculé après ajout, modification ou suppression d'une session et après ajout, renommage ou suppression d'une arme ; supprimer une arme retire son compteur sans altérer les sessions.
+- **Priorité** : Should · **Estimation** : S · **Statut** : FAIT — `DashboardService.generateWeaponShotCounts`, `WeaponShotCountsCard` (dernière section de `Statistiques > Avancé`).
+- **Notes** : calcul local à partir des sessions, sans graphe ni relation persistée session → arme. Exemple : deux sessions réalisées de 10 séries de 5 coups associées à `CZ 75 SP-01 Shadow` affichent `100 tirs`.
 
 ---
 
@@ -183,6 +215,7 @@
 | NT-023 | Création d'exercice par le coach | both | Could | L | À FAIRE |
 | NT-024 | Stats d'exécution (fenêtres glissantes) | app | Could | M | À FAIRE |
 | NT-025 | Niveau de difficulté d'exercice | app | Could | S | À FAIRE |
+| NT-026 | Supprimer un exercice depuis l'interface | app | Could | S | À FAIRE |
 
 ### NT-020 — Gérer des exercices (CRUD)
 - **Thème** : Exercices · **Portée** : app · **Dépendances** : —
@@ -219,6 +252,13 @@
 - **Description** : Classer les exercices par difficulté (beginner/advanced/expert).
 - **Critères d'acceptation** : champ difficulté sur `Exercise` ; filtrable.
 - **Priorité** : Could · **Statut** : À FAIRE.
+
+### NT-026 — Supprimer un exercice depuis l'interface
+- **Thème** : Exercices · **Portée** : app · **Dépendances** : NT-020, NT-022
+- **Description** : Permettre au tireur de supprimer depuis la liste un exercice devenu inutile, sans supprimer ni rendre inaccessibles les sessions qui y étaient associées.
+- **Critères d'acceptation** : action « Supprimer » accessible depuis l'interface des exercices ; confirmation explicite avant suppression ; suppression effective du catalogue ; les sessions existantes ne sont pas supprimées ; **test manuel obligatoire : supprimer un exercice utilisé par des sessions, puis vérifier que l'historique revient proprement à « Tous les exercices », sans erreur**.
+- **Priorité** : Could (faible, mais planifié) · **Estimation** : S · **Statut** : À FAIRE.
+- **Notes** : créé à la suite de la recette NT-007 du 2026-07-24. La suppression existe déjà dans `ExerciseService` et le repository Hive, mais aucune action ne l'expose dans l'UI. Ce manque n'est pas bloquant pour la validation de NT-007.
 
 ---
 
@@ -283,6 +323,7 @@
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE |
 | NT-048 | Refresh tokens + rotation | server | Should | M | FAIT |
+| NT-049 | Interface d’administration read-only des utilisateurs | server | Should | M | FAIT |
 
 ### NT-040 — Authentification OAuth Google
 - **Thème** : Auth & Compte · **Portée** : both · **Dépendances** : —
@@ -314,7 +355,7 @@
 - **Description** : Se connecter avec Facebook.
 - **Critères d'acceptation** : serveur `/auth/facebook/*` **validé de bout en bout** contre une vraie app Facebook (au-delà des tests mockés) ; **app : bouton Facebook câblé** (manquant aujourd'hui).
 - **Priorité** : Could · **Statut** : À FAIRE.
-- **Notes** : ⚠️ **non prioritaire**. Côté serveur, le **code est présent** (`api/auth_facebook.py` : `/start` + `/callback`, échange de code, Graph API) mais **reste à valider** de bout en bout : couvert uniquement par des tests mockés (`tests/test_oauth_flows.py`), pas encore éprouvé contre une vraie app Facebook (credentials non configurés). Côté app, aucun bouton Facebook. Statut global **À FAIRE** tant que le flow n'est pas câblé (app) et validé (serveur). Arbitrage 2026-07-07 : « plus tard, optionnelle ».
+- **Notes** : **non prioritaire**. Côté serveur, le **code est présent** (`api/auth_facebook.py` : `/start` + `/callback`, échange de code, Graph API) mais **reste à valider** de bout en bout : couvert uniquement par des tests mockés (`tests/test_oauth_flows.py`), pas encore éprouvé contre une vraie app Facebook (credentials non configurés). Côté app, aucun bouton Facebook. Statut global **À FAIRE** tant que le flow n'est pas câblé (app) et validé (serveur). Arbitrage 2026-07-07 : « plus tard, optionnelle ».
 
 ### NT-045 — Stats publiques / partage de profil
 - **Thème** : Auth & Compte · **Portée** : both · **Dépendances** : NT-042
@@ -336,6 +377,26 @@
 - **Description** : Sessions plus longues sans re-login (refresh + rotation).
 - **Critères d'acceptation** : émission/rotation de refresh tokens ; révocation. · **Priorité** : Should · **Statut** : FAIT (2026-07-09, sprint S3) — `/auth/token/refresh` (rotation usage unique, rejeu ⇒ révocation de famille), `/auth/token/revoke` (logout idempotent), hash SHA-256 seul persisté ; champs additifs sur `/auth/token/exchange` (contrat client inchangé). L'adoption côté app (sessions longues sans re-login) reste à câbler — hors S3.
 
+### NT-049 — Interface d’administration read-only des utilisateurs
+- **Thème** : Auth & Compte · **Portée** : server · **Dépendances** : NT-040, NT-042
+- **Description** : En tant qu'administrateur NexTarget, consulter dans une page d'administration légère et sécurisée les utilisateurs inscrits afin de diagnostiquer les authentifications OAuth, sans exposer de secret ni permettre de mutation des données.
+- **Critères d'acceptation** :
+  - [x] une route d'administration dédiée affiche une page HTML serveur simple ;
+  - [x] toutes les routes d'administration sont protégées par des identifiants administrateur fournis exclusivement par variables d'environnement ;
+  - [x] aucun identifiant administrateur, mot de passe ou secret n'est codé en dur, persisté en base, inclus dans le HTML ou écrit dans les logs ;
+  - [x] l'interface affiche uniquement les champs utilisateur réellement présents et utiles au diagnostic : ID interne, email, provider, nom affiché, statut, avatar et date de création ;
+  - [x] aucun champ inexistant n'est ajouté uniquement pour l'affichage ;
+  - [x] aucun access token, refresh token, secret OAuth, mot de passe, hash ou clé API n'est exposé ;
+  - [x] l'interface et ses routes ne proposent aucune insertion, modification, suppression ni autre action métier ;
+  - [x] les réponses administrateur empêchent raisonnablement la mise en cache et l'indexation et utilisent des en-têtes de sécurité adaptés ;
+  - [x] l'accès sans authentification ou avec de mauvais identifiants est refusé ;
+  - [x] l'accès avec les bons identifiants permet de consulter les utilisateurs ;
+  - [x] aucune méthode ni route susceptible de muter les données n'est disponible sous le préfixe d'administration ;
+  - [x] la configuration locale et Render ainsi que la procédure d'accès sont documentées ;
+  - [x] le fonctionnement actuel du login Google est audité et les constats sont documentés.
+- **Priorité** : Should · **Estimation** : M · **Statut** : FAIT.
+- **Notes** : développement livré côté `NexTarget-server` sous la forme d'une page d'administration read-only exposée par `GET /app/admin/users`. Toute correction fonctionnelle du login Google identifiée pendant l'audit reste hors périmètre et doit faire l'objet d'une validation explicite.
+
 ---
 
 ## Thème 6 — Qualité & Observabilité
@@ -350,6 +411,7 @@
 | NT-055 | CI serveur (tests + couverture) | server | Should | S | FAIT |
 | NT-056 | Harmonisation des erreurs réseau (app) | app | Could | S | À FAIRE |
 | NT-057 | Nettoyage des widgets dupliqués (app) | app | Could | S | À FAIRE |
+| NT-058 | Fakes de repository partagés pour les tests (app) | app | Should | S | FAIT |
 
 ### NT-050 — SonarCloud + Quality Gate + couverture (app)
 - **Portée** : app · **Dépendances** : — · **Description** : Qualité continue mesurée sur l'app.
@@ -390,6 +452,13 @@
 - **Critères d'acceptation** : inventaire fait ; doublons supprimés ou factorisés ; aucune régression (tests verts).
 - **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue #5 ; `MainNavigation` (doublon d'`AppNavigator`) déjà supprimé en v0.5.0.
 
+### NT-058 — Fakes de repository partagés pour les tests (app)
+- **Thème** : Qualité & Observabilité · **Portée** : app · **Dépendances** : —
+- **Description** : Chaque fichier de test réinventait son propre « fake » en mémoire de `SessionRepository` (une dizaine d'implémentations ad hoc). Certains faisaient `getAll() => List.of(sessions)` — une copie de liste mais pas des objets — alors que `HiveSessionRepository.getAll()` reconstruit toujours des objets frais depuis les maps sérialisées. Une logique qui mute un champ avant un `update()` qui échoue (ex. rollback de renommage, NT-008) pouvait alors laisser un fake dans un état incohérent tout en donnant l'impression d'un bug côté code de production, générant des diagnostics longs et trompeurs.
+- **Critères d'acceptation** : `test/support/fake_session_repository.dart` clone chaque session lue (comme le ferait Hive) ; `test/support/async_test_helpers.dart` fournit `captureError()` pour tester proprement une exception async (évite le piège `expect(() => asyncFn(), throwsA(...))` non awaité) ; les deux ont un test nominal + un cas d'erreur ; au moins un fake ad hoc préexistant migré vers le fake partagé à titre d'exemple.
+- **Priorité** : Should · **Estimation** : S · **Statut** : FAIT — `test/support/fake_session_repository.dart`, `test/support/async_test_helpers.dart` (+ tests dédiés) ; `test/goal_service_lot_a_test.dart` migré. Convention documentée dans `AGENTS.md`.
+- **Notes** : tâche de fond (boy scout rule), déclenchée par un débogage long lors de NT-008 (rollback du renommage d'arme). Les autres fakes ad hoc préexistants (stubs en lecture seule, mocks spécialisés) n'ont pas été touchés : risque de régression non justifié pour des fakes qui n'exposent pas ce défaut. Migration plus large possible en tâche future si souhaité.
+
 ---
 
 ## Thème 7 — Sécurité & Secrets
@@ -417,7 +486,7 @@
   - la clé Mistral historique est révoquée/rotée ;
   - le carnet de tir reste utilisable hors-ligne (le coach seul devient online-only).
 - **Priorité** : Must · **Statut** : FAIT (code, 2026-07-07, sprint S1) — `CoachAnalysisService` direct supprimé, plus aucune clé/config Mistral côté client (`AppConfig`, `config.yaml`, `build_apk.sh` purgés), analyse gated par l'auth avec message clair + CTA login.
-- **Notes** : ⚠️ la **rotation de la clé Mistral historique** est une action manuelle (console Mistral + env Render) à réaliser par le mainteneur — hors code. Voir [incoherences.md](incoherences.md) I2.
+- **Notes** : la **rotation de la clé Mistral historique** est une action manuelle (console Mistral + env Render) à réaliser par le mainteneur — hors code. Voir [incoherences.md](incoherences.md) I2.
 
 ### NT-062 — Rate limiting de l'endpoint coach
 - **Portée** : server · **Dépendances** : NT-060 · **Description** : Empêcher l'abus qui viderait le quota Mistral.
@@ -447,7 +516,7 @@
 | ID | Titre | Portée | Prio | Est | Statut |
 |---|---|---|---|---|---|
 | NT-070 | Déploiement serveur (Render) | server | Must | S | FAIT |
-| NT-071 | Migration SQLite → Postgres + Alembic | server | Should | M | À FAIRE |
+| NT-071 | Migration SQLite → Postgres Neon + Alembic | server | Must | M | À FAIRE |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT |
 | NT-073 | Normalisation calibres + dernier calibre utilisé | app | Could | S | À FAIRE |
 | NT-074 | Saisie séries plein écran + navigation rapide | app | Could | M | À FAIRE |
@@ -458,8 +527,25 @@
 - **Portée** : server · **Dépendances** : — · **Critères d'acceptation** : déploiement via `render.yaml` ; variables d'env (JWT, OAuth, `MISTRAL_API_KEY`) documentées.
 - **Statut** : FAIT — `render.yaml`, `docs/tech/render_setup.md`.
 
-### NT-071 — Migration SQLite → Postgres + Alembic
-- **Portée** : server · **Dépendances** : — · **Critères d'acceptation** : moteur Postgres ; migrations Alembic. · **Priorité** : Should · **Statut** : À FAIRE. · **Notes** : débloque aussi rate-limit/state multi-instance (NT-062/063).
+### NT-071 — Migration SQLite → Postgres Neon + Alembic
+- **Thème** : Plateforme & Déploiement · **Portée** : server · **Dépendances** : NT-070
+- **Description** : Remplacer la base SQLite stockée sur le disque éphémère de Render par une base PostgreSQL Neon persistante, afin que les comptes utilisateurs et les refresh tokens survivent aux mises en veille, redémarrages et redéploiements du serveur. Industrialiser en même temps les évolutions du schéma avec Alembic.
+- **Architecture retenue** : service FastAPI conservé sur Render Free ; projet Neon Free `nextarget-prod`, région AWS Europe (Frankfurt), branche `production`, base `neondb` et version PostgreSQL stable gérée par défaut par Neon. Le rôle propriétaire Neon `neondb_owner` est réservé aux migrations, sauvegardes et opérations d'administration ; un rôle dédié à privilèges minimaux (ex. `nextarget_app`) est créé pour le runtime. L'application utilise la connexion poolée de ce rôle dédié ; les migrations et sauvegardes utilisent la connexion directe du rôle propriétaire. SQLite reste autorisé uniquement pour le développement local et les tests unitaires ciblés. Un environnement Neon de staging est prévu ultérieurement mais reste hors périmètre de cet item.
+- **Stratégie de bascule** : initialiser une base Neon vide, sans importer la base SQLite éphémère de Render ; créer le schéma par une migration Alembic initiale ; invalider volontairement les sessions/refresh tokens existants et demander une reconnexion unique après la bascule.
+- **Critères d'acceptation** :
+  - le serveur supporte PostgreSQL via un pilote explicitement déclaré et conserve SQLite pour le développement local ;
+  - Alembic est initialisé et une migration de référence crée toutes les tables, contraintes et index des modèles `User` et `RefreshToken` ; Alembic devient la source de vérité des évolutions du schéma et `SQLModel.metadata.create_all()` n'administre plus le schéma de production ;
+  - un rôle PostgreSQL dédié au runtime dispose uniquement des droits nécessaires de connexion et de lecture/écriture sur le schéma applicatif ; il ne peut pas modifier le schéma, tandis que `neondb_owner` reste réservé aux migrations et à l'administration ;
+  - deux variables Render distinctes sont utilisées : `DATABASE_URL` pour l'URL Neon poolée du rôle runtime et `DATABASE_MIGRATION_URL` pour l'URL directe du rôle propriétaire utilisée par Alembic et les opérations d'administration ; leurs valeurs sont saisies dans Render et aucun secret, hostname complet ni mot de passe n'est commité ou journalisé ;
+  - les migrations sont exécutées avant le démarrage d'Uvicorn sur Render ; une migration en échec empêche le serveur de démarrer et produit un diagnostic exploitable sans divulguer de secret ;
+  - le fonctionnement nominal et les erreurs de connexion/migration sont couverts par des tests, dont au moins un parcours exécuté contre PostgreSQL ; la suite SQLite existante reste verte ;
+  - après création d'un utilisateur, celui-ci et ses données d'authentification restent présents après une veille Render/Neon, un redémarrage et un redéploiement ; une reconnexion Google retrouve le même couple `(email, provider)` sans créer de doublon ;
+  - la bascule à vide et l'invalidation des sessions existantes sont documentées et vérifiées en recette ;
+  - une procédure de sauvegarde manuelle `pg_dump` via la connexion directe, de restauration et de rollback est documentée et testée avant la bascule ;
+  - la documentation de déploiement, `.env.example` et `render.yaml` décrivent les deux URLs, leur usage, la gestion manuelle des secrets et la surveillance des quotas Neon Free ;
+  - aucun workflow JavaScript Neon (`neon.ts`, `neon deploy`, MCP ou skills Neon) n'est introduit : le backend reste géré par Python, SQLModel et Alembic.
+- **Priorité** : Must (Should → Must, décision 2026-09-02 après constat de perte des utilisateurs en production) · **Estimation** : M · **Statut** : À FAIRE.
+- **Notes** : décision et diagnostic suivis dans l'issue serveur [#9](https://github.com/clementseguy/NexTarget-server/issues/9). Cette migration corrige la persistance relationnelle ; elle ne rend pas multi-instance les composants encore en mémoire (rate limiting NT-062 et state OAuth NT-063). La création d'un environnement Neon de staging et l'automatisation périodique des sauvegardes feront l'objet de tâches ultérieures si nécessaires.
 
 ### NT-072 — Framework de migrations Hive
 - **Portée** : app · **Dépendances** : — · **Description** : Runner générique de migrations de schéma local (ancien P5).
@@ -470,6 +556,7 @@
 ### NT-073 — Normalisation calibres + dernier calibre utilisé
 - **Portée** : app · **Dépendances** : NT-001 · **Description** : Hygiène de données (ancien P10) : normaliser les calibres, persister le dernier utilisé.
 - **Critères d'acceptation** : liste de calibres normalisée ; pré-remplissage du dernier calibre. · **Priorité** : Could · **Statut** : À FAIRE.
+- **Notes** : un prototype commun avec NT-100/101/130 a été abandonné le 2026-07-24 après recette UX ; repartir de `dev` et respecter le [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md). Le pré-remplissage ne doit ajouter aucune étape au parcours classique.
 
 ### NT-074 — Saisie séries plein écran + navigation rapide
 - **Portée** : app · **Dépendances** : NT-002 · **Description** : Mode plein écran + next/prev pour réduire la friction de saisie (ancien P6).
@@ -521,13 +608,13 @@
 - **Thème** : Disciplines & TAR · **Portée** : app · **Dépendances** : —
 - **Description** : Référentiel embarqué des épreuves officielles (830/831/832 en premier) — séquences essai/précision/vitesse, temps, cibles, scoring — pour que sessions, stats et coach parlent le langage de la discipline du tireur.
 - **Critères d'acceptation** : référentiel versionné par saison (asset YAML, seed [`referentiel_tar_25m.md`](../specs/referentiel_tar_25m.md)) ; épreuves 830, 831, 832 décrites (séquences, temps, cibles, scoring — gong = 5 pts en 2025-2026) ; dimensions des cibles C50, cible vitesse 25 m et gongs exposées aux autres features (NT-111 notamment).
-- **Priorité** : Must · **VM** : 5 · **Statut** : À FAIRE. · **Notes** : source règlement CNS TAR 2025-2026 (diffusion 12/01/2026) ; les règles évoluent chaque saison → champ `saison` obligatoire.
+- **Priorité** : Must · **VM** : 5 · **Statut** : À FAIRE. · **Notes** : source règlement CNS TAR 2025-2026 (diffusion 12/01/2026) ; les règles évoluent chaque saison → champ `saison` obligatoire. Le prototype `117ca83` a été abandonné sans fusion le 2026-07-24 : voir le [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md) avant toute reprise.
 
 ### NT-101 — Sessions & séries typées discipline
 - **Thème** : Disciplines & TAR · **Portée** : app · **Dépendances** : NT-100, NT-001, NT-002
 - **Description** : Rattacher une session à une épreuve officielle, avec pré-remplissage du format (séquences, nb coups, temps), pour des données comparables entre elles et exploitables par le coach.
 - **Critères d'acceptation** : champ épreuve sur `ShootingSession` (additif Hive) ; type de séquence par série (essai/précision/vitesse) ; scoring adapté par série (pts/zone vs gongs tombés) ; les essais n'entrent pas dans les stats de score.
-- **Priorité** : Must · **VM** : 5 · **Statut** : À FAIRE. · **Notes** : le modèle `Series` actuel ne couvre ni gongs, ni temps imparti, ni type de séquence — ajouts additifs uniquement (typeIds/index stables).
+- **Priorité** : Must · **VM** : 5 · **Statut** : À FAIRE. · **Notes** : le modèle `Series` actuel ne couvre ni gongs, ni temps imparti, ni type de séquence — ajouts additifs uniquement (typeIds/index stables). Une nouvelle implémentation est conditionnée à la validation préalable des parcours décrits dans le [REX du prototype abandonné](rex-tar-saisie-rapide-2026-07-24.md).
 
 ### NT-102 — Mode « match blanc » TAR
 - **Thème** : Disciplines & TAR · **Portée** : app · **Dépendances** : NT-101
@@ -645,6 +732,7 @@
 - **Description** : Créer une session en 2 taps au stand depuis le « dernier setup » ou des favoris (arme, calibre, épreuve). Quick win : ~80 % du gain de friction pour un coût S.
 - **Critères d'acceptation** : création depuis le dernier setup ; favoris nommés ; pré-remplissage arme/calibre/épreuve (épreuve : si NT-101 livré) ; compatible avec la normalisation calibres (NT-073).
 - **Priorité** : Must · **VM** : 4 · **Statut** : À FAIRE.
+- **Notes** : le prototype commun NT-100/101/073/130 a été abandonné le 2026-07-24, car le menu de templates ajoutait de la friction au parcours standard et employait des libellés ambigus. Repartir de `dev` après design ; voir le [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md).
 
 ### NT-131 — Session live au stand
 - **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : NT-130
@@ -662,7 +750,7 @@
 
 ## Backlog priorisé
 
-> ⚠️ **Plan historique.** Ce bloc reflète la planification établie avant
+> **Plan historique.** Ce bloc reflète la planification établie avant
 > l'enrichissement des thèmes 10–13 et contient plusieurs items désormais
 > `FAIT`. Le plan courant de priorisation métier, dépendances et sprints
 > livrables est maintenu dans [`plan-sprints.md`](plan-sprints.md).
@@ -686,7 +774,7 @@
 | **S4** | Enrichissement fonctionnel | NT-005, NT-025, NT-073, NT-014 | app | — |
 | **S5** | UX & Performance | NT-074, NT-076 | app | — |
 | **S6** | Fonctionnalités avancées | NT-033, NT-023, NT-024, NT-015, NT-044 | both | — |
-| **Icebox** | Won't-now / pas prioritaire | NT-006, NT-045, NT-046, NT-047, NT-071, NT-090, NT-091 | — | — |
+| **Icebox** | Won't-now / pas prioritaire | NT-006, NT-045, NT-046, NT-047, NT-090, NT-091 | — | — |
 
 > **Révision 2026-07-13** : les thèmes 10–13 ne sont pas encore ventilés en
 > sprints. Ordre recommandé après S4 (qui contient déjà NT-005, remonté Must) :
@@ -697,7 +785,7 @@
 
 ---
 
-### Sprint 1 — Sécurité & Qualité ⚡ PRÉ-DEMO
+### Sprint 1 — Sécurité & Qualité — PRÉ-DEMO
 
 *Objectif : éliminer la dette sécurité (le seul Must restant) et poser la base
 qualité. Prérequis à la beta demo FFTir.*
@@ -719,7 +807,7 @@ qualité. Prérequis à la beta demo FFTir.*
 inaccessible sans authentification (message clair), CORS restreint en prod,
 nonce Google vérifié, clé Mistral historique rotée.
 
-### Sprint 2 — Demo-ready ⚡ PRÉ-DEMO
+### Sprint 2 — Demo-ready — PRÉ-DEMO
 
 *Objectif : rendre l'app prête pour la demo FFTir — première impression soignée
 et coach différenciant.*
@@ -837,7 +925,6 @@ de planification.*
 | NT-045 | Stats publiques / partage de profil | Pas de demande utilisateur identifiée |
 | NT-046 | Gamification | Scope large, pas prioritaire |
 | NT-047 | Apple Sign In | Requis uniquement pour publication iOS avec login social |
-| NT-071 | Migration SQLite → Postgres | Montée en charge non prévue à court/moyen terme |
 | NT-090 | Thème ASCII Art | Cosmétique, pas de valeur métier |
 | NT-091 | Règles de sécurité FFTir | À instruire quand le besoin se précise |
 
@@ -845,7 +932,7 @@ de planification.*
 
 | Sujet | Décision |
 |---|---|
-| NT-071 (Postgres) | **Icebox** — SQLite single-instance suffit à moyen terme. |
+| NT-071 (Postgres) | **Décision annulée le 2026-09-02** — le disque SQLite éphémère de Render entraîne la perte des utilisateurs ; NT-071 est désormais Must. |
 | NT-033 (Coach multi-sessions) | **Repoussé en S6** — nice-to-have, scope et prompts pas encore définis. |
 | Cadence | Senior + agentic dev (Claude Code), sprints de 2 semaines. |
 | Demo FFTir | **Début août 2026** — S1 (sécurité) et S2 (onboarding + multi-personas) sont bloquants. |
@@ -859,5 +946,11 @@ de planification.*
 | NT-005 (photo) | Remonté **Could → Must** — socle du thème 11 ; livré le 2026-07-17 (PR #12). |
 | Analyse photo | Approche **qualitative multimodale** (NT-111) retenue ; NT-006 (CV métrique) maintenu en Icebox, à réévaluer après retour d'usage. |
 | Référentiel TAR | Versionné par saison ; seed extrait du règlement CNS TAR 2025-2026 → [`docs/specs/referentiel_tar_25m.md`](../specs/referentiel_tar_25m.md). |
+
+### Décisions prises (2026-09-02)
+
+| Sujet | Décision |
+|---|---|
+| NT-071 (Postgres) | **Should → Must** — migrer la production de SQLite éphémère vers Neon Postgres Free (`nextarget-prod`, Frankfurt) avec Alembic ; bascule sur une base vide et reconnexion des utilisateurs. Voir l'issue serveur [#9](https://github.com/clementseguy/NexTarget-server/issues/9). |
 | Estimation | Ajout d'une **Valeur métier (VM 1–5)** sur les thèmes 10+, en complément de MoSCoW + S/M/L (dev solo + agentic : le facteur limitant est la valeur/le risque, pas l'effort). |
 | NT-033 / NT-023 | Précisés et décomposés par les items du **thème 12** (NT-120→NT-126), qui font référence. |

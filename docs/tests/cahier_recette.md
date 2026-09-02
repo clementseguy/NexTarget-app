@@ -1,6 +1,6 @@
 # Cahier de Recette
 
-- Dernière mise à jour: 2026-07-07
+- Dernière mise à jour: 2026-09-02
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
 
 ## SESS-01 — Sessions – création/édition
@@ -114,6 +114,49 @@ Objectif: Tester la préférence de calibre (saisie assistée + persistance).
 2. Sauvegarder, puis rouvrir les préférences pour vérifier la persistance
 Résultats attendus:
 - La liste de calibres apparaît bien lors de la saisie et la valeur choisie est persistée
+
+## WEAP-01 — Râtelier d'armes – CRUD (NT-008)
+Objectif: Ajouter, renommer et supprimer une arme du râtelier personnel, avec propagation du renommage aux sessions.
+Pré-requis:
+- Au moins une session réalisée utilisant une arme du râtelier
+Étapes:
+1. Ouvrir Paramètres > Préférences Tir, section Râtelier d'armes
+2. Ajouter une arme (ex. "CZ 75") ; tenter d'en ajouter une autre avec le même nom (espaces/casse différents) → refusé
+3. Renommer l'arme (ex. "CZ 75 SP-01 Shadow"), confirmer
+4. Supprimer une autre arme du râtelier, confirmer
+Résultats attendus:
+- Le doublon normalisé est refusé avec un message clair
+- Le renommage est propagé au champ arme des sessions correspondantes (prévues et réalisées)
+- La suppression retire l'arme de la liste sans modifier aucune session existante
+
+## WEAP-02 — Autocomplétion de l'arme en saisie de session (NT-009)
+Objectif: Vérifier que la saisie libre reste prioritaire tout en proposant les armes du râtelier.
+Pré-requis:
+- Au moins deux armes dans le râtelier (ex. "CZ 75 SP-01 Shadow", "Glock 17")
+Étapes:
+1. Créer ou éditer une session (réalisée ou prévue), taper le début du nom d'une arme du râtelier
+2. Sélectionner la suggestion proposée
+3. Dans une autre session, taper un nom d'arme absent du râtelier jusqu'au bout
+4. Répéter dans le wizard de conversion (session prévue → réalisée)
+Résultats attendus:
+- Les suggestions correspondantes apparaissent pendant la frappe (casse ignorée)
+- Sélectionner une suggestion remplit le champ avec le nom complet
+- Le texte libre n'est jamais écrasé ni bloqué, y compris dans le wizard
+
+## WEAP-03 — Compteur de tirs par arme (NT-017)
+Objectif: Vérifier le compteur de tirs par arme du râtelier en bas de Statistiques > Avancé.
+Pré-requis:
+- Au moins une arme du râtelier avec des sessions réalisées associées, et une arme sans aucune session
+Étapes:
+1. Ouvrir Statistiques > Avancé et faire défiler jusqu'à la toute dernière section
+2. Vérifier le total affiché pour une arme ayant des sessions réalisées
+3. Vérifier l'affichage d'une arme sans session (total à zéro)
+4. Ajouter une nouvelle session réalisée pour une arme du râtelier, revenir sur l'écran
+Résultats attendus:
+- La section est en dernière position, sans graphe, une ligne par arme du râtelier
+- Le total correspond à la somme des coups des sessions réalisées uniquement (essais compris)
+- Une arme sans session affiche 0 tir
+- Le total se met à jour après l'ajout d'une nouvelle session
 
 ## EXP-01 — Export sessions
 Objectif: Exporter les sessions et vérifier le fichier généré.

@@ -8,6 +8,8 @@ import '../services/backup_service.dart';
 import '../services/session_service.dart';
 import '../config/app_config.dart';
 import '../widgets/series_cards.dart'; // Pour TwoFistsIcon
+import '../widgets/app_bar_title.dart';
+import '../widgets/settings/weapon_rack_section.dart';
 import '../providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_theme.dart';
@@ -25,6 +27,11 @@ String _avatarInitial(Map<String, dynamic>? user) {
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
+  // Clé statique : un seul SettingsScreen est monté à la fois, elle permet de
+  // rafraîchir le râtelier après un import de sauvegarde sans faire de
+  // SettingsScreen un StatefulWidget.
+  static final _weaponRackKey = GlobalKey<WeaponRackSectionState>();
+
   @override
   Widget build(BuildContext context) {
     final backup = BackupService();
@@ -38,7 +45,11 @@ class SettingsScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
-            title: Text('Paramètres'),
+            centerTitle: false,
+            title: const AppBarTitle(
+              icon: Icons.settings,
+              label: 'Paramètres',
+            ),
             actions: [
               if (authProvider.isLoading)
                 const Padding(
@@ -276,6 +287,10 @@ class SettingsScreen extends StatelessWidget {
                       );
                     },
                   ),
+                  const SizedBox(height: 20),
+                  const Divider(),
+                  const SizedBox(height: 4),
+                  WeaponRackSection(key: _weaponRackKey),
                 ],
               ),
             ),
@@ -371,6 +386,7 @@ class SettingsScreen extends StatelessWidget {
                         final content = await File(path).readAsString();
                         final imported = await backup.importSessionsFromJson(content);
                         final total = (await sessionService.getAllSessions()).length;
+                        await _weaponRackKey.currentState?.reload();
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('$imported sessions importées. Total: $total')),

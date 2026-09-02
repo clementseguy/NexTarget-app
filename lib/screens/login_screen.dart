@@ -19,8 +19,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleGoogleSignIn(BuildContext context) async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      authProvider.signInWithGoogle();
-      
+      await authProvider.signInWithGoogle();
+
       // Le AuthProvider gère maintenant isLoading=true
       // AuthGate affichera le CircularProgressIndicator
     } catch (e) {

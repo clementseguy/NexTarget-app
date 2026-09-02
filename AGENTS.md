@@ -14,7 +14,7 @@ NexTarget est le carnet de tir sportif du tireur solo : saisie des sessions
 - **Stack** : Flutter / Dart (SDK `>=3.0.0 <4.0.0`), stockage local **Hive**
 - **State management** : `provider` (`ChangeNotifier`)
 - **Backend** : NexTarget-server (OAuth + proxy Coach IA), consommé via `http`
-- **Version** : voir `pubspec.yaml` (`version:`) — actuellement 0.4.1
+- **Version** : voir `pubspec.yaml` (`version:`) — actuellement 0.6.0
 - **Package id historique** : `tir_sportif` (branding affiché = *NexTarget*, ne pas renommer le package)
 - **Langue** : identifiants en **anglais** ; commentaires, docs et **UI en français** ; certaines valeurs métier sont en français (`"réalisée"`, `"entraînement"`) — les conserver telles quelles.
 
@@ -24,8 +24,14 @@ Le **quoi/pourquoi** vit dans le backlog unifié, pas ici :
 
 - **Backlog** : [`docs/backlog/backlog-unifie.md`](docs/backlog/backlog-unifie.md) — items `NT-XXX`.
 - **Vue app** : [`docs/backlog/vue-app.md`](docs/backlog/vue-app.md).
+- **Vue serveur canonique** : [`docs/backlog/vue-serveur.md`](docs/backlog/vue-serveur.md).
 - **Gouvernance / DoD / convention d'IDs** : [`docs/backlog/README.md`](docs/backlog/README.md).
 - **Écarts & décisions** : [`docs/backlog/incoherences.md`](docs/backlog/incoherences.md).
+
+Le backlog et ses vues se modifient **uniquement dans `NexTarget-app`**. Le repo
+`NexTarget-server` peut pointer vers la vue serveur canonique, mais ne maintient
+ni copie synchronisée ni backlog concurrent : aucune synchronisation inverse
+depuis le serveur n'est attendue.
 
 En cas de conflit entre ce fichier et le backlog sur le périmètre produit, **le
 backlog prime**. Cet `AGENTS.md` fait autorité sur le **comment** (architecture,
@@ -88,11 +94,15 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 - **Async** : `async/await`, gérer explicitement les erreurs réseau (voir les
   services coach : `TimeoutException`, `SocketException`, codes HTTP).
 - **Logging** : utiliser `services/logger.dart` (`AppLogger`), **pas** `print`.
-  ⚠️ Il reste des `print('[DEBUG] …')` hérités dans le code coach : ne pas en
+  ATTENTION : il reste des `print('[DEBUG] …')` hérités dans le code coach -> ne pas en
   ajouter, et les retirer si tu touches ces fichiers.
 - **Dépréciations** : ne pas introduire de `withOpacity(` (déprécié ; le
   pré-commit le signale) — préférer `.withValues(...)`.
 - **UI** : Material, textes en français, thématisable (`theme/`).
+- **Aucun émoji** : ni dans le code (commentaires, docstrings, messages de log,
+  textes affichés à l'utilisateur), ni dans la documentation (`*.md`, `AGENTS.md`
+  inclus), ni dans les messages de commit/PR. Ce dépôt est de la documentation
+  technique, pas un post LinkedIn — texte brut uniquement.
 
 ## HTTP & Auth
 - Client HTTP : package `http`. Pour les appels **authentifiés**, utiliser
@@ -115,8 +125,29 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 - **Attendu pour toute évolution** : au moins un test nominal + un cas d'erreur.
   Nouveau service/logique → test unitaire. Nouvel écran → widget test. Changement de
   schéma → test de migration.
+- **Fakes de repository (`test/support/`, NT-058)** : pour un `SessionRepository`
+  en mémoire, utiliser/étendre `test/support/fake_session_repository.dart`
+  (`FakeSessionRepository`) plutôt que d'écrire un nouveau fake ad hoc.
+  **Impératif : `getAll()` doit cloner** chaque élément (ex.
+  `ShootingSession.fromMap(s.toMap())`), jamais `List.of(...)` seul — un fake qui
+  partage les références d'objets mutables peut laisser un état incohérent si le
+  code testé mute un champ avant un `update()` qui échoue (rollback), contrairement
+  à `HiveSessionRepository` qui reconstruit toujours des objets frais. Ce défaut a
+  provoqué un débogage long et trompeur lors de NT-008 (le message d'échec de
+  `expect()` semblait accuser le mauvais code). Un stub en lecture seule qui
+  renvoie une liste fixe (sans `insert`/`update` réels) n'a pas besoin de ce
+  clonage et peut rester ad hoc.
+- **Erreurs async (`test/support/async_test_helpers.dart`)** : pour vérifier
+  qu'une fonction `async` lève une exception, utiliser `captureError(() => ...)`
+  (awaited) plutôt que `expect(() => asyncFn(), throwsA(...))` **non awaité** —
+  ce dernier peut laisser un travail asynchrone en suspens qui se résout pendant
+  le test suivant, avec un message d'échec attribué à la mauvaise assertion.
+  `await expectLater(future, throwsA(...))` (Future direct, pas de closure) reste
+  une alternative correcte.
 - **Lancement** : `flutter test` (tout) ou `flutter test --coverage` (rapport LCOV
-  pour SonarCloud).
+  pour SonarCloud). Pendant un débogage, cibler un fichier/test précis
+  (`flutter test test/xxx_test.dart --plain-name "..."`) avant de relancer toute
+  la suite.
 - **Régénérer les mocks** après changement d'interface mockée :
   `dart run build_runner build --delete-conflicting-outputs`.
 
@@ -148,6 +179,7 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 3. Migration + test de migration ajoutés si le schéma Hive a changé.
 4. Statut de l'item mis à jour dans `docs/backlog/` + `CHANGELOG.md`.
 5. Aucun secret, token ou clé dans le diff ; aucun nouveau `print`/`withOpacity`.
+6. Aucun émoji dans le diff (code, doc, `CHANGELOG.md`, message de commit/PR).
 
 ## Workflow Git (rappel gouvernance)
 
@@ -155,15 +187,15 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
   - **`main`** : branche de **production**, taggée à chaque **release**. Jamais de commit direct.
   - **`dev`** : branche d'**intégration** ; reçoit les features validées.
   - Toute branche de développement part de **`dev`** (jamais de `main`) et suit la
-    convention `type/NT-XXX-slug` (ex. `feat/NT-061-coach-connecte-uniquement`).
-    Pour un lot multi-features, une branche `feature/<code_nom_feature>` regroupant
+    convention `type/NT-XXX-slug` (ex. `feature/NT-061-coach-connecte-uniquement`).
+    Pour un lot multi-features, une branche `features/<codes_noms_features>` regroupant
     les IDs concernés est acceptée.
 - **Cycle de développement d'une (ou plusieurs) feature(s)** :
   1. Créer la branche depuis **`dev`**.
   2. Développer, puis ouvrir une **PR de la branche vers `dev`** (merge après revue + CI verte).
   3. Pour livrer : ouvrir une **PR de `dev` vers `main`**, accompagnée d'une **release**
      (bump de version dans `pubspec.yaml`, `CHANGELOG.md`, tag).
-- **Commit** : sujet préfixé par l'ID — `feat(coach): NT-032 persona coach cool`.
+- **Commit** : sujet préfixé par l'ID — Exemple : `feat(coach): NT-032 persona coach cool`.
 - **PR** : titre `[NT-XXX] …`, corps listant les IDs + critères d'acceptation cochés ;
   la CI (« Test & SonarCloud ») s'exécute sur la PR.
 - **Definition of Done** : voir [`docs/backlog/README.md`](docs/backlog/README.md).

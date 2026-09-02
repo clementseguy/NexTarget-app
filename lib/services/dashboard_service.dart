@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../models/shooting_session.dart';
 import '../models/dashboard_data.dart';
 import '../models/series.dart';
+import '../models/weapon.dart';
+import '../constants/session_constants.dart';
+import '../utils/weapon_autocomplete.dart';
 import '../services/stats_service.dart';
 
 /// Service responsable de l'agrégation des données pour le dashboard
@@ -389,6 +392,25 @@ class DashboardService {
   /// Génère les données d'évolution pour les séries à 2 mains (méthode de compatibilité)
   (EvolutionData, EvolutionData) generateTwoHandsEvolutionData() {
     return generateHandMethodEvolutionData(HandMethod.twoHands);
+  }
+
+  /// NT-017 : total de tirs (essais compris) par arme du râtelier [rack],
+  /// calculé uniquement à partir des sessions réalisées dont le nom d'arme
+  /// correspond, une fois normalisé, au nom de l'arme du râtelier. Les
+  /// armes sans session correspondante apparaissent avec un total à zéro.
+  Map<String, int> generateWeaponShotCounts(List<Weapon> rack) {
+    final realized = _statsService.sessions.where((s) => s.status == SessionConstants.statusRealisee);
+    final counts = <String, int>{for (final w in rack) w.id: 0};
+    for (final session in realized) {
+      for (final w in rack) {
+        if (sameWeaponName(session.weapon, w.name)) {
+          final shots = session.series.fold<int>(0, (acc, s) => acc + s.shotCount);
+          counts[w.id] = (counts[w.id] ?? 0) + shots;
+          break; // noms de râtelier uniques : au plus une arme peut correspondre
+        }
+      }
+    }
+    return counts;
   }
 
   /// Méthode utilitaire pour créer un EvolutionData

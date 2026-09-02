@@ -65,7 +65,10 @@ class HiveSessionRepository implements SessionRepository {
               
           if (existingSeries.isNotEmpty) {
             final success = await _hive.updateSession(session.toMap(), existingSeries);
-            return success; // Si la mise à jour a réussi, c'est un fallback
+            if (!success) {
+              throw StateError('Échec d\'écriture Hive (fallback séries) pour la session ${session.id}');
+            }
+            return true; // Si la mise à jour a réussi, c'est un fallback
           }
         }
       } catch (e) {
@@ -74,7 +77,10 @@ class HiveSessionRepository implements SessionRepository {
       }
     }
     
-    await _hive.updateSession(session.toMap(), seriesMaps);
-    return false; // pas de fallback même si l'update a réussi
+    final success = await _hive.updateSession(session.toMap(), seriesMaps);
+    if (!success) {
+      throw StateError('Échec d\'écriture Hive pour la session ${session.id}');
+    }
+    return false; // pas de fallback
   }
 }

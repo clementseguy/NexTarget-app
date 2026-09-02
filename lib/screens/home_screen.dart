@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/rules_bottom_sheet.dart';
 import '../widgets/dashboard/dashboard_tab_view.dart';
+import '../widgets/app_bar_title.dart';
 import '../services/session_service.dart';
 import '../models/shooting_session.dart';
 
@@ -49,8 +50,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Tableau de bord'),
-        centerTitle: true,
+        centerTitle: false,
+        title: const AppBarTitle(
+          icon: Icons.bar_chart,
+          label: 'Synthèse',
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.shield_outlined),

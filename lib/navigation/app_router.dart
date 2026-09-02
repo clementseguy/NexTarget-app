@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../screens/coach_screen.dart';
@@ -14,6 +15,7 @@ import '../constants/session_constants.dart';
 import '../data/local_db_hive.dart';
 import '../models/goal.dart';
 import '../widgets/help_button.dart';
+import '../widgets/app_bar_title.dart';
 
 /// Classe responsable de la gestion des routes nommées de l'application
 class AppRouter {
@@ -120,7 +122,7 @@ class AppNavigator extends StatelessWidget {
             items: const [
               BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Coach'),
               BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'Exercices'),
-              BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Tableau de bord'),
+              BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Synthèse'),
               BottomNavigationBarItem(icon: Icon(Icons.track_changes), label: 'Sessions'),
               BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Paramètres'),
             ],
@@ -148,15 +150,10 @@ class AppNavigator extends StatelessWidget {
   AppBar _buildSessionsAppBar(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
-      centerTitle: true,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.track_changes, color: Colors.amber),
-          SizedBox(width: 10),
-          Text('Mes sessions'),
-        ],
+      centerTitle: false,
+      title: const AppBarTitle(
+        icon: Icons.track_changes,
+        label: 'Sessions',
       ),
       actions: [
         const HelpButton(
@@ -168,14 +165,15 @@ class AppNavigator extends StatelessWidget {
             'Un appui long sur une carte permet de la supprimer.',
           ],
         ),
-        IconButton(
-          icon: Icon(Icons.bolt, color: Colors.amber),
-          tooltip: 'Ajouter 3 sessions aléatoires',
-          onPressed: () async {
-            await LocalDatabaseHive().insertRandomSessions(count: 3, status: 'réalisée');
-            _historyKey.currentState?.refreshSessions();
-          },
-        ),
+        if (kDebugMode)
+          IconButton(
+            icon: Icon(Icons.bolt, color: Colors.amber),
+            tooltip: 'Ajouter 3 sessions aléatoires',
+            onPressed: () async {
+              await LocalDatabaseHive().insertRandomSessions(count: 3, status: 'réalisée');
+              _historyKey.currentState?.refreshSessions();
+            },
+          ),
         IconButton(
           icon: Icon(Icons.refresh),
           tooltip: 'Recharger',

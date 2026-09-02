@@ -69,4 +69,23 @@ void main() {
     all = await repo.getAll();
     expect(all, isEmpty);
   });
+
+  test('update throws when the underlying Hive write fails (au lieu de renvoyer false silencieusement)', () async {
+    final repo = HiveSessionRepository();
+    final sess = ShootingSession(
+      weapon: 'P', caliber: '22LR', status: 'réalisée',
+      date: DateTime.now(),
+      series: [Series(distance: 10, points: 40, groupSize: 22, shotCount: 5)],
+    );
+    final id = await repo.insert(sess);
+    await Hive.box('sessions').close(); // force l'échec du prochain accès Hive
+
+    final updated = ShootingSession(id: id, weapon: 'P', caliber: '22LR', status: 'réalisée', series: sess.series);
+    await expectLater(
+      repo.update(updated, preserveExistingSeriesIfEmpty: false),
+      throwsA(isA<StateError>()),
+    );
+
+    await Hive.openBox('sessions'); // réouverture pour un tearDown propre
+  });
 }

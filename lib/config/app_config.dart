@@ -8,6 +8,10 @@ import 'package:yaml/yaml.dart';
 /// NT-061 : plus aucune clé ni configuration Mistral côté client —
 /// l'analyse coach passe exclusivement par NexTarget-server.
 class AppConfig {
+  static const _serverUrlOverride = String.fromEnvironment(
+    'NEXTARGET_SERVER_URL',
+  );
+
   static AppConfig? _instance;
   final int splashMinDisplayMs;
   final int splashFadeDurationMs;
@@ -28,7 +32,8 @@ class AppConfig {
   static AppConfig get I {
     final inst = _instance;
     if (inst == null) {
-      throw StateError('AppConfig not loaded yet. Call AppConfig.load() in main().');
+      throw StateError(
+          'AppConfig not loaded yet. Call AppConfig.load() in main().');
     }
     return inst;
   }
@@ -41,7 +46,8 @@ class AppConfig {
       // Option: fichier local non versionné pour surcharges
       Map local = {};
       try {
-        final localRaw = await rootBundle.loadString('assets/config.local.yaml');
+        final localRaw =
+            await rootBundle.loadString('assets/config.local.yaml');
         local = loadYaml(localRaw) as Map;
       } catch (_) {}
 
@@ -51,6 +57,7 @@ class AppConfig {
         if (value is String) return int.tryParse(value) ?? fallback;
         return fallback;
       }
+
       final splash = yaml['splash'];
       final calibersYaml = (local['calibers'] ?? yaml['calibers']) as dynamic;
       final defaultCalibers = <String>[
@@ -77,8 +84,12 @@ class AppConfig {
         splashFadeDurationMs: readInt(splash?['fade_duration_ms'], 450),
         calibers: readCalibers(calibersYaml),
         authEnabled: (yaml['auth']?['enabled'] ?? false) as bool,
-        authBaseUrl: (yaml['auth']?['base_url'] ?? 'https://nextarget-server.onrender.com').toString(),
-        authCallbackScheme: (yaml['auth']?['callback_scheme'] ?? 'nextarget').toString(),
+        authBaseUrl: _resolveServerUrl(
+          (yaml['auth']?['base_url'] ?? 'https://nextarget-server.onrender.com')
+              .toString(),
+        ),
+        authCallbackScheme:
+            (yaml['auth']?['callback_scheme'] ?? 'nextarget').toString(),
       );
       _instance = cfg;
     } catch (e) {
@@ -98,9 +109,17 @@ class AppConfig {
           'Autre',
         ],
         authEnabled: false,
-        authBaseUrl: 'https://nextarget-server.onrender.com',
+        authBaseUrl: _resolveServerUrl(
+          'https://nextarget-server.onrender.com',
+        ),
         authCallbackScheme: 'nextarget',
       );
     }
+  }
+
+  static String _resolveServerUrl(String configuredUrl) {
+    final override = _serverUrlOverride.trim();
+    final value = override.isEmpty ? configuredUrl.trim() : override;
+    return value.endsWith('/') ? value.substring(0, value.length - 1) : value;
   }
 }
