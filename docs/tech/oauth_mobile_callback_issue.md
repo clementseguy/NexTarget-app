@@ -1,5 +1,15 @@
 # OAuth Mobile - Implémentation Complète
 
+> **Document historique.** Décrit une étape intermédiaire de l'implémentation
+> mobile (`flutter_web_auth_2`, stockage direct du token de callback comme
+> token final). Le code actuel (`lib/services/auth_service.dart`) utilise
+> `url_launcher` + interception du deep link via `app_links`, et échange
+> systématiquement le token de callback contre un access token via
+> `POST /auth/token/exchange` avant de le stocker. Pour le comportement
+> actuel, se référer au contrat OpenAPI courant
+> [`nextarget-api-v0.1.0.yaml`](nextarget-api-v0.1.0.yaml) ou à
+> `NexTarget-server/docs/tech/architecture.md`.
+
 ## ✅ Solution Implémentée
 
 L'authentification OAuth mobile fonctionne désormais avec un flow simplifié où le **backend gère entièrement le flow OAuth2** et redirige vers l'app mobile avec le token.
