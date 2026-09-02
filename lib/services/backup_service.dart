@@ -6,6 +6,7 @@ import '../models/shooting_session.dart';
 import '../services/session_service.dart';
 import '../models/goal.dart';
 import '../services/goal_service.dart';
+import '../services/weapon_service.dart';
 
 /// Service pour exporter / importer toutes les sessions sous forme JSON plat
 /// Structure de fichier:
@@ -19,6 +20,7 @@ import '../services/goal_service.dart';
 class BackupService {
   final SessionService _sessionService = SessionService();
   final GoalService _goalService = GoalService();
+  final WeaponService _weaponService = WeaponService();
   
   /// Lire un fichier JSON.
   /// 
@@ -32,12 +34,14 @@ class BackupService {
     final sessions = await _sessionService.getAllSessions();
     await _goalService.init();
     final goals = await _goalService.listAll();
+    final weapons = await _weaponService.listAll();
     final data = {
       'format': 'mycoach-data',
-      'version': 2,
+      'version': 3,
       'exported_at': DateTime.now().toUtc().toIso8601String(),
       'sessions_count': sessions.length,
       'goals_count': goals.length,
+      'weapons_count': weapons.length,
       'sessions': sessions.map((s) => s.toMap()).toList(),
       'goals': goals.map((g) => {
         'id': g.id,
@@ -54,6 +58,8 @@ class BackupService {
         'lastMeasuredValue': g.lastMeasuredValue,
         'priority': g.priority,
       }).toList(),
+      // NT-008 : râtelier d'armes personnel (simple nom, cf. Weapon.toMap).
+      'weapons': weapons.map((w) => w.toMap()).toList(),
     };
     final jsonString = const JsonEncoder.withIndent('  ').convert(data);
     final dir = await getTemporaryDirectory();
@@ -126,6 +132,24 @@ class BackupService {
         }
       }
     } catch (_) {}
+    // Import du râtelier d'armes (NT-008) : facultatif si absent (anciens
+    // exports sans râtelier) ; fusionne avec le râtelier local existant sans
+    // l'effacer, en respectant les mêmes règles de validation/déduplication
+    // normalisée que la saisie manuelle.
+    try {
+      final weaponsRaw = decoded['weapons'];
+      if (weaponsRaw is List) {
+        for (final w in weaponsRaw) {
+          if (w is! Map) continue;
+          final name = w['name']?.toString() ?? '';
+          try {
+            await _weaponService.addWeapon(name);
+          } catch (_) {
+            // ignore nom invalide ou doublon normalisé déjà présent
+          }
+        }
+      }
+    } catch (_) {}
     return imported;
   }
 
@@ -136,12 +160,14 @@ class BackupService {
     final sessions = await _sessionService.getAllSessions();
     await _goalService.init();
     final goals = await _goalService.listAll();
+    final weapons = await _weaponService.listAll();
     final data = {
       'format': 'mycoach-data',
-      'version': 2,
+      'version': 3,
       'exported_at': DateTime.now().toUtc().toIso8601String(),
       'sessions_count': sessions.length,
       'goals_count': goals.length,
+      'weapons_count': weapons.length,
       'sessions': sessions.map((s) => s.toMap()).toList(),
       'goals': goals.map((g) => {
         'id': g.id,
@@ -158,6 +184,8 @@ class BackupService {
         'lastMeasuredValue': g.lastMeasuredValue,
         'priority': g.priority,
       }).toList(),
+      // NT-008 : râtelier d'armes personnel (simple nom, cf. Weapon.toMap).
+      'weapons': weapons.map((w) => w.toMap()).toList(),
     };
     final jsonString = const JsonEncoder.withIndent('  ').convert(data);
 

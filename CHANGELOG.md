@@ -4,6 +4,14 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Non publié]
 
+### Added
+- NT-008/NT-009/NT-017 : râtelier d'armes personnel.
+    - `Weapon`/`WeaponService`/`HiveWeaponRepository` (box Hive `weapons`, `migration_5_create_weapons_box`) : CRUD simple (ajout, renommage, suppression) dans `Paramètres > Préférences Tir` (`WeaponRackSection`), noms obligatoires et uniques après normalisation (espaces/casse ignorés).
+    - Renommage confirmé, propagé aux sessions prévues et réalisées dont le nom d'arme correspond exactement après normalisation, avec rollback complet en cas d'échec ; la suppression ne modifie jamais les sessions existantes.
+    - `utils/weapon_autocomplete.dart` centralise la normalisation et l'autocomplétion, réutilisées par `WeaponAutocompleteField` dans le formulaire de session (`SessionForm`) et le wizard de conversion (`WizardIntroStep`) : la saisie libre reste toujours prioritaire.
+    - Export JSON inclut le râtelier ; import rétrocompatible avec les anciens fichiers sans râtelier, fusionné sans effacer le râtelier local (`BackupService`).
+    - `DashboardService.generateWeaponShotCounts` + `WeaponShotCountsCard` : compteur de tirs par arme du râtelier en toute dernière section de `Statistiques > Avancé`, calculé depuis les seules sessions réalisées (essais compris), sans graphe.
+
 ### Documentation
 - Ajout de NT-049, interface d'administration serveur read-only des utilisateurs destinée au diagnostic OAuth, et planification dans un lot serveur autonome prioritaire.
 - Passage de NT-049 à `FAIT` après livraison de la page read-only `GET /app/admin/users`, actualisation de la vue serveur et clarification de la gouvernance : le backlog et sa vue serveur canonique sont maintenus uniquement dans `NexTarget-app`.

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/series.dart';
 import '../../models/exercise.dart';
 import '../../models/goal.dart';
+import '../../widgets/weapon_autocomplete_field.dart';
 
 /// Étape introduction du wizard (exercice, arme, calibre, catégorie)
 class WizardIntroStep extends StatelessWidget {
@@ -9,12 +10,11 @@ class WizardIntroStep extends StatelessWidget {
   final bool loadingExercise;
   final Exercise? linkedExercise;
   final List<Goal> goals;
-  final String? weaponDraft;
+  final TextEditingController weaponController;
   final TextEditingController caliberController;
   final FocusNode caliberFocusNode;
   final String? categoryDraft;
   final ValueChanged<String> onCaliberChanged;
-  final ValueChanged<String?> onWeaponSaved;
   final ValueChanged<String?> onCaliberSaved;
   final ValueChanged<String?> onCategorySaved;
   final VoidCallback onValidate;
@@ -25,12 +25,11 @@ class WizardIntroStep extends StatelessWidget {
     required this.loadingExercise,
     required this.linkedExercise,
     required this.goals,
-    required this.weaponDraft,
+    required this.weaponController,
     required this.caliberController,
     required this.caliberFocusNode,
     required this.categoryDraft,
     required this.onCaliberChanged,
-    required this.onWeaponSaved,
     required this.onCaliberSaved,
     required this.onCategorySaved,
     required this.onValidate,
@@ -93,10 +92,9 @@ class WizardIntroStep extends StatelessWidget {
             const SizedBox(height: 16),
             Text('Informations session', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            TextFormField(
-              initialValue: weaponDraft,
-              decoration: const InputDecoration(labelText: 'Arme'),
-              onSaved: onWeaponSaved,
+            WeaponAutocompleteField(
+              controller: weaponController,
+              labelText: 'Arme',
             ),
             Focus(
               focusNode: caliberFocusNode,
