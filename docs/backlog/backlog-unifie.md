@@ -41,7 +41,7 @@
 | 2. Statistiques & Objectifs | NT-010 → NT-017 |
 | 3. Exercices | NT-020 → NT-026 |
 | 4. Coach IA | NT-030 → NT-034 |
-| 5. Auth & Compte | NT-040 → NT-048 |
+| 5. Auth & Compte | NT-040 → NT-049 |
 | 6. Qualité & Observabilité | NT-050 → NT-057 |
 | 7. Sécurité & Secrets | NT-060 → NT-066 |
 | 8. Plateforme & Déploiement | NT-070 → NT-076 |
@@ -188,7 +188,7 @@
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-012
 - **Description** : Cycle de vie d'objectif plus riche que l'actuel `active/achieved/failed` : statuts étendus (ex. planned/in_progress/achieved/abandoned), journal des changements de statut (avec dates), vue détail dédiée.
 - **Critères d'acceptation** : statuts étendus persistés (migration Hive + adapters régénérés) ; historique des transitions consultable ; écran détail d'un objectif.
-- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue GitHub #5 (tracking v0.3), 2026-07-09. ⚠️ champ Hive : ajout additif d'états uniquement (typeIds/index stables).
+- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue GitHub #5 (tracking v0.3), 2026-07-09. Attention : champ Hive additif uniquement (typeIds/index stables).
 
 ### NT-017 — Compteur de tirs par arme du râtelier
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-002, NT-008, NT-009
@@ -319,6 +319,7 @@
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE |
 | NT-048 | Refresh tokens + rotation | server | Should | M | FAIT |
+| NT-049 | Interface d’administration read-only des utilisateurs | server | Should | M | FAIT |
 
 ### NT-040 — Authentification OAuth Google
 - **Thème** : Auth & Compte · **Portée** : both · **Dépendances** : —
@@ -350,7 +351,7 @@
 - **Description** : Se connecter avec Facebook.
 - **Critères d'acceptation** : serveur `/auth/facebook/*` **validé de bout en bout** contre une vraie app Facebook (au-delà des tests mockés) ; **app : bouton Facebook câblé** (manquant aujourd'hui).
 - **Priorité** : Could · **Statut** : À FAIRE.
-- **Notes** : ⚠️ **non prioritaire**. Côté serveur, le **code est présent** (`api/auth_facebook.py` : `/start` + `/callback`, échange de code, Graph API) mais **reste à valider** de bout en bout : couvert uniquement par des tests mockés (`tests/test_oauth_flows.py`), pas encore éprouvé contre une vraie app Facebook (credentials non configurés). Côté app, aucun bouton Facebook. Statut global **À FAIRE** tant que le flow n'est pas câblé (app) et validé (serveur). Arbitrage 2026-07-07 : « plus tard, optionnelle ».
+- **Notes** : **non prioritaire**. Côté serveur, le **code est présent** (`api/auth_facebook.py` : `/start` + `/callback`, échange de code, Graph API) mais **reste à valider** de bout en bout : couvert uniquement par des tests mockés (`tests/test_oauth_flows.py`), pas encore éprouvé contre une vraie app Facebook (credentials non configurés). Côté app, aucun bouton Facebook. Statut global **À FAIRE** tant que le flow n'est pas câblé (app) et validé (serveur). Arbitrage 2026-07-07 : « plus tard, optionnelle ».
 
 ### NT-045 — Stats publiques / partage de profil
 - **Thème** : Auth & Compte · **Portée** : both · **Dépendances** : NT-042
@@ -371,6 +372,26 @@
 - **Thème** : Auth & Compte · **Portée** : server · **Dépendances** : NT-040
 - **Description** : Sessions plus longues sans re-login (refresh + rotation).
 - **Critères d'acceptation** : émission/rotation de refresh tokens ; révocation. · **Priorité** : Should · **Statut** : FAIT (2026-07-09, sprint S3) — `/auth/token/refresh` (rotation usage unique, rejeu ⇒ révocation de famille), `/auth/token/revoke` (logout idempotent), hash SHA-256 seul persisté ; champs additifs sur `/auth/token/exchange` (contrat client inchangé). L'adoption côté app (sessions longues sans re-login) reste à câbler — hors S3.
+
+### NT-049 — Interface d’administration read-only des utilisateurs
+- **Thème** : Auth & Compte · **Portée** : server · **Dépendances** : NT-040, NT-042
+- **Description** : En tant qu'administrateur NexTarget, consulter dans une page d'administration légère et sécurisée les utilisateurs inscrits afin de diagnostiquer les authentifications OAuth, sans exposer de secret ni permettre de mutation des données.
+- **Critères d'acceptation** :
+  - [x] une route d'administration dédiée affiche une page HTML serveur simple ;
+  - [x] toutes les routes d'administration sont protégées par des identifiants administrateur fournis exclusivement par variables d'environnement ;
+  - [x] aucun identifiant administrateur, mot de passe ou secret n'est codé en dur, persisté en base, inclus dans le HTML ou écrit dans les logs ;
+  - [x] l'interface affiche uniquement les champs utilisateur réellement présents et utiles au diagnostic : ID interne, email, provider, nom affiché, statut, avatar et date de création ;
+  - [x] aucun champ inexistant n'est ajouté uniquement pour l'affichage ;
+  - [x] aucun access token, refresh token, secret OAuth, mot de passe, hash ou clé API n'est exposé ;
+  - [x] l'interface et ses routes ne proposent aucune insertion, modification, suppression ni autre action métier ;
+  - [x] les réponses administrateur empêchent raisonnablement la mise en cache et l'indexation et utilisent des en-têtes de sécurité adaptés ;
+  - [x] l'accès sans authentification ou avec de mauvais identifiants est refusé ;
+  - [x] l'accès avec les bons identifiants permet de consulter les utilisateurs ;
+  - [x] aucune méthode ni route susceptible de muter les données n'est disponible sous le préfixe d'administration ;
+  - [x] la configuration locale et Render ainsi que la procédure d'accès sont documentées ;
+  - [x] le fonctionnement actuel du login Google est audité et les constats sont documentés.
+- **Priorité** : Should · **Estimation** : M · **Statut** : FAIT.
+- **Notes** : développement livré côté `NexTarget-server` sous la forme d'une page d'administration read-only exposée par `GET /app/admin/users`. Toute correction fonctionnelle du login Google identifiée pendant l'audit reste hors périmètre et doit faire l'objet d'une validation explicite.
 
 ---
 
@@ -453,7 +474,7 @@
   - la clé Mistral historique est révoquée/rotée ;
   - le carnet de tir reste utilisable hors-ligne (le coach seul devient online-only).
 - **Priorité** : Must · **Statut** : FAIT (code, 2026-07-07, sprint S1) — `CoachAnalysisService` direct supprimé, plus aucune clé/config Mistral côté client (`AppConfig`, `config.yaml`, `build_apk.sh` purgés), analyse gated par l'auth avec message clair + CTA login.
-- **Notes** : ⚠️ la **rotation de la clé Mistral historique** est une action manuelle (console Mistral + env Render) à réaliser par le mainteneur — hors code. Voir [incoherences.md](incoherences.md) I2.
+- **Notes** : la **rotation de la clé Mistral historique** est une action manuelle (console Mistral + env Render) à réaliser par le mainteneur — hors code. Voir [incoherences.md](incoherences.md) I2.
 
 ### NT-062 — Rate limiting de l'endpoint coach
 - **Portée** : server · **Dépendances** : NT-060 · **Description** : Empêcher l'abus qui viderait le quota Mistral.
@@ -717,7 +738,7 @@
 
 ## Backlog priorisé
 
-> ⚠️ **Plan historique.** Ce bloc reflète la planification établie avant
+> **Plan historique.** Ce bloc reflète la planification établie avant
 > l'enrichissement des thèmes 10–13 et contient plusieurs items désormais
 > `FAIT`. Le plan courant de priorisation métier, dépendances et sprints
 > livrables est maintenu dans [`plan-sprints.md`](plan-sprints.md).
@@ -752,7 +773,7 @@
 
 ---
 
-### Sprint 1 — Sécurité & Qualité ⚡ PRÉ-DEMO
+### Sprint 1 — Sécurité & Qualité — PRÉ-DEMO
 
 *Objectif : éliminer la dette sécurité (le seul Must restant) et poser la base
 qualité. Prérequis à la beta demo FFTir.*
@@ -774,7 +795,7 @@ qualité. Prérequis à la beta demo FFTir.*
 inaccessible sans authentification (message clair), CORS restreint en prod,
 nonce Google vérifié, clé Mistral historique rotée.
 
-### Sprint 2 — Demo-ready ⚡ PRÉ-DEMO
+### Sprint 2 — Demo-ready — PRÉ-DEMO
 
 *Objectif : rendre l'app prête pour la demo FFTir — première impression soignée
 et coach différenciant.*

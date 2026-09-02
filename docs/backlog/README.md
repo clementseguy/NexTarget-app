@@ -17,7 +17,7 @@ et ses vues dérivées. Il pilote le développement, y compris depuis Claude Cod
 |---|---|
 | [`backlog-unifie.md`](backlog-unifie.md) | **LA source de vérité.** Tous les items produit (NT-XXX), groupés par thème. |
 | [`vue-app.md`](vue-app.md) | Projection des items de portée `app`/`both`. |
-| [`vue-serveur.md`](vue-serveur.md) | Projection des items de portée `server`/`both`. À copier dans le repo serveur. |
+| [`vue-serveur.md`](vue-serveur.md) | Vue serveur canonique : projection des items de portée `server`/`both`, maintenue dans ce repo. |
 | [`plan-sprints.md`](plan-sprints.md) | Vue de pilotage : tri métier + dépendances + planification par sprints livrables. |
 | [`incoherences.md`](incoherences.md) | Journal des écarts backlogs ⇄ code et des décisions. |
 
@@ -35,6 +35,17 @@ et ses vues dérivées. Il pilote le développement, y compris depuis Claude Cod
 5. **IDs stables, jamais réutilisés.** Un item abandonné passe en `Won't-now` ou est
    marqué obsolète — son ID n'est pas recyclé. Les trous de numérotation par thème
    sont volontaires (réservés à l'insertion).
+
+### Emplacement canonique et relation avec le serveur
+
+- Le backlog unifié et toutes ses vues sont modifiés **exclusivement dans le repo
+  `NexTarget-app`**, sous `docs/backlog/`.
+- [`vue-serveur.md`](vue-serveur.md) est la **vue serveur canonique**. Le repo
+  `NexTarget-server` doit seulement pointer vers cette vue ; il ne doit pas en
+  maintenir une copie ni un backlog produit parallèle.
+- Les constats issus du développement serveur sont reportés ici, d'abord dans le
+  backlog unifié puis dans la vue serveur. **Aucune synchronisation inverse** de
+  fichiers depuis `NexTarget-server` vers `NexTarget-app` n'est attendue.
 
 ## Format d'un item
 
@@ -95,13 +106,12 @@ Un item passe **FAIT** quand **tous** les points ci-dessous sont vrais :
 
 ## Cohérence avec les `AGENTS.md`
 
-- **App** — `NexTarget-app/AGENTS.md` est **vide** aujourd'hui. À initialiser ; il
-  doit référencer ce dossier comme source de vérité et rappeler la convention d'IDs
-  (branches/commits/PRs) et la DoD ci-dessus.
-- **Serveur** — `NexTarget-server/AGENTS.md` est **périmé** (décrit un serveur
-  « OAuth-only sans IA, sans rate limiting, User minimal »). À réécrire pour refléter
-  le code (proxy IA, rate limiting, profil enrichi) **sans** modifier les règles de
-  sécurité non négociables, qui restent valides. Suivi : [incoherences.md](incoherences.md) I6.
+- **App** — `NexTarget-app/AGENTS.md` référence ce dossier comme source de vérité,
+  rappelle la convention d'IDs et formalise l'emplacement canonique du backlog.
+- **Serveur** — `NexTarget-server/AGENTS.md` doit pointer vers le backlog et la vue
+  serveur canoniques de ce repo, sans demander de copie ni de synchronisation
+  inverse. Les règles de sécurité propres au serveur restent documentées côté
+  serveur.
 - En cas de conflit entre un `AGENTS.md` et ce backlog sur le **quoi/pourquoi
   produit**, **ce backlog prime** ; les `AGENTS.md` restent la référence sur le
   **comment** (conventions de code, architecture, sécurité).
@@ -112,11 +122,8 @@ Ce backlog unifie et remplace deux backlogs qui avaient divergé :
 - `NexTarget-app/docs/specs/backlog.md`
 - `NexTarget-server/docs/specs/Backlog v0.1.md`
 
-**Proposition** (à exécuter après validation, non fait automatiquement) :
-- **Archiver** (ne pas supprimer) les anciens backlogs sous `docs/specs/_archive/`
-  dans chaque repo, avec un en-tête « Obsolète — voir docs/backlog/ ».
-- **Copier** `vue-serveur.md` dans le repo serveur (ex. `docs/specs/vue-serveur.md`)
-  et y laisser un pointeur vers le backlog unifié (le serveur ne maintient plus de
-  backlog propre).
+Les anciens backlogs ont vocation à rester archivés ou supprimés de la
+documentation active. Le repo serveur conserve seulement un pointeur vers
+`NexTarget-app/docs/backlog/vue-serveur.md` : aucune copie n'est maintenue.
 
 *Dernier audit du code : 2026-07-07.*

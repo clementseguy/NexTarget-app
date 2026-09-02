@@ -14,6 +14,7 @@ import '../constants/session_constants.dart';
 import '../data/local_db_hive.dart';
 import '../models/goal.dart';
 import '../widgets/help_button.dart';
+import '../widgets/app_bar_title.dart';
 
 /// Classe responsable de la gestion des routes nommées de l'application
 class AppRouter {
@@ -120,7 +121,7 @@ class AppNavigator extends StatelessWidget {
             items: const [
               BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Coach'),
               BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'Exercices'),
-              BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Tableau de bord'),
+              BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Synthèse'),
               BottomNavigationBarItem(icon: Icon(Icons.track_changes), label: 'Sessions'),
               BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Paramètres'),
             ],
@@ -148,15 +149,10 @@ class AppNavigator extends StatelessWidget {
   AppBar _buildSessionsAppBar(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
-      centerTitle: true,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.track_changes, color: Colors.amber),
-          SizedBox(width: 10),
-          Text('Mes sessions'),
-        ],
+      centerTitle: false,
+      title: const AppBarTitle(
+        icon: Icons.track_changes,
+        label: 'Sessions',
       ),
       actions: [
         const HelpButton(

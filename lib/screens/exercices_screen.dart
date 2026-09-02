@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/goals_at_glance_card.dart';
 import '../widgets/exercises_at_glance_card.dart';
 import '../widgets/help_button.dart';
+import '../widgets/app_bar_title.dart';
 
 class ExercicesScreen extends StatefulWidget {
   const ExercicesScreen({super.key});
@@ -17,7 +18,11 @@ class _ExercicesScreenState extends State<ExercicesScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Exercices & Objectifs'),
+        centerTitle: false,
+        title: const AppBarTitle(
+          icon: Icons.fitness_center,
+          label: 'Exercices & Objectifs',
+        ),
         actions: const [
           HelpButton(
             title: 'Exercices & Objectifs',

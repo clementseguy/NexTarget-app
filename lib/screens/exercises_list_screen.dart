@@ -348,7 +348,14 @@ class _FiltersBar extends StatelessWidget {
             ),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 220),
-              transitionBuilder: (child, anim) => SizeTransition(sizeFactor: anim, axisAlignment: -1.0, child: child),
+              // Compatibilité CI : le SDK Flutter utilisé par SonarCloud ne
+              // connaît pas encore le paramètre `alignment`.
+              transitionBuilder: (child, anim) => SizeTransition(
+                sizeFactor: anim,
+                // ignore: deprecated_member_use
+                axisAlignment: -1.0,
+                child: child,
+              ),
               child: !expanded ? const SizedBox.shrink() : Padding(
                 key: const ValueKey('filters-body'),
                 padding: const EdgeInsets.fromLTRB(4, 6, 4, 4),

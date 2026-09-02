@@ -179,6 +179,9 @@ class _GoalsListScreenState extends State<GoalsListScreen> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 buildDefaultDragHandles: false,
+                // Compatibilité CI : le SDK Flutter utilisé par SonarCloud ne
+                // connaît pas encore le callback `onReorderItem`.
+                // ignore: deprecated_member_use
                 onReorder: (oldIndex, newIndex) async {
                   setState(() {
                     if (newIndex > oldIndex) newIndex -= 1;
