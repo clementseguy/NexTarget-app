@@ -19,6 +19,10 @@
 
 > Enrichissement fonctionnel du **2026-07-13** (thèmes 10–13 : disciplines
 > TAR, analyse de cible, coach avancé, saisie au stand). Statuts code inchangés.
+>
+> Enrichissement fonctionnel du **2026-09-02** : râtelier personnel,
+> autocomplétion de l'arme des sessions et compteur de tirs par arme
+> (NT-008, NT-009, NT-017). Statuts code inchangés.
 
 ## Légende des statuts
 
@@ -33,8 +37,8 @@
 
 | Thème | Items |
 |---|---|
-| 1. Carnet de tir | NT-001 → NT-007 |
-| 2. Statistiques & Objectifs | NT-010 → NT-016 |
+| 1. Carnet de tir | NT-001 → NT-009 |
+| 2. Statistiques & Objectifs | NT-010 → NT-017 |
 | 3. Exercices | NT-020 → NT-026 |
 | 4. Coach IA | NT-030 → NT-034 |
 | 5. Auth & Compte | NT-040 → NT-048 |
@@ -62,6 +66,8 @@
 | NT-005 | Attacher une photo de la cible | app | Must | M | FAIT |
 | NT-006 | Analyse d'image de la cible (dispersion/score) | both | Won't-now | L | À FAIRE |
 | NT-007 | Filtrer l'historique des sessions par exercice | app | Could | S | FAIT |
+| NT-008 | Gérer son râtelier d'armes | app | Must | M | À FAIRE |
+| NT-009 | Autocompléter l'arme d'une session depuis le râtelier | app | Must | M | À FAIRE |
 
 ### NT-001 — Enregistrer une session de tir
 - **Thème** : Carnet de tir
@@ -111,6 +117,20 @@
 - **Critères d'acceptation** : filtre par exercice dans l'historique ; combinable avec le filtre réalisées/prévues.
 - **Priorité** : Could · **Statut** : FAIT (PR #12, 2026-07-17) — `SessionFilters.byExercise`, sélecteur d'exercice dans `sessions_history_screen` (combinable avec le filtre réalisées/prévues). · **Notes** : repris de l'issue GitHub #5 (tracking v0.3), 2026-07-09.
 
+### NT-008 — Gérer son râtelier d'armes
+- **Thème** : Carnet de tir · **Portée** : app · **Dépendances** : —
+- **Description** : Dans `Paramètres > Préférences Tir`, le tireur gère rapidement son râtelier personnel afin de réutiliser les noms de ses armes sans ressaisie. Une arme reste volontairement un simple nom textuel : aucune gestion de marque, modèle, calibre, photo ou autre métadonnée.
+- **Critères d'acceptation** : ajout rapide, renommage et suppression depuis une interface mobile simple et immédiatement compréhensible ; nom obligatoire après suppression des espaces en début et fin ; unicité contrôlée sans tenir compte de la casse ni des espaces en début et fin ; persistance locale et fonctionnement hors-ligne ; confirmation explicite avant suppression ; supprimer une arme ne modifie ni ne supprime aucune session existante ; renommer une arme demande confirmation puis remplace aussi son nom dans toutes les sessions prévues et réalisées dont le champ `weapon` correspond exactement à l'ancien nom après normalisation (espaces en début/fin ignorés, casse ignorée), sans modifier les saisies seulement proches ; le renommage du râtelier et des sessions est atomique du point de vue utilisateur (aucun état partiellement mis à jour en cas d'échec) ; l'export JSON inclut le râtelier ; l'import accepte les anciens exports dépourvus de râtelier sans erreur et sans effacer le râtelier local existant ; les armes importées respectent les mêmes règles de validation et de déduplication normalisée.
+- **Priorité** : Must · **Estimation** : M · **Statut** : À FAIRE.
+- **Notes** : conserver un modèle textuel simple, sans identifiant d'arme ni relation persistée session → arme. Le renommage propagé est le compromis retenu pour préserver les statistiques historiques sans complexifier le modèle de données. Prévoir les tests de persistance, validation, rollback du renommage et rétrocompatibilité import/export.
+
+### NT-009 — Autocompléter l'arme d'une session depuis le râtelier
+- **Thème** : Carnet de tir · **Portée** : app · **Dépendances** : NT-001, NT-008
+- **Description** : Lorsqu'il crée ou modifie une session, le tireur retrouve rapidement une arme de son râtelier grâce à l'autocomplétion, tout en conservant la liberté de saisir n'importe quel nom.
+- **Critères d'acceptation** : le champ `weapon` de `ShootingSession` reste textuel et accepte toujours une saisie libre ; pendant la frappe, les noms correspondants du râtelier sont proposés sans tenir compte de la casse ; sélectionner une proposition remplit le champ avec son nom complet ; aucune proposition ni complétion automatique ne doit écraser ou bloquer la saisie de l'utilisateur — s'il continue à taper une autre valeur, son texte est prioritaire ; comportement disponible pour la création et la modification des sessions prévues comme réalisées, y compris dans le wizard de session ; une valeur saisie librement qui correspond exactement à une arme après normalisation est traitée comme cette arme pour les usages dépendants, sans imposer sa sélection dans la liste ; UX utilisable au clavier et au toucher, sans ajouter d'étape au parcours standard.
+- **Priorité** : Must · **Estimation** : M · **Statut** : À FAIRE.
+- **Notes** : réutiliser une logique commune d'autocomplétion dans tous les parcours de session afin d'éviter des comportements divergents. Exemple attendu : saisir `CZ` peut proposer `CZ 75 SP-01 Shadow` ; poursuivre avec `CZ 09` conserve `CZ 09`.
+
 ---
 
 ## Thème 2 — Statistiques & Objectifs
@@ -126,6 +146,7 @@
 | NT-014 | Comparatif glissant 30j vs 60j + sparkline | app | Could | M | À FAIRE |
 | NT-015 | Recommandations croisées Objectifs ⇄ Exercices | app | Could | M | À FAIRE |
 | NT-016 | Objectifs enrichis : statuts étendus, journal, vue détail | app | Could | M | À FAIRE |
+| NT-017 | Compteur de tirs par arme du râtelier | app | Should | S | À FAIRE |
 
 ### NT-010 — Tableau de bord statistiques
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-002
@@ -168,6 +189,13 @@
 - **Description** : Cycle de vie d'objectif plus riche que l'actuel `active/achieved/failed` : statuts étendus (ex. planned/in_progress/achieved/abandoned), journal des changements de statut (avec dates), vue détail dédiée.
 - **Critères d'acceptation** : statuts étendus persistés (migration Hive + adapters régénérés) ; historique des transitions consultable ; écran détail d'un objectif.
 - **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue GitHub #5 (tracking v0.3), 2026-07-09. ⚠️ champ Hive : ajout additif d'états uniquement (typeIds/index stables).
+
+### NT-017 — Compteur de tirs par arme du râtelier
+- **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-002, NT-008, NT-009
+- **Description** : Le tireur visualise le volume total de tirs réalisé avec chacune des armes actuellement présentes dans son râtelier.
+- **Critères d'acceptation** : dans `Statistiques > Avancé`, une section placée en toute dernière position affiche un simple compteur par arme du râtelier, sans graphe ; toutes les armes du râtelier sont affichées, y compris avec un compteur à zéro ; pour chaque arme, le total est la somme des `shotCount` de toutes les séries des seules sessions au statut `réalisée` dont le champ `weapon` correspond exactement au nom de l'arme après normalisation (espaces en début/fin ignorés, casse ignorée) ; les sessions prévues sont exclues ; tous les tirs des séries correspondantes sont comptés, essais compris, indépendamment des points ou scores ; le compteur est recalculé après ajout, modification ou suppression d'une session et après ajout, renommage ou suppression d'une arme ; supprimer une arme retire son compteur sans altérer les sessions.
+- **Priorité** : Should · **Estimation** : S · **Statut** : À FAIRE.
+- **Notes** : calcul local à partir des sessions, sans graphe ni relation persistée session → arme. Exemple : deux sessions réalisées de 10 séries de 5 coups associées à `CZ 75 SP-01 Shadow` affichent `100 tirs`.
 
 ---
 
@@ -455,7 +483,7 @@
 | ID | Titre | Portée | Prio | Est | Statut |
 |---|---|---|---|---|---|
 | NT-070 | Déploiement serveur (Render) | server | Must | S | FAIT |
-| NT-071 | Migration SQLite → Postgres + Alembic | server | Should | M | À FAIRE |
+| NT-071 | Migration SQLite → Postgres Neon + Alembic | server | Must | M | À FAIRE |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT |
 | NT-073 | Normalisation calibres + dernier calibre utilisé | app | Could | S | À FAIRE |
 | NT-074 | Saisie séries plein écran + navigation rapide | app | Could | M | À FAIRE |
@@ -466,8 +494,25 @@
 - **Portée** : server · **Dépendances** : — · **Critères d'acceptation** : déploiement via `render.yaml` ; variables d'env (JWT, OAuth, `MISTRAL_API_KEY`) documentées.
 - **Statut** : FAIT — `render.yaml`, `docs/tech/render_setup.md`.
 
-### NT-071 — Migration SQLite → Postgres + Alembic
-- **Portée** : server · **Dépendances** : — · **Critères d'acceptation** : moteur Postgres ; migrations Alembic. · **Priorité** : Should · **Statut** : À FAIRE. · **Notes** : débloque aussi rate-limit/state multi-instance (NT-062/063).
+### NT-071 — Migration SQLite → Postgres Neon + Alembic
+- **Thème** : Plateforme & Déploiement · **Portée** : server · **Dépendances** : NT-070
+- **Description** : Remplacer la base SQLite stockée sur le disque éphémère de Render par une base PostgreSQL Neon persistante, afin que les comptes utilisateurs et les refresh tokens survivent aux mises en veille, redémarrages et redéploiements du serveur. Industrialiser en même temps les évolutions du schéma avec Alembic.
+- **Architecture retenue** : service FastAPI conservé sur Render Free ; projet Neon Free `nextarget-prod`, région AWS Europe (Frankfurt), branche `production`, base `neondb` et version PostgreSQL stable gérée par défaut par Neon. Le rôle propriétaire Neon `neondb_owner` est réservé aux migrations, sauvegardes et opérations d'administration ; un rôle dédié à privilèges minimaux (ex. `nextarget_app`) est créé pour le runtime. L'application utilise la connexion poolée de ce rôle dédié ; les migrations et sauvegardes utilisent la connexion directe du rôle propriétaire. SQLite reste autorisé uniquement pour le développement local et les tests unitaires ciblés. Un environnement Neon de staging est prévu ultérieurement mais reste hors périmètre de cet item.
+- **Stratégie de bascule** : initialiser une base Neon vide, sans importer la base SQLite éphémère de Render ; créer le schéma par une migration Alembic initiale ; invalider volontairement les sessions/refresh tokens existants et demander une reconnexion unique après la bascule.
+- **Critères d'acceptation** :
+  - le serveur supporte PostgreSQL via un pilote explicitement déclaré et conserve SQLite pour le développement local ;
+  - Alembic est initialisé et une migration de référence crée toutes les tables, contraintes et index des modèles `User` et `RefreshToken` ; Alembic devient la source de vérité des évolutions du schéma et `SQLModel.metadata.create_all()` n'administre plus le schéma de production ;
+  - un rôle PostgreSQL dédié au runtime dispose uniquement des droits nécessaires de connexion et de lecture/écriture sur le schéma applicatif ; il ne peut pas modifier le schéma, tandis que `neondb_owner` reste réservé aux migrations et à l'administration ;
+  - deux variables Render distinctes sont utilisées : `DATABASE_URL` pour l'URL Neon poolée du rôle runtime et `DATABASE_MIGRATION_URL` pour l'URL directe du rôle propriétaire utilisée par Alembic et les opérations d'administration ; leurs valeurs sont saisies dans Render et aucun secret, hostname complet ni mot de passe n'est commité ou journalisé ;
+  - les migrations sont exécutées avant le démarrage d'Uvicorn sur Render ; une migration en échec empêche le serveur de démarrer et produit un diagnostic exploitable sans divulguer de secret ;
+  - le fonctionnement nominal et les erreurs de connexion/migration sont couverts par des tests, dont au moins un parcours exécuté contre PostgreSQL ; la suite SQLite existante reste verte ;
+  - après création d'un utilisateur, celui-ci et ses données d'authentification restent présents après une veille Render/Neon, un redémarrage et un redéploiement ; une reconnexion Google retrouve le même couple `(email, provider)` sans créer de doublon ;
+  - la bascule à vide et l'invalidation des sessions existantes sont documentées et vérifiées en recette ;
+  - une procédure de sauvegarde manuelle `pg_dump` via la connexion directe, de restauration et de rollback est documentée et testée avant la bascule ;
+  - la documentation de déploiement, `.env.example` et `render.yaml` décrivent les deux URLs, leur usage, la gestion manuelle des secrets et la surveillance des quotas Neon Free ;
+  - aucun workflow JavaScript Neon (`neon.ts`, `neon deploy`, MCP ou skills Neon) n'est introduit : le backend reste géré par Python, SQLModel et Alembic.
+- **Priorité** : Must (Should → Must, décision 2026-09-02 après constat de perte des utilisateurs en production) · **Estimation** : M · **Statut** : À FAIRE.
+- **Notes** : décision et diagnostic suivis dans l'issue serveur [#9](https://github.com/clementseguy/NexTarget-server/issues/9). Cette migration corrige la persistance relationnelle ; elle ne rend pas multi-instance les composants encore en mémoire (rate limiting NT-062 et state OAuth NT-063). La création d'un environnement Neon de staging et l'automatisation périodique des sauvegardes feront l'objet de tâches ultérieures si nécessaires.
 
 ### NT-072 — Framework de migrations Hive
 - **Portée** : app · **Dépendances** : — · **Description** : Runner générique de migrations de schéma local (ancien P5).
@@ -696,7 +741,7 @@
 | **S4** | Enrichissement fonctionnel | NT-005, NT-025, NT-073, NT-014 | app | — |
 | **S5** | UX & Performance | NT-074, NT-076 | app | — |
 | **S6** | Fonctionnalités avancées | NT-033, NT-023, NT-024, NT-015, NT-044 | both | — |
-| **Icebox** | Won't-now / pas prioritaire | NT-006, NT-045, NT-046, NT-047, NT-071, NT-090, NT-091 | — | — |
+| **Icebox** | Won't-now / pas prioritaire | NT-006, NT-045, NT-046, NT-047, NT-090, NT-091 | — | — |
 
 > **Révision 2026-07-13** : les thèmes 10–13 ne sont pas encore ventilés en
 > sprints. Ordre recommandé après S4 (qui contient déjà NT-005, remonté Must) :
@@ -847,7 +892,6 @@ de planification.*
 | NT-045 | Stats publiques / partage de profil | Pas de demande utilisateur identifiée |
 | NT-046 | Gamification | Scope large, pas prioritaire |
 | NT-047 | Apple Sign In | Requis uniquement pour publication iOS avec login social |
-| NT-071 | Migration SQLite → Postgres | Montée en charge non prévue à court/moyen terme |
 | NT-090 | Thème ASCII Art | Cosmétique, pas de valeur métier |
 | NT-091 | Règles de sécurité FFTir | À instruire quand le besoin se précise |
 
@@ -855,7 +899,7 @@ de planification.*
 
 | Sujet | Décision |
 |---|---|
-| NT-071 (Postgres) | **Icebox** — SQLite single-instance suffit à moyen terme. |
+| NT-071 (Postgres) | **Décision annulée le 2026-09-02** — le disque SQLite éphémère de Render entraîne la perte des utilisateurs ; NT-071 est désormais Must. |
 | NT-033 (Coach multi-sessions) | **Repoussé en S6** — nice-to-have, scope et prompts pas encore définis. |
 | Cadence | Senior + agentic dev (Claude Code), sprints de 2 semaines. |
 | Demo FFTir | **Début août 2026** — S1 (sécurité) et S2 (onboarding + multi-personas) sont bloquants. |
@@ -869,5 +913,11 @@ de planification.*
 | NT-005 (photo) | Remonté **Could → Must** — socle du thème 11 ; livré le 2026-07-17 (PR #12). |
 | Analyse photo | Approche **qualitative multimodale** (NT-111) retenue ; NT-006 (CV métrique) maintenu en Icebox, à réévaluer après retour d'usage. |
 | Référentiel TAR | Versionné par saison ; seed extrait du règlement CNS TAR 2025-2026 → [`docs/specs/referentiel_tar_25m.md`](../specs/referentiel_tar_25m.md). |
+
+### Décisions prises (2026-09-02)
+
+| Sujet | Décision |
+|---|---|
+| NT-071 (Postgres) | **Should → Must** — migrer la production de SQLite éphémère vers Neon Postgres Free (`nextarget-prod`, Frankfurt) avec Alembic ; bascule sur une base vide et reconnexion des utilisateurs. Voir l'issue serveur [#9](https://github.com/clementseguy/NexTarget-server/issues/9). |
 | Estimation | Ajout d'une **Valeur métier (VM 1–5)** sur les thèmes 10+, en complément de MoSCoW + S/M/L (dev solo + agentic : le facteur limitant est la valeur/le risque, pas l'effort). |
 | NT-033 / NT-023 | Précisés et décomposés par les items du **thème 12** (NT-120→NT-126), qui font référence. |

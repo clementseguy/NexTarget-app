@@ -7,7 +7,7 @@
 > uniquement dans cette vue (règle de sync : [README.md](README.md)).
 
 **Repo** : NexTarget-app (Flutter/Dart, Hive, SonarCloud, dart_code_metrics)
-**Dernière projection** : 2026-07-24 (ajout NT-026 à la suite de la recette NT-007)
+**Dernière projection** : 2026-09-02 (ajout NT-008, NT-009 et NT-017)
 
 ## Items app
 
@@ -20,6 +20,8 @@
 | NT-005 | Attacher une photo de la cible | app | Must | M | À FAIRE | Could → Must (2026-07-13), socle thème 11 |
 | NT-006 | Analyse d'image de la cible | both | Won't-now | L | À FAIRE | capture côté app, analyse côté serveur |
 | NT-007 | Filtrer l'historique des sessions par exercice | app | Could | S | À FAIRE | issue #5 |
+| NT-008 | Gérer son râtelier d'armes | app | Must | M | À FAIRE | CRUD textuel dans Paramètres ; renommage propagé atomiquement aux sessions correspondantes ; export/import rétrocompatible |
+| NT-009 | Autocompléter l'arme d'une session depuis le râtelier | app | Must | M | À FAIRE | saisie libre prioritaire ; création/édition, prévue/réalisée et wizard |
 | NT-010 | Tableau de bord statistiques | app | Must | M | FAIT | `dashboard_service`, `widgets/dashboard` |
 | NT-011 | Statistiques explicatives / évolution | app | Should | M | FAIT | `stats_service`, `evolution_chart` |
 | NT-012 | Objectifs mesurables | app | Must | M | FAIT | `Goal`, `goal_service` |
@@ -27,6 +29,7 @@
 | NT-014 | Comparatif 30j vs 60j + sparkline | app | Could | M | À FAIRE | — |
 | NT-015 | Recommandations Objectifs ⇄ Exercices | app | Could | M | À FAIRE | dépend NT-012, NT-021 |
 | NT-016 | Objectifs enrichis : statuts étendus, journal, vue détail | app | Could | M | À FAIRE | issue #5 |
+| NT-017 | Compteur de tirs par arme du râtelier | app | Should | S | À FAIRE | compteurs simples en bas de Statistiques > Avancé ; sessions réalisées uniquement |
 | NT-020 | Gérer des exercices (CRUD) | app | Must | M | FAIT | `Exercise`, écrans list/form |
 | NT-021 | Lier exercices ↔ objectifs | app | Should | S | FAIT | `Exercise.goalIds` |
 | NT-022 | Lier exercices ↔ sessions | app | Should | S | FAIT | `ShootingSession.exercises` |
@@ -77,7 +80,7 @@
 
 ## Prochaines actions app (hors FAIT), par priorité
 
-- **Must** — NT-005 (photo de cible), NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session).
-- **Should** — NT-042 (édition profil à confirmer), NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-131. NT-033 : voir NT-120/NT-121.
+- **Must** — NT-005 (photo de cible), NT-008 (râtelier), NT-009 (autocomplétion arme), NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session).
+- **Should** — NT-017 (compteurs de tirs par arme), NT-042 (édition profil à confirmer), NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-131. NT-033 : voir NT-120/NT-121.
 - **Could** — NT-007, NT-014, NT-015, NT-016, NT-024, NT-025, NT-026, NT-044, NT-056, NT-057, NT-073, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132. NT-023 : voir NT-122/NT-123.
 - **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.

@@ -11,7 +11,7 @@
 > pointer vers lui (voir gouvernance).
 
 **Repo** : NexTarget-server (FastAPI + SQLModel + SQLite, OAuth + proxy IA)
-**Dernière projection** : 2026-07-13 (enrichissement thèmes 11–12 ; état du code : 2026-07-07)
+**Dernière projection** : 2026-09-02 (spécification Neon/Alembic de NT-071)
 
 > ⚠️ **Le serveur n'est plus « OAuth-only ».** Il expose aussi le **proxy Coach IA**
 > (`/coach/analyze-session`). Les anciens statuts « M1/M2 supprimés/décalés » sont
@@ -52,13 +52,13 @@
 | NT-065 | Restreindre CORS par environnement | server | Should | S | FAIT | `CORS_ALLOW_ORIGINS` ; `*` en dev, aucune origine sinon |
 | NT-066 | Vérification du nonce Google | server | Should | S | FAIT | nonce OIDC vérifié au callback (400 sinon) |
 | NT-070 | Déploiement serveur (Render) | server | Must | S | FAIT | `render.yaml`, `docs/tech/render_setup.md` |
-| NT-071 | Migration SQLite → Postgres + Alembic | server | Should | M | À FAIRE | débloque multi-instance (NT-062/063) |
+| NT-071 | Migration SQLite → Postgres Neon + Alembic | server | Must | M | À FAIRE | Render Free + Neon Free Frankfurt ; base vide, URLs runtime/migration séparées, issue serveur #9 |
 | NT-006 | Analyse d'image de la cible | both | Won't-now | L | À FAIRE | vraisemblablement côté serveur |
 
 ## Prochaines actions serveur (hors FAIT), par priorité
 
-- **Must** — (aucun ; la rotation manuelle de la clé Mistral reste à faire côté ops, cf. NT-061).
-- **Should** — NT-048 (refresh tokens), NT-053 (logging/tracing), NT-054 (tests OAuth mockés), NT-055 (CI serveur), NT-071 (Postgres/Alembic), NT-032/NT-033 (coach avancé).
+- **Must** — NT-071 (persistance PostgreSQL Neon + Alembic). La rotation manuelle de la clé Mistral reste à faire côté ops, cf. NT-061.
+- **Should** — NT-048 (refresh tokens), NT-053 (logging/tracing), NT-054 (tests OAuth mockés), NT-055 (CI serveur), NT-032/NT-033 (coach avancé).
 - **Won't-now** — NT-045, NT-046, NT-047, NT-006.
 
 ## Note de cohérence documentaire
