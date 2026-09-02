@@ -126,9 +126,6 @@ les métriques de séries les ignorent ; aucune analyse Coach n'est proposée.
 et peut être fusionné séparément. NT-133 ne doit pas retarder la livraison de
 l'incrément A si sa migration nécessite davantage de validation.
 
-**Prompt de développement** :
-[`prompt-agent-lot-nt014-nt048-nt061-nt073-nt133.md`](prompt-agent-lot-nt014-nt048-nt061-nt073-nt133.md).
-
 ### Lot serveur autonome — Diagnostic OAuth
 
 **Objectif livré** : permettre à l'administrateur de vérifier rapidement et
