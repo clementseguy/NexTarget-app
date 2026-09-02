@@ -280,6 +280,10 @@ réversible par suppression des entités créées.
 
 ## Points de cohérence à corriger
 
-- Le bloc "Backlog priorisé" du backlog unifié est historique et mélange items
-  livrés, anciens sprints et nouveaux thèmes. Il devrait être remplacé par un
-  lien vers ce plan ou régénéré depuis celui-ci après validation produit.
+*(Aucun point ouvert actuellement.)*
+
+- **Résolu (2026-09-02)** : le bloc "Backlog priorisé" du backlog unifié
+  mélangeait items livrés, anciens sprints et nouveaux thèmes. Un bandeau
+  « Plan historique » a été ajouté en tête de ce bloc dans
+  `backlog-unifie.md`, indiquant que ce plan (`plan-sprints.md`) est la
+  source courante de priorisation métier, dépendances et sprints livrables.
