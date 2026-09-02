@@ -11,6 +11,11 @@ Toutes les modifications notables de ce projet seront listées ici.
     - Requêtes rejouées depuis une copie neuve (jamais l'objet `BaseRequest` déjà finalisé), y compris pour un corps initialement streamé.
     - Profil et Coach IA passent par le même mécanisme authentifié ; un refresh invalide/expiré/révoqué/rejoué termine la session (reconnexion Google requise) alors qu'une panne réseau préserve les tokens et ne déconnecte jamais (carnet, statistiques, objectifs et exercices restent utilisables hors ligne ; le Coach signale clairement son indisponibilité réseau).
     - Déconnexion : révocation serveur (`/auth/token/revoke`) en best effort puis nettoyage local systématique, y compris hors ligne.
+- NT-073 : calibre par défaut facultatif, sélectionné parmi le référentiel configuré et appliqué uniquement aux nouvelles sessions réalisées ou prévues.
+- NT-073 : autocomplétion commune aux formulaires et au wizard, sans autoremplacement, ainsi qu'une répartition statistique par calibre reconnu regroupant les alias 9 mm.
+
+### Changed
+- NT-073 : suppression de l'entrée générique `Autre` ; les calibres inconnus restent saisis et persistés librement, participent aux statistiques globales et sont exclus des seules répartitions par calibre.
 
 ### Documentation
 - Cadrage détaillé du lot NT-014/NT-048/NT-073/NT-133 et alignement des vues app/serveur et du plan de sprints.

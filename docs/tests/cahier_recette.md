@@ -1,7 +1,24 @@
 # Cahier de Recette
 
-- Dernière mise à jour: 2026-09-02
+- Dernière mise à jour: 2026-09-03
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
+
+## NT-073 — Calibre par défaut et statistiques par calibre
+Objectif: Vérifier le préremplissage explicite, la saisie libre et le regroupement statistique sans réécriture.
+Pré-requis:
+- Disposer de sessions réalisées avec les calibres 9mm, 9x19, .380 ACP et une valeur libre inconnue
+Étapes:
+1. Dans Paramètres > Préférences Tir, choisir .45 ACP comme calibre par défaut
+2. Créer une session réalisée puis une session prévue depuis leurs onglets
+3. Modifier librement le calibre proposé, enregistrer, puis rouvrir les sessions en édition et dans le wizard
+4. Effacer la préférence et créer une nouvelle session
+5. Ouvrir Statistiques et consulter la répartition par calibre
+Résultats attendus:
+- La préférence ne propose que les calibres reconnus et persiste après redémarrage
+- Les deux nouvelles sessions sont préremplies avec .45 ACP sans étape supplémentaire
+- La saisie n'est jamais autoremplacée et l'édition comme le wizard conservent exactement la valeur enregistrée
+- Sans préférence, le calibre d'une nouvelle session est vide
+- 9mm et 9x19 sont regroupés sous 9 mm, .380 ACP reste distinct et la valeur inconnue est absente de cette seule répartition
 
 ## SESS-01 — Sessions – création/édition
 Objectif: Créer une session réalisée avec armes/séries, puis l’éditer sans perte de données.
@@ -87,9 +104,11 @@ Objectif: Saisie de calibre assistée et préremplie si préférence définie.
 Étapes:
 1. Ouvrir création de session, focus sur calibre → voir liste complète
 2. Taper un alias (ex: 9mm) et sélectionner une option
+3. Saisir une valeur libre sans choisir de suggestion
 Résultats attendus:
 - La liste s’affiche au focus
 - La sélection remplit le champ correctement
+- La saisie n'est jamais remplacée automatiquement et la valeur libre est conservée
 
 ## CAL-02 — Calibres – préférence par défaut
 Objectif: Préremplir le champ calibre depuis la préférence utilisateur.
@@ -98,6 +117,7 @@ Objectif: Préremplir le champ calibre depuis la préférence utilisateur.
 2. Créer une nouvelle session
 Résultats attendus:
 - Le champ calibre est prérempli avec le calibre par défaut
+- Une édition conserve son calibre enregistré, même si la préférence a changé
 
 ## PREF-01 — Réglages – préférences utilisateur (Hive)
 Objectif: Tester la préférence "1 main / 2 mains" et son effet de préremplissage.
@@ -297,4 +317,3 @@ Objectif: Vérifier les boutons d'aide sur Sessions, Objectifs, Exercices.
 Résultats attendus:
 - Chaque écran affiche une bottom sheet d'aide avec un titre et des points concrets propres à l'écran
 - La bottom sheet se ferme par glissement ou tap hors zone, sans effet de bord
-

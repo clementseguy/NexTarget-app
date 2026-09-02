@@ -1,6 +1,24 @@
 version: v0.6
-last_updated: 2026-09-02
+last_updated: 2026-09-03
 features:
+  - id: NT-073
+    name: Calibre par défaut et statistiques par calibre
+    objectif: Vérifier le préremplissage explicite, la saisie libre et le regroupement statistique sans réécriture.
+    preconditions:
+      - Disposer de sessions réalisées avec les calibres 9mm, 9x19, .380 ACP et une valeur libre inconnue
+    steps:
+      - Dans Paramètres > Préférences Tir, choisir .45 ACP comme calibre par défaut
+      - Créer une session réalisée puis une session prévue depuis leurs onglets
+      - Modifier librement le calibre proposé, enregistrer, puis rouvrir les sessions en édition et dans le wizard
+      - Effacer la préférence et créer une nouvelle session
+      - Ouvrir Statistiques et consulter la répartition par calibre
+    expected:
+      - La préférence ne propose que les calibres reconnus et persiste après redémarrage
+      - Les deux nouvelles sessions sont préremplies avec .45 ACP sans étape supplémentaire
+      - La saisie n'est jamais autoremplacée et l'édition comme le wizard conservent exactement la valeur enregistrée
+      - Sans préférence, le calibre d'une nouvelle session est vide
+      - 9mm et 9x19 sont regroupés sous 9 mm, .380 ACP reste distinct et la valeur inconnue est absente de cette seule répartition
+
   - id: SESS-01
     name: Sessions – création/édition
     objectif: Créer une session réalisée avec armes/séries, puis l’éditer sans perte de données.
@@ -94,9 +112,11 @@ features:
     steps:
       - Ouvrir création de session, focus sur calibre → voir liste complète
       - Taper un alias (ex: 9mm) et sélectionner une option
+      - Saisir une valeur libre sans choisir de suggestion
     expected:
       - La liste s’affiche au focus
       - La sélection remplit le champ correctement
+      - La saisie n'est jamais remplacée automatiquement et la valeur libre est conservée
 
   - id: CAL-02
     name: Calibres – préférence par défaut
@@ -106,6 +126,7 @@ features:
       - Créer une nouvelle session
     expected:
       - Le champ calibre est prérempli avec le calibre par défaut
+      - Une édition conserve son calibre enregistré, même si la préférence a changé
 
   - id: PREF-01
     name: Réglages – préférences utilisateur (Hive)

@@ -2,6 +2,8 @@ import '../models/shooting_session.dart';
 import '../models/series.dart';
 import '../utils/session_filters.dart';
 import '../interfaces/stats_service_interface.dart';
+import '../config/app_config.dart';
+import '../utils/caliber_normalization.dart';
 
 class SeriesStat {
   final DateTime date; // date de la session associée
@@ -179,6 +181,19 @@ class StatsService implements IStatsService {
       }
       return counts;
     }
+  }
+
+  @override
+  Map<String, int> caliberDistribution() {
+    final counts = <String, int>{};
+    for (final session in SessionFilters.realizedWithDate(sessions)) {
+      final caliber = resolveStatisticalCaliber(
+        session.caliber,
+        calibers: AppConfig.I.calibers,
+      );
+      if (caliber != null) counts[caliber] = (counts[caliber] ?? 0) + 1;
+    }
+    return counts;
   }
 
   @override
