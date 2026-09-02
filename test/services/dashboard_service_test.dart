@@ -4,8 +4,14 @@ import 'package:tir_sportif/services/dashboard_service.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/constants/session_constants.dart';
+import 'package:tir_sportif/config/app_config.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(() async {
+    await AppConfig.load();
+  });
+
   group('DashboardService', () {
     late DateTime now;
     late List<ShootingSession> sessions;
@@ -171,6 +177,19 @@ void main() {
         expect(distribution.data['10m'], closeTo(33.33, 0.1)); // 2/6 = 33.33%
         expect(distribution.data['25m'], closeTo(50.0, 0.1)); // 3/6 = 50%
         expect(distribution.data['50m'], closeTo(16.67, 0.1)); // 1/6 = 16.67%
+      });
+    });
+
+    group('generateCaliberDistribution', () {
+      test('calcule les pourcentages des calibres reconnus', () {
+        sessions[0].caliber = '9mm';
+        sessions[1].caliber = '9x19';
+        sessions[2].caliber = 'calibre maison';
+        final distribution =
+            DashboardService(sessions, now: now).generateCaliberDistribution();
+
+        expect(distribution.title, 'Répartition Calibres');
+        expect(distribution.data, {'9 mm': 100});
       });
     });
   });

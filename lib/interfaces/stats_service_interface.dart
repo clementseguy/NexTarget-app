@@ -25,6 +25,9 @@ abstract class IStatsService {
   
   /// Distribution des catégories
   Map<String, int> categoryDistribution({bool sessionsOnly = true});
+
+  /// Répartition des sessions par calibre reconnu.
+  Map<String, int> caliberDistribution();
   
   /// Buckets de points
   List<dynamic> pointBuckets({int bucketSize = 10, bool last30 = true});

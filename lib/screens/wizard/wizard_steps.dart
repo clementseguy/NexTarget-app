@@ -3,6 +3,7 @@ import '../../models/series.dart';
 import '../../models/exercise.dart';
 import '../../models/goal.dart';
 import '../../widgets/weapon_autocomplete_field.dart';
+import '../../widgets/caliber_autocomplete_field.dart';
 
 /// Étape introduction du wizard (exercice, arme, calibre, catégorie)
 class WizardIntroStep extends StatelessWidget {
@@ -96,14 +97,11 @@ class WizardIntroStep extends StatelessWidget {
               controller: weaponController,
               labelText: 'Arme',
             ),
-            Focus(
+            CaliberAutocompleteField(
+              controller: caliberController,
               focusNode: caliberFocusNode,
-              child: TextFormField(
-                controller: caliberController,
-                decoration: const InputDecoration(labelText: 'Calibre'),
-                onChanged: onCaliberChanged,
-                onSaved: onCaliberSaved,
-              ),
+              onChanged: onCaliberChanged,
+              onSaved: onCaliberSaved,
             ),
             TextFormField(
               initialValue: categoryDraft,

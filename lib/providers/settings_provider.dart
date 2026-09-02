@@ -3,6 +3,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../services/backup_service.dart';
 import '../services/session_service.dart';
 import '../theme/app_theme.dart';
+import '../config/app_config.dart';
+import '../utils/caliber_autocomplete.dart';
 
 /// Provider pour gérer l'état de l'écran des paramètres
 class SettingsProvider extends ChangeNotifier {
@@ -23,8 +25,10 @@ class SettingsProvider extends ChangeNotifier {
   String get defaultHandMethod => 
       _preferencesBox.get('default_hand_method', defaultValue: 'two');
       
-  String? get defaultCaliber => 
-      _preferencesBox.get('default_caliber');
+  String? get defaultCaliber {
+    final stored = _preferencesBox.get('default_caliber');
+    return stored is String && isKnownCaliber(stored) ? stored : null;
+  }
 
   // Persona du coach IA (NT-032) : 'coach_neutre' ou 'coach_cool'.
   // Valeur = prompt_variant envoyé au serveur (POST /coach/analyze-session).
@@ -61,11 +65,19 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
   
-  Future<void> updateDefaultCaliber(String value) async {
-    if (value.isEmpty) {
+  Future<void> updateDefaultCaliber(String? value) async {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
       await _preferencesBox.delete('default_caliber');
     } else {
-      await _preferencesBox.put('default_caliber', value);
+      if (!isKnownCaliber(trimmed)) {
+        throw ArgumentError.value(value, 'value', 'Calibre non reconnu');
+      }
+      final selected = AppConfig.I.calibers.firstWhere(
+        (candidate) =>
+            normalizeCaliberSearch(candidate) == normalizeCaliberSearch(trimmed),
+      );
+      await _preferencesBox.put('default_caliber', selected);
     }
     notifyListeners();
   }

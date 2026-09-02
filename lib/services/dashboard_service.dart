@@ -180,6 +180,22 @@ class DashboardService {
       isPercentage: true,
     );
   }
+
+  /// Génère la répartition des seules sessions au calibre reconnu.
+  DistributionData generateCaliberDistribution() {
+    final distribution = _statsService.caliberDistribution();
+    if (distribution.isEmpty) {
+      return const DistributionData.empty('Répartition Calibres');
+    }
+    final total = distribution.values.fold(0, (sum, count) => sum + count);
+    return DistributionData(
+      data: distribution.map(
+        (caliber, count) => MapEntry(caliber, (count / total) * 100),
+      ),
+      title: 'Répartition Calibres',
+      isPercentage: true,
+    );
+  }
   
   // Méthodes utilitaires
   

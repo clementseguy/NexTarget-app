@@ -4,6 +4,13 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Non publié]
 
+### Added
+- NT-073 : calibre par défaut facultatif, sélectionné parmi le référentiel configuré et appliqué uniquement aux nouvelles sessions réalisées ou prévues.
+- NT-073 : autocomplétion commune aux formulaires et au wizard, sans autoremplacement, ainsi qu'une répartition statistique par calibre reconnu regroupant les alias 9 mm.
+
+### Changed
+- NT-073 : suppression de l'entrée générique `Autre` ; les calibres inconnus restent saisis et persistés librement, participent aux statistiques globales et sont exclus des seules répartitions par calibre.
+
 ### Documentation
 - Cadrage détaillé du lot NT-014/NT-048/NT-073/NT-133 et alignement des vues app/serveur et du plan de sprints.
 - NT-061 : clôture documentaire après confirmation de la rotation de la clé Mistral et audit du client ; aucun appel Mistral direct, prompt, secret ou fallback local ne subsiste dans l'app. Les notes des anciennes versions restent conservées comme historique.
