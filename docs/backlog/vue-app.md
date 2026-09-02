@@ -7,7 +7,7 @@
 > uniquement dans cette vue (règle de sync : [README.md](README.md)).
 
 **Repo** : NexTarget-app (Flutter/Dart, Hive, SonarCloud, dart_code_metrics)
-**Dernière projection** : 2026-09-02 (NT-008, NT-009 et NT-017 livrés)
+**Dernière projection** : 2026-09-02 (NT-008, NT-009, NT-017 et NT-058 livrés)
 
 ## Items app
 
@@ -52,6 +52,7 @@
 | NT-052 | Cahier de recette généré | app | Should | S | FAIT | `scripts/generate_cahier_recette.dart` |
 | NT-056 | Harmonisation des erreurs réseau | app | Could | S | À FAIRE | issue #5 ; coach déjà conforme |
 | NT-057 | Nettoyage des widgets dupliqués | app | Could | S | À FAIRE | issue #5 ; MainNavigation déjà supprimé |
+| NT-058 | Fakes de repository partagés pour les tests | app | Should | S | FAIT | `test/support/` (`FakeSessionRepository`, `captureError`) ; déclenché par NT-008 |
 | NT-061 | Coach connecté uniquement (retrait clé client) | both | Must | M | FAIT | `CoachAnalysisService` direct supprimé ; rotation clé = action manuelle |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT | `lib/migrations/` (script cohérence : à faire) |
 | NT-073 | Normalisation calibres + dernier calibre | app | Could | S | À FAIRE | prototype abandonné ; reprise après design, voir REX TAR/saisie rapide |

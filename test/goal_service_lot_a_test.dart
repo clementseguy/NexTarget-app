@@ -2,11 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tir_sportif/services/goal_service.dart';
 import 'package:tir_sportif/models/goal.dart';
 import 'package:tir_sportif/repositories/goal_repository.dart';
-import 'package:tir_sportif/repositories/session_repository.dart';
-import 'package:tir_sportif/models/shooting_session.dart';
+import 'support/fake_session_repository.dart';
 // import removed (not needed): series
 
-// Fake in-memory repositories for isolation
+// Fake in-memory repository for isolation (le GoalRepository reste local : ce
+// test ne vérifie pas de clonage/rollback, contrairement à FakeSessionRepository).
 class _MemGoalRepo implements GoalRepository {
   final List<Goal> _list = [];
   @override Future<void> delete(String id) async { _list.removeWhere((g)=> g.id==id); }
@@ -14,24 +14,16 @@ class _MemGoalRepo implements GoalRepository {
   @override Future<List<Goal>> getAll() async => List.unmodifiable(_list);
   @override Future<void> put(Goal goal) async { _list.removeWhere((g)=> g.id==goal.id); _list.add(goal); }
 }
-class _MemSessionRepo implements SessionRepository {
-  final List<ShootingSession> _sessions = [];
-  @override Future<void> clearAll() async { _sessions.clear(); }
-  @override Future<void> delete(int id) async { _sessions.removeWhere((s)=> s.id==id); }
-  @override Future<List<ShootingSession>> getAll() async => List.unmodifiable(_sessions);
-  @override Future<int> insert(ShootingSession session) async { final newId = (_sessions.length+1); session.id=newId; _sessions.add(session); return newId; }
-  @override Future<bool> update(ShootingSession session, {bool preserveExistingSeriesIfEmpty = true}) async { final idx=_sessions.indexWhere((s)=> s.id==session.id); if(idx!=-1) _sessions[idx]=session; return false; }
-}
 
 void main() {
   group('GoalService Lot A', () {
     late GoalService service;
     late _MemGoalRepo goalRepo;
-    late _MemSessionRepo sessionRepo;
+    late FakeSessionRepository sessionRepo;
 
     setUp(() async {
       goalRepo = _MemGoalRepo();
-      sessionRepo = _MemSessionRepo();
+      sessionRepo = FakeSessionRepository();
       service = GoalService(goalRepository: goalRepo, sessionRepository: sessionRepo);
     });
 

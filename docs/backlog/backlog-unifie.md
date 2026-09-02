@@ -46,7 +46,7 @@
 | 3. Exercices | NT-020 → NT-026 |
 | 4. Coach IA | NT-030 → NT-034 |
 | 5. Auth & Compte | NT-040 → NT-049 |
-| 6. Qualité & Observabilité | NT-050 → NT-057 |
+| 6. Qualité & Observabilité | NT-050 → NT-058 |
 | 7. Sécurité & Secrets | NT-060 → NT-066 |
 | 8. Plateforme & Déploiement | NT-070 → NT-076 |
 | 9. Idées / hors-scope | NT-090 → NT-092 |
@@ -411,6 +411,7 @@
 | NT-055 | CI serveur (tests + couverture) | server | Should | S | FAIT |
 | NT-056 | Harmonisation des erreurs réseau (app) | app | Could | S | À FAIRE |
 | NT-057 | Nettoyage des widgets dupliqués (app) | app | Could | S | À FAIRE |
+| NT-058 | Fakes de repository partagés pour les tests (app) | app | Should | S | FAIT |
 
 ### NT-050 — SonarCloud + Quality Gate + couverture (app)
 - **Portée** : app · **Dépendances** : — · **Description** : Qualité continue mesurée sur l'app.
@@ -450,6 +451,13 @@
 - **Portée** : app · **Dépendances** : — · **Description** : Chasse aux widgets/écrans dupliqués ou morts et factorisation.
 - **Critères d'acceptation** : inventaire fait ; doublons supprimés ou factorisés ; aucune régression (tests verts).
 - **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue #5 ; `MainNavigation` (doublon d'`AppNavigator`) déjà supprimé en v0.5.0.
+
+### NT-058 — Fakes de repository partagés pour les tests (app)
+- **Thème** : Qualité & Observabilité · **Portée** : app · **Dépendances** : —
+- **Description** : Chaque fichier de test réinventait son propre « fake » en mémoire de `SessionRepository` (une dizaine d'implémentations ad hoc). Certains faisaient `getAll() => List.of(sessions)` — une copie de liste mais pas des objets — alors que `HiveSessionRepository.getAll()` reconstruit toujours des objets frais depuis les maps sérialisées. Une logique qui mute un champ avant un `update()` qui échoue (ex. rollback de renommage, NT-008) pouvait alors laisser un fake dans un état incohérent tout en donnant l'impression d'un bug côté code de production, générant des diagnostics longs et trompeurs.
+- **Critères d'acceptation** : `test/support/fake_session_repository.dart` clone chaque session lue (comme le ferait Hive) ; `test/support/async_test_helpers.dart` fournit `captureError()` pour tester proprement une exception async (évite le piège `expect(() => asyncFn(), throwsA(...))` non awaité) ; les deux ont un test nominal + un cas d'erreur ; au moins un fake ad hoc préexistant migré vers le fake partagé à titre d'exemple.
+- **Priorité** : Should · **Estimation** : S · **Statut** : FAIT — `test/support/fake_session_repository.dart`, `test/support/async_test_helpers.dart` (+ tests dédiés) ; `test/goal_service_lot_a_test.dart` migré. Convention documentée dans `AGENTS.md`.
+- **Notes** : tâche de fond (boy scout rule), déclenchée par un débogage long lors de NT-008 (rollback du renommage d'arme). Les autres fakes ad hoc préexistants (stubs en lecture seule, mocks spécialisés) n'ont pas été touchés : risque de régression non justifié pour des fakes qui n'exposent pas ce défaut. Migration plus large possible en tâche future si souhaité.
 
 ---
 
