@@ -6,6 +6,7 @@ import '../services/preferences_service.dart';
 import '../utils/caliber_autocomplete.dart';
 import '../config/app_config.dart';
 import 'series_cards.dart';
+import 'weapon_autocomplete_field.dart';
 import '../models/shooting_session.dart';
 import '../constants/session_constants.dart';
 import '../models/series.dart';
@@ -332,9 +333,9 @@ class SessionFormState extends State<SessionForm> {
           Row(
             children: [
               Expanded(
-                child: TextFormField(
+                child: WeaponAutocompleteField(
                   controller: _weaponController,
-                  decoration: InputDecoration(labelText: 'Arme (optionnel si prévue)'),
+                  labelText: 'Arme (optionnel si prévue)',
                   validator: (v){
                     if (_status == SessionConstants.statusPrevue) return null; // optional
                     if (v==null||v.isEmpty) return 'Requis';

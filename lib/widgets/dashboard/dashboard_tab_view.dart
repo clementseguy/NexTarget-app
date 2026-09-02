@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../../models/shooting_session.dart';
 import '../../models/series.dart';
+import '../../models/weapon.dart';
 import '../../services/dashboard_service.dart';
+import '../../services/weapon_service.dart';
 import '../../models/dashboard_data.dart';
 import 'stats_summary_cards.dart';
 import 'evolution_chart.dart';
@@ -11,6 +13,7 @@ import 'points_histogram_chart.dart';
 import 'advanced_stats_cards.dart';
 import 'evolution_comparison_widget.dart';
 import 'correlation_scatter_chart.dart';
+import 'weapon_shot_counts_card.dart';
 
 /// Widget principal du dashboard avec onglets Synthèse/Avancé
 class DashboardTabView extends StatefulWidget {
@@ -49,6 +52,11 @@ class _DashboardTabViewState extends State<DashboardTabView> with SingleTickerPr
   // Données évolution 1 main
   EvolutionData? _oneHandPointsEvolution;
   EvolutionData? _oneHandGroupSizeEvolution;
+
+  // Râtelier & compteurs de tirs par arme (NT-017)
+  final WeaponService _weaponService = WeaponService();
+  List<Weapon> _weapons = [];
+  Map<String, int> _weaponShotCounts = {};
   
   @override
   void initState() {
@@ -88,6 +96,10 @@ class _DashboardTabViewState extends State<DashboardTabView> with SingleTickerPr
       
       // Données évolution 1 main
       final (oneHandPoints, oneHandGroupSize) = _dashboardService.generateHandMethodEvolutionData(HandMethod.oneHand);
+
+      // Râtelier & compteurs de tirs par arme (NT-017)
+      final weapons = await _weaponService.listAll();
+      final weaponShotCounts = _dashboardService.generateWeaponShotCounts(weapons);
       
       if (mounted) {
         setState(() {
@@ -110,6 +122,10 @@ class _DashboardTabViewState extends State<DashboardTabView> with SingleTickerPr
           // Données évolution 1 main
           _oneHandPointsEvolution = oneHandPoints;
           _oneHandGroupSizeEvolution = oneHandGroupSize;
+
+          // Râtelier & compteurs de tirs par arme
+          _weapons = weapons;
+          _weaponShotCounts = weaponShotCounts;
           
           _isLoading = false;
         });
@@ -285,6 +301,15 @@ class _DashboardTabViewState extends State<DashboardTabView> with SingleTickerPr
                 useRightAxis: true, // Axe Y à droite pour le groupement
               ),
             ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Compteurs de tirs par arme du râtelier (NT-017) — dernière section, sans graphe
+          WeaponShotCountsCard(
+            weapons: _weapons,
+            shotCountsByWeaponId: _weaponShotCounts,
+            isLoading: _isLoading,
           ),
         ],
       ),

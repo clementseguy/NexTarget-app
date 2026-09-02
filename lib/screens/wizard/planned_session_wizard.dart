@@ -26,7 +26,7 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
   int _step = 0; // 0 = intro, 1..series = séries, last = synthèse
   final _formIntro = GlobalKey<FormState>();
   final _formSynthese = GlobalKey<FormState>();
-  String? _weaponDraft;
+  late TextEditingController _weaponCtrl;
   String? _caliberDraft;
   String? _categoryDraft;
   String? _syntheseDraft;
@@ -46,7 +46,7 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
   void initState() {
     super.initState();
     _session = widget.session;
-    _weaponDraft = _session.weapon;
+    _weaponCtrl = TextEditingController(text: _session.weapon);
   _caliberDraft = pickInitialCaliber(existing: _session.caliber, defaultCaliber: PreferencesService().getDefaultCaliber());
     _caliberCtrl = TextEditingController(text: _caliberDraft ?? '');
     _lastCalTxt = _caliberCtrl.text;
@@ -64,6 +64,7 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
 
   @override
   void dispose() {
+    _weaponCtrl.dispose();
     _caliberCtrl.dispose();
     _caliberFocus.dispose();
     super.dispose();
@@ -143,7 +144,7 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
     try {
       await _service.convertPlannedToRealized(
         session: _session,
-        weapon: _weaponDraft,
+        weapon: _weaponCtrl.text,
         caliber: _caliberDraft,
         category: _categoryDraft,
         synthese: _syntheseDraft,
@@ -215,7 +216,7 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
       loadingExercise: _loadingExercise,
       linkedExercise: _linkedExercise,
       goals: _goals,
-      weaponDraft: _weaponDraft,
+      weaponController: _weaponCtrl,
       caliberController: _caliberCtrl,
       caliberFocusNode: _caliberFocus,
       categoryDraft: _categoryDraft,
@@ -234,7 +235,6 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
         }
         _caliberDraft = _caliberCtrl.text;
       },
-      onWeaponSaved: (v) => _weaponDraft = v ?? '',
       onCaliberSaved: (v) => _caliberDraft = v ?? '',
       onCategorySaved: (v) => _categoryDraft = v ?? SessionConstants.categoryEntrainement,
       onValidate: _onValidateIntro,

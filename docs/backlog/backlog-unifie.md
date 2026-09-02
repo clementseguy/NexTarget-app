@@ -23,6 +23,10 @@
 > Enrichissement fonctionnel du **2026-09-02** : râtelier personnel,
 > autocomplétion de l'arme des sessions et compteur de tirs par arme
 > (NT-008, NT-009, NT-017). Statuts code inchangés.
+>
+> Livraison du **2026-09-02** : NT-008, NT-009 et NT-017 passent à FAIT
+> (`WeaponService`, `WeaponRackSection`, `WeaponAutocompleteField`,
+> `DashboardService.generateWeaponShotCounts`).
 
 ## Légende des statuts
 
@@ -66,8 +70,8 @@
 | NT-005 | Attacher une photo de la cible | app | Must | M | FAIT |
 | NT-006 | Analyse d'image de la cible (dispersion/score) | both | Won't-now | L | À FAIRE |
 | NT-007 | Filtrer l'historique des sessions par exercice | app | Could | S | FAIT |
-| NT-008 | Gérer son râtelier d'armes | app | Must | M | À FAIRE |
-| NT-009 | Autocompléter l'arme d'une session depuis le râtelier | app | Must | M | À FAIRE |
+| NT-008 | Gérer son râtelier d'armes | app | Must | M | FAIT |
+| NT-009 | Autocompléter l'arme d'une session depuis le râtelier | app | Must | M | FAIT |
 
 ### NT-001 — Enregistrer une session de tir
 - **Thème** : Carnet de tir
@@ -121,15 +125,15 @@
 - **Thème** : Carnet de tir · **Portée** : app · **Dépendances** : —
 - **Description** : Dans `Paramètres > Préférences Tir`, le tireur gère rapidement son râtelier personnel afin de réutiliser les noms de ses armes sans ressaisie. Une arme reste volontairement un simple nom textuel : aucune gestion de marque, modèle, calibre, photo ou autre métadonnée.
 - **Critères d'acceptation** : ajout rapide, renommage et suppression depuis une interface mobile simple et immédiatement compréhensible ; nom obligatoire après suppression des espaces en début et fin ; unicité contrôlée sans tenir compte de la casse ni des espaces en début et fin ; persistance locale et fonctionnement hors-ligne ; confirmation explicite avant suppression ; supprimer une arme ne modifie ni ne supprime aucune session existante ; renommer une arme demande confirmation puis remplace aussi son nom dans toutes les sessions prévues et réalisées dont le champ `weapon` correspond exactement à l'ancien nom après normalisation (espaces en début/fin ignorés, casse ignorée), sans modifier les saisies seulement proches ; le renommage du râtelier et des sessions est atomique du point de vue utilisateur (aucun état partiellement mis à jour en cas d'échec) ; l'export JSON inclut le râtelier ; l'import accepte les anciens exports dépourvus de râtelier sans erreur et sans effacer le râtelier local existant ; les armes importées respectent les mêmes règles de validation et de déduplication normalisée.
-- **Priorité** : Must · **Estimation** : M · **Statut** : À FAIRE.
-- **Notes** : conserver un modèle textuel simple, sans identifiant d'arme ni relation persistée session → arme. Le renommage propagé est le compromis retenu pour préserver les statistiques historiques sans complexifier le modèle de données. Prévoir les tests de persistance, validation, rollback du renommage et rétrocompatibilité import/export.
+- **Priorité** : Must · **Estimation** : M · **Statut** : FAIT — `Weapon`, `HiveWeaponRepository` (box `weapons`), `WeaponService` (CRUD, renommage propagé avec rollback), `WeaponRackSection` (`Paramètres > Préférences Tir`), export/import JSON (`BackupService`), `migration_5_create_weapons_box`.
+- **Notes** : conserver un modèle textuel simple, sans identifiant d'arme ni relation persistée session → arme. Le renommage propagé est le compromis retenu pour préserver les statistiques historiques sans complexifier le modèle de données. Tests de persistance, validation/déduplication, rollback du renommage et rétrocompatibilité import/export couverts.
 
 ### NT-009 — Autocompléter l'arme d'une session depuis le râtelier
 - **Thème** : Carnet de tir · **Portée** : app · **Dépendances** : NT-001, NT-008
 - **Description** : Lorsqu'il crée ou modifie une session, le tireur retrouve rapidement une arme de son râtelier grâce à l'autocomplétion, tout en conservant la liberté de saisir n'importe quel nom.
 - **Critères d'acceptation** : le champ `weapon` de `ShootingSession` reste textuel et accepte toujours une saisie libre ; pendant la frappe, les noms correspondants du râtelier sont proposés sans tenir compte de la casse ; sélectionner une proposition remplit le champ avec son nom complet ; aucune proposition ni complétion automatique ne doit écraser ou bloquer la saisie de l'utilisateur — s'il continue à taper une autre valeur, son texte est prioritaire ; comportement disponible pour la création et la modification des sessions prévues comme réalisées, y compris dans le wizard de session ; une valeur saisie librement qui correspond exactement à une arme après normalisation est traitée comme cette arme pour les usages dépendants, sans imposer sa sélection dans la liste ; UX utilisable au clavier et au toucher, sans ajouter d'étape au parcours standard.
-- **Priorité** : Must · **Estimation** : M · **Statut** : À FAIRE.
-- **Notes** : réutiliser une logique commune d'autocomplétion dans tous les parcours de session afin d'éviter des comportements divergents. Exemple attendu : saisir `CZ` peut proposer `CZ 75 SP-01 Shadow` ; poursuivre avec `CZ 09` conserve `CZ 09`.
+- **Priorité** : Must · **Estimation** : M · **Statut** : FAIT — `utils/weapon_autocomplete.dart` (normalisation + suggestions partagées), `WeaponAutocompleteField` réutilisé dans `SessionForm` et le wizard (`WizardIntroStep`).
+- **Notes** : logique commune d'autocomplétion centralisée dans `utils/weapon_autocomplete.dart`, réutilisée par tous les parcours de session pour éviter des comportements divergents. Exemple attendu : saisir `CZ` peut proposer `CZ 75 SP-01 Shadow` ; poursuivre avec `CZ 09` conserve `CZ 09`.
 
 ---
 
@@ -146,7 +150,7 @@
 | NT-014 | Comparatif glissant 30j vs 60j + sparkline | app | Could | M | À FAIRE |
 | NT-015 | Recommandations croisées Objectifs ⇄ Exercices | app | Could | M | À FAIRE |
 | NT-016 | Objectifs enrichis : statuts étendus, journal, vue détail | app | Could | M | À FAIRE |
-| NT-017 | Compteur de tirs par arme du râtelier | app | Should | S | À FAIRE |
+| NT-017 | Compteur de tirs par arme du râtelier | app | Should | S | FAIT |
 
 ### NT-010 — Tableau de bord statistiques
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-002
@@ -194,7 +198,7 @@
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-002, NT-008, NT-009
 - **Description** : Le tireur visualise le volume total de tirs réalisé avec chacune des armes actuellement présentes dans son râtelier.
 - **Critères d'acceptation** : dans `Statistiques > Avancé`, une section placée en toute dernière position affiche un simple compteur par arme du râtelier, sans graphe ; toutes les armes du râtelier sont affichées, y compris avec un compteur à zéro ; pour chaque arme, le total est la somme des `shotCount` de toutes les séries des seules sessions au statut `réalisée` dont le champ `weapon` correspond exactement au nom de l'arme après normalisation (espaces en début/fin ignorés, casse ignorée) ; les sessions prévues sont exclues ; tous les tirs des séries correspondantes sont comptés, essais compris, indépendamment des points ou scores ; le compteur est recalculé après ajout, modification ou suppression d'une session et après ajout, renommage ou suppression d'une arme ; supprimer une arme retire son compteur sans altérer les sessions.
-- **Priorité** : Should · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Should · **Estimation** : S · **Statut** : FAIT — `DashboardService.generateWeaponShotCounts`, `WeaponShotCountsCard` (dernière section de `Statistiques > Avancé`).
 - **Notes** : calcul local à partir des sessions, sans graphe ni relation persistée session → arme. Exemple : deux sessions réalisées de 10 séries de 5 coups associées à `CZ 75 SP-01 Shadow` affichent `100 tirs`.
 
 ---

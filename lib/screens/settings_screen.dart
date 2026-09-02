@@ -9,6 +9,7 @@ import '../services/session_service.dart';
 import '../config/app_config.dart';
 import '../widgets/series_cards.dart'; // Pour TwoFistsIcon
 import '../widgets/app_bar_title.dart';
+import '../widgets/settings/weapon_rack_section.dart';
 import '../providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_theme.dart';
@@ -281,6 +282,10 @@ class SettingsScreen extends StatelessWidget {
                       );
                     },
                   ),
+                  const SizedBox(height: 20),
+                  const Divider(),
+                  const SizedBox(height: 4),
+                  const WeaponRackSection(),
                 ],
               ),
             ),
