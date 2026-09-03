@@ -49,6 +49,30 @@ void main() {
     expect(find.byTooltip('Créer une session libre'), findsNothing);
   });
 
+  testWidgets('le retour vers Sessions resynchronise l’onglet Réalisées',
+      (tester) async {
+    await pumpSessions(tester);
+
+    await tester.tap(find.text('Prévues'));
+    await tester.pump();
+    expect(find.byTooltip('Créer une session libre'), findsNothing);
+
+    await tester.tap(find.descendant(
+      of: find.byType(BottomNavigationBar),
+      matching: find.text('Coach'),
+    ));
+    await tester.pump();
+    await tester.tap(find.descendant(
+      of: find.byType(BottomNavigationBar),
+      matching: find.text('Sessions'),
+    ));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Réalisées'), findsOneWidget);
+    expect(find.byTooltip('Créer une session libre'), findsOneWidget);
+  });
+
   testWidgets('l’aide explique les sessions détaillées et libres',
       (tester) async {
     await pumpSessions(tester);

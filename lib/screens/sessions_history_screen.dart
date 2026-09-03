@@ -34,6 +34,9 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
   void initState() {
     super.initState();
     refreshSessions();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.onTabChanged?.call(_filter);
+    });
   }
 
   void refreshSessions() {
