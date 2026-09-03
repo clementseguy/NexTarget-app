@@ -568,7 +568,7 @@
 | NT-070 | Déploiement serveur (Render) | server | Must | S | FAIT |
 | NT-071 | Migration SQLite → Postgres Neon + Alembic | server | Must | M | FAIT |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT |
-| NT-073 | Calibre par défaut + normalisation statistique | app | Could | S | EN COURS |
+| NT-073 | Calibre par défaut + normalisation statistique | app | Could | S | FAIT |
 | NT-074 | Saisie séries plein écran + navigation rapide | app | Could | M | À FAIRE |
 | NT-075 | Onboarding + aide contextuelle | app | Could | M | FAIT |
 | NT-076 | Cache stats + compactage Hive | app | Could | M | À FAIRE |
@@ -615,7 +615,7 @@
   - les alias `9mm`, `9 mm`, `9x19`, `9 mm Para` et `9mm (9x19)` sont regroupés statistiquement sous le libellé canonique `9 mm` ; `.380 ACP` reste distinct et aucun regroupement avec `9 mm court` n'est introduit sans retour métier complémentaire ;
   - le référentiel est validé et dédupliqué après normalisation ; les comportements sont cohérents dans les paramètres, la création et l'édition des sessions réalisées et prévues, ainsi que dans le wizard ;
   - les tests couvrent préférence vide/valide/invalide, préremplissage, conservation à l'édition, saisie libre, absence d'autoremplacement, alias connus, valeur inconnue et exclusion limitée aux statistiques par calibre.
-- **Priorité** : Could · **Statut** : EN COURS — la liste configurable, une autocomplétion partielle et la préférence existent ; leur comportement doit être centralisé et aligné sur les règles ci-dessus.
+- **Priorité** : Could · **Statut** : FAIT — livré sur `dev` par la PR #26 le 2026-09-03 ; critères validés par la suite Flutter complète et la recette manuelle.
 - **Notes** : un prototype commun avec NT-100/101/130 a été abandonné le 2026-07-24 après recette UX ; respecter le [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md). Le préremplissage ne doit ajouter aucune étape au parcours classique.
 
 ### NT-074 — Saisie séries plein écran + navigation rapide

@@ -18,7 +18,7 @@
 > **Prototype abandonné le 2026-07-24** : la branche regroupant NT-100,
 > NT-101, NT-073 et NT-130 a été fermée sans fusion après échec de la recette UX.
 > NT-100, NT-101 et NT-130 restent **À FAIRE** ; NT-073 a depuis été repris et
-> est **EN COURS**. Toute reprise du périmètre TAR/templates part de `dev` et
+> livré (**FAIT**). Toute reprise du périmètre TAR/templates part de `dev` et
 > commence
 > par la validation des parcours du
 > [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md) ; aucun
@@ -101,7 +101,7 @@ deux incréments afin d'isoler la migration de sessions.
 | Ordre | Item | Feature | App | Serveur |
 |---|---|---|---|---|
 | 1 | NT-061 (FAIT) | Clôture Coach connecté uniquement | aligner les documents actifs, confirmer l'absence de clé, prompt, appel direct ou fallback client | conserver le proxy Mistral légitime ; aucune réécriture historique |
-| 2 | NT-073 (EN COURS) | Calibre par défaut + normalisation statistique | préférence facultative, autocomplétion libre centralisée, alias 9 mm, exclusion des inconnus des seules stats par calibre | — |
+| 2 | NT-073 (FAIT) | Calibre par défaut + normalisation statistique | préférence facultative, autocomplétion libre centralisée, alias 9 mm, exclusion des inconnus des seules stats par calibre | — |
 | 3 | NT-014 (EN COURS) | Comparatif 30 j vs 90 j | score et groupement indépendants, deltas absolus/relatifs, présentation mobile, sparklines à partir de cinq sessions | — |
 | 4 | NT-048 (FAIT) | Sessions connectées durables | stockage sécurisé, refresh proactif, single-flight, retry unique, logout avec révocation best effort, mode hors ligne préservé | contrat existant réutilisé sans modification |
 

@@ -13,7 +13,7 @@ fait partie de `dev`.
 Le prototype est abandonné. Les quatre items restent **À FAIRE**.
 
 > **Mise à jour du 2026-09-02** : cette phrase décrit l'état au moment de la
-> décision. NT-073 a depuis été repris indépendamment et est **EN COURS** ;
+> décision. NT-073 a depuis été repris indépendamment et est **FAIT** ;
 > NT-100, NT-101 et NT-130 restent **À FAIRE**.
 
 La branche a démontré la faisabilité technique de plusieurs éléments

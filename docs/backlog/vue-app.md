@@ -7,7 +7,7 @@
 > uniquement dans cette vue (règle de sync : [README.md](README.md)).
 
 **Repo** : NexTarget-app (Flutter/Dart, Hive, SonarCloud, dart_code_metrics)
-**Dernière projection** : 2026-09-02 (cadrage détaillé NT-014, NT-073 et NT-133 ; clôture NT-061 clarifiée ; NT-048 passé FAIT après adoption app des refresh tokens)
+**Dernière projection** : 2026-09-03 (NT-073 passé FAIT après merge de la PR #26 et recette manuelle positive)
 
 ## Items app
 
@@ -56,7 +56,7 @@
 | NT-058 | Fakes de repository partagés pour les tests | app | Should | S | FAIT | `test/support/` (`FakeSessionRepository`, `captureError`) ; déclenché par NT-008 |
 | NT-061 | Coach connecté uniquement (retrait clé client) | both | Must | M | FAIT | audit de clôture validé : chemin serveur unique, aucun fallback client, clé historique rotée et docs actives clarifiées |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT | `lib/migrations/` (script cohérence : à faire) |
-| NT-073 | Calibre par défaut + normalisation statistique | app | Could | S | EN COURS | préférence facultative parmi les calibres connus ; saisie libre sans autoremplacement ; alias connus regroupés sans réécriture |
+| NT-073 | Calibre par défaut + normalisation statistique | app | Could | S | FAIT | préférence facultative parmi les calibres connus ; saisie libre sans autoremplacement ; alias connus regroupés sans réécriture |
 | NT-074 | Saisie séries plein écran + navigation | app | Could | M | À FAIRE | — |
 | NT-075 | Onboarding + aide contextuelle | app | Could | M | FAIT | `OnboardingGate` (3 écrans) + `HelpButton` ; ajustements recette 2026-07-09 |
 | NT-076 | Cache stats + compactage Hive | app | Could | M | À FAIRE | — |
@@ -83,8 +83,8 @@
 
 ## Prochaines actions app (hors FAIT), par priorité
 
-- **En cours** — NT-014, NT-073.
+- **En cours** — NT-014.
 - **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session), NT-133 (sessions libres).
 - **Should** — NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-131. NT-033 : voir NT-120/NT-121.
-- **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132. NT-023 : voir NT-122/NT-123. NT-014 et NT-073 conservent cette priorité mais sont déjà en cours.
+- **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132. NT-023 : voir NT-122/NT-123. NT-014 conserve cette priorité mais est déjà en cours.
 - **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.

@@ -61,7 +61,7 @@
 ### I7 — Prototype TAR et saisie rapide abandonné après recette UX
 - **Constat.** La branche `feat/NT-100-NT-101-NT-073-NT-130-socle-tar-saisie-rapide` implémentait un référentiel TAR, des séries typées, la normalisation des calibres et des templates. La recette a montré que le menu « Vide », l'exposition simultanée des concepts TAR/templates, l'usage insuffisamment explicite des couleurs et l'absence de restitution TAR en lecture dégradaient le parcours principal.
 - **Résolution (utilisateur, 2026-07-24).** PR fermée sans fusion et branche abandonnée. Ne pas corriger le prototype point par point ni le cherry-picker globalement. Repartir ultérieurement de `dev`, après conception et validation des quatre parcours : session classique, session TAR, dernier réglage/favori et consultation TAR.
-- **Impact.** NT-100, NT-101 et NT-130 restent **À FAIRE**. NT-073 a depuis été repris indépendamment et est **EN COURS**. Le [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md) reste applicable aux principes UX, critères de succès et conditions de reprise du périmètre TAR/templates ; le plan impose une étape de design avant ce développement.
+- **Impact.** NT-100, NT-101 et NT-130 restent **À FAIRE**. NT-073 a depuis été repris indépendamment et livré (**FAIT**) le 2026-09-03. Le [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md) reste applicable aux principes UX, critères de succès et conditions de reprise du périmètre TAR/templates ; le plan impose une étape de design avant ce développement.
 
 ---
 
