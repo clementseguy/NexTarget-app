@@ -26,7 +26,7 @@
 | NT-011 | Statistiques explicatives / évolution | app | Should | M | FAIT | `stats_service`, `evolution_chart` |
 | NT-012 | Objectifs mesurables | app | Must | M | FAIT | `Goal`, `goal_service` |
 | NT-013 | Hauts faits (records) | app | Should | S | FAIT | `GoalMetric` (best*) |
-| NT-014 | Comparatif 30j vs 90j + sparkline | app | Could | M | EN COURS | score et groupement indépendants ; deltas absolu/relatif ; un point par session, sparkline à partir de 5 sessions exploitables ; UI mobile et deux thèmes |
+| NT-014 | Comparatif 30j vs 90j + sparkline | app | Could | M | EN COURS | implémentation complète sur branche feature : score et groupement indépendants, carte Progression alignée, deltas absolu/relatif, un point par session, sparkline à partir de 5 sessions exploitables, arrondis explicites, aide contextuelle, UI mobile et deux thèmes ; revue, recette, Quality Gate et fusion `dev` requises avant `FAIT` |
 | NT-015 | Recommandations Objectifs ⇄ Exercices | app | Could | M | À FAIRE | dépend NT-012, NT-021 |
 | NT-016 | Objectifs enrichis : statuts étendus, journal, vue détail | app | Could | M | À FAIRE | issue #5 |
 | NT-017 | Compteur de tirs par arme du râtelier | app | Should | S | FAIT | livré en v0.6.0 ; compteurs simples en bas de Statistiques > Avancé ; étendu par NT-133 aux tirs des sessions libres réalisées |

@@ -29,23 +29,25 @@ void main(List<String> args) async {
   buf.writeln('# Cahier de Recette');
   buf.writeln();
   buf.writeln('- Dernière mise à jour: $lastUpdated');
-  buf.writeln('- Généré automatiquement depuis `docs/tests/cahier_recette.yaml`');
+  buf.writeln(
+      '- Généré automatiquement depuis `docs/tests/cahier_recette.yaml`');
   buf.writeln();
 
   for (final f in features) {
     final m = f as YamlMap;
-  final id = norm(m['id']);
-  final name = norm(m['name']);
-  final objectif = norm(m['objectif']);
-  final preconditions = ((m['preconditions'] as YamlList?)?.toList() ?? const [])
-    .map((e) => norm(e))
-    .toList();
-  final steps = ((m['steps'] as YamlList?)?.toList() ?? const [])
-    .map((e) => norm(e))
-    .toList();
-  final expected = ((m['expected'] as YamlList?)?.toList() ?? const [])
-    .map((e) => norm(e))
-    .toList();
+    final id = norm(m['id']);
+    final name = norm(m['name']);
+    final objectif = norm(m['objectif']);
+    final preconditions =
+        ((m['preconditions'] as YamlList?)?.toList() ?? const [])
+            .map((e) => norm(e))
+            .toList();
+    final steps = ((m['steps'] as YamlList?)?.toList() ?? const [])
+        .map((e) => norm(e))
+        .toList();
+    final expected = ((m['expected'] as YamlList?)?.toList() ?? const [])
+        .map((e) => norm(e))
+        .toList();
 
     buf.writeln('## $id — $name');
     if (objectif.toString().isNotEmpty) {
@@ -75,6 +77,6 @@ void main(List<String> args) async {
   }
 
   final outFile = File('$repoRoot/docs/tests/cahier_recette.md');
-  await outFile.writeAsString(buf.toString());
+  await outFile.writeAsString('${buf.toString().trimRight()}\n');
   stdout.writeln('Generated ${outFile.path}');
 }

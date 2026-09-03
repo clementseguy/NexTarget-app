@@ -15,15 +15,16 @@ void main() {
       service = DashboardService(testSessions, now: now);
     });
 
-    test('generateAdvancedStats returns proper consistency and progression', () {
+    test('generateAdvancedStats returns proper consistency and progression',
+        () {
       final data = service.generateAdvancedStats();
-      
+
       // Consistency devrait être calculé si ≥3 séries
       expect(data.consistency, greaterThanOrEqualTo(0));
-      
+
       // Progression peut être NaN si pas assez de données dans les 2 fenêtres
       expect(data.progression.isNaN || data.progression.isFinite, isTrue);
-      
+
       // Prise dominante devrait être définie avec des sessions test
       expect(data.dominantHandMethod, isNotNull);
       expect(data.dominantHandMethodPercentage, greaterThan(0));
@@ -31,20 +32,24 @@ void main() {
 
     test('generateEvolutionComparison calculates 30j vs 90j averages', () {
       final data = service.generateEvolutionComparison();
-      
-      expect(data.title, 'Évolution 30j vs 90j');
-      expect(data.avg30Days, greaterThanOrEqualTo(0));
-      expect(data.avg90Days, greaterThanOrEqualTo(0));
-      expect(data.delta, equals(data.avg30Days - data.avg90Days));
+
+      expect(data.title, 'Dynamique des performances · 30 j vs 90 j');
+      expect(data.hasRequiredPopulation, isTrue);
+      expect(data.score.avg30Days, greaterThanOrEqualTo(0));
+      expect(data.score.avg90Days, greaterThanOrEqualTo(0));
+      expect(
+        data.score.absoluteDelta,
+        equals(data.score.avg30Days! - data.score.avg90Days!),
+      );
     });
 
     test('generateCorrelationData creates points with colors', () {
       final data = service.generateCorrelationData();
-      
+
       expect(data.title, 'Corrélation Points/Groupement');
       expect(data.maxX, greaterThan(0));
       expect(data.maxY, equals(55.0)); // Selon spec
-      
+
       if (data.points.isNotEmpty) {
         for (final point in data.points) {
           expect(point.x, greaterThan(0)); // Groupement valide uniquement
@@ -56,18 +61,20 @@ void main() {
 
     test('advanced stats handle empty sessions', () {
       final emptyService = DashboardService([], now: now);
-      
+
       final advancedStats = emptyService.generateAdvancedStats();
-      expect(advancedStats.consistency, equals(0.0)); // Pas assez de données (retourne 0 selon StatsService)
+      expect(advancedStats.consistency,
+          equals(0.0)); // Pas assez de données (retourne 0 selon StatsService)
       expect(advancedStats.progression.isNaN, isTrue);
       expect(advancedStats.dominantHandMethod, isNull);
-      
+
       final correlationData = emptyService.generateCorrelationData();
       expect(correlationData.points, isEmpty);
-      
+
       final evolutionComparison = emptyService.generateEvolutionComparison();
-      expect(evolutionComparison.avg30Days, equals(0.0));
-      expect(evolutionComparison.avg90Days, equals(0.0));
+      expect(evolutionComparison.hasRequiredPopulation, isFalse);
+      expect(evolutionComparison.score.avg30Days, isNull);
+      expect(evolutionComparison.score.avg90Days, isNull);
     });
   });
 }
@@ -75,12 +82,12 @@ void main() {
 /// Crée des sessions de test avec des données variées
 List<ShootingSession> _createTestSessions(DateTime now) {
   final sessions = <ShootingSession>[];
-  
+
   // Sessions récentes (30 derniers jours)
   for (int i = 0; i < 15; i++) {
     final date = now.subtract(Duration(days: i + 1));
     final category = i % 3 == 0 ? 'match' : 'entraînement';
-    
+
     final series = <Series>[];
     for (int j = 0; j < 3; j++) {
       series.add(Series(
@@ -89,7 +96,7 @@ List<ShootingSession> _createTestSessions(DateTime now) {
         groupSize: 15.0 + (i * 0.5) + j,
       ));
     }
-    
+
     sessions.add(DetailedShootingSession(
       id: i,
       date: date,
@@ -100,7 +107,7 @@ List<ShootingSession> _createTestSessions(DateTime now) {
       series: series,
     ));
   }
-  
+
   // Sessions plus anciennes (60-90 jours) pour tester la progression
   for (int i = 0; i < 8; i++) {
     final date = now.subtract(Duration(days: 45 + i));
@@ -111,7 +118,7 @@ List<ShootingSession> _createTestSessions(DateTime now) {
         groupSize: 20.0 + i,
       ),
     ];
-    
+
     sessions.add(DetailedShootingSession(
       id: 100 + i,
       date: date,
@@ -122,6 +129,6 @@ List<ShootingSession> _createTestSessions(DateTime now) {
       series: series,
     ));
   }
-  
+
   return sessions;
 }

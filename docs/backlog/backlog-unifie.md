@@ -204,7 +204,7 @@
   - l'interface reprend la structure validée à deux lignes, reste compacte sur mobile et lisible dans les deux thèmes, sans dépendre uniquement de la couleur ;
   - aucun libellé automatique « amélioration », « baisse » ou « stagnation » n'est déduit de seuils métier : les courbes, signes, unités et deltas restent factuels ;
   - les calculs utilisent une horloge injectable, ne reposent pas sur une limite silencieuse de séries et sont couverts par des tests déterministes des bornes, populations, valeurs nulles et scénarios divergents.
-- **Priorité** : Could · **Statut** : EN COURS — une première comparaison 30j/90j et un delta absolu existent, mais la population minimale, le groupement, les pourcentages, la présentation mobile, les sparklines et les tests complets restent à livrer.
+- **Priorité** : Could · **Statut** : EN COURS — implémentation applicative complète sur la branche feature : populations score/groupement indépendantes, fenêtres emboîtées et bornées, deltas absolus/relatifs, carte Progression alignée sur ces deux deltas, états insuffisants, sparklines par session, UI mobile/deux thèmes, aide contextuelle et gestion explicite des écarts masqués par l'arrondi. Le passage à `FAIT` reste conditionné par la revue, la recette manuelle, la Quality Gate et la fusion sur `dev` conformément à la DoD.
 
 ### NT-015 — Recommandations croisées Objectifs ⇄ Exercices
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-012, NT-021
