@@ -14,6 +14,7 @@ import '../../services/server_coach_analysis_service.dart';
 import '../../services/session_service.dart';
 import '../../utils/markdown_sanitizer.dart';
 import '../../widgets/coach_analysis_card.dart';
+import '../../widgets/session_chip.dart';
 
 /// Carte header récapitulative de la session
 class SessionHeaderCard extends StatelessWidget {
@@ -157,7 +158,7 @@ class _SimpleSessionHeader extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.playlist_add, color: colors.secondary),
+                Icon(simpleSessionIcon, color: colors.secondary),
                 const SizedBox(width: 8),
                 Text(
                   'Session libre',
@@ -620,48 +621,6 @@ class SessionPhotoSection extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Chip générique pour affichage session
-class SessionChip extends StatelessWidget {
-  final String text;
-  final IconData icon;
-  final Color? color;
-  final bool overrideBase;
-
-  const SessionChip({
-    super.key,
-    required this.text,
-    required this.icon,
-    this.color,
-    this.overrideBase = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final Color base = color ??
-        (overrideBase
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7));
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: base.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: base.withValues(alpha: 0.55), width: 0.6),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: base),
-          SizedBox(width: 4),
-          Text(text,
-              style: TextStyle(
-                  fontSize: 12, fontWeight: FontWeight.w500, color: base)),
-        ],
       ),
     );
   }

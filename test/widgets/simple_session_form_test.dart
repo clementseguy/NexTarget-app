@@ -9,6 +9,7 @@ import 'package:tir_sportif/interfaces/session_photo_service_interface.dart';
 import 'package:tir_sportif/config/app_config.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/widgets/session_form.dart';
+import 'package:tir_sportif/widgets/session_form/session_form_components.dart';
 import 'package:tir_sportif/widgets/simple_session_form.dart';
 
 class _PhotoService implements ISessionPhotoService {
@@ -90,6 +91,26 @@ void main() {
     expect(saved!.shotCount, 35);
     expect(saved!.distance, 25);
     expect(saved!.photoPath, '/nouvelle-cible.jpg');
+  });
+
+  testWidgets('reprend la date et la ligne arme-calibre du formulaire détaillé',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SimpleSessionForm(onSave: (_) {}),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(FormSummaryHeader), findsOneWidget);
+    expect(find.byType(MiniStat), findsNothing);
+    final weapon = find.widgetWithText(TextFormField, 'Arme').first;
+    final caliber = find.widgetWithText(TextFormField, 'Calibre').first;
+    expect(tester.getTopLeft(weapon).dy, tester.getTopLeft(caliber).dy);
   });
 
   testWidgets('refuse zéro et les champs obligatoires vides', (tester) async {

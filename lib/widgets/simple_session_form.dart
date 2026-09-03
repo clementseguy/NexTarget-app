@@ -151,34 +151,36 @@ class SimpleSessionFormState extends State<SimpleSessionForm> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.event),
-              title: const Text('Date'),
-              subtitle: Text('${_date.day}/${_date.month}/${_date.year}'),
-              trailing: TextButton.icon(
-                onPressed: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: _date,
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2100),
-                  );
-                  if (picked != null) setState(() => _date = picked);
-                },
-                icon: const Icon(Icons.calendar_month),
-                label: const Text('Choisir'),
+          FormSummaryHeader.dateOnly(
+            date: _date,
+            onPickDate: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _date,
+                firstDate: DateTime(2020),
+                lastDate: DateTime(2100),
+              );
+              if (picked != null) setState(() => _date = picked);
+            },
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: WeaponAutocompleteField(
+                  controller: _weaponController,
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty ? 'Requis' : null,
+                ),
               ),
-            ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: CaliberAutocompleteField(
+                  controller: _caliberController,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          WeaponAutocompleteField(
-            controller: _weaponController,
-            validator: (value) =>
-                value == null || value.trim().isEmpty ? 'Requis' : null,
-          ),
-          const SizedBox(height: 16),
-          CaliberAutocompleteField(controller: _caliberController),
           const SizedBox(height: 16),
           Row(
             children: [

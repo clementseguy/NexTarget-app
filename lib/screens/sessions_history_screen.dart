@@ -113,9 +113,14 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
         }
         // Stats header (different for planned vs realized)
         final int nbSessions = sessions.length;
-        final int totalSeries =
-            sessions.fold(0, (sum, s) => sum + (s.series.length));
-        final double avgSeries = nbSessions > 0 ? totalSeries / nbSessions : 0;
+        final detailedSessions = sessions.whereType<DetailedShootingSession>();
+        final int totalSeries = detailedSessions.fold(
+          0,
+          (sum, session) => sum + session.series.length,
+        );
+        final int detailedSessionCount = detailedSessions.length;
+        final double avgSeries =
+            detailedSessionCount > 0 ? totalSeries / detailedSessionCount : 0;
         final int daysActive = grouped.length;
         // Planned metrics
         int plannedCount = planned.length;
@@ -447,7 +452,7 @@ class _SummaryHeader extends StatelessWidget {
               Row(
                 children: [
                   _Stat(
-                      label: 'Moy./session',
+                      label: 'Séries/session',
                       value: avgSeries.toStringAsFixed(1),
                       icon: Icons.stacked_line_chart,
                       color: Colors.pinkAccent),
