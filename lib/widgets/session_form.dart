@@ -4,9 +4,9 @@ import 'package:image_picker/image_picker.dart';
 import '../forms/series_form_data.dart';
 import '../services/preferences_service.dart';
 import '../utils/caliber_autocomplete.dart';
-import '../config/app_config.dart';
 import 'series_cards.dart';
 import 'weapon_autocomplete_field.dart';
+import 'caliber_autocomplete_field.dart';
 import '../models/shooting_session.dart';
 import '../constants/session_constants.dart';
 import '../models/series.dart';
@@ -43,9 +43,6 @@ class SessionFormState extends State<SessionForm> {
   DateTime? _date;
   late TextEditingController _weaponController;
   late TextEditingController _caliberController;
-  final FocusNode _caliberFocus = FocusNode();
-  bool _showAllCaliberOptions = false;
-  String _lastCaliberText = '';
   late List<SeriesFormData> _series;
   late List<SeriesFormControllers> _seriesControllers;
   String _category = SessionConstants.categoryEntrainement;
@@ -72,7 +69,7 @@ class SessionFormState extends State<SessionForm> {
       final List<dynamic> series = (seriesRaw is List) ? seriesRaw : [];
       _date = session['date'] != null && session['date'] != '' ? DateTime.tryParse(session['date']) : null;
       _weaponController.text = session['weapon'] ?? '';
-      final existingCal = (session['caliber'] as String?);
+      final existingCal = widget.isEdit ? session['caliber'] as String? : null;
       _caliberController.text = pickInitialCaliber(existing: existingCal, defaultCaliber: PreferencesService().getDefaultCaliber());
   _syntheseController = TextEditingController(text: session['synthese'] ?? '');
   _category = session['category'] ?? SessionConstants.categoryEntrainement;
@@ -129,16 +126,6 @@ class SessionFormState extends State<SessionForm> {
       }
       _seriesControllers[i].handMethod = defaultMethod == HandMethod.oneHand ? 'one' : 'two';
     }
-    _lastCaliberText = _caliberController.text;
-    _caliberFocus.addListener(() {
-      if (_caliberFocus.hasFocus) {
-        setState(() => _showAllCaliberOptions = true);
-        final val = _caliberController.value;
-        _caliberController.value = val.copyWith(text: val.text, selection: val.selection);
-      } else {
-        if (_showAllCaliberOptions) setState(() => _showAllCaliberOptions = false);
-      }
-    });
     // Load exercises asynchronously
     _loadExercises();
   }
@@ -194,7 +181,6 @@ class SessionFormState extends State<SessionForm> {
     }
     _weaponController.dispose();
     _caliberController.dispose();
-    _caliberFocus.dispose();
     _syntheseController.dispose();
     super.dispose();
   }
@@ -345,72 +331,8 @@ class SessionFormState extends State<SessionForm> {
               ),
               SizedBox(width: 14),
               Expanded(
-                child: RawAutocomplete<String>(
-                  textEditingController: _caliberController,
-                  focusNode: _caliberFocus,
-                  optionsBuilder: (TextEditingValue textEditingValue) {
-                    final list = AppConfig.I.calibers;
-                    if (_showAllCaliberOptions) return list;
-                    final q = textEditingValue.text.trim();
-                    if (q.isEmpty) return list; // show all when empty
-                    return list.where((c) => c.toLowerCase().contains(q.toLowerCase()));
-                  },
-                  fieldViewBuilder: (context, ctrl, focus, onFieldSubmitted) {
-                    return TextFormField(
-                      controller: ctrl,
-                      focusNode: focus,
-                      decoration: const InputDecoration(labelText: 'Calibre'),
-                      validator: (v)=> v==null||v.isEmpty? 'Requis': null,
-                      onChanged: (txt) {
-                        if (_showAllCaliberOptions) setState(() => _showAllCaliberOptions = false);
-                        final wasDeletion = txt.length < _lastCaliberText.length;
-                        _lastCaliberText = txt;
-                        if (wasDeletion) return;
-                        final res = suggestFor(txt);
-                        if (res.autoReplacement != null && ctrl.text != res.autoReplacement) {
-                          ctrl.value = ctrl.value.copyWith(
-                            text: res.autoReplacement,
-                            selection: TextSelection.collapsed(offset: res.autoReplacement!.length),
-                          );
-                          _lastCaliberText = res.autoReplacement!;
-                        }
-                      },
-                      onFieldSubmitted: (_) => onFieldSubmitted(),
-                    );
-                  },
-                  optionsViewBuilder: (context, onSelected, options) {
-                    final opts = options.toList();
-                    return Align(
-                      alignment: Alignment.topLeft,
-                      child: Material(
-                        color: Theme.of(context).cardColor,
-                        elevation: 4.0,
-                        borderRadius: BorderRadius.circular(8),
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxHeight: 220, minWidth: 220),
-                          child: ListView.builder(
-                            padding: EdgeInsets.zero,
-                            itemCount: opts.length,
-                            itemBuilder: (context, index) {
-                              final opt = opts[index];
-                              return ListTile(
-                                dense: true,
-                                title: Text(opt),
-                                onTap: () {
-                                  if (opt == 'Autre') {
-                                    final val = 'Autre : ';
-                                    _caliberController.value = TextEditingValue(text: val, selection: TextSelection.collapsed(offset: val.length));
-                                  } else {
-                                    onSelected(opt);
-                                  }
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+                child: CaliberAutocompleteField(
+                  controller: _caliberController,
                 ),
               ),
             ],

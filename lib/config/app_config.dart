@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:yaml/yaml.dart';
+import '../utils/caliber_normalization.dart';
 
 /// AppConfig charge le fichier YAML `assets/config.yaml` et expose
 /// quelques paramètres utiles avec valeurs de repli.
@@ -69,12 +70,11 @@ class AppConfig {
         '.380 ACP',
         '.40 S&W',
         '.45 ACP',
-        'Autre',
       ];
       List<String> readCalibers(dynamic val) {
         if (val == null) return defaultCalibers;
         if (val is Iterable) {
-          return val.map((e) => e.toString()).toList();
+          return validateCaliberCatalog(val);
         }
         return defaultCalibers;
       }
@@ -106,7 +106,6 @@ class AppConfig {
           '.380 ACP',
           '.40 S&W',
           '.45 ACP',
-          'Autre',
         ],
         authEnabled: false,
         authBaseUrl: _resolveServerUrl(

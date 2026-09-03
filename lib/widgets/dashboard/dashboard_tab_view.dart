@@ -39,6 +39,7 @@ class _DashboardTabViewState extends State<DashboardTabView> with SingleTickerPr
   DistributionData? _categoryDistribution;
   PointsHistogramData? _pointsHistogram;
   DistributionData? _distanceDistribution;
+  DistributionData? _caliberDistribution;
   
   // Données avancées
   AdvancedStatsData? _advancedStats;
@@ -85,6 +86,7 @@ class _DashboardTabViewState extends State<DashboardTabView> with SingleTickerPr
       final categoryDistribution = _dashboardService.generateCategoryDistribution();
       final pointsHistogram = _dashboardService.generatePointsDistribution();
       final distanceDistribution = _dashboardService.generateDistanceDistribution();
+      final caliberDistribution = _dashboardService.generateCaliberDistribution();
       
       // Données onglet Avancé
       final advancedStats = _dashboardService.generateAdvancedStats();
@@ -109,6 +111,7 @@ class _DashboardTabViewState extends State<DashboardTabView> with SingleTickerPr
           _categoryDistribution = categoryDistribution;
           _pointsHistogram = pointsHistogram;
           _distanceDistribution = distanceDistribution;
+          _caliberDistribution = caliberDistribution;
           
           // Données avancées
           _advancedStats = advancedStats;
@@ -220,6 +223,14 @@ class _DashboardTabViewState extends State<DashboardTabView> with SingleTickerPr
           // Répartition distances - flat bar segmentée
           FlatDistributionBar(
             data: _distanceDistribution ?? const DistributionData.empty('Répartition Distances'),
+            isLoading: _isLoading,
+          ),
+
+          const SizedBox(height: 16),
+
+          FlatDistributionBar(
+            data: _caliberDistribution ??
+                const DistributionData.empty('Répartition Calibres'),
             isLoading: _isLoading,
           ),
         ],
