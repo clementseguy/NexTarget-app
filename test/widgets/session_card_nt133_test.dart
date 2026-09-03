@@ -42,13 +42,20 @@ void main() {
       expect(find.byIcon(Icons.category), findsOneWidget);
       expect(find.text('CZ 75'), findsOneWidget);
       expect(find.text('9 mm'), findsOneWidget);
-      expect(find.text('test matériel'), findsOneWidget);
+      expect(find.text('Test matériel'), findsOneWidget);
       expect(find.text('40'), findsOneWidget);
       expect(find.text('25 m'), findsOneWidget);
       expect(find.text('2 exercice(s)'), findsOneWidget);
       expect(find.textContaining('Score'), findsNothing);
       expect(find.textContaining('Groupement'), findsNothing);
       expect(find.textContaining('Ne doit pas apparaître'), findsNothing);
+      expect(
+        tester.getCenter(find.byKey(const Key('sessionCardDateColumn'))).dy,
+        closeTo(
+          tester.getCenter(find.byKey(const Key('sessionCardContent'))).dy,
+          0.1,
+        ),
+      );
       expect(tester.takeException(), isNull);
     });
   }

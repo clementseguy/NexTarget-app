@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
+import '../../constants/session_constants.dart';
 import '../../models/shooting_session.dart';
 import '../../models/series.dart';
 import '../../models/exercise.dart';
@@ -101,7 +102,7 @@ class SessionHeaderCard extends StatelessWidget {
                 ),
                 if (session.category.isNotEmpty)
                   SessionChip(
-                    text: session.category,
+                    text: SessionConstants.categoryLabel(session.category),
                     icon: Icons.category,
                     color: colorScheme.secondary,
                   ),
@@ -178,7 +179,7 @@ class _SimpleSessionHeader extends StatelessWidget {
                 SessionChip(text: session.weapon, icon: Icons.security),
                 SessionChip(text: session.caliber, icon: Icons.bolt),
                 SessionChip(
-                  text: session.category,
+                  text: SessionConstants.categoryLabel(session.category),
                   icon: Icons.category,
                   color: colors.secondary,
                 ),

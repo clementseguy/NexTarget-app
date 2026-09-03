@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../constants/session_constants.dart';
 import '../../models/dashboard_data.dart';
 import '../../utils/mobile_utils.dart';
 
@@ -27,8 +28,8 @@ class FlatDistributionBar extends StatelessWidget {
             Text(
               data.title,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             if (isLoading)
@@ -91,13 +92,16 @@ class FlatDistributionBar extends StatelessWidget {
     // Calcul des pourcentages
     final List<SegmentData> segments = [];
     final entries = data.data.entries.toList();
-    
+
     for (int i = 0; i < entries.length; i++) {
       final entry = entries[i];
       final percentage = (entry.value / total) * 100;
-      if (percentage > 0) { // Ne montrer que les segments avec des données
+      if (percentage > 0) {
+        // Ne montrer que les segments avec des données
         segments.add(SegmentData(
-          label: entry.key,
+          label: _isCategoryDistribution
+              ? SessionConstants.categoryLabel(entry.key)
+              : entry.key,
           value: entry.value,
           percentage: percentage,
           color: _getSegmentColor(i),
@@ -124,7 +128,8 @@ class FlatDistributionBar extends StatelessWidget {
                     height: 24,
                     color: segment.color,
                     child: Center(
-                      child: segment.percentage > 15 // Afficher le % seulement si assez de place
+                      child: segment.percentage >
+                              15 // Afficher le % seulement si assez de place
                           ? Text(
                               '${segment.percentage.toStringAsFixed(0)}%',
                               style: const TextStyle(
@@ -142,17 +147,17 @@ class FlatDistributionBar extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        
+
         // Légende avec détails
         Wrap(
           spacing: 16,
           runSpacing: 8,
           children: segments.map((segment) {
             // Ne pas afficher les pourcentages dans la légende
-            final valueText = data.isPercentage 
+            final valueText = data.isPercentage
                 ? '' // Pas de pourcentage affiché
                 : '${segment.value.toInt()}'; // Juste la valeur brute
-            
+
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -168,8 +173,8 @@ class FlatDistributionBar extends StatelessWidget {
                 Text(
                   segment.label,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
                 // Afficher la valeur seulement si elle n'est pas vide
                 if (valueText.isNotEmpty) ...[
@@ -177,8 +182,8 @@ class FlatDistributionBar extends StatelessWidget {
                   Text(
                     valueText,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                          color: Colors.grey[600],
+                        ),
                   ),
                 ],
               ],
@@ -195,38 +200,41 @@ class FlatDistributionBar extends StatelessWidget {
     // Couleurs spécifiques pour les catégories de séances
     if (data.title.contains('Catégorie') || data.title.contains('catégorie')) {
       final categoryColors = [
-        Colors.blueAccent,              // Match - bleu comme spécifié
-        const Color(0xFF16FF8B),        // Entraînement - vert des boutons (neon green)
-        Colors.orange,                  // Test matériel - jaune-orangé comme spécifié
+        Colors.blueAccent, // Match - bleu comme spécifié
+        const Color(0xFF16FF8B), // Entraînement - vert des boutons (neon green)
+        Colors.orange, // Test matériel - jaune-orangé comme spécifié
       ];
       return categoryColors[index % categoryColors.length];
     }
-    
+
     // Couleurs spécifiques pour les distances
     if (data.title.contains('Distance') || data.title.contains('distance')) {
       final distanceColors = [
-        Colors.blueAccent,              // Distance 1 - bleu
-        const Color(0xFF16FF8B),        // Distance 2 - vert des boutons
-        Colors.orange,                  // Distance 3 - orange
+        Colors.blueAccent, // Distance 1 - bleu
+        const Color(0xFF16FF8B), // Distance 2 - vert des boutons
+        Colors.orange, // Distance 3 - orange
       ];
       return distanceColors[index % distanceColors.length];
     }
-    
+
     // Palette par défaut cohérente avec le thème pour autres répartitions
     final defaultColors = [
-      Colors.blueAccent,         // Bleu principal
-      const Color(0xFF16FF8B),   // Vert du thème (neon green)
-      Colors.orange,             // Orange
-      Colors.amber,              // Couleur primaire de l'app
-      Colors.teal,               // Couleur secondaire
-      Colors.deepPurple,         // Accent violet
-      Colors.indigo,             // Variation de bleu
-      Colors.cyan,               // Variation de teal
-      Colors.lightBlue,          // Couleur douce
-      Colors.blueGrey,           // Couleur neutre
+      Colors.blueAccent, // Bleu principal
+      const Color(0xFF16FF8B), // Vert du thème (neon green)
+      Colors.orange, // Orange
+      Colors.amber, // Couleur primaire de l'app
+      Colors.teal, // Couleur secondaire
+      Colors.deepPurple, // Accent violet
+      Colors.indigo, // Variation de bleu
+      Colors.cyan, // Variation de teal
+      Colors.lightBlue, // Couleur douce
+      Colors.blueGrey, // Couleur neutre
     ];
     return defaultColors[index % defaultColors.length];
   }
+
+  bool get _isCategoryDistribution =>
+      data.title.contains('Catégorie') || data.title.contains('catégorie');
 }
 
 /// Données d'un segment de la barre de répartition

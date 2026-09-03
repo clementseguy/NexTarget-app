@@ -214,7 +214,9 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
                           ...SessionConstants.categories.map(
                             (category) => DropdownMenuItem<String?>(
                               value: category,
-                              child: Text(category),
+                              child: Text(
+                                SessionConstants.categoryLabel(category),
+                              ),
                             ),
                           ),
                         ],

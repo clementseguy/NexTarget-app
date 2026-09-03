@@ -216,7 +216,11 @@ String _buildClipboardSummary(ShootingSession s, List<Series> series) {
   buf.writeln(
       'Session ${s.date != null ? '${s.date!.day}/${s.date!.month}/${s.date!.year}' : ''}');
   buf.writeln('Arme: ${s.weapon} | Calibre: ${s.caliber}');
-  if (s.category.isNotEmpty) buf.writeln('Catégorie: ${s.category}');
+  if (s.category.isNotEmpty) {
+    buf.writeln(
+      'Catégorie: ${SessionConstants.categoryLabel(s.category)}',
+    );
+  }
   if (s is SimpleShootingSession) {
     buf.writeln('Session libre: ${s.shotCount} tirs à ${s.distance} m');
   } else {

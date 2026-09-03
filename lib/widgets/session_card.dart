@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../constants/session_constants.dart';
 import 'session_chip.dart';
 
 class SessionCard extends StatelessWidget {
@@ -57,9 +58,10 @@ class SessionCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
+                key: const Key('sessionCardDateColumn'),
                 width: 46,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -98,6 +100,7 @@ class SessionCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Expanded(
+                key: const Key('sessionCardContent'),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,7 +121,9 @@ class SessionCard extends StatelessWidget {
                         ),
                         if ((session['category'] ?? '').toString().isNotEmpty)
                           SessionChip(
-                            text: session['category'].toString(),
+                            text: SessionConstants.categoryLabel(
+                              session['category'].toString(),
+                            ),
                             icon: Icons.category,
                             color: isPlanned
                                 ? Colors.blueAccent

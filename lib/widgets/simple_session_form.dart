@@ -219,7 +219,7 @@ class SimpleSessionFormState extends State<SimpleSessionForm> {
             items: SessionConstants.categories
                 .map((category) => DropdownMenuItem(
                       value: category,
-                      child: Text(category),
+                      child: Text(SessionConstants.categoryLabel(category)),
                     ))
                 .toList(),
             onChanged: (value) => setState(() {

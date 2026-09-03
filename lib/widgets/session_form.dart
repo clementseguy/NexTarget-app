@@ -53,7 +53,8 @@ class SessionFormState extends State<SessionForm> {
   final Set<String> _selectedExerciseIds = <String>{};
   bool _loadingExercises = true;
   // Photo de la cible (NT-005)
-  late final ISessionPhotoService _photoService = widget.photoService ?? SessionPhotoService();
+  late final ISessionPhotoService _photoService =
+      widget.photoService ?? SessionPhotoService();
   String? _photoPath;
   String? _initialPhotoPath;
   bool _photoBusy = false;
@@ -63,19 +64,24 @@ class SessionFormState extends State<SessionForm> {
     super.initState();
     _weaponController = TextEditingController();
     _caliberController = TextEditingController();
-  if (widget.initialSessionData != null) {
+    if (widget.initialSessionData != null) {
       final session = widget.initialSessionData!['session'];
       final seriesRaw = widget.initialSessionData!['series'];
       final List<dynamic> series = (seriesRaw is List) ? seriesRaw : [];
-      _date = session['date'] != null && session['date'] != '' ? DateTime.tryParse(session['date']) : null;
+      _date = session['date'] != null && session['date'] != ''
+          ? DateTime.tryParse(session['date'])
+          : null;
       _weaponController.text = session['weapon'] ?? '';
       final existingCal = widget.isEdit ? session['caliber'] as String? : null;
-      _caliberController.text = pickInitialCaliber(existing: existingCal, defaultCaliber: PreferencesService().getDefaultCaliber());
-  _syntheseController = TextEditingController(text: session['synthese'] ?? '');
-  _category = session['category'] ?? SessionConstants.categoryEntrainement;
-  _status = session['status'] ?? SessionConstants.statusRealisee;
-  _photoPath = session['photoPath'] as String?;
-  _initialPhotoPath = _photoPath;
+      _caliberController.text = pickInitialCaliber(
+          existing: existingCal,
+          defaultCaliber: PreferencesService().getDefaultCaliber());
+      _syntheseController =
+          TextEditingController(text: session['synthese'] ?? '');
+      _category = session['category'] ?? SessionConstants.categoryEntrainement;
+      _status = session['status'] ?? SessionConstants.statusRealisee;
+      _photoPath = session['photoPath'] as String?;
+      _initialPhotoPath = _photoPath;
       // Preload existing exercises list from session map if any
       final existingEx = session['exercises'];
       if (existingEx is List) {
@@ -83,32 +89,38 @@ class SessionFormState extends State<SessionForm> {
           if (e is String) _selectedExerciseIds.add(e);
         }
       }
-      _series = series.map((s) => SeriesFormData(
-        shotCount: s['shot_count'] ?? 5,
-        distance: (s['distance'] as num?)?.toDouble() ?? 25,
-        points: s['points'] ?? 0,
-        groupSize: (s['group_size'] as num?)?.toDouble() ?? 0,
-        comment: s['comment'] ?? '',
-      )).toList();
+      _series = series
+          .map((s) => SeriesFormData(
+                shotCount: s['shot_count'] ?? 5,
+                distance: (s['distance'] as num?)?.toDouble() ?? 25,
+                points: s['points'] ?? 0,
+                groupSize: (s['group_size'] as num?)?.toDouble() ?? 0,
+                comment: s['comment'] ?? '',
+              ))
+          .toList();
       if (_series.isEmpty) _series = [SeriesFormData(distance: 25)];
     } else {
-  _caliberController.text = pickInitialCaliber(existing: null, defaultCaliber: PreferencesService().getDefaultCaliber());
+      _caliberController.text = pickInitialCaliber(
+          existing: null,
+          defaultCaliber: PreferencesService().getDefaultCaliber());
       _series = [SeriesFormData(distance: 25)];
       _date = null;
-  _syntheseController = TextEditingController();
-  _category = SessionConstants.categoryEntrainement;
-  _status = SessionConstants.statusRealisee;
+      _syntheseController = TextEditingController();
+      _category = SessionConstants.categoryEntrainement;
+      _status = SessionConstants.statusRealisee;
     }
     final defaultMethod = PreferencesService().getDefaultHandMethod();
-    _seriesControllers = _series.map((s) => SeriesFormControllers(
-      shotCount: s.shotCount,
-      distance: s.distance,
-      points: s.points,
-      groupSize: s.groupSize,
-      comment: s.comment,
-      handMethod: 'two',
-    )).toList();
-    for (int i=0;i<_seriesControllers.length;i++) {
+    _seriesControllers = _series
+        .map((s) => SeriesFormControllers(
+              shotCount: s.shotCount,
+              distance: s.distance,
+              points: s.points,
+              groupSize: s.groupSize,
+              comment: s.comment,
+              handMethod: 'two',
+            ))
+        .toList();
+    for (int i = 0; i < _seriesControllers.length; i++) {
       // Try detect existing map method using initialSessionData raw map if provided
       if (widget.initialSessionData != null) {
         final rawSeries = widget.initialSessionData!['series'];
@@ -124,7 +136,8 @@ class SessionFormState extends State<SessionForm> {
           }
         }
       }
-      _seriesControllers[i].handMethod = defaultMethod == HandMethod.oneHand ? 'one' : 'two';
+      _seriesControllers[i].handMethod =
+          defaultMethod == HandMethod.oneHand ? 'one' : 'two';
     }
     // Load exercises asynchronously
     _loadExercises();
@@ -165,12 +178,13 @@ class SessionFormState extends State<SessionForm> {
       final list = await _exerciseService.listAll();
       if (mounted) {
         setState(() {
-          _allExercises = list..sort((a,b)=> a.priority.compareTo(b.priority));
+          _allExercises = list
+            ..sort((a, b) => a.priority.compareTo(b.priority));
           _loadingExercises = false;
         });
       }
     } catch (_) {
-      if (mounted) setState(()=> _loadingExercises = false);
+      if (mounted) setState(() => _loadingExercises = false);
     }
   }
 
@@ -201,7 +215,10 @@ class SessionFormState extends State<SessionForm> {
         points: 0,
         groupSize: 0,
         comment: '',
-        handMethod: PreferencesService().getDefaultHandMethod() == HandMethod.oneHand ? 'one' : 'two',
+        handMethod:
+            PreferencesService().getDefaultHandMethod() == HandMethod.oneHand
+                ? 'one'
+                : 'two',
       ));
     });
     // Après rebuild, focus précis via FocusNodes
@@ -216,12 +233,14 @@ class SessionFormState extends State<SessionForm> {
         {'ctrl': c.commentController, 'focus': c.commentFocus},
       ];
       for (final item in ordered) {
-        final TextEditingController ctrl = item['ctrl'] as TextEditingController;
+        final TextEditingController ctrl =
+            item['ctrl'] as TextEditingController;
         final FocusNode node = item['focus'] as FocusNode;
         final text = ctrl.text.trim();
         if (text.isEmpty || text == '0') {
           FocusScope.of(context).requestFocus(node);
-          ctrl.selection = TextSelection(baseOffset: 0, extentOffset: text.length);
+          ctrl.selection =
+              TextSelection(baseOffset: 0, extentOffset: text.length);
           break;
         }
       }
@@ -232,9 +251,17 @@ class SessionFormState extends State<SessionForm> {
   bool validateAndBuild() {
     if (!_formKey.currentState!.validate()) return false;
     if (_status == SessionConstants.statusRealisee) {
-      if (_series.isEmpty || _series.every((s) => s.shotCount == 0 && s.distance == 0 && s.points == 0 && s.groupSize == 0 && s.comment.isEmpty)) {
+      if (_series.isEmpty ||
+          _series.every((s) =>
+              s.shotCount == 0 &&
+              s.distance == 0 &&
+              s.points == 0 &&
+              s.groupSize == 0 &&
+              s.comment.isEmpty)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Veuillez ajouter au moins une série à la session réalisée.')),
+          SnackBar(
+              content: Text(
+                  'Veuillez ajouter au moins une série à la session réalisée.')),
         );
         return false;
       }
@@ -258,15 +285,27 @@ class SessionFormState extends State<SessionForm> {
       date: _date,
       weapon: _weaponController.text,
       caliber: _caliberController.text,
-  status: _status,
-      series: List.generate(_series.length, (i) => Series(
-        shotCount: int.tryParse(_seriesControllers[i].shotCountController.text) ?? 0,
-        distance: double.tryParse(_seriesControllers[i].distanceController.text) ?? 0,
-        points: int.tryParse(_seriesControllers[i].pointsController.text) ?? 0,
-        groupSize: double.tryParse(_seriesControllers[i].groupSizeController.text) ?? 0,
-        comment: _seriesControllers[i].commentController.text.trim(),
-        handMethod: _seriesControllers[i].handMethod == 'one' ? HandMethod.oneHand : HandMethod.twoHands,
-      )),
+      status: _status,
+      series: List.generate(
+          _series.length,
+          (i) => Series(
+                shotCount: int.tryParse(
+                        _seriesControllers[i].shotCountController.text) ??
+                    0,
+                distance: double.tryParse(
+                        _seriesControllers[i].distanceController.text) ??
+                    0,
+                points:
+                    int.tryParse(_seriesControllers[i].pointsController.text) ??
+                        0,
+                groupSize: double.tryParse(
+                        _seriesControllers[i].groupSizeController.text) ??
+                    0,
+                comment: _seriesControllers[i].commentController.text.trim(),
+                handMethod: _seriesControllers[i].handMethod == 'one'
+                    ? HandMethod.oneHand
+                    : HandMethod.twoHands,
+              )),
       synthese: _syntheseController.text,
       category: _category,
       exercises: _selectedExerciseIds.toList(),
@@ -278,20 +317,23 @@ class SessionFormState extends State<SessionForm> {
 
   @override
   Widget build(BuildContext context) {
-    final totalPoints = _seriesControllers.fold<int>(0, (a,c){
+    final totalPoints = _seriesControllers.fold<int>(0, (a, c) {
       final v = int.tryParse(c.pointsController.text) ?? 0;
       return a + v;
     });
-    final double avgPoints = _seriesControllers.isEmpty ? 0.0 : totalPoints / _seriesControllers.length;
+    final double avgPoints = _seriesControllers.isEmpty
+        ? 0.0
+        : totalPoints / _seriesControllers.length;
     double? dominantDistance;
     if (_seriesControllers.isNotEmpty) {
-      final distances = <double,int>{};
+      final distances = <double, int>{};
       for (final c in _seriesControllers) {
         final d = double.tryParse(c.distanceController.text) ?? 0;
-        if (d>0) distances[d] = (distances[d]??0)+1;
+        if (d > 0) distances[d] = (distances[d] ?? 0) + 1;
       }
       if (distances.isNotEmpty) {
-        dominantDistance = distances.entries.reduce((a,b)=> a.value>=b.value? a:b).key;
+        dominantDistance =
+            distances.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
       }
     }
     return Form(
@@ -308,7 +350,7 @@ class SessionFormState extends State<SessionForm> {
                 firstDate: DateTime(2020),
                 lastDate: DateTime(2100),
               );
-              if (picked != null) setState(()=> _date = picked);
+              if (picked != null) setState(() => _date = picked);
             },
             seriesCount: _seriesControllers.length,
             totalPoints: totalPoints,
@@ -322,9 +364,13 @@ class SessionFormState extends State<SessionForm> {
                 child: WeaponAutocompleteField(
                   controller: _weaponController,
                   labelText: 'Arme (optionnel si prévue)',
-                  validator: (v){
-                    if (_status == SessionConstants.statusPrevue) return null; // optional
-                    if (v==null||v.isEmpty) return 'Requis';
+                  validator: (v) {
+                    if (_status == SessionConstants.statusPrevue) {
+                      return null; // optional
+                    }
+                    if (v == null || v.isEmpty) {
+                      return 'Requis';
+                    }
                     return null;
                   },
                 ),
@@ -341,18 +387,28 @@ class SessionFormState extends State<SessionForm> {
           DropdownButtonFormField<String>(
             initialValue: _category,
             decoration: InputDecoration(labelText: 'Catégorie'),
-            items: SessionConstants.categories.map((c)=> DropdownMenuItem(value: c, child: Text(c))).toList(),
-            onChanged: (v)=> setState(()=> _category = v ?? SessionConstants.categoryEntrainement),
+            items: SessionConstants.categories
+                .map((c) => DropdownMenuItem(
+                      value: c,
+                      child: Text(SessionConstants.categoryLabel(c)),
+                    ))
+                .toList(),
+            onChanged: (v) => setState(
+                () => _category = v ?? SessionConstants.categoryEntrainement),
           ),
           SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: _status,
             decoration: InputDecoration(labelText: 'Statut'),
             items: [
-              DropdownMenuItem(value: SessionConstants.statusRealisee, child: Text('Réalisée')),
-              DropdownMenuItem(value: SessionConstants.statusPrevue, child: Text('Prévue')),
+              DropdownMenuItem(
+                  value: SessionConstants.statusRealisee,
+                  child: Text('Réalisée')),
+              DropdownMenuItem(
+                  value: SessionConstants.statusPrevue, child: Text('Prévue')),
             ],
-            onChanged: (v)=> setState(()=> _status = v ?? SessionConstants.statusRealisee),
+            onChanged: (v) =>
+                setState(() => _status = v ?? SessionConstants.statusRealisee),
           ),
           // No direct goal link; exercises link goals indirectly.
           SizedBox(height: 24),
@@ -376,9 +432,11 @@ class SessionFormState extends State<SessionForm> {
             children: [
               Icon(Icons.list_alt, size: 18, color: Colors.amberAccent),
               SizedBox(width: 8),
-              Text('Séries', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text('Séries',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               Spacer(),
-              Text('${_seriesControllers.length}', style: TextStyle(fontSize: 12, color: Colors.white70)),
+              Text('${_seriesControllers.length}',
+                  style: TextStyle(fontSize: 12, color: Colors.white70)),
             ],
           ),
           SizedBox(height: 8),
@@ -406,14 +464,16 @@ class SessionFormState extends State<SessionForm> {
                     comment: c.commentController.text,
                   );
                   _series.insert(i + 1, newData);
-                  _seriesControllers.insert(i + 1, SeriesFormControllers(
-                    shotCount: newData.shotCount,
-                    distance: newData.distance,
-                    points: newData.points,
-                    groupSize: newData.groupSize,
-                    comment: newData.comment,
-                    handMethod: c.handMethod,
-                  ));
+                  _seriesControllers.insert(
+                      i + 1,
+                      SeriesFormControllers(
+                        shotCount: newData.shotCount,
+                        distance: newData.distance,
+                        points: newData.points,
+                        groupSize: newData.groupSize,
+                        comment: newData.comment,
+                        handMethod: c.handMethod,
+                      ));
                 });
               },
             );
@@ -425,8 +485,10 @@ class SessionFormState extends State<SessionForm> {
             label: Text('Ajouter une série'),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.amberAccent,
-              side: BorderSide(color: Colors.amberAccent.withValues(alpha: 0.6)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              side:
+                  BorderSide(color: Colors.amberAccent.withValues(alpha: 0.6)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
               padding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
             ),
           ),

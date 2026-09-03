@@ -21,6 +21,7 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ### Changed
 - NT-133 : cartes de sessions compactées avec badges thématiques, indicateur dédié aux sessions libres, présence d'une analyse Coach et métriques visuelles ; formulaire libre aligné sur le formulaire détaillé et moyenne de séries corrigée pour exclure les sessions libres.
+- NT-133 : bloc date/type centré verticalement dans les cartes et libellés de catégories affichés avec une majuscule initiale dans toute l'application, sans modifier leur valeur persistée.
 - NT-133 : les nouvelles distances saisies dans une session détaillée doivent être des entiers strictement positifs ; les anciennes distances décimales restent lisibles et ne sont jamais réécrites automatiquement.
 - NT-073 : suppression de l'entrée générique `Autre` ; les calibres inconnus restent saisis et persistés librement, participent aux statistiques globales et sont exclus des seules répartitions par calibre.
 
