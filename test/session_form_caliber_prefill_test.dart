@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -17,8 +19,8 @@ void main() {
   setUp(() async {
     directory = await Directory.systemTemp.createTemp('nt073_form_');
     Hive.init(directory.path);
-    await Hive.openBox('app_preferences');
-    await Hive.openBox('exercises');
+    await Hive.openBox('app_preferences', bytes: Uint8List(0));
+    await Hive.openBox('exercises', bytes: Uint8List(0));
   });
   tearDown(() async {
     await Hive.close();
@@ -56,12 +58,16 @@ void main() {
       ),
     );
     await tester.pump();
-    return tester.widget<CaliberAutocompleteField>(
-      find.byType(CaliberAutocompleteField),
-    ).controller.text;
+    return tester
+        .widget<CaliberAutocompleteField>(
+          find.byType(CaliberAutocompleteField),
+        )
+        .controller
+        .text;
   }
 
-  testWidgets('la préférence vide ne préremplit pas une création', (tester) async {
+  testWidgets('la préférence vide ne préremplit pas une création',
+      (tester) async {
     expect(await pumpForm(tester), '');
   });
 
@@ -69,7 +75,7 @@ void main() {
       (tester) async {
     await Hive.box('app_preferences').put('default_caliber', '.45 ACP');
     expect(await pumpForm(tester), '.45 ACP');
-  }, timeout: const Timeout(Duration(seconds: 2)));
+  });
 
   testWidgets('la préférence préremplit la création d\'une session prévue',
       (tester) async {

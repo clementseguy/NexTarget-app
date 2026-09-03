@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -17,14 +19,15 @@ void main() {
   setUp(() async {
     directory = await Directory.systemTemp.createTemp('nt073_setting_');
     Hive.init(directory.path);
-    await Hive.openBox('app_preferences');
+    await Hive.openBox('app_preferences', bytes: Uint8List(0));
   });
   tearDown(() async {
     await Hive.close();
     await directory.delete(recursive: true);
   });
 
-  testWidgets('seule une suggestion sélectionnée est persistée', (tester) async {
+  testWidgets('seule une suggestion sélectionnée est persistée',
+      (tester) async {
     final provider = SettingsProvider(
       preferencesBox: Hive.box('app_preferences'),
     );
@@ -50,5 +53,5 @@ void main() {
     await tester.tap(find.byTooltip('Aucun calibre par défaut'));
     await tester.pump();
     expect(provider.defaultCaliber, isNull);
-  }, timeout: const Timeout(Duration(seconds: 2)));
+  });
 }

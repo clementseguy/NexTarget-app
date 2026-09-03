@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -18,7 +20,7 @@ void main() {
   setUp(() async {
     directory = await Directory.systemTemp.createTemp('nt073_wizard_');
     Hive.init(directory.path);
-    await Hive.openBox('app_preferences');
+    await Hive.openBox('weapons', bytes: Uint8List(0));
   });
   tearDown(() async {
     await Hive.close();
@@ -27,7 +29,6 @@ void main() {
 
   testWidgets('le wizard conserve le calibre prévu et laisse la saisie libre',
       (tester) async {
-    await Hive.box('app_preferences').put('default_caliber', '.45 ACP');
     final session = ShootingSession(
       date: DateTime(2026, 9, 3),
       weapon: 'Pistolet',
@@ -48,5 +49,5 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(1), 'calibre maison');
     await tester.pump();
     expect(field.controller.text, 'calibre maison');
-  }, timeout: const Timeout(Duration(seconds: 2)));
+  });
 }

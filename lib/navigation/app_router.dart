@@ -29,18 +29,18 @@ class AppRouter {
   static const String exercisesList = '/exercises/list';
   static const String login = '/login';
   static const String dashboard = '/dashboard';
-  
+
   /// Retourne la route correspondant au nom spécifié
   static Route<dynamic> generateRoute(RouteSettings settings) {
     final name = settings.name;
-    
+
     // Gestion spéciale pour le callback OAuth (contient #access_token=...)
     // Flutter intercepte parfois cette URL après le retour de flutter_web_auth_2
     if (name != null && name.startsWith('/#access_token')) {
       // Redirige vers le dashboard (l'auth est déjà traitée par flutter_web_auth_2)
       return MaterialPageRoute(builder: (_) => AppNavigator());
     }
-    
+
     if (name == home || name == dashboard) {
       return MaterialPageRoute(builder: (_) => AppNavigator());
     } else if (name == login) {
@@ -92,46 +92,57 @@ class AppRouter {
 /// et un NavigationProvider pour gérer l'état de navigation
 class AppNavigator extends StatelessWidget {
   AppNavigator({super.key});
-  
-  final GlobalKey<SessionsHistoryScreenState> _historyKey = GlobalKey<SessionsHistoryScreenState>();
-  
+
+  final GlobalKey<SessionsHistoryScreenState> _historyKey =
+      GlobalKey<SessionsHistoryScreenState>();
+
   @override
   Widget build(BuildContext context) {
     return Consumer<NavigationProvider>(
-      builder: (context, navigationProvider, _) {
-        final currentIndex = navigationProvider.currentIndex;
-        final Widget body;
-        
-        // Page spéciale pour les sessions avec FAB
-        if (currentIndex == 3) {
-          body = _buildSessionsPage(context);
-        } else {
-          body = _getPageForIndex(currentIndex);
-        }
-        
-        return Scaffold(
-          appBar: currentIndex == 3 ? _buildSessionsAppBar(context) : null,
-          body: body,
-          bottomNavigationBar: BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
-            selectedItemColor: Theme.of(context).bottomNavigationBarTheme.selectedItemColor ?? Theme.of(context).colorScheme.primary,
-            unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor ?? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-            currentIndex: currentIndex,
-            onTap: (index) => navigationProvider.changeIndex(index),
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Coach'),
-              BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'Exercices'),
-              BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Synthèse'),
-              BottomNavigationBarItem(icon: Icon(Icons.track_changes), label: 'Sessions'),
-              BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Paramètres'),
-            ],
-          ),
-        );
+        builder: (context, navigationProvider, _) {
+      final currentIndex = navigationProvider.currentIndex;
+      final Widget body;
+
+      // Page spéciale pour les sessions avec FAB
+      if (currentIndex == 3) {
+        body = _buildSessionsPage(context);
+      } else {
+        body = _getPageForIndex(currentIndex);
       }
-    );
+
+      return Scaffold(
+        appBar: currentIndex == 3 ? _buildSessionsAppBar(context) : null,
+        body: body,
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          backgroundColor:
+              Theme.of(context).bottomNavigationBarTheme.backgroundColor ??
+                  Theme.of(context).scaffoldBackgroundColor,
+          selectedItemColor:
+              Theme.of(context).bottomNavigationBarTheme.selectedItemColor ??
+                  Theme.of(context).colorScheme.primary,
+          unselectedItemColor: Theme.of(context)
+                  .bottomNavigationBarTheme
+                  .unselectedItemColor ??
+              Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+          currentIndex: currentIndex,
+          onTap: (index) => navigationProvider.changeIndex(index),
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Coach'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.fitness_center), label: 'Exercices'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.bar_chart), label: 'Synthèse'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.track_changes), label: 'Sessions'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.settings), label: 'Paramètres'),
+          ],
+        ),
+      );
+    });
   }
-  
+
   Widget _getPageForIndex(int index) {
     switch (index) {
       case 0:
@@ -146,7 +157,7 @@ class AppNavigator extends StatelessWidget {
         return HomeScreen();
     }
   }
-  
+
   AppBar _buildSessionsAppBar(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
@@ -170,7 +181,8 @@ class AppNavigator extends StatelessWidget {
             icon: Icon(Icons.bolt, color: Colors.amber),
             tooltip: 'Ajouter 3 sessions aléatoires',
             onPressed: () async {
-              await LocalDatabaseHive().insertRandomSessions(count: 3, status: 'réalisée');
+              await LocalDatabaseHive()
+                  .insertRandomSessions(count: 3, status: 'réalisée');
               _historyKey.currentState?.refreshSessions();
             },
           ),
@@ -187,7 +199,7 @@ class AppNavigator extends StatelessWidget {
   static Map<String, dynamic> plannedSessionTemplate() => {
         'session': {
           'weapon': '',
-          'caliber': '22LR',
+          'caliber': '',
           'status': SessionConstants.statusPrevue,
           'category': SessionConstants.categoryEntrainement,
           'series': [],
@@ -209,11 +221,13 @@ class AppNavigator extends StatelessWidget {
               // Le + crée une session du même type que l'onglet affiché :
               // onglet "Prévues" → session prévue, sinon session réalisée
               // (retour de recette S2 ; l'ancien appui long est supprimé).
-              final planned = _historyKey.currentState?.currentFilter == 'planned';
+              final planned =
+                  _historyKey.currentState?.currentFilter == 'planned';
               Navigator.of(context)
                   .push(MaterialPageRoute(
                     builder: (ctx) => CreateSessionScreen(
-                      initialSessionData: planned ? plannedSessionTemplate() : null,
+                      initialSessionData:
+                          planned ? plannedSessionTemplate() : null,
                     ),
                   ))
                   .then((_) => _historyKey.currentState?.refreshSessions());
