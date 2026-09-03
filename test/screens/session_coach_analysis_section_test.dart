@@ -24,20 +24,27 @@ class _FakeAuthProvider extends AuthProvider {
   bool get isAuthenticated => _authenticated;
 }
 
-ShootingSession _session() => ShootingSession(
+DetailedShootingSession _session() => DetailedShootingSession(
       weapon: 'Glock 17',
       caliber: '9mm',
       series: [
-        Series(shotCount: 5, distance: 25, points: 45, groupSize: 8.5, comment: 'stable'),
+        Series(
+            shotCount: 5,
+            distance: 25,
+            points: 45,
+            groupSize: 8.5,
+            comment: 'stable'),
       ],
     );
 
 Widget _wrap(Widget child, {required bool authenticated}) {
   return MultiProvider(
     providers: [
-      ChangeNotifierProvider<AuthProvider>.value(value: _FakeAuthProvider(authenticated)),
+      ChangeNotifierProvider<AuthProvider>.value(
+          value: _FakeAuthProvider(authenticated)),
       ChangeNotifierProvider<SettingsProvider>(
-        create: (_) => SettingsProvider(preferencesBox: Hive.box('app_preferences')),
+        create: (_) =>
+            SettingsProvider(preferencesBox: Hive.box('app_preferences')),
       ),
     ],
     child: MaterialApp(home: Scaffold(body: child)),
@@ -56,7 +63,9 @@ void main() {
   setUp(() async {
     await Hive.box('app_preferences').delete('coach_persona');
   });
-  testWidgets('non authentifié : message clair + bouton Se connecter, pas de bouton analyse', (tester) async {
+  testWidgets(
+      'non authentifié : message clair + bouton Se connecter, pas de bouton analyse',
+      (tester) async {
     await tester.pumpWidget(_wrap(
       SessionCoachAnalysisSection(
         session: _session(),
@@ -78,7 +87,9 @@ void main() {
     expect(find.text('Lancer analyse'), findsNothing);
   });
 
-  testWidgets('authentifié : bouton Lancer analyse visible, pas de message login', (tester) async {
+  testWidgets(
+      'authentifié : bouton Lancer analyse visible, pas de message login',
+      (tester) async {
     await tester.pumpWidget(_wrap(
       SessionCoachAnalysisSection(
         session: _session(),
@@ -92,11 +103,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Lancer analyse'), findsOneWidget);
-    expect(find.textContaining('Le coach IA nécessite un compte'), findsNothing);
+    expect(
+        find.textContaining('Le coach IA nécessite un compte'), findsNothing);
     expect(find.text('Se connecter'), findsNothing);
   });
 
-  testWidgets('pas de sélecteur de persona dans la session (retour recette NT-032)', (tester) async {
+  testWidgets(
+      'pas de sélecteur de persona dans la session (retour recette NT-032)',
+      (tester) async {
     // Le ton du coach se choisit uniquement dans Paramètres > Coach IA ;
     // la section Analyse Coach ne doit exposer aucun chip Neutre/Cool.
     await tester.pumpWidget(_wrap(

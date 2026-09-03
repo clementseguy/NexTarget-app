@@ -11,14 +11,14 @@ void main() {
       final now = DateTime(2025, 01, 15, 12, 0, 0);
       final inThisMonth = DateTime(now.year, now.month, now.day);
       final sessions = [
-        ShootingSession(
+        DetailedShootingSession(
           id: 1,
           date: inThisMonth,
           weapon: 'Pistolet', caliber: '22LR',
           status: SessionConstants.statusRealisee,
           series: [Series(distance: 10, points: 50, groupSize: 20)],
         ),
-        ShootingSession(
+        DetailedShootingSession(
           id: 2,
           date: now.subtract(const Duration(days: 3)),
           weapon: 'Pistolet', caliber: '22LR',
@@ -38,7 +38,7 @@ void main() {
 
     test('Strict chronological series order (by session date, then series order)', () {
       final now = DateTime.now();
-      final s1 = ShootingSession(
+      final s1 = DetailedShootingSession(
         id: 1,
         date: now.subtract(const Duration(days: 2)),
         weapon: 'Pistolet', caliber: '22LR',
@@ -48,7 +48,7 @@ void main() {
           Series(distance: 10, points: 20, groupSize: 25), // second
         ],
       );
-      final s2 = ShootingSession(
+      final s2 = DetailedShootingSession(
         id: 2,
         date: now.subtract(const Duration(days: 1)),
         weapon: 'Pistolet', caliber: '22LR',
@@ -69,7 +69,7 @@ void main() {
     test('Progression: insufficient data or avgPrev=0 yields NaN', () {
   final now = DateTime(2025, 01, 15, 12, 0, 0);
       // Only 2 series -> insufficient
-      final s = ShootingSession(
+      final s = DetailedShootingSession(
         id: 1,
         date: now.subtract(const Duration(days: 5)),
         weapon: 'Pistolet', caliber: '22LR',
@@ -83,14 +83,14 @@ void main() {
       expect(stats1.progressionPercent30Days().isNaN, isTrue);
 
       // Previous window avg is zero -> NaN
-      final prev = ShootingSession(
+      final prev = DetailedShootingSession(
         id: 2,
         date: now.subtract(const Duration(days: 50)),
         weapon: 'Pistolet', caliber: '22LR',
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 0, groupSize: 20)],
       );
-      final curr = ShootingSession(
+      final curr = DetailedShootingSession(
         id: 3,
         date: now.subtract(const Duration(days: 5)),
         weapon: 'Pistolet', caliber: '22LR',

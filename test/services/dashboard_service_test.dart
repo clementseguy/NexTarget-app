@@ -20,7 +20,7 @@ void main() {
       now = DateTime(2025, 10, 10, 12, 0, 0);
       sessions = [
         // Session récente avec bonnes séries (5 oct)
-        ShootingSession(
+        DetailedShootingSession(
           id: 1,
           date: DateTime(2025, 10, 5), // Ce mois (octobre)
           weapon: 'Pistolet',
@@ -34,7 +34,7 @@ void main() {
           ],
         ),
         // Session mois précédent (25 sept)
-        ShootingSession(
+        DetailedShootingSession(
           id: 2,
           date: DateTime(2025, 9, 25), // Mois précédent, mais dans les 30j
           weapon: 'Pistolet',
@@ -47,7 +47,7 @@ void main() {
           ],
         ),
         // Session récente ce mois (8 oct)
-        ShootingSession(
+        DetailedShootingSession(
           id: 3,
           date: DateTime(2025, 10, 8), // Ce mois (octobre)
           weapon: 'Pistolet',
@@ -59,7 +59,7 @@ void main() {
           ],
         ),
         // Session prévue (doit être exclue)
-        ShootingSession(
+        DetailedShootingSession(
           id: 4,
           date: now.add(const Duration(days: 1)),
           weapon: 'Pistolet',

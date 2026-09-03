@@ -70,13 +70,13 @@ void main() {
       final exA = ex.firstWhere((e) => e.name == 'Précision debout').id;
       final exB = ex.firstWhere((e) => e.name == 'Vitesse').id;
 
-      await sessionService.addSession(ShootingSession(
+      await sessionService.addSession(DetailedShootingSession(
         weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
         exercises: [exA],
       ));
-      await sessionService.addSession(ShootingSession(
+      await sessionService.addSession(DetailedShootingSession(
         weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 2),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 80, groupSize: 25)],
@@ -98,13 +98,13 @@ void main() {
       final exA = ex.firstWhere((e) => e.name == 'Précision debout').id;
       final exB = ex.firstWhere((e) => e.name == 'Vitesse').id;
 
-      await sessionService.addSession(ShootingSession(
+      await sessionService.addSession(DetailedShootingSession(
         weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
         exercises: [exA],
       ));
-      await sessionService.addSession(ShootingSession(
+      await sessionService.addSession(DetailedShootingSession(
         weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 2),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 80, groupSize: 25)],
@@ -130,14 +130,14 @@ void main() {
       final exA = ex.first.id;
 
       // Réalisée avec l'exercice -> doit apparaître en onglet "Réalisées" + filtre exercice.
-      await sessionService.addSession(ShootingSession(
+      await sessionService.addSession(DetailedShootingSession(
         weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
         exercises: [exA],
       ));
       // Prévue avec le même exercice -> ne doit PAS apparaître en onglet "Réalisées" + filtre exercice.
-      await sessionService.addSession(ShootingSession(
+      await sessionService.addSession(DetailedShootingSession(
         weapon: 'P', caliber: '22LR', date: null,
         status: SessionConstants.statusPrevue,
         series: [Series(distance: 10, points: 0, groupSize: 0)],
@@ -170,7 +170,7 @@ void main() {
       final ex = await exerciseService.listAll();
       final exA = ex.firstWhere((e) => e.name == 'Précision debout').id;
 
-      await sessionService.addSession(ShootingSession(
+      await sessionService.addSession(DetailedShootingSession(
         weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
@@ -195,13 +195,13 @@ void main() {
       final exA = ex.firstWhere((e) => e.name == 'Précision debout').id;
       final exB = ex.firstWhere((e) => e.name == 'Vitesse').id;
 
-      await sessionService.addSession(ShootingSession(
+      await sessionService.addSession(DetailedShootingSession(
         weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
         exercises: [exA],
       ));
-      await sessionService.addSession(ShootingSession(
+      await sessionService.addSession(DetailedShootingSession(
         weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 2),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 80, groupSize: 25)],

@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:hive/hive.dart';
 import 'package:tir_sportif/services/exercise_service.dart';
 import 'package:tir_sportif/services/session_service.dart';
+import 'package:tir_sportif/models/shooting_session.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -66,7 +67,7 @@ void main() {
       final planned =
           allSessions.firstWhere((s) => s.exercises.contains(exercise.id));
       expect(planned.id, isNotNull);
-      expect(planned.series.length, 3);
+      expect((planned as DetailedShootingSession).series.length, 3);
     });
 
     test('Planning exercise with no consigne -> single empty series', () async {
@@ -82,7 +83,7 @@ void main() {
       final created =
           allSessions.firstWhere((s) => s.exercises.contains(exercise.id));
       expect(created.id, isNotNull);
-      expect(created.series.length, 1);
+      expect((created as DetailedShootingSession).series.length, 1);
       expect(created.synthese, isNotNull);
       expect(created.synthese, contains('Sans étapes'));
     });

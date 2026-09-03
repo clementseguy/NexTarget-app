@@ -61,7 +61,7 @@ class _MemSessionRepo implements SessionRepository {
 }
 
 ShootingSession _session({required int id, required String weapon, String status = 'réalisée'}) {
-  return ShootingSession(
+  return DetailedShootingSession(
     id: id,
     weapon: weapon,
     caliber: '9mm',

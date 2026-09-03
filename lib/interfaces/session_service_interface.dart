@@ -24,8 +24,8 @@ abstract class ISessionService {
   Future<void> clearAllSessions();
   
   /// Convertit une session prévue en session réalisée
-  Future<ShootingSession> convertPlannedToRealized({
-    required ShootingSession session,
+  Future<DetailedShootingSession> convertPlannedToRealized({
+    required DetailedShootingSession session,
     String? weapon,
     String? caliber,
     String? category,
@@ -35,8 +35,8 @@ abstract class ISessionService {
   });
   
   /// Met à jour une série spécifique dans une session prévue
-  Future<void> updateSingleSeries(ShootingSession session, int seriesIndex, Series newSeries);
+  Future<void> updateSingleSeries(DetailedShootingSession session, int seriesIndex, Series newSeries);
   
   /// Crée une session prévue à partir d'un exercice
-  Future<ShootingSession> planFromExercise(Exercise exercise);
+  Future<DetailedShootingSession> planFromExercise(Exercise exercise);
 }

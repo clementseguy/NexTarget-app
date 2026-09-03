@@ -21,6 +21,10 @@ Pour chaque fenêtre on calcule la valeur de la métrique choisie :
 - `bestSessionPoints` : meilleur score de session.
 - `bestGroupSize` : plus petit groupement.
 
+Les sessions libres réalisées comptent dans `sessionCount`, y compris sans
+exercice associé. Elles sont exclues de toutes les autres métriques ci-dessus,
+qui reposent sur des séries détaillées.
+
 ## 3. Normalisation du sens (delta)
 On calcule :
 - `valueCurrent` = valeur métrique fenêtre courante

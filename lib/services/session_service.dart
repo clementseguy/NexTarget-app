@@ -29,9 +29,22 @@ class SessionService implements ISessionService {
 
   @override
   Future<void> addSession(ShootingSession session) async {
+    _validateSession(session);
     final id = await _repo.insert(session);
-    if (id >= 0) {
-      session.id = id;
+    if (id < 0) throw StateError('Échec de l’écriture de la session.');
+    session.id = id;
+  }
+
+  Future<void> addSessionsAtomically(List<ShootingSession> sessions) async {
+    if (_repo is! AtomicSessionRepository) {
+      throw StateError('Le repository ne prend pas en charge l’import atomique.');
+    }
+    final ids = await (_repo as AtomicSessionRepository).insertAll(sessions);
+    if (ids.length != sessions.length) {
+      throw StateError('Import incomplet des sessions.');
+    }
+    for (var index = 0; index < sessions.length; index++) {
+      sessions[index].id = ids[index];
     }
   }
 
@@ -41,6 +54,7 @@ class SessionService implements ISessionService {
     bool preserveExistingSeriesIfEmpty = true,
     bool warnOnFallback = true,
   }) async {
+    _validateSession(session);
     // Capture l'ancienne photo (si existante) avant écrasement, pour pouvoir nettoyer
     // le fichier local si elle a été remplacée ou supprimée par cette mise à jour.
     final previousPhotoPath = await _findPhotoPath(session.id);
@@ -54,6 +68,22 @@ class SessionService implements ISessionService {
     }
     if (previousPhotoPath != null && previousPhotoPath != session.photoPath) {
       await _photoService.deleteIfExists(previousPhotoPath);
+    }
+  }
+
+  void _validateSession(ShootingSession session) {
+    if (session is SimpleShootingSession) {
+      session.validate();
+      return;
+    }
+    final detailed = session as DetailedShootingSession;
+    for (final series in detailed.series) {
+      if (series.distance <= 0 ||
+          series.distance != series.distance.truncateToDouble()) {
+        throw ArgumentError(
+          'La distance doit être un entier strictement positif.',
+        );
+      }
     }
   }
 
@@ -98,8 +128,8 @@ class SessionService implements ISessionService {
   /// Convert a planned session (status 'prévue') into a realized one.
   /// Applies provided field overrides, forces date to now if not supplied.
   @override
-  Future<ShootingSession> convertPlannedToRealized({
-    required ShootingSession session,
+  Future<DetailedShootingSession> convertPlannedToRealized({
+    required DetailedShootingSession session,
     String? weapon,
     String? caliber,
     String? category,
@@ -128,7 +158,7 @@ class SessionService implements ISessionService {
   /// Persist a single series change in a planned session before final conversion.
   @override
   Future<void> updateSingleSeries(
-      ShootingSession session, int seriesIndex, Series newSeries) async {
+      DetailedShootingSession session, int seriesIndex, Series newSeries) async {
     if (seriesIndex < 0 || seriesIndex >= session.series.length) return;
     session.series[seriesIndex] = newSeries;
     // Keep status as is (likely 'prévue') during incremental updates
@@ -139,7 +169,7 @@ class SessionService implements ISessionService {
   /// Create a planned session from an Exercise definition.
   /// One empty Series is generated per consigne (or single if none).
   @override
-  Future<ShootingSession> planFromExercise(Exercise exercise) async {
+  Future<DetailedShootingSession> planFromExercise(Exercise exercise) async {
     if (exercise.type != ExerciseType.stand) {
       throw StateError(
           'Seuls les exercices de type Stand peuvent être planifiés.');
@@ -159,7 +189,7 @@ class SessionService implements ISessionService {
             distance: 1, points: 0, groupSize: 0, shotCount: 1, comment: step));
       }
     }
-    final session = ShootingSession(
+    final session = DetailedShootingSession(
       weapon: '',
       caliber: _preferencesService.getDefaultCaliber() ?? '',
       date: null,
@@ -175,10 +205,10 @@ class SessionService implements ISessionService {
       final all = await getAllSessions();
       final match =
           all.where((s) => s.exercises.contains(exercise.id)).toList();
-      if (match.isNotEmpty) {
+      if (match.isNotEmpty && match.first is DetailedShootingSession) {
         // On choisit la plus récente (souvent la dernière insérée)
         match.sort((a, b) => (b.id ?? 0).compareTo(a.id ?? 0));
-        return match.first;
+        return match.first as DetailedShootingSession;
       }
     } catch (_) {}
     return session;

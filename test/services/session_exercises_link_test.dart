@@ -37,7 +37,7 @@ void main() {
 
       final ids = exList.map((e) => e.id).toList();
 
-      final session = ShootingSession(
+      final session = DetailedShootingSession(
         weapon: 'Pistolet',
         caliber: '22LR',
         date: DateTime(2024, 1, 10),

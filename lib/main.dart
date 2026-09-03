@@ -11,6 +11,7 @@ import 'migrations/migration_2_add_exercises_field.dart';
 import 'migrations/migration_3_create_exercises_box.dart';
 import 'migrations/migration_4_add_photo_path_field.dart';
 import 'migrations/migration_5_create_weapons_box.dart';
+import 'migrations/migration_6_add_session_type.dart';
 import 'constants/session_constants.dart';
 import 'providers/navigation_provider.dart';
 import 'providers/settings_provider.dart';
@@ -39,6 +40,7 @@ Future<void> main() async {
     Migration3CreateExercisesBox(), // v3
     Migration4AddPhotoPathField(), // v4
     Migration5CreateWeaponsBox(), // v5
+    Migration6AddSessionType(), // v6
   ], schemaStore);
   await runner.run();
   

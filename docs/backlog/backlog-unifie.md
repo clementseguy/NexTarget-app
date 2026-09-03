@@ -786,7 +786,7 @@
 | NT-130 | Templates de session | app | 4 | Must | S | À FAIRE |
 | NT-131 | Session live au stand | app | 4 | Should | M | À FAIRE |
 | NT-132 | Spike — saisie vocale d'une série | app | 2 | Could | S | À FAIRE |
-| NT-133 | Sessions libres sans séries ni scores | app | 4 | Must | L | À FAIRE |
+| NT-133 | Sessions libres sans séries ni scores | app | 4 | Must | L | EN COURS |
 
 ### NT-130 — Templates de session
 - **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : NT-001, NT-073
@@ -818,7 +818,7 @@
 - **Import, export et rétrocompatibilité** : le format JSON exporté contient un discriminant stable `sessionType` valant `detailed` ou `simple`. Les anciennes données Hive et les anciens exports dépourvus de discriminant sont relus comme des sessions détaillées sans perte de données. L'import et l'export acceptent les sauvegardes contenant uniquement des sessions historiques ou un mélange des deux types ; un cycle export puis import conserve le sous-type et tous les champs de chaque session. L'évolution du format reste additive ; un discriminant inconnu produit une erreur explicite sans import partiel ni altération des données locales.
 - **Coach IA** : une session libre ne peut pas être envoyée à l'analyse Coach et son écran de détail ne propose pas cette action ; l'absence de séries, score et groupement ne doit produire ni payload artificiel ni donnée de substitution.
 - **Critères de qualité** : migration de schéma et test de migration ; tests de sérialisation des deux sous-types et des données historiques sans discriminant ; tests des champs obligatoires, des catégories et des validations `shotCount`/distance entière ; tests de la photo et de l'absence d'analyse Coach ; tests des agrégats, objectifs d'assiduité, compteurs NT-017 et exclusion des métriques de séries ; widget tests des deux actions flottantes, de l'onglet Prévues, des cartes dans les deux thèmes et de l'aide contextuelle ; cahier de recette mis à jour.
-- **Priorité** : Must · **VM** : 4 · **Estimation** : L · **Statut** : À FAIRE.
+- **Priorité** : Must · **VM** : 4 · **Estimation** : L · **Statut** : EN COURS.
 - **Notes** : `SimpleShootingSession` est le nom technique retenu ; « Session libre » est exclusivement le label utilisateur. Le champ de commentaires réutilise la notion et le libellé de **synthèse** des sessions détaillées. Préserver le parcours actuel du `+` est non négociable, conformément au [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md).
 
 ---

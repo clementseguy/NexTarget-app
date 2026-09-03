@@ -29,7 +29,7 @@ void main() {
 
   testWidgets('le wizard conserve le calibre prévu et laisse la saisie libre',
       (tester) async {
-    final session = ShootingSession(
+    final session = DetailedShootingSession(
       date: DateTime(2026, 9, 3),
       weapon: 'Pistolet',
       caliber: '9 mm perso',

@@ -56,6 +56,28 @@ Résultats attendus:
 - La session disparaît des “prévues” et figure dans les sessions réalisées
 - Les séries saisies via le wizard sont bien persistées
 
+## SESS-03 — Sessions libres sans séries ni scores (NT-133)
+Objectif: Créer, relire, modifier et supprimer une session libre sans dégrader le parcours détaillé.
+Pré-requis:
+- Disposer éventuellement d'un calibre par défaut et d'au moins deux exercices
+Étapes:
+1. Dans Sessions > Réalisées, vérifier la présence du + détaillé et de l'action Session libre
+2. Passer dans Prévues et vérifier que seule l'action détaillée reste visible, puis revenir dans Réalisées
+3. Créer une session libre avec date, arme, calibre libre, nombre de tirs, distance entière et chacune des trois catégories lors de trois essais
+4. Associer zéro, un puis plusieurs exercices ; ajouter, consulter, remplacer puis supprimer une photo ; renseigner une synthèse
+5. Ouvrir la carte Libre, modifier la session puis la supprimer
+6. Vérifier l'aide contextuelle Sessions et les thèmes Classique et France
+7. Contrôler statistiques, objectifs d'assiduité, filtres catégorie/exercice et compteur de tirs de l'arme
+8. Exporter puis réimporter une sauvegarde contenant sessions détaillées et libres
+9. Modifier une session détaillée historique à distance décimale sans toucher la distance, puis essayer une nouvelle distance décimale
+Résultats attendus:
+- Le + détaillé conserve son parcours direct ; l'action libre est distincte par icône, libellé accessible et accent thématique
+- La session libre est toujours réalisée et refuse arme/calibre vides, tirs nuls, distance nulle ou décimale
+- Carte et détail affichent Libre, arme, calibre, catégorie, tirs, distance et exercices sans score, groupement, séries ni action Coach
+- Synthèse, photo et exercices sont conservés ; l'import/export préserve chaque sous-type et ses champs
+- Les agrégats d'assiduité et volumes incluent la session libre, contrairement aux métriques de séries ; un calibre inconnu est absent de la seule répartition par calibre
+- La distance décimale historique reste affichée sans arrondi ni réécriture et doit être corrigée vers un entier avant enregistrement
+
 ## DASH-01 — Tableau de bord – statistiques récap
 Objectif: Afficher les statistiques macro et les dernières tendances.
 Étapes:

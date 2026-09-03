@@ -13,7 +13,7 @@ void main() {
       // Build 15 series across 3 sessions
       for (int d = 3; d >= 1; d--) {
         final date = now.subtract(Duration(days: d));
-        sessions.add(ShootingSession(
+        sessions.add(DetailedShootingSession(
           id: d,
           date: date,
           weapon: 'P', caliber: '22LR',
@@ -41,7 +41,7 @@ void main() {
       // 50 series within 30 days
       for (int d = 50; d >= 1; d--) {
         final date = now.subtract(Duration(days: d <= 25 ? d : (d - 25))); // ensure many within 30 days
-        sessions.add(ShootingSession(
+        sessions.add(DetailedShootingSession(
           id: d,
           date: date,
           weapon: 'P', caliber: '22LR',

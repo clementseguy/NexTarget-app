@@ -253,7 +253,7 @@ class SessionFormState extends State<SessionForm> {
         existingId = sess['id'] as int?;
       }
     }
-    final session = ShootingSession(
+    final session = DetailedShootingSession(
       id: existingId,
       date: _date,
       weapon: _weaponController.text,

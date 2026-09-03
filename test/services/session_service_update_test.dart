@@ -37,7 +37,7 @@ void main() {
       final service = SessionService();
 
       // Create session with multiple series
-      final session = ShootingSession(
+      final session = DetailedShootingSession(
         weapon: 'Pistol',
         caliber: '22LR',
         date: DateTime(2024, 5, 1),
@@ -105,7 +105,7 @@ void main() {
       final service = SessionService();
 
       // Create session with a single series
-      final session = ShootingSession(
+      final session = DetailedShootingSession(
         weapon: 'Pistol',
         caliber: '22LR',
         series: [

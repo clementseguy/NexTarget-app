@@ -42,7 +42,7 @@ class ServerCoachAnalysisService {
   /// [promptVariant] permet la future sélection de persona coach
   /// (neutre / cool), défaut = 'coach_neutre'.
   Future<String> analyzeSession(
-    ShootingSession session, {
+    DetailedShootingSession session, {
     String promptVariant = 'coach_neutre',
   }) async {
     final body = jsonEncode({

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../models/series.dart';
 import '../../models/exercise.dart';
 import '../../models/goal.dart';
@@ -166,7 +167,8 @@ class WizardSeriesStep extends StatelessWidget {
                   Expanded(child: TextFormField(
                     key: ValueKey('group_${seriesIndex}_${controller.groupSize}'),
                     initialValue: '',
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: const InputDecoration(labelText: 'Groupement'),
                     onChanged: (v){ controller.groupSize = double.tryParse(v) ?? 0; },
                     validator: (_) => (controller.showErrors && controller.groupSize<=0) ? 'Requis' : null,
@@ -189,7 +191,12 @@ class WizardSeriesStep extends StatelessWidget {
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: const InputDecoration(labelText: 'Distance (m)'),
                     onChanged: (v){ controller.distance = double.tryParse(v) ?? controller.distance; },
-                    validator: (_) => (controller.showErrors && controller.distance<=0) ? 'Requis' : null,
+                    validator: (_) => (controller.showErrors &&
+                            (controller.distance <= 0 ||
+                                controller.distance !=
+                                    controller.distance.truncateToDouble()))
+                        ? 'Entier requis'
+                        : null,
                   )),
                 ]),
                 const SizedBox(height: 12),

@@ -420,7 +420,11 @@ class DashboardService {
     for (final session in realized) {
       for (final w in rack) {
         if (sameWeaponName(session.weapon, w.name)) {
-          final shots = session.series.fold<int>(0, (acc, s) => acc + s.shotCount);
+          final shots = session is SimpleShootingSession
+              ? session.shotCount
+              : (session as DetailedShootingSession)
+                  .series
+                  .fold<int>(0, (acc, s) => acc + s.shotCount);
           counts[w.id] = (counts[w.id] ?? 0) + shots;
           break; // noms de râtelier uniques : au plus une arme peut correspondre
         }

@@ -12,7 +12,7 @@ import 'wizard_steps.dart';
 
 /// Wizard de conversion Session prévue -> réalisée
 class PlannedSessionWizard extends StatefulWidget {
-  final ShootingSession session; // session prévue initiale
+  final DetailedShootingSession session; // session prévue initiale
   const PlannedSessionWizard({super.key, required this.session});
 
   @override
@@ -20,7 +20,7 @@ class PlannedSessionWizard extends StatefulWidget {
 }
 
 class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
-  late ShootingSession _session; // copie mutable
+  late DetailedShootingSession _session; // copie mutable
   int _step = 0; // 0 = intro, 1..series = séries, last = synthèse
   final _formIntro = GlobalKey<FormState>();
   final _formSynthese = GlobalKey<FormState>();
@@ -105,7 +105,10 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
     if (controller.points <= 0) missing.add('Points');
     if (controller.groupSize <= 0) missing.add('Groupement');
     if (controller.shotCount <= 0) missing.add('Coups');
-    if (controller.distance <= 0) missing.add('Distance');
+    if (controller.distance <= 0 ||
+        controller.distance != controller.distance.truncateToDouble()) {
+      missing.add('Distance entière');
+    }
     if ((controller.comment == null) || controller.comment!.trim().isEmpty) missing.add('Commentaire');
     if (missing.isNotEmpty) {
       if (mounted) {

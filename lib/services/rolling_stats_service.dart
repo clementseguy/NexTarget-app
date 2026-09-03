@@ -1,6 +1,7 @@
 import '../repositories/session_repository.dart';
 import '../utils/session_filters.dart';
 import '../interfaces/rolling_stats_service_interface.dart';
+import '../models/shooting_session.dart';
 import 'stats_contract.dart';
 import 'logger.dart';
 
@@ -28,24 +29,32 @@ class RollingStatsService implements IRollingStatsService {
     double sum60 = 0;
     int count30 = 0;
     int count60 = 0;
+    int detailedCount30 = 0;
+    int detailedCount60 = 0;
 
     for (final s in sessions) {
       final d = s.date;
       if (d == null) continue;
-      // total points per session
-      final totalPoints = s.series.fold<int>(0, (acc, e) => acc + e.points);
       if (d.isAfter(limit60)) {
-        sum60 += totalPoints.toDouble();
         count60++;
         if (d.isAfter(limit30)) {
-          sum30 += totalPoints.toDouble();
           count30++;
+        }
+        if (s is DetailedShootingSession) {
+          final totalPoints =
+              s.series.fold<int>(0, (acc, e) => acc + e.points);
+          sum60 += totalPoints.toDouble();
+          detailedCount60++;
+          if (d.isAfter(limit30)) {
+            sum30 += totalPoints.toDouble();
+            detailedCount30++;
+          }
         }
       }
     }
 
-  final double avg60 = count60 == 0 ? 0 : (sum60 / count60);
-  final double avg30 = count30 == 0 ? 0 : (sum30 / count30);
+  final double avg60 = detailedCount60 == 0 ? 0 : (sum60 / detailedCount60);
+  final double avg30 = detailedCount30 == 0 ? 0 : (sum30 / detailedCount30);
   final double delta = avg30 - avg60;
 
     AppLogger.I.debug('Rolling stats: avg30=$avg30 avg60=$avg60 delta=$delta sessions30=$count30 sessions60=$count60');
