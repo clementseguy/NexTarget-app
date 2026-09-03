@@ -52,3 +52,4 @@ app.*.map.json
 
 # Working documents (temporary notes, screenshots)
 docs/working_docs/
+.vscode/settings.json
