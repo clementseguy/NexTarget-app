@@ -50,5 +50,5 @@ void main() {
     await tester.tap(find.byTooltip('Aucun calibre par défaut'));
     await tester.pump();
     expect(provider.defaultCaliber, isNull);
-  });
+  }, timeout: const Timeout(Duration(seconds: 2)));
 }

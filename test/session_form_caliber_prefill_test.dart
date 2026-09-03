@@ -18,6 +18,7 @@ void main() {
     directory = await Directory.systemTemp.createTemp('nt073_form_');
     Hive.init(directory.path);
     await Hive.openBox('app_preferences');
+    await Hive.openBox('exercises');
   });
   tearDown(() async {
     await Hive.close();
@@ -64,11 +65,15 @@ void main() {
     expect(await pumpForm(tester), '');
   });
 
-  testWidgets('la préférence préremplit les créations réalisée et prévue',
+  testWidgets('la préférence préremplit la création d\'une session réalisée',
       (tester) async {
     await Hive.box('app_preferences').put('default_caliber', '.45 ACP');
     expect(await pumpForm(tester), '.45 ACP');
-    await tester.pumpWidget(const SizedBox());
+  }, timeout: const Timeout(Duration(seconds: 2)));
+
+  testWidgets('la préférence préremplit la création d\'une session prévue',
+      (tester) async {
+    await Hive.box('app_preferences').put('default_caliber', '.45 ACP');
     expect(await pumpForm(tester, initialData: data('')), '.45 ACP');
   });
 

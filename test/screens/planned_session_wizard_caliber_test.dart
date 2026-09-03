@@ -48,5 +48,5 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(1), 'calibre maison');
     await tester.pump();
     expect(field.controller.text, 'calibre maison');
-  });
+  }, timeout: const Timeout(Duration(seconds: 2)));
 }
