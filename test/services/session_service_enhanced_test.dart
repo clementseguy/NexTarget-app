@@ -65,7 +65,7 @@ void main() {
 
     test('should get all sessions successfully', () async {
       // Arrange
-      final session = ShootingSession(
+      final session = DetailedShootingSession(
         weapon: 'Pistolet',
         caliber: '22LR',
         status: SessionConstants.statusRealisee,
@@ -87,7 +87,7 @@ void main() {
 
     test('should add session successfully', () async {
       // Arrange
-      final session = ShootingSession(
+      final session = DetailedShootingSession(
         weapon: 'Carabine',
         caliber: '22LR',
         status: SessionConstants.statusRealisee,
@@ -108,7 +108,7 @@ void main() {
 
     test('should update session successfully', () async {
       // Arrange
-      final session = ShootingSession(
+      final session = DetailedShootingSession(
         weapon: 'Pistolet',
         caliber: '22LR',
         status: SessionConstants.statusPrevue,
@@ -129,7 +129,7 @@ void main() {
 
     test('should delete session successfully', () async {
       // Arrange
-      final session = ShootingSession(
+      final session = DetailedShootingSession(
         weapon: 'Pistolet',
         caliber: '22LR',
         status: SessionConstants.statusRealisee,
@@ -147,8 +147,8 @@ void main() {
 
     test('should clear all sessions successfully', () async {
       // Arrange
-      final session1 = ShootingSession(weapon: 'Pistolet', caliber: '22LR', status: SessionConstants.statusRealisee, series: []);
-      final session2 = ShootingSession(weapon: 'Carabine', caliber: '22LR', status: SessionConstants.statusRealisee, series: []);
+      final session1 = DetailedShootingSession(weapon: 'Pistolet', caliber: '22LR', status: SessionConstants.statusRealisee, series: []);
+      final session2 = DetailedShootingSession(weapon: 'Carabine', caliber: '22LR', status: SessionConstants.statusRealisee, series: []);
       await sessionService.addSession(session1);
       await sessionService.addSession(session2);
 
@@ -170,7 +170,7 @@ void main() {
 
     test('should convert planned session to realized', () async {
       // Arrange
-      final plannedSession = ShootingSession(
+      final plannedSession = DetailedShootingSession(
         weapon: 'Pistolet',
         caliber: '22LR',
         status: SessionConstants.statusPrevue,
@@ -195,7 +195,7 @@ void main() {
 
     test('should throw error when converting non-planned session', () async {
       // Arrange
-      final realizedSession = ShootingSession(
+      final realizedSession = DetailedShootingSession(
         weapon: 'Pistolet',
         caliber: '22LR',
         status: SessionConstants.statusRealisee,

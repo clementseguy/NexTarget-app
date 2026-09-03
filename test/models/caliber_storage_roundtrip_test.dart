@@ -4,7 +4,7 @@ import 'package:tir_sportif/models/shooting_session.dart';
 
 void main() {
   test('la sérialisation utilisée par les sauvegardes conserve le texte libre', () {
-    final session = ShootingSession(
+    final session = DetailedShootingSession(
       date: DateTime(2026, 9, 2),
       weapon: 'Pistolet',
       caliber: ' 9 mm perso ',

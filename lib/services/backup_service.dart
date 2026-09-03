@@ -91,25 +91,23 @@ class BackupService {
     if (sessionsRaw is! List) {
       throw FormatException('Section sessions manquante.');
     }
-    int imported = 0;
+    final sessions = <ShootingSession>[];
     for (final item in sessionsRaw) {
-      if (item is! Map) continue;
-  final map = Map<String, dynamic>.from(item);
+      if (item is! Map) {
+        throw const FormatException('Entrée de session invalide.');
+      }
+      final map = Map<String, dynamic>.from(item);
       // Forcer id null pour éviter écrasement
       map['id'] = null;
       // Normaliser séries si besoin
       if (map['series'] is List) {
         map['series'] = (map['series'] as List).map((e) => e is Map ? Map<String,dynamic>.from(e) : e).toList();
       }
-      try {
-        final session = ShootingSession.fromMap(map);
-        // (session.series déjà instanciées)
-        await _sessionService.addSession(session);
-        imported++;
-      } catch (_) {
-        // ignorer session invalide
-      }
+      sessions.add(ShootingSession.fromMap(map));
     }
+    // Toutes les sessions sont validées avant la première écriture. Hive les
+    // persiste ensuite dans une unique opération putAll.
+    await _sessionService.addSessionsAtomically(sessions);
     // Import goals (facultatif si absent - compat ascendante)
     try {
       await _goalService.init();
@@ -160,7 +158,7 @@ class BackupService {
         }
       }
     }
-    return imported;
+    return sessions.length;
   }
 
   /// Exporte toutes les données (sessions + objectifs) dans un fichier JSON

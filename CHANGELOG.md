@@ -5,6 +5,11 @@ Toutes les modifications notables de ce projet seront listées ici.
 ## [Non publié]
 
 ### Added
+- NT-133 : sessions libres réalisées sans séries, score, groupement ni analyse Coach.
+    - Modèle polymorphe `ShootingSession` avec sous-types détaillé et libre, discriminant JSON stable et migration Hive additive rétrocompatible.
+    - Action flottante dédiée dans l'onglet Réalisées, formulaire court, cartes et détail identifiés « Libre », photo, synthèse et exercices facultatifs.
+    - Statistiques d'assiduité, objectifs, filtres, volumes et compteurs de tirs par arme adaptés sans contaminer les métriques fondées sur les séries.
+    - Import de sauvegardes mixtes prévalidé et écrit atomiquement ; un type inconnu ne modifie aucune session locale.
 - NT-048 : adoption app des refresh tokens (rotation) — le serveur était déjà livré.
     - `AuthService` stocke access token, refresh token et expirations dans `flutter_secure_storage` sous une clé unique (remplacement atomique de la paire à chaque rotation) ; migration transparente depuis l'ancien stockage (accès + email seuls) vers une reconnexion Google unique.
     - Renouvellement proactif de l'access token juste avant expiration, et unique renouvellement + rejeu de la requête après un `401` (`AuthenticatedHttpClient`), sans boucle ; mécanisme single-flight partagé entre appels concurrents pour ne jamais consommer deux fois le même refresh token.
@@ -15,6 +20,9 @@ Toutes les modifications notables de ce projet seront listées ici.
 - NT-073 : autocomplétion commune aux formulaires et au wizard, sans autoremplacement, ainsi qu'une répartition statistique par calibre reconnu regroupant les alias 9 mm.
 
 ### Changed
+- NT-133 : cartes de sessions compactées avec badges thématiques, indicateur dédié aux sessions libres, présence d'une analyse Coach et métriques visuelles ; formulaire libre aligné sur le formulaire détaillé et moyenne de séries corrigée pour exclure les sessions libres.
+- NT-133 : bloc date/type centré verticalement dans les cartes et libellés de catégories affichés avec une majuscule initiale dans toute l'application, sans modifier leur valeur persistée.
+- NT-133 : les nouvelles distances saisies dans une session détaillée doivent être des entiers strictement positifs ; les anciennes distances décimales restent lisibles et ne sont jamais réécrites automatiquement.
 - NT-073 : suppression de l'entrée générique `Autre` ; les calibres inconnus restent saisis et persistés librement, participent aux statistiques globales et sont exclus des seules répartitions par calibre.
 
 ### Documentation

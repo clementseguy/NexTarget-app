@@ -8,7 +8,7 @@ void main() {
   group('StatsService metrics', () {
     test('averages (points/group size) over last 30 days', () {
       final now = DateTime(2025, 10, 7, 12);
-      final s1 = ShootingSession(
+      final s1 = DetailedShootingSession(
         date: now.subtract(const Duration(days: 5)),
         weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: [
@@ -16,7 +16,7 @@ void main() {
           Series(distance: 10, points: 20, groupSize: 20),
         ],
       );
-      final s2 = ShootingSession(
+      final s2 = DetailedShootingSession(
         date: now.subtract(const Duration(days: 35)), // outside 30d window
         weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 100, groupSize: 5)],
@@ -28,7 +28,7 @@ void main() {
 
     test('bestSeriesByPoints returns highest', () {
       final now = DateTime(2025, 10, 7);
-      final s = ShootingSession(
+      final s = DetailedShootingSession(
         date: now.subtract(const Duration(days: 1)),
         weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 5, groupSize: 20), Series(distance: 10, points: 50, groupSize: 10)],
@@ -39,15 +39,15 @@ void main() {
 
     test('sessionsCountCurrentMonth counts only realized in month', () {
       final now = DateTime(2025, 10, 15);
-      final inMonth = ShootingSession(
+      final inMonth = DetailedShootingSession(
         date: DateTime(2025, 10, 1), weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 1, groupSize: 1)],
       );
-      final otherMonth = ShootingSession(
+      final otherMonth = DetailedShootingSession(
         date: DateTime(2025, 9, 30), weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 1, groupSize: 1)],
       );
-      final planned = ShootingSession(
+      final planned = DetailedShootingSession(
         date: DateTime(2025, 10, 2), weapon: 'P', caliber: '22LR', status: SessionConstants.statusPrevue,
         series: [Series(distance: 10, points: 1, groupSize: 1)],
       );
@@ -57,7 +57,7 @@ void main() {
 
     test('movingAveragePoints works for window=3', () {
       final now = DateTime(2025, 10, 7);
-      final s = ShootingSession(
+      final s = DetailedShootingSession(
         date: now.subtract(const Duration(days: 2)), weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: [
           Series(distance: 10, points: 10, groupSize: 30),
@@ -73,7 +73,7 @@ void main() {
 
     test('consistencyIndexLast30Days returns sane value [0,100]', () {
       final now = DateTime(2025, 10, 7);
-      final s = ShootingSession(
+      final s = DetailedShootingSession(
         date: now.subtract(const Duration(days: 10)), weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: [
           Series(distance: 10, points: 10, groupSize: 30),
@@ -90,12 +90,12 @@ void main() {
     test('progressionPercent30Days computes positive when curr>prev and enough data', () {
       final now = DateTime(2025, 10, 31);
       // Previous window (31-60 days): avg 10 with 5 series
-      final prev = ShootingSession(
+      final prev = DetailedShootingSession(
         date: now.subtract(const Duration(days: 50)), weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: List.generate(5, (i) => Series(distance: 10, points: 10, groupSize: 20)),
       );
       // Current window (0-30 days): avg 20 with 5 series
-      final curr = ShootingSession(
+      final curr = DetailedShootingSession(
         date: now.subtract(const Duration(days: 5)), weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: List.generate(5, (i) => Series(distance: 10, points: 20, groupSize: 15)),
       );
@@ -108,7 +108,7 @@ void main() {
 
     test('distanceDistribution rounds to nearest int buckets', () {
       final now = DateTime(2025, 10, 7);
-      final s = ShootingSession(
+      final s = DetailedShootingSession(
         date: now.subtract(const Duration(days: 1)), weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: [
           Series(distance: 10.4, points: 10, groupSize: 30), // -> 10
@@ -125,7 +125,7 @@ void main() {
 
     test('pointBuckets builds inclusive ranges and covers all points', () {
       final now = DateTime(2025, 10, 7);
-      final s = ShootingSession(
+      final s = DetailedShootingSession(
         date: now.subtract(const Duration(days: 2)), weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: [
           Series(distance: 10, points: 5, groupSize: 30),
@@ -145,15 +145,15 @@ void main() {
 
     test('currentDayStreak counts consecutive days from most recent backwards', () {
       final now = DateTime(2025, 10, 7, 12);
-      final s1 = ShootingSession(
+      final s1 = DetailedShootingSession(
         date: DateTime(2025, 10, 7), weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 10, groupSize: 20)],
       );
-      final s2 = ShootingSession(
+      final s2 = DetailedShootingSession(
         date: DateTime(2025, 10, 6), weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 10, groupSize: 20)],
       );
-      final s3 = ShootingSession(
+      final s3 = DetailedShootingSession(
         date: DateTime(2025, 10, 4), weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee, // gap of one day (5th missing)
         series: [Series(distance: 10, points: 10, groupSize: 20)],
       );
@@ -163,7 +163,7 @@ void main() {
 
     test('bestGroupSize returns smallest positive > 0', () {
       final now = DateTime(2025, 10, 7);
-      final s = ShootingSession(
+      final s = DetailedShootingSession(
         date: now,
         weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 10, groupSize: 0), Series(distance: 10, points: 12, groupSize: 5), Series(distance: 10, points: 13, groupSize: 7)],
@@ -174,7 +174,7 @@ void main() {
 
     test('lastSeriesIsRecordPoints / Group behaves as expected', () {
       final now = DateTime(2025, 10, 7);
-      final s = ShootingSession(
+      final s = DetailedShootingSession(
         date: now,
         weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: [
@@ -193,8 +193,8 @@ void main() {
       final now = DateTime(2025, 10, 8); // Wednesday
       final thisWeekMon = DateTime(2025, 10, 6);
       final prevWeekTue = DateTime(2025, 9, 30);
-      final s1 = ShootingSession(date: thisWeekMon, weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee, series: [Series(distance: 10, points: 10, groupSize: 20)]);
-      final s2 = ShootingSession(date: prevWeekTue, weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee, series: [Series(distance: 10, points: 10, groupSize: 20)]);
+      final s1 = DetailedShootingSession(date: thisWeekMon, weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee, series: [Series(distance: 10, points: 10, groupSize: 20)]);
+      final s2 = DetailedShootingSession(date: prevWeekTue, weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee, series: [Series(distance: 10, points: 10, groupSize: 20)]);
       final stats = StatsService([s1, s2], now: now);
       expect(stats.sessionsThisWeek(), 1);
       expect(stats.sessionsPreviousWeek(), 1);

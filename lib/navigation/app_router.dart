@@ -7,6 +7,7 @@ import '../screens/home_screen.dart';
 import '../screens/sessions_history_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/create_session_screen.dart';
+import '../screens/create_simple_session_screen.dart';
 import '../screens/goal_edit_screen.dart';
 import '../screens/exercises_list_screen.dart';
 import '../screens/login_screen.dart';
@@ -95,6 +96,7 @@ class AppNavigator extends StatelessWidget {
 
   final GlobalKey<SessionsHistoryScreenState> _historyKey =
       GlobalKey<SessionsHistoryScreenState>();
+  final ValueNotifier<String> _sessionsTab = ValueNotifier('realized');
 
   @override
   Widget build(BuildContext context) {
@@ -171,6 +173,7 @@ class AppNavigator extends StatelessWidget {
           title: 'Mes sessions',
           points: [
             'Le bouton + crée une session du même type que l\'onglet affiché : réalisée ou prévue.',
+            'Dans Réalisées, le bouton avec l’icône de saisie rapide crée une session libre sans séries, score ni groupement.',
             'Chaque session contient vos séries : coups, distance, points, groupement, prise.',
             'Ouvrez une session réalisée pour la synthèse, les exercices travaillés et l\'analyse du coach IA.',
             'Un appui long sur une carte permet de la supprimer.',
@@ -211,29 +214,63 @@ class AppNavigator extends StatelessWidget {
   Widget _buildSessionsPage(BuildContext context) {
     return Stack(
       children: [
-        SessionsHistoryScreen(key: _historyKey),
+        SessionsHistoryScreen(
+          key: _historyKey,
+          onTabChanged: (tab) => _sessionsTab.value = tab,
+        ),
         Positioned(
           bottom: 24,
           right: 24,
-          child: FloatingActionButton(
-            heroTag: 'fab_create_session',
-            onPressed: () {
-              // Le + crée une session du même type que l'onglet affiché :
-              // onglet "Prévues" → session prévue, sinon session réalisée
-              // (retour de recette S2 ; l'ancien appui long est supprimé).
-              final planned =
-                  _historyKey.currentState?.currentFilter == 'planned';
-              Navigator.of(context)
-                  .push(MaterialPageRoute(
-                    builder: (ctx) => CreateSessionScreen(
-                      initialSessionData:
-                          planned ? plannedSessionTemplate() : null,
-                    ),
-                  ))
-                  .then((_) => _historyKey.currentState?.refreshSessions());
+          child: Semantics(
+            button: true,
+            label: 'Créer une session détaillée',
+            child: FloatingActionButton(
+              heroTag: 'fab_create_session',
+              onPressed: () {
+                // Le + crée une session du même type que l'onglet affiché :
+                // onglet "Prévues" → session prévue, sinon session réalisée
+                // (retour de recette S2 ; l'ancien appui long est supprimé).
+                final planned =
+                    _historyKey.currentState?.currentFilter == 'planned';
+                Navigator.of(context)
+                    .push(MaterialPageRoute(
+                      builder: (ctx) => CreateSessionScreen(
+                        initialSessionData:
+                            planned ? plannedSessionTemplate() : null,
+                      ),
+                    ))
+                    .then((_) => _historyKey.currentState?.refreshSessions());
+              },
+              tooltip: 'Créer une session détaillée',
+              child: const Icon(Icons.add),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 92,
+          right: 24,
+          child: ValueListenableBuilder<String>(
+            valueListenable: _sessionsTab,
+            builder: (context, tab, _) {
+              if (tab != 'realized') return const SizedBox.shrink();
+              final colors = Theme.of(context).colorScheme;
+              return Semantics(
+                button: true,
+                label: 'Créer une session libre',
+                child: FloatingActionButton(
+                  heroTag: 'fab_create_simple_session',
+                  tooltip: 'Créer une session libre',
+                  backgroundColor: colors.secondaryContainer,
+                  foregroundColor: colors.onSecondaryContainer,
+                  onPressed: () => Navigator.of(context)
+                      .push(MaterialPageRoute(
+                        builder: (_) => const CreateSimpleSessionScreen(),
+                      ))
+                      .then((_) => _historyKey.currentState?.refreshSessions()),
+                  child: const Icon(Icons.playlist_add),
+                ),
+              );
             },
-            tooltip: 'Créer une session (réalisée ou prévue selon l\'onglet)',
-            child: const Icon(Icons.add),
           ),
         ),
       ],

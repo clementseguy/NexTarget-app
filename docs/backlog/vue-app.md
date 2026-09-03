@@ -79,12 +79,12 @@
 | NT-130 | Templates de session | app | Must | S | À FAIRE | prototype abandonné : ne pas ajouter d'étape au parcours classique |
 | NT-131 | Session live au stand | app | Should | M | À FAIRE | saisie au fil du tir + chrono repos |
 | NT-132 | Spike — saisie vocale d'une série | app | Could | S | À FAIRE | go/no-go en environnement stand |
-| NT-133 | Sessions libres sans séries ni scores | app | Must | L | À FAIRE | arme/calibre obligatoires, catégorie entraînement/match/test matériel, distance entière, synthèse/photo/exercices facultatifs, sans Coach |
+| NT-133 | Sessions libres sans séries ni scores | app | Must | L | EN COURS | implémenté sur branche feature ; fusion, Quality Gate et recette manuelle encore requis |
 
 ## Prochaines actions app (hors FAIT), par priorité
 
-- **En cours** — NT-014.
-- **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session), NT-133 (sessions libres).
+- **En cours** — NT-014, NT-133.
+- **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session).
 - **Should** — NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-131. NT-033 : voir NT-120/NT-121.
 - **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132. NT-023 : voir NT-122/NT-123. NT-014 conserve cette priorité mais est déjà en cours.
 - **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.

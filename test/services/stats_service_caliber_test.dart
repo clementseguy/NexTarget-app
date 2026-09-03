@@ -10,7 +10,7 @@ void main() {
     await AppConfig.load();
   });
 
-  ShootingSession session(String caliber, int points) => ShootingSession(
+  ShootingSession session(String caliber, int points) => DetailedShootingSession(
         date: DateTime(2026, 8, 20),
         weapon: 'Pistolet',
         caliber: caliber,

@@ -117,7 +117,7 @@ void main() {
       
       // Add a test session with unique identifiers
       final uniqueWeapon = 'UNIQUE_TEST_WEAPON_${DateTime.now().millisecondsSinceEpoch}';
-      final testSession = ShootingSession(
+      final testSession = DetailedShootingSession(
         weapon: uniqueWeapon,
         caliber: '22LR',
         date: DateTime(2024, 5, 15),

@@ -5,7 +5,7 @@ import 'session_repository.dart';
 import '../services/logger.dart';
 
 /// Hive-backed implementation of [SessionRepository].
-class HiveSessionRepository implements SessionRepository {
+class HiveSessionRepository implements SessionRepository, AtomicSessionRepository {
   final LocalDatabaseHive _hive = LocalDatabaseHive();
 
   @override
@@ -25,18 +25,23 @@ class HiveSessionRepository implements SessionRepository {
       final sessionMap = e['session'];
       final seriesList = e['series'] as List<dynamic>? ?? [];
       final sessionMapFixed = sessionMap is Map<String, dynamic> ? sessionMap : Map<String, dynamic>.from(sessionMap);
-      return ShootingSession.fromMap(sessionMapFixed)
-        ..series = seriesList.map((s) => Series.fromMap(s is Map<String, dynamic> ? s : Map<String, dynamic>.from(s))).toList();
+      final session = ShootingSession.fromMap(sessionMapFixed);
+      if (session is DetailedShootingSession) {
+        session.series = seriesList.map((s) => Series.fromMap(
+          s is Map<String, dynamic> ? s : Map<String, dynamic>.from(s),
+        )).toList();
+      }
+      return session;
     }).toList();
   }
 
   @override
   Future<int> insert(ShootingSession session) async {
     // Utiliser la nouvelle API qui retourne directement l'ID
-    final key = await _hive.insertSession(
-      session.toMap(), 
-      session.series.map((s) => s.toMap()).toList()
-    );
+    final series = session is DetailedShootingSession
+        ? session.series.map((s) => s.toMap()).toList()
+        : <Map<String, dynamic>>[];
+    final key = await _hive.insertSession(session.toMap(), series);
     
     // Si key est null (erreur), retourner -1
     if (key == null) return -1;
@@ -46,11 +51,25 @@ class HiveSessionRepository implements SessionRepository {
   }
 
   @override
+  Future<List<int>> insertAll(List<ShootingSession> sessions) async {
+    final entries = sessions.map((session) {
+      final series = session is DetailedShootingSession
+          ? session.series.map((item) => item.toMap()).toList()
+          : <Map<String, dynamic>>[];
+      return (session: session.toMap(), series: series);
+    }).toList();
+    return _hive.insertSessions(entries);
+  }
+
+  @override
   Future<bool> update(ShootingSession session, {bool preserveExistingSeriesIfEmpty = true}) async {
-    final seriesMaps = session.series.map((s) => s.toMap()).toList();
+    final seriesMaps = session is DetailedShootingSession
+        ? session.series.map((s) => s.toMap()).toList()
+        : <Map<String, dynamic>>[];
     
     // Si on doit préserver les séries existantes et que la session n'a pas de séries
-    if (preserveExistingSeriesIfEmpty && (session.id != null) && seriesMaps.isEmpty) {
+    if (session is DetailedShootingSession && preserveExistingSeriesIfEmpty &&
+        session.id != null && seriesMaps.isEmpty) {
       try {
         final existing = await _hive.getSessionsWithSeries();
         final match = existing.firstWhere(

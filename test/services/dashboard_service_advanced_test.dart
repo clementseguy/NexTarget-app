@@ -90,7 +90,7 @@ List<ShootingSession> _createTestSessions(DateTime now) {
       ));
     }
     
-    sessions.add(ShootingSession(
+    sessions.add(DetailedShootingSession(
       id: i,
       date: date,
       weapon: 'Pistolet',
@@ -112,7 +112,7 @@ List<ShootingSession> _createTestSessions(DateTime now) {
       ),
     ];
     
-    sessions.add(ShootingSession(
+    sessions.add(DetailedShootingSession(
       id: 100 + i,
       date: date,
       weapon: 'Pistolet',

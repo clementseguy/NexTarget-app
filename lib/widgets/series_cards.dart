@@ -292,7 +292,6 @@ class _StepperFieldState extends State<_StepperField> {
   void initState() {
     super.initState();
     _value = double.tryParse(widget.controller.text.replaceAll(',', '.')) ?? widget.min;
-    widget.controller.text = widget.decimal ? _value.toStringAsFixed( widget.step < 1 ? 1 : 0) : _value.toStringAsFixed(0);
   }
 
   void _apply() {
@@ -325,6 +324,16 @@ class _StepperFieldState extends State<_StepperField> {
               focusNode: widget.focusNode,
               decoration: decoration,
               keyboardType: TextInputType.numberWithOptions(decimal: widget.decimal),
+              validator: (text) {
+                final value = double.tryParse((text ?? '').replaceAll(',', '.'));
+                if (value == null || value < widget.min || value > widget.max) {
+                  return 'Valeur invalide';
+                }
+                if (!widget.decimal && value != value.truncateToDouble()) {
+                  return 'Entier requis';
+                }
+                return null;
+              },
               onChanged: (t) {
                 final parsed = double.tryParse(t.replaceAll(',', '.'));
                 if (parsed != null) {

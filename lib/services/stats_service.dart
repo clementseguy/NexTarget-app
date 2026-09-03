@@ -42,6 +42,7 @@ class StatsService implements IStatsService {
     final ordered = List<ShootingSession>.from(realized)
       ..sort((a, b) => (a.date ?? DateTime(1970)).compareTo(b.date ?? DateTime(1970)));
     for (final s in ordered) {
+      if (s is! DetailedShootingSession) continue;
       final date = s.date ?? DateTime.fromMillisecondsSinceEpoch(0);
       for (int i = 0; i < s.series.length; i++) {
         final serie = s.series[i];

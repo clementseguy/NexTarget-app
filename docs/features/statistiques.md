@@ -4,15 +4,17 @@ Portée: décrit UNIQUEMENT l'existant (implémenté) pour l'écran Accueil. Auc
 
 ## 0. Révision
 2025-10-03 Réécriture propre (existant only).
-2025-10-10 Ajout section 
+2025-10-10 Ajout section
+2026-09-03 NT-133 : prise en charge des sessions libres.
 
 ## 1. Sources & Préparation (Lot C)
 - Filtrage centralisé AVANT tout calcul: `SessionFilters.realizedWithDate` exclut systématiquement les sessions au statut `prévue` et sans date. Utilisé par `StatsService` et `RollingStatsService`.
-- Construction `_series` (`StatsService`): sur la base des sessions filtrées, chaque série hérite de la date session, puis l’ensemble est trié par date ASC. Ordre strict intra-session respecté (F14).
-- `RollingStatsService`: applique le même filtre central (sessions réalisées uniquement) pour avg30/avg60/delta.
+- Construction `_series` (`StatsService`): sur la base des sessions détaillées filtrées, chaque série hérite de la date session, puis l’ensemble est trié par date ASC. Les sessions libres n'alimentent jamais cette collection. Ordre strict intra-session respecté (F14).
+- `RollingStatsService`: applique le même filtre central (sessions réalisées uniquement). Les compteurs d'assiduité incluent les sessions libres ; avg30/avg60/delta restent calculés sur les seules sessions détaillées.
 
 ## 2. Règles Globales
 - Fenêtres temporelles: 30 jours (`date > now - 30j`), 60 jours analogue. Les fenêtres progression: (0..30j) vs (30..60j).
+- Sessions libres : incluses dans les nombres de sessions, jours actifs, catégories, séries d'assiduité et volumes de tirs. Leur `shotCount` direct alimente NT-017. Elles sont exclues des scores, groupements, records, distributions de points/distances de séries et courbes fondées sur les séries. Un calibre inconnu reste inclus dans les agrégats généraux et est exclu uniquement de la répartition par calibre.
 - Groupement: les valeurs `groupSize <= 0` NE SONT PAS filtrées dans la moyenne 30j (elles entrent dans le dénominateur) mais sont ignorées pour: best groupement (`bestGroupSize`) et record groupement (`lastSeriesIsRecordGroup`) et implicites dans min() (positives uniquement).
 - Valeurs par défaut / insuffisance:
 	- Moyennes / compte / distributions / rolling / streak / charge: 0 si vide ou insuffisant.
