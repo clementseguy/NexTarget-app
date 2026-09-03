@@ -49,4 +49,29 @@ void main() {
     await tester.pump();
     expect(controller.text, '.380 ACP');
   });
+
+  testWidgets('la soumission clavier sélectionne la suggestion surlignée',
+      (tester) async {
+    final controller = TextEditingController();
+    addTearDown(controller.dispose);
+    String? selected;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CaliberAutocompleteField(
+            controller: controller,
+            onSelected: (value) => selected = value,
+          ),
+        ),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextFormField), '45');
+    await tester.pump();
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+
+    expect(controller.text, '.45 ACP');
+    expect(selected, '.45 ACP');
+  });
 }

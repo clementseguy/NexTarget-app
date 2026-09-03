@@ -48,10 +48,12 @@ class _CaliberAutocompleteFieldState extends State<CaliberAutocompleteField> {
           focusNode: fieldFocus,
           decoration: InputDecoration(labelText: widget.labelText),
           validator: widget.isRequired
-              ? (value) => value == null || value.trim().isEmpty ? 'Requis' : null
+              ? (value) =>
+                  value == null || value.trim().isEmpty ? 'Requis' : null
               : null,
           onChanged: widget.onChanged,
           onSaved: widget.onSaved,
+          onFieldSubmitted: (_) => submit(),
         );
       },
       optionsViewBuilder: (context, select, options) {

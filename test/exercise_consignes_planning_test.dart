@@ -14,7 +14,9 @@ void main() {
 
     setUp(() async {
       // Répertoire vraiment unique (ajout random) pour éviter toute réutilisation pendant exécution parallèle potentielle.
-      final dir = await Directory('./build/test_ex/${DateTime.now().microsecondsSinceEpoch}_${Random().nextInt(1<<32)}').create(recursive: true);
+      final dir = await Directory(
+              './build/test_ex/${DateTime.now().microsecondsSinceEpoch}_${Random().nextInt(1 << 32)}')
+          .create(recursive: true);
       Hive.init(dir.path);
       exerciseService = ExerciseService();
       sessionService = SessionService();
@@ -22,13 +24,19 @@ void main() {
       await exBox.clear();
       final sessBox = await Hive.openBox('sessions');
       await sessBox.clear();
+      final preferencesBox = await Hive.openBox('app_preferences');
+      await preferencesBox.clear();
     });
 
     test('Persist consignes and recreate from map', () async {
       await exerciseService.addExercise(
         name: 'Drill précision',
         category: 'technique',
-        consignes: ['Série 1 : tir lent', 'Série 2 : cadence moyenne', 'Série 3 : cadence rapide'],
+        consignes: [
+          'Série 1 : tir lent',
+          'Série 2 : cadence moyenne',
+          'Série 3 : cadence rapide'
+        ],
       );
       final all = await exerciseService.listAll();
       expect(all.length, 1);
@@ -49,12 +57,14 @@ void main() {
       expect(session.id, isNotNull);
       expect(session.exercises, contains(exercise.id));
       expect(session.series.length, 3);
-      expect(session.series.map((s)=>s.comment).toList(), equals(['Phase 1','Phase 2','Phase 3']));
-  expect(session.synthese, isNotNull);
-  expect(session.synthese, contains('Drill vitesse'));
+      expect(session.series.map((s) => s.comment).toList(),
+          equals(['Phase 1', 'Phase 2', 'Phase 3']));
+      expect(session.synthese, isNotNull);
+      expect(session.synthese, contains('Drill vitesse'));
       // Reload sessions from repository to ensure series persisted
       final allSessions = await sessionService.getAllSessions();
-      final planned = allSessions.firstWhere((s)=> s.exercises.contains(exercise.id));
+      final planned =
+          allSessions.firstWhere((s) => s.exercises.contains(exercise.id));
       expect(planned.id, isNotNull);
       expect(planned.series.length, 3);
     });
@@ -69,15 +79,17 @@ void main() {
       expect(session.series.length, 1);
       expect(session.series.first.comment, '');
       final allSessions = await sessionService.getAllSessions();
-      final created = allSessions.firstWhere((s)=> s.exercises.contains(exercise.id));
+      final created =
+          allSessions.firstWhere((s) => s.exercises.contains(exercise.id));
       expect(created.id, isNotNull);
       expect(created.series.length, 1);
-  expect(created.synthese, isNotNull);
-  expect(created.synthese, contains('Sans étapes'));
+      expect(created.synthese, isNotNull);
+      expect(created.synthese, contains('Sans étapes'));
     });
-    
+
     test('Placeholder series has minimal non-empty metrics', () async {
-  await exerciseService.addExerciseLegacy(name: 'Mini', category: 'technique');
+      await exerciseService.addExerciseLegacy(
+          name: 'Mini', category: 'technique');
       final ex = (await exerciseService.listAll()).first;
       final sess = await sessionService.planFromExercise(ex);
       expect(sess.series.first.shotCount, 1);

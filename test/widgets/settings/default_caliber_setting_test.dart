@@ -54,4 +54,26 @@ void main() {
     await tester.pump();
     expect(provider.defaultCaliber, isNull);
   });
+
+  testWidgets('la soumission clavier persiste la suggestion surlignée',
+      (tester) async {
+    final provider = SettingsProvider(
+      preferencesBox: Hive.box('app_preferences'),
+    );
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: provider,
+        child: const MaterialApp(
+          home: Scaffold(body: DefaultCaliberSetting()),
+        ),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextFormField), '45');
+    await tester.pump();
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+
+    expect(provider.defaultCaliber, '.45 ACP');
+  });
 }
