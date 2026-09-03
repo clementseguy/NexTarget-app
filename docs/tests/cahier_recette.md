@@ -3,6 +3,30 @@
 - Dernière mise à jour: 2026-09-03
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
 
+## NT-014 — Comparatif glissant 30 j / 90 j et sparklines
+Objectif: Vérifier les deux métriques indépendantes, leurs populations et leur présentation mobile.
+Pré-requis:
+- Disposer d'au moins une série réalisée récente, une série réalisée entre J-90 et J-31, et cinq sessions exploitables pour afficher chaque sparkline
+Étapes:
+1. Ouvrir Statistiques > Avancé dans le thème Classique puis dans le thème France
+2. Ouvrir l'aide depuis Synthèse et vérifier les explications de Régularité, Progression, Dynamique des performances et des courbes
+3. Vérifier les lignes Points par série et Groupement par série sur une petite largeur mobile
+4. Comparer manuellement les moyennes 30 j et 90 j, le delta absolu et le pourcentage relatif
+5. Utiliser deux moyennes qui s'arrondissent toutes deux à 14,4 mais conservent un faible écart réel
+6. Ajouter une session prévue, une session libre et une série à zéro point sans groupement, puis rouvrir le comparatif
+7. Tester successivement quatre puis cinq sessions exploitables pour chaque métrique
+8. Vérifier un jeu de données où le score progresse tandis que le groupement s'élargit
+Résultats attendus:
+- La fenêtre 90 j inclut les 30 derniers jours et le comparatif exige une série récente plus une série antérieure
+- Les sessions prévues et libres ne changent aucune valeur ; le score nul reste compté et le groupement invalide est ignoré uniquement pour cette métrique
+- Chaque ligne affiche ses moyennes, son delta signé et son pourcentage ; une base 90 j nulle ou une population insuffisante produit un message explicite
+- La carte Progression affiche sur une ligne les mêmes pourcentages de groupement puis de score que le comparatif
+- Si une décimale masque l'écart, les moyennes et le delta passent à deux décimales et restent cohérents avec le pourcentage
+- Une baisse du groupement conserve un delta négatif et affiche un pourcentage positif, sans verdict global
+- Chaque sparkline reste masquée à quatre sessions et apparaît à cinq avec un point moyen par session
+- Aucun débordement n'apparaît et la compréhension ne dépend pas de la couleur dans les deux thèmes
+- L'aide explique que Progression reprend les deux pourcentages du comparatif emboîté 30 j/90 j
+
 ## NT-073 — Calibre par défaut et statistiques par calibre
 Objectif: Vérifier le préremplissage explicite, la saisie libre et le regroupement statistique sans réécriture.
 Pré-requis:

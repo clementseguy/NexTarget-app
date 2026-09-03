@@ -12,9 +12,13 @@ import '../services/stats_service.dart';
 /// Utilise StatsService existant et transforme les données pour les widgets
 class DashboardService {
   final StatsService _statsService;
+  final DateTime _now;
 
-  DashboardService(List<ShootingSession> sessions, {DateTime? now})
-      : _statsService = StatsService(sessions, now: now);
+  factory DashboardService(List<ShootingSession> sessions, {DateTime? now}) =>
+      DashboardService._(sessions, now ?? DateTime.now());
+
+  DashboardService._(List<ShootingSession> sessions, this._now)
+      : _statsService = StatsService(sessions, now: _now);
 
   /// Génère les données du récapitulatif (5 cartes)
   DashboardSummary generateSummary() {
@@ -238,8 +242,7 @@ class DashboardService {
     final progression = _statsService.progressionPercent30Days();
 
     // Prise dominante basée sur toutes les séries
-    final allSeries =
-        _statsService.lastNSortedSeriesAsc(1000); // Toutes les séries
+    final allSeries = _statsService.allSortedSeriesAsc();
 
     String? dominantHandMethod;
     double dominantHandMethodPercentage = 0.0;
@@ -272,34 +275,99 @@ class DashboardService {
     );
   }
 
-  /// Génère les données de comparaison d'évolution 30j vs 90j
+  /// Génère le comparatif global NT-014 sur deux fenêtres emboîtées.
+  ///
+  /// Les bornes sont inclusives à J-90 et J-30. La borne J-30 appartient à
+  /// la fenêtre récente, donc la population antérieure se termine juste avant.
   EvolutionComparisonData generateEvolutionComparison() {
-    // Calculer moyennes sur différentes périodes
-    final series30 = _statsService
-        .lastNSortedSeriesAsc(1000)
-        .where((s) => DateTime.now().difference(s.date).inDays <= 30)
-        .toList();
-    final series90 = _statsService
-        .lastNSortedSeriesAsc(1000)
-        .where((s) => DateTime.now().difference(s.date).inDays <= 90)
-        .toList();
+    final cutoff30 = _now.subtract(const Duration(days: 30));
+    final cutoff90 = _now.subtract(const Duration(days: 90));
+    final sessions90 = _statsService.sessions
+        .whereType<DetailedShootingSession>()
+        .where((session) {
+      final date = session.date;
+      return session.status == SessionConstants.statusRealisee &&
+          date != null &&
+          !date.isBefore(cutoff90) &&
+          !date.isAfter(_now);
+    }).toList()
+      ..sort((a, b) => a.date!.compareTo(b.date!));
 
-    final avg30 = series30.isEmpty
-        ? 0.0
-        : series30.map((s) => s.points).reduce((a, b) => a + b) /
-            series30.length.toDouble();
-    final avg90 = series90.isEmpty
-        ? 0.0
-        : series90.map((s) => s.points).reduce((a, b) => a + b) /
-            series90.length.toDouble();
+    final score = _buildMetricComparison(
+      sessions90,
+      cutoff30,
+      (series) => series.map((item) => item.points.toDouble()).toList(),
+    );
+    final groupSize = _buildMetricComparison(
+      sessions90,
+      cutoff30,
+      (series) => series
+          .map((item) => item.groupSize)
+          .where((value) => value.isFinite && value > 0)
+          .toList(),
+    );
 
     return EvolutionComparisonData(
-      avg30Days: avg30,
-      avg90Days: avg90,
-      delta: avg30 - avg90,
-      title: 'Évolution 30j vs 90j',
+      score: score,
+      groupSize: groupSize,
+      hasRequiredPopulation: score.hasComparison,
+      title: 'Dynamique des performances · 30 j vs 90 j',
     );
   }
+
+  EvolutionMetricComparison _buildMetricComparison(
+    List<DetailedShootingSession> sessions90,
+    DateTime cutoff30,
+    List<double> Function(List<Series>) usableValues,
+  ) {
+    final recentValues = <double>[];
+    final earlierValues = <double>[];
+    final allValues = <double>[];
+    final sessionPoints = <SessionMetricPoint>[];
+
+    for (final session in sessions90) {
+      final values = usableValues(session.series);
+      if (values.isEmpty) continue;
+      allValues.addAll(values);
+      if (session.date!.isBefore(cutoff30)) {
+        earlierValues.addAll(values);
+      } else {
+        recentValues.addAll(values);
+      }
+      sessionPoints.add(SessionMetricPoint(
+        date: session.date!,
+        value: _average(values),
+      ));
+    }
+
+    if (recentValues.isEmpty || earlierValues.isEmpty) {
+      return EvolutionMetricComparison(
+        avg30Days: null,
+        avg90Days: null,
+        absoluteDelta: null,
+        relativeDeltaPercent: null,
+        recentSeriesCount: recentValues.length,
+        earlierSeriesCount: earlierValues.length,
+        sessionPoints: sessionPoints,
+      );
+    }
+
+    final avg30 = _average(recentValues);
+    final avg90 = _average(allValues);
+    final delta = avg30 - avg90;
+    return EvolutionMetricComparison(
+      avg30Days: avg30,
+      avg90Days: avg90,
+      absoluteDelta: delta,
+      relativeDeltaPercent: avg90 == 0 ? null : (delta / avg90) * 100,
+      recentSeriesCount: recentValues.length,
+      earlierSeriesCount: earlierValues.length,
+      sessionPoints: sessionPoints,
+    );
+  }
+
+  double _average(List<double> values) =>
+      values.fold<double>(0, (sum, value) => sum + value) / values.length;
 
   /// Génère les données de corrélation Points/Groupement
   CorrelationData generateCorrelationData() {
