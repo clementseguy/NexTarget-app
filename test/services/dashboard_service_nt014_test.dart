@@ -8,17 +8,14 @@ void main() {
   final now = DateTime(2026, 9, 3, 12, 30);
 
   group('DashboardService NT-014', () {
-    test('inclut précisément J-30 et J-90 dans les fenêtres emboîtées', () {
+    test('inclut J-30 et J-90 à minuit selon les jours calendaires', () {
+      final today = DateTime(now.year, now.month, now.day);
       final data = DashboardService(
         [
-          _session(now.subtract(const Duration(days: 30)), 60, 20),
-          _session(now.subtract(const Duration(days: 90)), 30, 28),
-          _session(
-            now.subtract(const Duration(days: 90, microseconds: 1)),
-            100,
-            1,
-          ),
-          _session(now.add(const Duration(microseconds: 1)), 100, 1),
+          _session(DateTime(today.year, today.month, today.day - 30), 60, 20),
+          _session(DateTime(today.year, today.month, today.day - 90), 30, 28),
+          _session(DateTime(today.year, today.month, today.day - 91), 100, 1),
+          _session(DateTime(today.year, today.month, today.day + 1), 100, 1),
         ],
         now: now,
       ).generateEvolutionComparison();
@@ -34,6 +31,20 @@ void main() {
       expect(data.groupSize.avg90Days, 24);
       expect(data.groupSize.absoluteDelta, -4);
       expect(data.groupSize.relativeDeltaPercent, closeTo(-16.667, 0.001));
+    });
+
+    test('inclut toute session du jour même quelle que soit son heure', () {
+      final data = DashboardService(
+        [
+          _session(DateTime(2026, 9, 3, 23, 59), 60, 20),
+          _session(DateTime(2026, 8, 3), 30, 28),
+        ],
+        now: now,
+      ).generateEvolutionComparison();
+
+      expect(data.hasRequiredPopulation, isTrue);
+      expect(data.score.recentSeriesCount, 1);
+      expect(data.score.earlierSeriesCount, 1);
     });
 
     test('exclut sessions prévues, libres et sans date', () {

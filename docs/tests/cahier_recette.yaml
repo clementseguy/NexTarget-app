@@ -16,7 +16,7 @@ features:
       - Tester successivement quatre puis cinq sessions exploitables pour chaque métrique
       - Vérifier un jeu de données où le score progresse tandis que le groupement s'élargit
     expected:
-      - La fenêtre 90 j inclut les 30 derniers jours et le comparatif exige une série récente plus une série antérieure
+      - La fenêtre 90 j inclut les 30 derniers jours et le comparatif exige une série récente plus une série antérieure ; J-30 et J-90 à minuit restent inclus même lorsque l'heure courante est plus tardive
       - Les sessions prévues et libres ne changent aucune valeur ; le score nul reste compté et le groupement invalide est ignoré uniquement pour cette métrique
       - Chaque ligne affiche ses moyennes, son delta signé et son pourcentage ; une base 90 j nulle ou une population insuffisante produit un message explicite
       - La carte Progression affiche sur une ligne les mêmes pourcentages de groupement puis de score que le comparatif

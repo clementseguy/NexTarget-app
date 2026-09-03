@@ -6,7 +6,7 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ### Added
 - NT-014 : comparatif global glissant 30 j / 90 j des points et groupements moyens par série, avec deltas absolus/relatifs et sparklines par session à partir de cinq sessions exploitables.
-    - Fenêtres emboîtées à bornes déterministes et horloge injectable ; sessions prévues/libres exclues, scores nuls conservés et groupements non strictement positifs ou non finis ignorés uniquement pour cette métrique.
+    - Fenêtres emboîtées à bornes calendaires déterministes et horloge injectable ; sessions prévues/libres exclues, scores nuls conservés et groupements non strictement positifs ou non finis ignorés uniquement pour cette métrique.
     - Présentation compacte à deux lignes, états explicites pour population insuffisante et division par zéro, lisible dans les thèmes sombre et France sans dépendre uniquement de la couleur.
     - Ajustements de recette : titre « Dynamique des performances · 30 j vs 90 j », précision accrue lorsque l'arrondi masque un écart, sparklines sans ligne de référence ambiguë avec valeurs ancienne/récente, deltas placés à droite des moyennes, carte Progression compacte alignée sur les pourcentages score/groupement du comparatif, et aide contextuelle dédiée.
     - Suppression de la limite silencieuse des 1 000 dernières séries dans les agrégats globaux concernés ; l'ancien calcul legacy 30/60 par total de session est clarifié comme distinct et reste non affiché.

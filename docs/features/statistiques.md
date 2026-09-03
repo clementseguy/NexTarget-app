@@ -23,7 +23,7 @@ Portée: décrit UNIQUEMENT l'existant (implémenté) pour l'écran Accueil. Auc
 	- Progression: `NaN` si conditions non remplies (≥5 séries dans chaque fenêtre & avgPrev>0).
 	- Records: false si <2 séries ou conditions non satisfaites.
 - Série pour les graphes de tendance (points, groupement) et le scatter: sélection des 30 dernières séries en ordre chronologique ASC (ancien → récent). Cette sélection est indépendante des fenêtres 30j/60j basées sur la date.
-- Comparatif NT-014 : fenêtre 90 j `[now - 90 jours, now]`, fenêtre récente 30 j `[now - 30 jours, now]` et population antérieure `[now - 90 jours, now - 30 jours[`. J-90 et J-30 sont donc inclus, J-30 appartient à la période récente et toute date future est exclue. L'horloge est figée à la construction de `DashboardService` et injectable dans les tests.
+- Comparatif NT-014 : fenêtre 90 j `[J-90, aujourd'hui]`, fenêtre récente 30 j `[J-30, aujourd'hui]` et population antérieure `[J-90, J-30[`. Les comparaisons utilisent les jours calendaires locaux normalisés à minuit : J-90 et J-30 sont donc inclus quelle que soit l'heure courante ou stockée, J-30 appartient à la période récente et tout jour futur est exclu. L'horloge est figée à la construction de `DashboardService` et injectable dans les tests.
 - NT-014 est global : aucun filtre par arme, calibre, distance, catégorie ou exercice. Seules les sessions réalisées détaillées contribuent ; les sessions prévues, sans date et libres sont exclues.
 
 ## 3. Glossaire

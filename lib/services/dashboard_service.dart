@@ -279,17 +279,21 @@ class DashboardService {
   ///
   /// Les bornes sont inclusives à J-90 et J-30. La borne J-30 appartient à
   /// la fenêtre récente, donc la population antérieure se termine juste avant.
+  /// Les comparaisons portent sur les jours calendaires, indépendamment de
+  /// l'heure courante et de l'heure éventuellement stockée avec la session.
   EvolutionComparisonData generateEvolutionComparison() {
-    final cutoff30 = _now.subtract(const Duration(days: 30));
-    final cutoff90 = _now.subtract(const Duration(days: 90));
+    final today = DateUtils.dateOnly(_now);
+    final cutoff30 = DateTime(today.year, today.month, today.day - 30);
+    final cutoff90 = DateTime(today.year, today.month, today.day - 90);
     final sessions90 = _statsService.sessions
         .whereType<DetailedShootingSession>()
         .where((session) {
       final date = session.date;
-      return session.status == SessionConstants.statusRealisee &&
-          date != null &&
-          !date.isBefore(cutoff90) &&
-          !date.isAfter(_now);
+      if (session.status != SessionConstants.statusRealisee || date == null) {
+        return false;
+      }
+      final sessionDay = DateUtils.dateOnly(date);
+      return !sessionDay.isBefore(cutoff90) && !sessionDay.isAfter(today);
     }).toList()
       ..sort((a, b) => a.date!.compareTo(b.date!));
 
@@ -329,7 +333,9 @@ class DashboardService {
       final values = usableValues(session.series);
       if (values.isEmpty) continue;
       allValues.addAll(values);
-      if (session.date!.isBefore(cutoff30)) {
+      final date = session.date!;
+      final sessionDay = DateUtils.dateOnly(date);
+      if (sessionDay.isBefore(cutoff30)) {
         earlierValues.addAll(values);
       } else {
         recentValues.addAll(values);
