@@ -11,6 +11,7 @@ Toutes les modifications notables de ce projet seront listées ici.
     - Statut persistant `brouillon`, migration Hive additive, reprise après redémarrage, abandon confirmé avec nettoyage photo et cycle import/export préservé.
     - Synthèse finale avec photo facultative, clôture atomique vers une session réalisée standard et redirection directe vers son détail ; brouillons exclus des statistiques, objectifs, compteurs et du Coach.
     - Synchronisation de l'historique avant chaque sortie du parcours afin qu'un brouillon clôturé ou abandonné ne soit jamais réaffiché, même temporairement.
+    - Harmonisation mobile des champs de préparation et des raccourcis de distance ; filtres d'historique alignés, sessions prévues datées triées chronologiquement, sessions non datées identifiées explicitement et aide contextuelle simplifiée.
 - NT-014 : comparatif global glissant 30 j / 90 j des points et groupements moyens par série, avec deltas absolus/relatifs et sparklines par session à partir de cinq sessions exploitables.
     - Fenêtres emboîtées à bornes calendaires déterministes et horloge injectable ; sessions prévues/libres exclues, scores nuls conservés et groupements non strictement positifs ou non finis ignorés uniquement pour cette métrique.
     - Présentation compacte à deux lignes, états explicites pour population insuffisante et division par zéro, lisible dans les thèmes sombre et France sans dépendre uniquement de la couleur.

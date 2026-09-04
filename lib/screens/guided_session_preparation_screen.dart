@@ -180,14 +180,23 @@ class _GuidedSessionPreparationScreenState
               trailing: const Icon(Icons.edit_calendar_outlined),
               onTap: _pickDateAndTime,
             ),
-            WeaponAutocompleteField(
-              controller: _weaponController,
-              weaponService: widget.weaponService,
-              validator: (value) =>
-                  value == null || value.trim().isEmpty ? 'Requis' : null,
+            Row(
+              children: [
+                Expanded(
+                  child: WeaponAutocompleteField(
+                    controller: _weaponController,
+                    weaponService: widget.weaponService,
+                    validator: (value) =>
+                        value == null || value.trim().isEmpty ? 'Requis' : null,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child:
+                      CaliberAutocompleteField(controller: _caliberController),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            CaliberAutocompleteField(controller: _caliberController),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               initialValue: _category,
@@ -219,6 +228,7 @@ class _GuidedSessionPreparationScreenState
             Row(
               children: [
                 Expanded(
+                  flex: 2,
                   child: TextFormField(
                     key: const Key('guided_series_count'),
                     controller: _seriesCountController,
@@ -231,28 +241,32 @@ class _GuidedSessionPreparationScreenState
                 ),
                 const SizedBox(width: 12),
                 Expanded(
+                  flex: 3,
                   child: TextFormField(
                     key: const Key('guided_shots_per_series'),
                     controller: _shotsController,
                     decoration:
-                        const InputDecoration(labelText: 'Coups par série'),
+                        const InputDecoration(labelText: 'Coups / série'),
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     validator: _validatePositiveInt,
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 3,
+                  child: TextFormField(
+                    key: const Key('guided_initial_distance'),
+                    controller: _distanceController,
+                    decoration:
+                        const InputDecoration(labelText: 'Distance (m)'),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: _validatePositiveInt,
+                  ),
+                ),
               ],
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              key: const Key('guided_initial_distance'),
-              controller: _distanceController,
-              decoration:
-                  const InputDecoration(labelText: 'Distance initiale (m)'),
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: _validatePositiveInt,
             ),
             const SizedBox(height: 12),
             SegmentedButton<HandMethod>(

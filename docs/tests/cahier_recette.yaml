@@ -52,6 +52,7 @@ features:
     steps:
       - Ouvrir Sessions et vérifier l'action principale Au stand ainsi que les trois créations du menu Autres créations
       - Préparer 10 séries de 7 coups avec une arme libre suggérée par le râtelier, un calibre libre, zéro puis plusieurs exercices, une distance initiale et une prise
+      - Vérifier l'alignement arme/calibre puis séries/coups/distance et la position des raccourcis 15 m et 25 m sous la distance
       - Commencer, renseigner une série avec un score nul et un commentaire vide, puis vérifier la sauvegarde temporisée
       - Utiliser les raccourcis 15 m et 25 m, une distance libre, modifier la prise, naviguer vers la série précédente puis la suivante
       - Ajouter une série, quitter temporairement l'assistant, fermer puis redémarrer l'application
@@ -69,6 +70,7 @@ features:
       - Après abandon, aucun brouillon ne réapparaît, même brièvement, au retour dans Sessions
       - La clôture ouvre directement le détail d'une session détaillée réalisée standard sans réafficher temporairement le brouillon ; une erreur simulée conserve intégralement le brouillon avec un message exploitable
       - Les sessions planifiées, réalisées détaillées, libres et le wizard de conversion prévue restent fonctionnels dans les thèmes Classique et France
+      - Les filtres exercice et catégorie restent alignés dans les onglets Réalisées et Prévues ; les prévues datées sont classées par date croissante avant celles affichées Sans date
 
   - id: SESS-01
     name: Sessions – création/édition

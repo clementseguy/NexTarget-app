@@ -7,6 +7,30 @@ import 'package:tir_sportif/widgets/session_card.dart';
 import 'package:tir_sportif/widgets/session_chip.dart';
 
 void main() {
+  testWidgets('une session prévue sans date ne prend pas la date du jour',
+      (tester) async {
+    final session = DetailedShootingSession(
+      date: null,
+      weapon: 'Pistolet',
+      caliber: '22LR',
+      status: 'prévue',
+      series: [Series(distance: 25, points: 0, groupSize: 0)],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SessionCard(
+            session: session.toMap(),
+            series: session.series.map((item) => item.toMap()).toList(),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Sans date'), findsOneWidget);
+  });
+
   for (final theme in AppThemeType.values) {
     testWidgets('carte libre compacte et lisible en thème ${theme.name}',
         (tester) async {

@@ -571,6 +571,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
           ),
         const SizedBox(height: 12),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: TextFormField(
@@ -585,37 +586,44 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: TextFormField(
-                key: const Key('guided_distance'),
-                controller: _distanceController,
-                focusNode: _distanceFocus,
-                decoration: const InputDecoration(labelText: 'Distance (m)'),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                onChanged: (_) => _onFieldChanged(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFormField(
+                    key: const Key('guided_distance'),
+                    controller: _distanceController,
+                    focusNode: _distanceFocus,
+                    decoration:
+                        const InputDecoration(labelText: 'Distance (m)'),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    onChanged: (_) => _onFieldChanged(),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ActionChip(
+                        avatar: const Icon(Icons.social_distance, size: 18),
+                        label: const Text('15 m'),
+                        onPressed: () {
+                          _distanceController.text = '15';
+                          _onFieldChanged();
+                        },
+                      ),
+                      ActionChip(
+                        avatar: const Icon(Icons.social_distance, size: 18),
+                        label: const Text('25 m'),
+                        onPressed: () {
+                          _distanceController.text = '25';
+                          _onFieldChanged();
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          children: [
-            ActionChip(
-              avatar: const Icon(Icons.social_distance, size: 18),
-              label: const Text('15 m'),
-              onPressed: () {
-                _distanceController.text = '15';
-                _onFieldChanged();
-              },
-            ),
-            ActionChip(
-              avatar: const Icon(Icons.social_distance, size: 18),
-              label: const Text('25 m'),
-              onPressed: () {
-                _distanceController.text = '25';
-                _onFieldChanged();
-              },
             ),
           ],
         ),

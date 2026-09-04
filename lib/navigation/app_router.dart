@@ -173,8 +173,9 @@ class AppNavigator extends StatelessWidget {
         const HelpButton(
           title: 'Mes sessions',
           points: [
-            'Au stand démarre une séance détaillée guidée lorsqu’aucune séance n’est déjà en cours.',
-            'Autres créations donne accès aux sessions planifiées, réalisées détaillées et libres.',
+            'Le bouton "Au stand" permet de créer rapidement une session.',
+            'Vous pouvez aussi planifier des sessions dans le futur via le menu de création.',
+            'Vous pouvez aussi créer des sessions libres ou des sessions détaillées via le menu de création.',
             'Une séance en cours se reprend depuis sa carte et reste hors statistiques et Coach jusqu’à sa clôture.',
             'Chaque session contient vos séries : coups, distance, points, groupement, prise.',
             'Ouvrez une session réalisée pour la synthèse, les exercices travaillés et l\'analyse du coach IA.',

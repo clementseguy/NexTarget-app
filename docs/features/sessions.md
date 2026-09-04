@@ -32,7 +32,7 @@ L'utilisateur peut corriger une série précédente, ajouter une série, quitter
 - Les champs arme et calibre restent libres. Les suggestions du râtelier et du catalogue de calibres n'écrasent jamais le texte saisi.
 - Le calibre par défaut préremplit uniquement une nouvelle saisie ; une session existante conserve sa valeur.
 - Toute nouvelle distance, détaillée ou libre, doit être un entier strictement positif. Les anciennes distances décimales restent lisibles mais doivent être corrigées avant une nouvelle sauvegarde.
-- L'historique sépare les sessions réalisées des sessions prévues, trie les réalisées de la plus récente à la plus ancienne et permet de filtrer par catégorie et par exercice.
+- L'historique sépare les sessions réalisées des sessions prévues. Il trie les réalisées de la plus récente à la plus ancienne et les prévues datées de la plus proche à la plus lointaine, suivies des prévues affichées explicitement `Sans date`. Les filtres catégorie et exercice sont disponibles côte à côte dans les deux onglets.
 - Supprimer une session supprime aussi sa photo locale. Remplacer ou retirer une photo nettoie l'ancien fichier après sauvegarde.
 
 ## Effets sur les statistiques

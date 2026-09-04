@@ -7,6 +7,7 @@ import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:tir_sportif/navigation/app_router.dart';
 import 'package:tir_sportif/providers/navigation_provider.dart';
+import 'package:tir_sportif/widgets/help_button.dart';
 
 void main() {
   setUpAll(() async {
@@ -80,12 +81,17 @@ void main() {
   testWidgets('l’aide explique les sessions détaillées et libres',
       (tester) async {
     await pumpSessions(tester);
+    final help = tester.widget<HelpButton>(find.byType(HelpButton));
+    expect(help.points, contains(contains('hors statistiques et Coach')));
+    expect(
+        help.points, contains(contains('Chaque session contient vos séries')));
     await tester.tap(find.byTooltip('Aide'));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Autres créations'), findsOneWidget);
-    expect(find.textContaining('hors statistiques et Coach'), findsOneWidget);
-    expect(find.textContaining('Chaque session contient vos séries'),
+    expect(find.textContaining('créer rapidement une session'), findsOneWidget);
+    expect(find.textContaining('planifier des sessions dans le futur'),
+        findsOneWidget);
+    expect(find.textContaining('sessions libres ou des sessions détaillées'),
         findsOneWidget);
   });
 

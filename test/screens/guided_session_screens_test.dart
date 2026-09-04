@@ -75,6 +75,19 @@ void main() {
     expect(find.text('10 séries · 5 coups par série · 50 coups prévus'),
         findsOneWidget);
     expect(
+      tester.getTopLeft(textField('Arme')).dy,
+      tester.getTopLeft(textField('Calibre')).dy,
+    );
+    final numericFields = [
+      find.byKey(const Key('guided_series_count')),
+      find.byKey(const Key('guided_shots_per_series')),
+      find.byKey(const Key('guided_initial_distance')),
+    ];
+    expect(
+      numericFields.map((field) => tester.getTopLeft(field).dy).toSet(),
+      hasLength(1),
+    );
+    expect(
       tester
           .widget<CaliberAutocompleteField>(
             find.byType(CaliberAutocompleteField),
@@ -122,6 +135,30 @@ void main() {
     expect(find.textContaining('120 coups prévus'), findsOneWidget);
   });
 
+  testWidgets('conserve les alignements sur une largeur mobile',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GuidedSessionPreparationScreen(sessionService: service),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.getTopLeft(textField('Arme')).dy,
+        tester.getTopLeft(textField('Calibre')).dy);
+    expect(
+      [
+        find.byKey(const Key('guided_series_count')),
+        find.byKey(const Key('guided_shots_per_series')),
+        find.byKey(const Key('guided_initial_distance')),
+      ].map((field) => tester.getTopLeft(field).dy).toSet(),
+      hasLength(1),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('sauvegarde, hérite, navigue et applique les raccourcis distance',
       (tester) async {
     await setLargeSurface(tester);
@@ -143,6 +180,15 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+
+    final distanceRect = tester.getRect(
+      find.byKey(const Key('guided_distance')),
+    );
+    final shortcutRect = tester.getRect(
+      find.widgetWithText(ActionChip, '15 m'),
+    );
+    expect(shortcutRect.top, greaterThan(distanceRect.bottom));
+    expect(shortcutRect.left, greaterThanOrEqualTo(distanceRect.left));
 
     await tester.enterText(find.byKey(const Key('guided_points')), '0');
     await tester.enterText(find.byKey(const Key('guided_group')), '8,5');
