@@ -34,9 +34,17 @@
 >
 > **Comparatif livré le 2026-09-03** : NT-014 est fusionné sur `dev` (PR #28).
 
-> **Arbitrage produit du 2026-09-02** : le lot NT-014, NT-048, NT-061, NT-073
-> et NT-133 a été découpé en deux incréments afin d'isoler la migration des
-> sessions libres. Les deux incréments sont désormais livrés sur `dev`.
+> **Arbitrage produit du 2026-09-02**, complété le **2026-09-04** : le lot
+> prioritaire regroupe NT-014, NT-048, NT-061, NT-073, NT-133 et NT-131. Il est
+> découpé en trois incréments livrables. Les deux premiers — finalisations
+> ciblées puis sessions libres — sont fusionnés sur `dev`. Le troisième porte
+> le parcours guidé au stand sur ce socle.
+
+> **Cadrage produit du 2026-09-04** : NT-131 ne dépend plus des templates
+> NT-130. Il porte le parcours direct « au stand », de la préparation courte au
+> brouillon reprenable puis à la session réalisée, et constitue l'incrément
+> restant du lot prioritaire. NT-134 réserve les graphiques
+> score/groupement intra-session comme évolution facultative ultérieure.
 
 ## Hypothèses
 
@@ -71,6 +79,7 @@
 | 0 | NT-071 (FAIT) | Corrige la perte des comptes et refresh tokens à chaque veille/redémarrage Render ; livré avec la release produit v0.6.0 (serveur v0.3.0). | NT-070 | server |
 | 0 | NT-049 (FAIT) | Diagnostic immédiat et sécurisé de la base utilisateurs et du comportement OAuth ; lot serveur autonome livré. | NT-040, NT-042 | server |
 | 0 | NT-014, NT-048, NT-061, NT-073, NT-133 (FAIT) | Lot de finalisation livré sur `dev`. | NT-001, NT-003, NT-005, NT-010, NT-017, NT-022, NT-040 | both |
+| 1 | NT-131 | Prochain incrément prioritaire : session guidée directement au stand sur le socle livré par NT-133. | NT-001, NT-002, NT-003, NT-004, NT-009, NT-022, NT-073, NT-133 | app |
 | 1 | NT-100, NT-101 | Socle métier TAR : rend les sessions comparables et exploitables par stats/coach. | NT-001, NT-002 | app |
 | 2 | NT-130 | Réduit fortement la friction de saisie au stand et prépare les templates par épreuve après stabilisation de NT-073/NT-133. | NT-001, NT-073, NT-101 optionnel, NT-133 | app |
 | 3 | NT-005 (FAIT), NT-110 | Photo cible exploitable : mémoire visuelle puis contexte fiable pour le coach. | NT-001, NT-100 | app |
@@ -78,13 +87,14 @@
 | 5 | NT-120, NT-121 | Donne un vrai écran Coach transverse, à forte valeur métier. | NT-101, NT-010, NT-030 | both |
 | 6 | NT-122 | Socle serveur pour que le coach produise des entités validables. | NT-031 | server |
 | 7 | NT-123, NT-124 | Le coach devient actionnable : exercices et objectifs proposés, validés par le tireur. | NT-122, NT-020, NT-012 | both |
-| 8 | NT-102, NT-131, NT-074 | Usage terrain avancé : match blanc, session live, saisie rapide. | NT-101, NT-130, NT-002 | app |
-| 9 | NT-111 | Analyse qualitative photo par IA, utile mais seulement après photos taguées et référentiel. | NT-005, NT-110, NT-100, NT-030 | both |
-| 10 | NT-125, NT-126 | Boucle longue : suivi des recommandations puis plan d'entraînement. | NT-121, NT-123, NT-124 | both |
-| 11 | NT-024, NT-015, NT-016 | Raffinement stats/objectifs/exercices après les axes TAR et coach. | NT-022, NT-021, NT-010, NT-012 | app |
-| 12 | NT-056, NT-057, NT-076 | Dette qualité/performance app, à caler dans un sprint de stabilisation. | — | app |
-| 13 | NT-034, NT-025, NT-026, NT-007 (FAIT) | Améliorations utiles mais non structurantes ; NT-026 est de faible priorité mais reste planifié. | NT-032, NT-020, NT-022 | app/server |
-| 14 | NT-044, NT-103, NT-132 | Opportunistes ou à instruire : Facebook, grilles FFTir, spike vocal. | sourcing/config terrain | both/app |
+| 8 | NT-102, NT-074 | Usage terrain avancé restant après livraison prioritaire de NT-131 : match blanc et optimisations génériques de saisie. | NT-101, NT-002 | app |
+| 9 | NT-134 | Lecture graphique score/groupement au fil d'une séance, après validation du récapitulatif NT-131. | NT-131, NT-011 | app |
+| 10 | NT-111 | Analyse qualitative photo par IA, utile mais seulement après photos taguées et référentiel. | NT-005, NT-110, NT-100, NT-030 | both |
+| 11 | NT-125, NT-126 | Boucle longue : suivi des recommandations puis plan d'entraînement. | NT-121, NT-123, NT-124 | both |
+| 12 | NT-024, NT-015, NT-016 | Raffinement stats/objectifs/exercices après les axes TAR et coach. | NT-022, NT-021, NT-010, NT-012 | app |
+| 13 | NT-056, NT-057, NT-076 | Dette qualité/performance app, à caler dans un sprint de stabilisation. | — | app |
+| 14 | NT-034, NT-025, NT-026, NT-007 (FAIT) | Améliorations utiles mais non structurantes ; NT-026 est de faible priorité mais reste planifié. | NT-032, NT-020, NT-022 | app/server |
+| 15 | NT-044, NT-103, NT-132 | Opportunistes ou à instruire : Facebook, grilles FFTir, spike vocal. | sourcing/config terrain | both/app |
 
 ## Plan par sprint
 
@@ -93,8 +103,9 @@
 **Objectif livrable** : terminer les fonctionnalités déjà partielles qui
 affectent la lecture des performances, la qualité des calibres et la durée de
 connexion, clore la documentation de sécurité, puis permettre une consignation
-rapide sans séries. Le lot forme un ensemble produit unique mais se livre en
-deux incréments afin d'isoler la migration de sessions.
+rapide sans séries et une saisie détaillée guidée directement au stand. Le lot
+forme un ensemble produit unique mais se livre en trois incréments afin d'isoler
+la migration de sessions puis le nouveau parcours interactif.
 
 #### Incrément A — Finalisations ciblées
 
@@ -122,7 +133,20 @@ lisibles ; le `+` actuel conserve son comportement ; l'action Libre reste
 absente de l'onglet Prévues ; les volumes incluent les sessions libres alors que
 les métriques de séries les ignorent ; aucune analyse Coach n'est proposée.
 
-**État du lot** : les deux incréments ont été fusionnés séparément sur `dev`.
+#### Incrément C — Session guidée au stand
+
+| Ordre | Item | Feature | App | Serveur |
+|---|---|---|---|---|
+| 1 | NT-131 | Session guidée au stand | action principale « Au stand », préparation courte, brouillon reprenable, saisie série par série, récapitulatif et clôture vers le détail | — |
+
+**Version stable attendue** : depuis l'écran Sessions, l'utilisateur démarre une
+séance détaillée sans session prévue, exercice obligatoire ni template. Le
+brouillon survit aux interruptions, reste hors statistiques et Coach, puis se
+clôture en session réalisée avant redirection vers son détail.
+
+**État du lot** : les incréments A et B sont fusionnés sur `dev`. La sortie du
+lot dépend désormais de la livraison autonome de NT-131, selon la Definition of
+Done, sur le socle et les actions de création stabilisés par NT-133.
 
 ### Lot serveur autonome — Diagnostic OAuth
 
@@ -200,19 +224,31 @@ garde toujours la main avant création.
 **Version stable attendue** : aucune création sans validation explicite ; les
 sorties invalides retombent proprement en analyse texte.
 
-### Sprint 5 — Usage stand avancé
+### Sprint 5 — Usage stand avancé complémentaire
 
-**Objectif livrable** : l'app devient utilisable pendant l'entraînement, pas
-seulement après la séance.
+**Objectif livrable** : compléter le parcours au stand déjà livré par NT-131
+avec le mode match blanc et les optimisations génériques de saisie.
 
 | Ordre | Item | Feature | App | Serveur |
 |---|---|---|---|---|
 | 1 | NT-102 | Mode match blanc TAR | déroulé guidé 830/831/832, chronos, score /200 | — |
-| 2 | NT-131 | Session live au stand | statut en cours, saisie série par série, chrono repos | — |
-| 3 | NT-074 | Saisie séries plein écran | navigation rapide, numpad/swipe | — |
+| 2 | NT-074 | Saisie séries plein écran | navigation rapide, numpad/swipe | — |
 
-**Version stable attendue** : les sessions live se clôturent en sessions standard
-et restent compatibles avec stats, historique et coach.
+**Version stable attendue** : les parcours spécialisés et les optimisations de
+clavier/navigation complètent NT-131 sans modifier son chemin nominal.
+
+### Évolution ultérieure — Lecture intra-session
+
+**Objectif livrable** : rendre visibles les tendances internes d'une séance sans
+alourdir la première version du parcours au stand.
+
+| Ordre | Item | Feature | App | Serveur |
+|---|---|---|---|---|
+| 1 | NT-134 | Graphiques d'évolution intra-session | cadrage UX puis évolution du score et du groupement par série dans le récapitulatif et le détail | — |
+
+**Version stable attendue** : les deux métriques restent lisibles malgré leurs
+unités différentes, les états partiels sont gérés et NT-131 reste utilisable
+indépendamment de cette visualisation.
 
 ### Sprint 6 — Analyse photo qualitative
 

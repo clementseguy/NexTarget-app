@@ -33,6 +33,13 @@
 > Enrichissement fonctionnel du **2026-09-02** : sessions libres sans séries,
 > score ni groupement (NT-133), livré et fusionné sur `dev` le 2026-09-03.
 >
+> Cadrage produit du **2026-09-04** : NT-131 est recentré sur un parcours direct
+> « au stand » avec préparation courte, brouillon reprenable et saisie guidée
+> série par série, sans dépendre d'une session prévue ni d'un template. NT-134
+> réserve l'évolution graphique intra-session, à affiner avant développement.
+> NT-131 rejoint le lot prioritaire en cours, après NT-133, afin que ce parcours
+> soit livré rapidement sur le socle polymorphe et les actions de création du lot.
+>
 > Cadrage produit du **2026-09-02** : critères détaillés de NT-014, NT-073,
 > NT-048 et NT-133 validés. NT-048 est passé `both / FAIT` le **2026-09-02**
 > après livraison de l'adoption app des refresh tokens (stockage sécurisé,
@@ -69,7 +76,7 @@
 | 10. Disciplines officielles & TAR | NT-100 → NT-104 |
 | 11. Analyse de cible (photo) | NT-110 → NT-111 |
 | 12. Coach : progression & génération | NT-120 → NT-126 |
-| 13. Saisie au stand | NT-130 → NT-133 |
+| 13. Saisie au stand | NT-130 → NT-134 |
 
 ---
 
@@ -787,9 +794,10 @@
 | ID | Titre | Portée | VM | Prio | Est | Statut |
 |---|---|---|---|---|---|---|
 | NT-130 | Templates de session | app | 4 | Must | S | À FAIRE |
-| NT-131 | Session live au stand | app | 4 | Should | M | À FAIRE |
+| NT-131 | Session guidée au stand | app | 4 | Should | L | À FAIRE |
 | NT-132 | Spike — saisie vocale d'une série | app | 2 | Could | S | À FAIRE |
 | NT-133 | Sessions libres sans séries ni scores | app | 4 | Must | L | FAIT |
+| NT-134 | Graphiques d'évolution intra-session | app | 3 | Could | M | À FAIRE |
 
 ### NT-130 — Templates de session
 - **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : NT-001, NT-073
@@ -798,11 +806,19 @@
 - **Priorité** : Must · **VM** : 4 · **Statut** : À FAIRE.
 - **Notes** : le prototype commun NT-100/101/073/130 a été abandonné le 2026-07-24, car le menu de templates ajoutait de la friction au parcours standard et employait des libellés ambigus. Repartir de `dev` après design ; voir le [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md).
 
-### NT-131 — Session live au stand
-- **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : NT-130
-- **Description** : Démarrer une session au stand et saisir série par série au fil du tir (avec chrono de repos), plutôt que de tout ressaisir après coup — aligne l'app sur l'usage réel au pas de tir.
-- **Critères d'acceptation** : démarrage d'une session « en cours » ; saisie série par série ; chrono de repos entre séries ; clôture = session réalisée standard.
-- **Priorité** : Should · **VM** : 4 · **Statut** : À FAIRE.
+### NT-131 — Session guidée au stand
+- **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : NT-001, NT-002, NT-003, NT-004, NT-009, NT-022, NT-073, NT-133
+- **Description** : Permettre au tireur de préparer puis de saisir directement une session détaillée au fil du tir dans un assistant dédié, sans créer au préalable une session prévue ni passer par un exercice servant artificiellement de gabarit. Le parcours privilégie les informations utiles au pas de tir, sauvegarde une séance interrompue sous forme de brouillon et la clôture en session réalisée standard.
+- **Entrées de création** : dans l'écran Sessions, l'action flottante principale et immédiatement identifiable devient **« Au stand »** et ouvre directement l'assistant. Un menu secondaire explicite, sans appui long caché, conserve les créations d'une session planifiée, d'une session réalisée via le formulaire détaillé actuel et d'une session libre NT-133. Lorsqu'un brouillon existe, l'action principale permet de le reprendre ; démarrer une autre séance reste possible depuis les actions secondaires. Cette organisation supersède, à la livraison de NT-131, la disposition transitoire des actions imposée par NT-133.
+- **Préparation de la séance** : un écran unique préremplit la date et l'heure courantes, le calibre depuis la préférence NT-073 lorsqu'elle existe et la prise depuis la préférence utilisateur. L'arme reste une saisie libre avec les suggestions du râtelier NT-009. L'utilisateur choisit la catégorie, zéro, un ou plusieurs exercices associés à l'ensemble de la session, le nombre de séries, le nombre de coups par série, la distance initiale et la prise. Les valeurs initiales proposées sont 10 séries de 5 coups et un récapitulatif affiche le volume total prévu. Le nombre de coups reste un entier libre : aucune borne à cinq ni règle métier FFTir spécifique n'est introduite. Un exercice associé ne détermine pas le nombre de séries et aucun champ distinct de « plan libre » n'est ajouté ; l'intention et le déroulement restent décrits dans la synthèse.
+- **Brouillon et reprise** : commencer la séance persiste immédiatement une session détaillée dans un état de brouillon distinct des statuts prévue et réalisée. Le brouillon est affiché séparément et de manière identifiable en tête de l'historique des sessions réalisées, avec sa progression et une action **« Reprendre »**. Il survit à la fermeture de l'application, mais reste exclu des statistiques, objectifs, filtres de sessions réalisées et analyses Coach tant qu'il n'est pas clôturé. Il peut être repris, abandonné après confirmation ou coexister avec un nouveau brouillon. Une évolution de persistance respecte NT-072, reste additive et conserve la lecture des données et sauvegardes existantes.
+- **Saisie guidée des séries** : l'assistant plein écran affiche la série courante, le nombre de séries prévues, les séries et coups enregistrés et le volume restant. Chaque série exige un nombre de coups entier, une distance entière, un score, un groupement et une prise ; le commentaire est facultatif et identifié comme recommandé pour améliorer l'analyse Coach. Les coups sont préremplis depuis la préparation. La première série reprend distance et prise de la préparation ; chaque série suivante hérite de la distance et de la prise de la précédente, tout en permettant de les modifier indépendamment. La distance reste libre et propose des raccourcis 15 m et 25 m. La navigation précédente/suivante permet de corriger une série et sauvegarde les données ; la saisie courante est également persistée de façon temporisée pour résister à une interruption.
+- **Adaptation du programme** : l'utilisateur peut ajouter une série à tout moment. Il peut aussi terminer avant le nombre prévu ; après confirmation explicite, les séries encore vides sont retirées et seules les séries renseignées sont conservées. La dernière série conduit au récapitulatif plutôt que de créer implicitement une série supplémentaire. Quitter temporairement conserve le brouillon ; abandonner le supprime après confirmation.
+- **Synthèse et clôture** : l'étape finale récapitule au minimum le nombre de séries réalisées, le total de coups, les distances utilisées, le total de points, le matériel et les exercices associés. La synthèse et la photo restent facultatives. **« Terminer la séance »** transforme atomiquement le brouillon en session réalisée standard, l'inclut dès lors dans les statistiques et le Coach, puis redirige vers la vue de consultation de la session enregistrée. Un échec de clôture conserve un brouillon reprenable et affiche une erreur exploitable sans perte des séries.
+- **Compatibilité** : le wizard existant de conversion d'une session prévue en réalisée reste disponible pour les véritables séances planifiées. Les composants de saisie de séries peuvent être mutualisés, mais le nouveau parcours ne doit ni créer une session prévue intermédiaire ni exiger un exercice. Le changement d'arme ou de calibre entre les séries et le chrono de repos sont hors périmètre de cet item.
+- **Critères de qualité** : tests du modèle et de la migration du brouillon, de son exclusion des agrégats et du Coach, de la reprise après redémarrage, de la clôture nominale et de son rollback en erreur ; widget tests de la préparation, des entrées de création, des valeurs issues des préférences et du râtelier, de l'héritage modifiable distance/prise, des raccourcis 15/25 m, de la navigation, de l'ajout et de la fin anticipée ; test de redirection vers le détail ; aide contextuelle et cahier de recette mis à jour ; rendu vérifié dans les deux thèmes.
+- **Priorité** : Should · **VM** : 4 · **Estimation** : L · **Statut** : À FAIRE.
+- **Notes** : cadrage UX validé le 2026-09-04 à partir de l'usage réel au stand. Livraison décidée dans le lot prioritaire courant, immédiatement après NT-133, dont NT-131 réorganise les actions de création. NT-074 reste complémentaire pour les optimisations génériques de clavier et de navigation ; NT-130 n'est pas un prérequis à ce parcours direct.
 
 ### NT-132 — Spike — saisie vocale d'une série
 - **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : —
@@ -822,7 +838,14 @@
 - **Coach IA** : une session libre ne peut pas être envoyée à l'analyse Coach et son écran de détail ne propose pas cette action ; l'absence de séries, score et groupement ne doit produire ni payload artificiel ni donnée de substitution.
 - **Critères de qualité** : migration de schéma et test de migration ; tests de sérialisation des deux sous-types et des données historiques sans discriminant ; tests des champs obligatoires, des catégories et des validations `shotCount`/distance entière ; tests de la photo et de l'absence d'analyse Coach ; tests des agrégats, objectifs d'assiduité, compteurs NT-017 et exclusion des métriques de séries ; widget tests des deux actions flottantes, de l'onglet Prévues, des cartes dans les deux thèmes et de l'aide contextuelle ; cahier de recette mis à jour.
 - **Priorité** : Must · **VM** : 4 · **Estimation** : L · **Statut** : FAIT — fusionné sur `dev` par la PR #27 le 2026-09-03.
-- **Notes** : `SimpleShootingSession` est le nom technique retenu ; « Session libre » est exclusivement le label utilisateur. Le champ de commentaires réutilise la notion et le libellé de **synthèse** des sessions détaillées. Préserver le parcours actuel du `+` est non négociable, conformément au [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md).
+- **Notes** : `SimpleShootingSession` est le nom technique retenu ; « Session libre » est exclusivement le label utilisateur. Le champ de commentaires réutilise la notion et le libellé de **synthèse** des sessions détaillées. Préserver le parcours actuel du `+` est non négociable pour la livraison autonome de NT-133, conformément au [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md) ; l'organisation des actions pourra ensuite être remplacée par le parcours validé de NT-131.
+
+### NT-134 — Graphiques d'évolution intra-session
+- **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : NT-131, NT-011
+- **Description** : Compléter le récapitulatif d'une session détaillée par une lecture visuelle de l'évolution du score et du groupement au fil des séries, afin d'identifier rapidement une progression, une stabilisation ou une dégradation pendant la séance.
+- **Critères d'acceptation** : afficher les séries dans leur ordre de tir ; rendre les évolutions de score et de groupement lisibles sans suggérer une comparaison directe entre deux unités différentes ; gérer les séries incomplètes et le nombre minimal de points ; proposer le graphique dans le récapitulatif de clôture et dans la vue de consultation de la session enregistrée ; garantir lisibilité, contraste et accessibilité dans les deux thèmes.
+- **Priorité** : Could · **VM** : 3 · **Estimation** : M · **Statut** : À FAIRE.
+- **Notes** : cadrage UX requis avant développement, notamment sur un graphique combiné ou deux graphiques séparés, les échelles, les unités, les seuils d'affichage et la valeur apportée par rapport aux statistiques existantes. Cette évolution ne bloque pas NT-131.
 
 ---
 
