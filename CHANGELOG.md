@@ -6,10 +6,11 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ### Added
 - NT-131 : session détaillée guidée directement au stand, sans session prévue, exercice ni template obligatoire.
-    - Action principale « Au stand », reprise des brouillons et menu secondaire explicite pour les créations planifiée, réalisée détaillée et libre.
+    - Action principale « Au stand », reprise de l'unique brouillon depuis sa carte et menu secondaire explicite pour les créations planifiée, réalisée détaillée et libre.
     - Préparation compacte avec préférences de calibre et de prise, râtelier, exercices facultatifs et volume libre ; saisie plein écran série par série avec héritage, raccourcis 15/25 m, navigation, ajout, fin anticipée et sauvegarde temporisée.
     - Statut persistant `brouillon`, migration Hive additive, reprise après redémarrage, abandon confirmé avec nettoyage photo et cycle import/export préservé.
     - Synthèse finale avec photo facultative, clôture atomique vers une session réalisée standard et redirection directe vers son détail ; brouillons exclus des statistiques, objectifs, compteurs et du Coach.
+    - Synchronisation de l'historique avant chaque sortie du parcours afin qu'un brouillon clôturé ou abandonné ne soit jamais réaffiché, même temporairement.
 - NT-014 : comparatif global glissant 30 j / 90 j des points et groupements moyens par série, avec deltas absolus/relatifs et sparklines par session à partir de cinq sessions exploitables.
     - Fenêtres emboîtées à bornes calendaires déterministes et horloge injectable ; sessions prévues/libres exclues, scores nuls conservés et groupements non strictement positifs ou non finis ignorés uniquement pour cette métrique.
     - Présentation compacte à deux lignes, états explicites pour population insuffisante et division par zéro, lisible dans les thèmes sombre et France sans dépendre uniquement de la couleur.

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:tir_sportif/config/app_config.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
@@ -26,7 +27,10 @@ void main() {
   late FakeSessionRepository repository;
   late SessionService service;
 
-  setUpAll(AppConfig.load);
+  setUpAll(() async {
+    await AppConfig.load();
+    await initializeDateFormatting('fr_FR');
+  });
 
   setUp(() async {
     directory = await Directory.systemTemp.createTemp('nt131_widgets_');
@@ -66,6 +70,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(find.text('vendredi 4 septembre 2026'), findsOneWidget);
+    expect(find.text('14:30'), findsOneWidget);
     expect(find.text('10 séries · 5 coups par série · 50 coups prévus'),
         findsOneWidget);
     expect(
@@ -189,19 +195,147 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await tester.enterText(find.byKey(const Key('guided_points')), '40');
+    await tester.enterText(find.byKey(const Key('guided_group')), '8');
     await tester.tap(find.byTooltip('Ajouter une série'));
     await tester.pumpAndSettle();
     expect(find.text('Série 3 / 3'), findsOneWidget);
+    expect(find.text('1 / 3 séries enregistrées'), findsOneWidget);
+    expect(find.text('5 coups enregistrés'), findsOneWidget);
 
     await tester.enterText(find.byKey(const Key('guided_points')), '42');
     await tester.enterText(find.byKey(const Key('guided_group')), '9');
     await tester.tap(find.byKey(const Key('guided_next')));
     await tester.pumpAndSettle();
     expect(find.text('Terminer plus tôt ?'), findsOneWidget);
-    expect(find.textContaining('2 séries non renseignées'), findsOneWidget);
+    expect(find.textContaining('1 série non renseignée'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, 'Continuer'));
     await tester.pumpAndSettle();
     expect(find.text('Synthèse de la séance'), findsOneWidget);
+  });
+
+  testWidgets('conserve les accents dans le commentaire et la synthèse',
+      (tester) async {
+    await setLargeSurface(tester);
+    final draft = await service.createGuidedDraft(
+      date: DateTime(2026, 9, 4),
+      weapon: 'Pistolet',
+      caliber: '9 mm',
+      category: 'entraînement',
+      exercises: const [],
+      seriesCount: 1,
+      shotsPerSeries: 5,
+      initialDistance: 25,
+      initialHandMethod: HandMethod.twoHands,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GuidedSessionScreen(draft: draft, sessionService: service),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('guided_comment')),
+      'Série régulière, visée décalée',
+    );
+    await tester.enterText(find.byKey(const Key('guided_points')), '45');
+    await tester.enterText(find.byKey(const Key('guided_group')), '7');
+    await tester.tap(find.byKey(const Key('guided_next')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('guided_summary')),
+      'Très bonne séance à répéter',
+    );
+    await tester.pump(const Duration(milliseconds: 700));
+
+    final restored = (await service.getGuidedDrafts()).single;
+    expect(restored.series.single.comment, 'Série régulière, visée décalée');
+    expect(restored.synthese, 'Très bonne séance à répéter');
+  });
+
+  testWidgets('abandonne sans recréer le brouillon lors de la sortie',
+      (tester) async {
+    await setLargeSurface(tester);
+    await service.createGuidedDraft(
+      date: DateTime(2026, 9, 4),
+      weapon: 'Pistolet',
+      caliber: '9 mm',
+      category: 'entraînement',
+      exercises: const [],
+      seriesCount: 2,
+      shotsPerSeries: 5,
+      initialDistance: 25,
+      initialHandMethod: HandMethod.twoHands,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SessionsHistoryScreen(sessionService: service),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Reprendre'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('guided_points')), '45');
+    await tester.enterText(find.byKey(const Key('guided_group')), '8');
+    await tester.tap(find.byKey(const Key('guided_next')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Actions de la séance'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Abandonner').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Abandonner'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Séance en cours'), findsNothing);
+    expect(await service.getGuidedDrafts(), isEmpty);
+  });
+
+  testWidgets('synchronise la liste avant le retour d’une fin anticipée',
+      (tester) async {
+    await setLargeSurface(tester);
+    final draft = await service.createGuidedDraft(
+      date: DateTime(2026, 9, 4),
+      weapon: 'Pistolet',
+      caliber: '9 mm',
+      category: 'entraînement',
+      exercises: const [],
+      seriesCount: 3,
+      shotsPerSeries: 5,
+      initialDistance: 25,
+      initialHandMethod: HandMethod.twoHands,
+    );
+    var synchronized = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GuidedSessionScreen(
+          draft: draft,
+          sessionService: service,
+          onSessionChanged: () async {
+            final sessions = await service.getAllSessions();
+            synchronized = sessions.single.status == 'réalisée';
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('guided_points')), '45');
+    await tester.enterText(find.byKey(const Key('guided_group')), '8');
+    await tester.tap(find.byTooltip('Actions de la séance'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Terminer plus tôt'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Continuer'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('complete_guided_session')));
+    await tester.pumpAndSettle();
+
+    expect(synchronized, isTrue);
+    expect(find.byType(SessionDetailScreen), findsOneWidget);
+    expect(await service.getGuidedDrafts(), isEmpty);
   });
 
   testWidgets('clôture puis redirige directement vers le détail',

@@ -23,7 +23,7 @@ abstract class ISessionService {
   /// Supprime toutes les sessions
   Future<void> clearAllSessions();
 
-  /// Crée et persiste immédiatement une session guidée en brouillon.
+  /// Crée et persiste immédiatement l'unique session guidée en brouillon.
   Future<DetailedShootingSession> createGuidedDraft({
     required DateTime date,
     required String weapon,

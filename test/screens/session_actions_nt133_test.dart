@@ -89,7 +89,8 @@ void main() {
         findsOneWidget);
   });
 
-  testWidgets('un brouillon remplace Au stand par Reprendre', (tester) async {
+  testWidgets('un brouillon conserve Au stand et se reprend depuis sa carte',
+      (tester) async {
     await Hive.box('sessions').put(1, {
       'session': {
         'sessionType': 'detailed',
@@ -115,10 +116,12 @@ void main() {
 
     await pumpSessions(tester);
 
-    expect(find.byTooltip('Reprendre la séance'), findsOneWidget);
-    expect(find.text('Reprendre'), findsWidgets);
-    await tester.tap(find.byTooltip('Autres créations'));
+    expect(find.byTooltip('Au stand'), findsOneWidget);
+    expect(find.byTooltip('Reprendre la séance'), findsNothing);
+    expect(find.text('Reprendre'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Au stand'));
     await tester.pumpAndSettle();
-    expect(find.text('Nouvelle séance au stand'), findsOneWidget);
+    expect(find.textContaining('Reprenez-la depuis sa carte'), findsOneWidget);
   });
 }

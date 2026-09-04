@@ -50,10 +50,12 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
     });
   }
 
-  void refreshSessions() {
+  Future<void> refreshSessions() async {
+    final future = _loadData();
     setState(() {
-      _dataFuture = _loadData();
+      _dataFuture = future;
     });
+    await future;
   }
 
   Future<(List<ShootingSession>, List<Exercise>)> _loadData() async {
@@ -154,10 +156,7 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
           nextPlannedDate = datedPlanned.first.date;
         }
         return RefreshIndicator(
-          onRefresh: () async {
-            refreshSessions();
-            await Future.delayed(Duration(milliseconds: 300));
-          },
+          onRefresh: refreshSessions,
           child: ListView.builder(
             padding: EdgeInsets.only(bottom: 112, top: 8),
             itemCount: 1 +
@@ -452,6 +451,7 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
         builder: (_) => GuidedSessionScreen(
           draft: draft,
           sessionService: _sessionService,
+          onSessionChanged: refreshSessions,
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 import '../constants/session_constants.dart';
 import '../models/exercise.dart';
@@ -19,6 +20,7 @@ class GuidedSessionPreparationScreen extends StatefulWidget {
   final ExerciseService? exerciseService;
   final WeaponService? weaponService;
   final DateTime? initialDate;
+  final Future<void> Function()? onSessionChanged;
 
   const GuidedSessionPreparationScreen({
     super.key,
@@ -27,6 +29,7 @@ class GuidedSessionPreparationScreen extends StatefulWidget {
     this.exerciseService,
     this.weaponService,
     this.initialDate,
+    this.onSessionChanged,
   });
 
   @override
@@ -143,6 +146,7 @@ class _GuidedSessionPreparationScreenState
           builder: (_) => GuidedSessionScreen(
             draft: draft,
             sessionService: _sessionService,
+            onSessionChanged: widget.onSessionChanged,
           ),
         ),
       );
@@ -159,9 +163,8 @@ class _GuidedSessionPreparationScreenState
   Widget build(BuildContext context) {
     final seriesCount = _positiveInt(_seriesCountController.text) ?? 0;
     final shots = _positiveInt(_shotsController.text) ?? 0;
-    final dateLabel = MaterialLocalizations.of(context).formatFullDate(_date);
-    final timeLabel = MaterialLocalizations.of(context)
-        .formatTimeOfDay(TimeOfDay.fromDateTime(_date));
+    final dateLabel = DateFormat('EEEE d MMMM y', 'fr_FR').format(_date);
+    final timeLabel = DateFormat.Hm('fr_FR').format(_date);
     return Scaffold(
       appBar: AppBar(title: const Text('Préparer la séance')),
       body: Form(

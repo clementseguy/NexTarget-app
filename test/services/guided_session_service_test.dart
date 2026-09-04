@@ -67,14 +67,15 @@ void main() {
       expect(draft.series.first.shotCount, 12);
     });
 
-    test('autorise plusieurs brouillons coexistants', () async {
+    test('refuse un second brouillon tant que le premier existe', () async {
       final first = await create();
-      final second = await create(seriesCount: 3);
 
+      final error = await captureError(() => create(seriesCount: 3));
+
+      expect(error, isA<StateError>());
       final drafts = await service.getGuidedDrafts();
-
-      expect(drafts, hasLength(2));
-      expect(drafts.map((item) => item.id), containsAll([first.id, second.id]));
+      expect(drafts, hasLength(1));
+      expect(drafts.single.id, first.id);
     });
 
     test('rejette les volumes non strictement positifs', () async {

@@ -14,7 +14,7 @@ Les catégories persistées sont `entraînement`, `match` et `test matériel`.
 
 ## Création et planification
 
-- Dans Sessions, l'action principale `Au stand` ouvre la préparation de séance. Si un brouillon existe, elle devient `Reprendre` ; plusieurs brouillons peuvent coexister et une nouvelle séance reste accessible dans les autres créations.
+- Dans Sessions, l'action principale reste `Au stand`. Un brouillon se reprend depuis sa carte en tête de l'historique ; une seule séance guidée peut être en cours à la fois.
 - Le menu `Autres créations` conserve trois parcours explicites : session planifiée, session réalisée détaillée via le formulaire historique et session libre.
 - Seul un exercice de type Stand peut créer une session prévue. Une série provisoire est créée par consigne ; sans consigne, une série provisoire unique est créée.
 - La conversion d'une session prévue en session réalisée force le statut `réalisée`, fixe la date si nécessaire et conserve les séries renseignées dans l'assistant.

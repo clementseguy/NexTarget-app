@@ -129,6 +129,12 @@ class SessionService implements ISessionService {
     required int initialDistance,
     required HandMethod initialHandMethod,
   }) async {
+    if ((await getGuidedDrafts()).isNotEmpty) {
+      throw StateError(
+        'Une séance est déjà en cours. Reprenez-la ou abandonnez-la avant '
+        'd’en commencer une nouvelle.',
+      );
+    }
     if (weapon.trim().isEmpty) {
       throw ArgumentError('L’arme est obligatoire.');
     }

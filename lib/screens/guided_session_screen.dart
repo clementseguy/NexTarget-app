@@ -19,6 +19,7 @@ class GuidedSessionScreen extends StatefulWidget {
   final SessionService? sessionService;
   final ExerciseService? exerciseService;
   final ISessionPhotoService? photoService;
+  final Future<void> Function()? onSessionChanged;
 
   const GuidedSessionScreen({
     super.key,
@@ -26,6 +27,7 @@ class GuidedSessionScreen extends StatefulWidget {
     this.sessionService,
     this.exerciseService,
     this.photoService,
+    this.onSessionChanged,
   });
 
   @override
@@ -45,6 +47,8 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   late int _currentIndex;
   bool _showSummary = false;
   bool _saving = false;
+  bool _allowPop = false;
+  bool _leaving = false;
   bool _photoBusy = false;
   String? _persistenceError;
   Timer? _autosaveTimer;
@@ -257,7 +261,11 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
     if (_showSummary) {
       _draft.synthese = _summaryController.text.trim();
     }
-    if (!await _saveCurrent(validate: false) || !mounted) return;
+    final shouldCompleteCurrent =
+        _currentHasInput || _currentSeries.isCompleted;
+    if (!await _saveCurrent(validate: shouldCompleteCurrent) || !mounted) {
+      return;
+    }
     final base = _currentSeries;
     _draft.series.add(
       Series(
@@ -329,11 +337,33 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   }
 
   Future<void> _leave() async {
+    if (_leaving) return;
+    _leaving = true;
     if (_showSummary) {
       _draft.synthese = _summaryController.text.trim();
     }
-    if (!await _saveCurrent(validate: false)) return;
+    if (!await _saveCurrent(validate: false)) {
+      _leaving = false;
+      return;
+    }
+    await _notifySessionChanged();
+    await _popScreen();
+  }
+
+  Future<void> _popScreen() async {
+    if (!mounted) return;
+    setState(() => _allowPop = true);
+    await WidgetsBinding.instance.endOfFrame;
     if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _notifySessionChanged() async {
+    try {
+      await widget.onSessionChanged?.call();
+    } catch (_) {
+      // La synchronisation de la liste ne doit pas remettre en cause une
+      // opération de persistance déjà réussie localement.
+    }
   }
 
   void _onSummaryChanged(String value) {
@@ -366,13 +396,16 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
       ),
     );
     if (confirmed != true) return;
+    _leaving = true;
     _autosaveTimer?.cancel();
     await _saveQueue.catchError((_) {});
     try {
       await _sessionService.abandonGuidedDraft(_draft);
-      if (mounted) Navigator.of(context).pop();
+      await _notifySessionChanged();
+      await _popScreen();
     } catch (error) {
       if (!mounted) return;
+      _leaving = false;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Impossible d’abandonner la séance : $error')),
       );
@@ -415,6 +448,10 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
     try {
       final savedDraft = await _sessionService.saveGuidedDraft(_draft);
       final realized = await _sessionService.completeGuidedDraft(savedDraft);
+      await _notifySessionChanged();
+      if (!mounted) return;
+      setState(() => _allowPop = true);
+      await WidgetsBinding.instance.endOfFrame;
       if (!mounted) return;
       await Navigator.of(context).pushReplacement(
         MaterialPageRoute(
@@ -442,9 +479,9 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
+      canPop: _allowPop,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _leave();
+        if (!didPop && !_leaving) _leave();
       },
       child: Scaffold(
         appBar: AppBar(
@@ -647,7 +684,10 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
           ),
           minLines: 2,
           maxLines: 4,
-          textInputAction: TextInputAction.done,
+          keyboardType: TextInputType.multiline,
+          textCapitalization: TextCapitalization.sentences,
+          autocorrect: true,
+          enableSuggestions: true,
           onChanged: (_) => _onFieldChanged(),
         ),
         const SizedBox(height: 24),
@@ -716,9 +756,14 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
         ),
         const SizedBox(height: 16),
         TextField(
+          key: const Key('guided_summary'),
           controller: _summaryController,
           minLines: 4,
           maxLines: 8,
+          keyboardType: TextInputType.multiline,
+          textCapitalization: TextCapitalization.sentences,
+          autocorrect: true,
+          enableSuggestions: true,
           decoration: const InputDecoration(
             labelText: 'Synthèse (facultative)',
             hintText: 'Ressentis, observations, axes d’amélioration...',

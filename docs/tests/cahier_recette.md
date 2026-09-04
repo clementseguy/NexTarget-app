@@ -54,17 +54,19 @@ Pré-requis:
 3. Commencer, renseigner une série avec un score nul et un commentaire vide, puis vérifier la sauvegarde temporisée
 4. Utiliser les raccourcis 15 m et 25 m, une distance libre, modifier la prise, naviguer vers la série précédente puis la suivante
 5. Ajouter une série, quitter temporairement l'assistant, fermer puis redémarrer l'application
-6. Reprendre depuis l'action principale et depuis la carte Séance en cours de l'historique
+6. Vérifier que l'action principale reste Au stand et reprendre depuis la carte Séance en cours de l'historique
 7. Terminer plus tôt, vérifier le nombre de séries vides retirées, puis annuler et recommencer la confirmation
 8. Dans le récapitulatif, vérifier matériel, exercices, séries, coups, distances et points ; ajouter, remplacer puis retirer une photo et saisir une synthèse
-9. Terminer la séance, puis créer deux nouveaux brouillons et en abandonner un après confirmation
-10. Exporter puis réimporter une sauvegarde contenant le brouillon restant
+9. Vérifier qu'une seconde création guidée est refusée tant que le brouillon existe
+10. Terminer la séance, créer un nouveau brouillon puis l'abandonner après confirmation
+11. Créer un autre brouillon, puis exporter et réimporter la sauvegarde
 Résultats attendus:
 - La préparation propose date et heure courantes, les préférences sans autoremplacement, 10 séries de 5 coups par défaut et un volume calculé sans borne maximale à cinq
 - L'exercice reste facultatif et ne modifie jamais le nombre de séries ; distance et prise sont héritées comme simples préremplissages indépendants
 - Le brouillon et la saisie partielle survivent à l'interruption, apparaissent séparément en tête des Réalisées et restent absents des statistiques, objectifs, compteurs et analyses Coach
 - La fin anticipée ne conserve aucune série vide et l'abandon supprime le brouillon et sa photo uniquement après confirmation
-- La clôture ouvre directement le détail d'une session détaillée réalisée standard ; une erreur simulée conserve intégralement le brouillon avec un message exploitable
+- Après abandon, aucun brouillon ne réapparaît, même brièvement, au retour dans Sessions
+- La clôture ouvre directement le détail d'une session détaillée réalisée standard sans réafficher temporairement le brouillon ; une erreur simulée conserve intégralement le brouillon avec un message exploitable
 - Les sessions planifiées, réalisées détaillées, libres et le wizard de conversion prévue restent fonctionnels dans les thèmes Classique et France
 
 ## SESS-01 — Sessions – création/édition
