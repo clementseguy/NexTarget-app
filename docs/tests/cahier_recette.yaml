@@ -1,6 +1,67 @@
 version: v0.7
 last_updated: 2026-09-04
 features:
+  - id: NT-140
+    name: Démarrage sans second splash Flutter
+    objectif: Vérifier que le splash natif conduit directement à la destination attendue.
+    steps:
+      - Effectuer un démarrage à froid Android avec un utilisateur authentifié
+      - Recommencer avec un utilisateur non authentifié
+      - Effacer les données puis recommencer au premier lancement avec l'onboarding
+      - Recommencer en ouvrant un callback OAuth nextarget://callback valide
+      - Recommencer avec une configuration absente ou invalide afin d'utiliser les valeurs de repli
+    expected:
+      - Le splash natif sobre est le seul écran de démarrage
+      - La destination attendue apparaît directement, sans slogan, animation Flutter ni délai artificiel
+      - L'onboarding, l'état d'authentification, la navigation et le callback OAuth restent fonctionnels
+
+  - id: NT-141
+    name: Ordre des sections de Paramètres
+    objectif: Vérifier l'ordre vertical complet et le rattachement visuel de l'avertissement.
+    steps:
+      - Ouvrir Paramètres sur une largeur mobile dans le thème Classique puis France
+      - Parcourir successivement Préférences Tir, Sauvegardes & Portabilité, Coach IA, Thème et Aide
+      - Dans Préférences Tir, vérifier prise, râtelier puis calibre par défaut
+      - Dans Sauvegardes & Portabilité, vérifier export, import puis avertissement non chiffré
+      - Importer une sauvegarde contenant une nouvelle arme
+    expected:
+      - Les cinq sections et leurs contrôles suivent exactement l'ordre attendu dans les deux thèmes
+      - L'avertissement appartient visuellement aux sauvegardes et précède Coach IA
+      - Aucun contrôle ou texte d'aide ne manque et le râtelier est rafraîchi après import
+
+  - id: NT-143
+    name: Duplication de sessions détaillées et libres
+    objectif: Créer une session indépendante depuis un détail sans effet avant validation.
+    steps:
+      - Ouvrir une session détaillée réalisée avec exercices, séries, synthèse, analyse et photo, puis choisir Dupliquer la session
+      - Vérifier le préremplissage et la date vide, modifier une série et un exercice, choisir une nouvelle date puis enregistrer
+      - Modifier puis supprimer la copie et contrôler la source et son fichier photo
+      - Dupliquer de la même manière une session libre
+      - Annuler une duplication, puis simuler un échec d'écriture et un échec de copie photo
+      - Ouvrir le détail d'un brouillon guidé
+    expected:
+      - La copie conserve le sous-type et les champs métier mais reçoit un nouvel identifiant et exige une nouvelle date si elle est réalisée
+      - Les listes, séries et exercices sont indépendants et la source reste inchangée
+      - La photo de la copie possède un chemin et un cycle de vie propres
+      - Annulation et erreurs ne laissent ni session partielle ni fichier orphelin
+      - Le brouillon guidé ne propose pas l'action et aucun résumé n'est copié dans le presse-papiers
+
+  - id: NT-026-027
+    name: Suppression et duplication d'exercice
+    objectif: Vérifier les nouvelles actions sans modifier les sessions ni l'exercice source.
+    steps:
+      - Tenter de supprimer un exercice référencé par plusieurs sessions de types et statuts différents
+      - Dissocier l'exercice, relancer Supprimer, vérifier son nom dans la confirmation puis annuler
+      - Confirmer ensuite la suppression et contrôler la liste, le compteur et les sessions
+      - Simuler une erreur de lecture des sessions puis une erreur de suppression
+      - Dupliquer un exercice renseigné avec catégorie, type, description, durée, matériel, consignes et objectifs
+      - Modifier tous les champs de la copie, annuler une première fois, puis recommencer et enregistrer
+    expected:
+      - Toute session liée bloque la suppression avec le nombre exact de sessions à dissocier
+      - L'annulation et les erreurs ne modifient rien ; la suppression réussie ne touche aucune session et rafraîchit liste et compteur
+      - Le formulaire dupliqué porte le suffixe (copie) et reprend tous les champs
+      - La copie possède un nouvel identifiant, une nouvelle date et un nouvel ordre ; ses listes sont indépendantes de l'original
+
   - id: NT-014
     name: Comparatif glissant 30 j / 90 j et sparklines
     objectif: Vérifier les deux métriques indépendantes, leurs populations et leur présentation mobile.
@@ -257,16 +318,16 @@ features:
 
   - id: WEAP-03
     name: Compteur de tirs par arme (NT-017)
-    objectif: Vérifier le compteur de tirs par arme du râtelier en bas de Statistiques > Avancé.
+    objectif: Vérifier le compteur de tirs par arme du râtelier en bas de Statistiques > Synthèse.
     preconditions:
       - Au moins une arme du râtelier avec des sessions réalisées associées, et une arme sans aucune session
     steps:
-      - Ouvrir Statistiques > Avancé et faire défiler jusqu'à la toute dernière section
+      - Ouvrir Statistiques > Synthèse et faire défiler après la répartition par calibre
       - Vérifier le total affiché pour une arme ayant des sessions réalisées
       - Vérifier l'affichage d'une arme sans session (total à zéro)
       - Ajouter une nouvelle session réalisée pour une arme du râtelier, revenir sur l'écran
     expected:
-      - La section est en dernière position, sans graphe, une ligne par arme du râtelier
+      - La section est en dernière position de Synthèse, absente d'Avancé, sans graphe et avec une ligne par arme du râtelier
       - Le total correspond à la somme des coups des sessions réalisées uniquement (essais compris)
       - Une arme sans session affiche 0 tir
       - Le total se met à jour après l'ajout d'une nouvelle session

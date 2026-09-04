@@ -1,20 +1,29 @@
-
 import 'package:flutter/material.dart';
 import '../widgets/session_form.dart';
 import '../models/shooting_session.dart';
 
-
 import '../services/session_service.dart';
-
+import '../interfaces/session_photo_service_interface.dart';
 
 class CreateSessionScreen extends StatelessWidget {
   final Map<String, dynamic>? initialSessionData;
   final bool isEdit;
-  const CreateSessionScreen({super.key, this.initialSessionData, this.isEdit = false});
+  final SessionService? sessionService;
+  final ISessionPhotoService? photoService;
+  final SessionDuplicationDraft? duplicationDraft;
+  const CreateSessionScreen({
+    super.key,
+    this.initialSessionData,
+    this.isEdit = false,
+    this.sessionService,
+    this.photoService,
+    this.duplicationDraft,
+  });
 
   @override
   Widget build(BuildContext context) {
-  final formKey = GlobalKey<SessionFormState>();
+    final formKey = GlobalKey<SessionFormState>();
+    final service = sessionService ?? SessionService();
     ShootingSession? pendingSession; // tampon local avant sauvegarde
     return StatefulBuilder(
       builder: (ctx, setLocalState) {
@@ -35,10 +44,16 @@ class CreateSessionScreen extends StatelessWidget {
                   try {
                     final s = pendingSession!;
                     if (isEdit) {
-                      await SessionService().updateSession(s);
+                      await service.updateSession(s);
+                    } else if (duplicationDraft != null) {
+                      await service.saveDuplication(
+                        draft: duplicationDraft!,
+                        editedCopy: s,
+                      );
                     } else {
-                      await SessionService().addSession(s);
+                      await service.addSession(s);
                     }
+                    formKey.currentState?.markSaved();
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Session enregistrée')),
@@ -62,6 +77,8 @@ class CreateSessionScreen extends StatelessWidget {
               key: formKey,
               initialSessionData: initialSessionData,
               isEdit: isEdit,
+              preserveInitialCaliber: duplicationDraft != null,
+              photoService: photoService,
               onSave: (session) {
                 // Session valide retournée par le formulaire
                 pendingSession = session;

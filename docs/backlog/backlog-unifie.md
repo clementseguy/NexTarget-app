@@ -265,8 +265,8 @@
 | NT-023 | Création d'exercice par le coach | both | Could | L | À FAIRE |
 | NT-024 | Stats d'exécution (fenêtres glissantes) | app | Could | M | À FAIRE |
 | NT-025 | Niveau de difficulté d'exercice | app | Could | S | À FAIRE |
-| NT-026 | Supprimer un exercice depuis l'interface | app | Could | S | À FAIRE |
-| NT-027 | Dupliquer un exercice | app | Could | S | À FAIRE |
+| NT-026 | Supprimer un exercice depuis l'interface | app | Could | S | EN COURS |
+| NT-027 | Dupliquer un exercice | app | Could | S | EN COURS |
 
 ### NT-020 — Gérer des exercices (CRUD)
 - **Thème** : Exercices · **Portée** : app · **Dépendances** : —
@@ -315,8 +315,8 @@
   - aucune session et aucune autre donnée ne sont supprimées ou modifiées en cascade ; les associations de l'exercice à des objectifs ne bloquent pas sa suppression, car elles sont portées par l'exercice lui-même ;
   - le contrôle d'éligibilité appartient au service et est testé, afin qu'un autre appelant que l'interface ne puisse pas contourner la règle ;
   - tests unitaires des cas non lié, lié et erreur de lecture/écriture ; widget tests de la confirmation, du refus et de l'annulation ; recette du filtre NT-007 rejouée.
-- **Priorité** : Could (faible, mais planifié) · **Estimation** : S · **Statut** : À FAIRE.
-- **Notes** : créé à la suite de la recette NT-007 du 2026-07-24, puis précisé le 2026-09-04. Le repository sait déjà supprimer, mais `ExerciseService.deleteExercise` ne contrôle actuellement aucune référence et aucune action ne l'expose dans l'UI. Cette évolution ne nécessite pas de migration Hive.
+- **Priorité** : Could (faible, mais planifié) · **Estimation** : S · **Statut** : EN COURS.
+- **Notes** : créé à la suite de la recette NT-007 du 2026-07-24, puis précisé le 2026-09-04. L'implémentation en cours place le contrôle des références dans `ExerciseService` et expose l'action dans la liste. Cette évolution ne nécessite pas de migration Hive.
 
 ### NT-027 — Dupliquer un exercice
 - **Thème** : Exercices · **Portée** : app · **Dépendances** : NT-020
@@ -329,7 +329,7 @@
   - l'utilisateur peut modifier tous les champs avant d'enregistrer ; annuler le formulaire ne crée rien ;
   - enregistrer ajoute un exercice distinct, laisse l'original inchangé et rafraîchit la liste ; une erreur d'écriture est signalée sans copie partielle ;
   - tests unitaires du clonage et de l'échec d'écriture ; widget tests du préremplissage, de l'annulation et de la création.
-- **Priorité** : Could · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Could · **Estimation** : S · **Statut** : EN COURS.
 - **Notes** : item de backlog ajouté le 2026-09-04. Aucune migration Hive n'est nécessaire.
 
 ---
@@ -919,10 +919,10 @@
 
 | ID | Titre | Portée | VM | Prio | Est | Statut |
 |---|---|---|---|---|---|---|
-| NT-140 | Supprimer le second écran de chargement Flutter | app | 2 | Should | S | À FAIRE |
-| NT-141 | Réordonner les sections de l'écran Paramètres | app | 2 | Should | S | À FAIRE |
-| NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | 2 | Should | S | À FAIRE |
-| NT-143 | Remplacer « Copier résumé » par la duplication de session | app | 3 | Should | M | À FAIRE |
+| NT-140 | Supprimer le second écran de chargement Flutter | app | 2 | Should | S | EN COURS |
+| NT-141 | Réordonner les sections de l'écran Paramètres | app | 2 | Should | S | EN COURS |
+| NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | 2 | Should | S | EN COURS |
+| NT-143 | Remplacer « Copier résumé » par la duplication de session | app | 3 | Should | M | EN COURS |
 
 ### NT-140 — Supprimer le second écran de chargement Flutter
 - **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-040, NT-075
@@ -935,7 +935,7 @@
   - les paramètres `splashMinDisplayMs` et `splashFadeDurationMs`, les blocs YAML, imports, commentaires, fichiers et dépendances devenus inutiles sont supprimés ;
   - `assets/app_logo.png` et la configuration réellement nécessaire au splash natif sont conservés ;
   - `flutter analyze --fatal-infos` et `flutter test` passent ; le cahier de recette du démarrage est complété et régénéré.
-- **Priorité** : Should · **VM** : 2 · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Should · **VM** : 2 · **Estimation** : S · **Statut** : EN COURS.
 - **Notes** : reprend l'issue GitHub [#30](https://github.com/clementseguy/NexTarget-app/issues/30), qui fait foi pour le périmètre technique détaillé. La refonte du splash natif, du logo et des parcours d'initialisation est hors périmètre.
 
 ### NT-141 — Réordonner les sections de l'écran Paramètres
@@ -953,7 +953,7 @@
   - le titre affiché est « Sauvegardes & Portabilité » ; les deux cartes d'export et d'import ainsi que l'avertissement non chiffré appartiennent visuellement à cette section et précèdent « Coach IA » ;
   - aucun contrôle, texte d'aide ou comportement existant n'est supprimé ; l'import continue notamment à rafraîchir le râtelier ;
   - l'ordre est couvert par un widget test et le rendu est vérifié dans les deux thèmes sur une largeur mobile.
-- **Priorité** : Should · **VM** : 2 · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Should · **VM** : 2 · **Estimation** : S · **Statut** : EN COURS.
 - **Notes** : simple réorganisation de `SettingsScreen`, sans migration ni modification de préférence persistée.
 
 ### NT-142 — Déplacer « Tirs par arme » en bas de Synthèse
@@ -965,7 +965,7 @@
   - le calcul NT-017, les sessions prises en compte, l'ordre des armes, ainsi que les états chargement et liste vide restent inchangés ;
   - le chargement du râtelier continue de fonctionner lors de l'ouverture et du rafraîchissement du tableau de bord ;
   - un widget test vérifie la présence et la position dans « Synthèse » ainsi que l'absence dans « Avancé ».
-- **Priorité** : Should · **VM** : 2 · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Should · **VM** : 2 · **Estimation** : S · **Statut** : EN COURS.
 - **Notes** : déplacement de présentation uniquement ; aucun changement de modèle, de persistance ou de calcul statistique.
 
 ### NT-143 — Remplacer « Copier résumé » par la duplication de session
@@ -982,7 +982,7 @@
   - l'action n'est pas proposée pour un brouillon guidé NT-131, dont le cycle de vie et la contrainte d'unicité restent inchangés ;
   - en cas d'échec d'écriture ou de copie de photo, aucune session partielle ni fichier orphelin ne subsiste et un message exploitable est affiché ;
   - tests unitaires pour les deux sous-types, le clonage profond, la photo et les rollbacks ; widget tests du préremplissage, de la date vide, de l'annulation et de la création ; cahier de recette mis à jour.
-- **Priorité** : Should · **VM** : 3 · **Estimation** : M · **Statut** : À FAIRE.
+- **Priorité** : Should · **VM** : 3 · **Estimation** : M · **Statut** : EN COURS.
 - **Notes** : une session libre exige aujourd'hui une date à la persistance ; le passage par le formulaire rend la règle « ne pas reprendre la date » cohérente pour les deux sous-types sans introduire d'état local invalide ni migration Hive. Le partage d'un résumé texte est retiré du périmètre ; s'il redevient utile, il devra être exposé par une action explicitement nommée « Partager » ou « Copier le résumé ».
 
 ---

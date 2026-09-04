@@ -36,6 +36,70 @@ class SessionService implements ISessionService {
     session.id = id;
   }
 
+  SessionDuplicationDraft prepareDuplication(ShootingSession source) {
+    if (source is DetailedShootingSession && source.isDraft) {
+      throw StateError('Un brouillon guidé ne peut pas être dupliqué.');
+    }
+    final sourceSnapshot = ShootingSession.fromMap(source.toMap());
+    final sessionMap = Map<String, dynamic>.from(sourceSnapshot.toMap())
+      ..['id'] = null
+      ..['date'] = null;
+    final series = sourceSnapshot is DetailedShootingSession
+        ? sourceSnapshot.series
+            .map((item) => Map<String, dynamic>.from(item.toMap()))
+            .toList()
+        : <Map<String, dynamic>>[];
+    sessionMap['exercises'] = List<String>.from(sourceSnapshot.exercises);
+    return SessionDuplicationDraft(
+      source: sourceSnapshot,
+      initialSessionData: {'session': sessionMap, 'series': series},
+    );
+  }
+
+  Future<ShootingSession> saveDuplication({
+    required SessionDuplicationDraft draft,
+    required ShootingSession editedCopy,
+  }) async {
+    if (draft.source is DetailedShootingSession &&
+        (draft.source as DetailedShootingSession).isDraft) {
+      throw StateError('Un brouillon guidé ne peut pas être dupliqué.');
+    }
+    final copyMap = Map<String, dynamic>.from(editedCopy.toMap())
+      ..['id'] = null;
+    final copy = ShootingSession.fromMap(copyMap);
+    if (copy.status == SessionConstants.statusRealisee && copy.date == null) {
+      throw ArgumentError(
+        'Une nouvelle date est obligatoire pour dupliquer une session réalisée.',
+      );
+    }
+    final sourcePhotoPath = draft.source.photoPath;
+    final submittedPhotoPath = copy.photoPath;
+    String? createdPhotoPath;
+    try {
+      if (sourcePhotoPath != null &&
+          sourcePhotoPath.trim().isNotEmpty &&
+          submittedPhotoPath == sourcePhotoPath) {
+        createdPhotoPath =
+            await _photoService.duplicateStoredPhoto(sourcePhotoPath);
+        copy.photoPath = createdPhotoPath;
+      }
+      await addSession(copy);
+      editedCopy.id = copy.id;
+      editedCopy.photoPath = copy.photoPath;
+      return copy;
+    } catch (_) {
+      if (createdPhotoPath != null) {
+        await _photoService.deleteIfExists(createdPhotoPath);
+      } else if (submittedPhotoPath != null &&
+          submittedPhotoPath != sourcePhotoPath) {
+        await _photoService.deleteIfExists(submittedPhotoPath);
+      }
+      editedCopy.id = null;
+      editedCopy.photoPath = submittedPhotoPath;
+      rethrow;
+    }
+  }
+
   Future<void> addSessionsAtomically(List<ShootingSession> sessions) async {
     if (_repo is! AtomicSessionRepository) {
       throw StateError(
@@ -410,4 +474,16 @@ class SessionService implements ISessionService {
     } catch (_) {}
     return session;
   }
+}
+
+class SessionDuplicationDraft {
+  final ShootingSession source;
+  final Map<String, dynamic> initialSessionData;
+
+  const SessionDuplicationDraft({
+    required this.source,
+    required this.initialSessionData,
+  });
+
+  bool get isSimple => source is SimpleShootingSession;
 }

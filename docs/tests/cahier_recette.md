@@ -3,6 +3,63 @@
 - Dernière mise à jour: 2026-09-04
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
 
+## NT-140 — Démarrage sans second splash Flutter
+Objectif: Vérifier que le splash natif conduit directement à la destination attendue.
+Étapes:
+1. Effectuer un démarrage à froid Android avec un utilisateur authentifié
+2. Recommencer avec un utilisateur non authentifié
+3. Effacer les données puis recommencer au premier lancement avec l'onboarding
+4. Recommencer en ouvrant un callback OAuth nextarget://callback valide
+5. Recommencer avec une configuration absente ou invalide afin d'utiliser les valeurs de repli
+Résultats attendus:
+- Le splash natif sobre est le seul écran de démarrage
+- La destination attendue apparaît directement, sans slogan, animation Flutter ni délai artificiel
+- L'onboarding, l'état d'authentification, la navigation et le callback OAuth restent fonctionnels
+
+## NT-141 — Ordre des sections de Paramètres
+Objectif: Vérifier l'ordre vertical complet et le rattachement visuel de l'avertissement.
+Étapes:
+1. Ouvrir Paramètres sur une largeur mobile dans le thème Classique puis France
+2. Parcourir successivement Préférences Tir, Sauvegardes & Portabilité, Coach IA, Thème et Aide
+3. Dans Préférences Tir, vérifier prise, râtelier puis calibre par défaut
+4. Dans Sauvegardes & Portabilité, vérifier export, import puis avertissement non chiffré
+5. Importer une sauvegarde contenant une nouvelle arme
+Résultats attendus:
+- Les cinq sections et leurs contrôles suivent exactement l'ordre attendu dans les deux thèmes
+- L'avertissement appartient visuellement aux sauvegardes et précède Coach IA
+- Aucun contrôle ou texte d'aide ne manque et le râtelier est rafraîchi après import
+
+## NT-143 — Duplication de sessions détaillées et libres
+Objectif: Créer une session indépendante depuis un détail sans effet avant validation.
+Étapes:
+1. Ouvrir une session détaillée réalisée avec exercices, séries, synthèse, analyse et photo, puis choisir Dupliquer la session
+2. Vérifier le préremplissage et la date vide, modifier une série et un exercice, choisir une nouvelle date puis enregistrer
+3. Modifier puis supprimer la copie et contrôler la source et son fichier photo
+4. Dupliquer de la même manière une session libre
+5. Annuler une duplication, puis simuler un échec d'écriture et un échec de copie photo
+6. Ouvrir le détail d'un brouillon guidé
+Résultats attendus:
+- La copie conserve le sous-type et les champs métier mais reçoit un nouvel identifiant et exige une nouvelle date si elle est réalisée
+- Les listes, séries et exercices sont indépendants et la source reste inchangée
+- La photo de la copie possède un chemin et un cycle de vie propres
+- Annulation et erreurs ne laissent ni session partielle ni fichier orphelin
+- Le brouillon guidé ne propose pas l'action et aucun résumé n'est copié dans le presse-papiers
+
+## NT-026-027 — Suppression et duplication d'exercice
+Objectif: Vérifier les nouvelles actions sans modifier les sessions ni l'exercice source.
+Étapes:
+1. Tenter de supprimer un exercice référencé par plusieurs sessions de types et statuts différents
+2. Dissocier l'exercice, relancer Supprimer, vérifier son nom dans la confirmation puis annuler
+3. Confirmer ensuite la suppression et contrôler la liste, le compteur et les sessions
+4. Simuler une erreur de lecture des sessions puis une erreur de suppression
+5. Dupliquer un exercice renseigné avec catégorie, type, description, durée, matériel, consignes et objectifs
+6. Modifier tous les champs de la copie, annuler une première fois, puis recommencer et enregistrer
+Résultats attendus:
+- Toute session liée bloque la suppression avec le nombre exact de sessions à dissocier
+- L'annulation et les erreurs ne modifient rien ; la suppression réussie ne touche aucune session et rafraîchit liste et compteur
+- Le formulaire dupliqué porte le suffixe (copie) et reprend tous les champs
+- La copie possède un nouvel identifiant, une nouvelle date et un nouvel ordre ; ses listes sont indépendantes de l'original
+
 ## NT-014 — Comparatif glissant 30 j / 90 j et sparklines
 Objectif: Vérifier les deux métriques indépendantes, leurs populations et leur présentation mobile.
 Pré-requis:
@@ -240,16 +297,16 @@ Résultats attendus:
 - Le texte libre n'est jamais écrasé ni bloqué, y compris dans le wizard
 
 ## WEAP-03 — Compteur de tirs par arme (NT-017)
-Objectif: Vérifier le compteur de tirs par arme du râtelier en bas de Statistiques > Avancé.
+Objectif: Vérifier le compteur de tirs par arme du râtelier en bas de Statistiques > Synthèse.
 Pré-requis:
 - Au moins une arme du râtelier avec des sessions réalisées associées, et une arme sans aucune session
 Étapes:
-1. Ouvrir Statistiques > Avancé et faire défiler jusqu'à la toute dernière section
+1. Ouvrir Statistiques > Synthèse et faire défiler après la répartition par calibre
 2. Vérifier le total affiché pour une arme ayant des sessions réalisées
 3. Vérifier l'affichage d'une arme sans session (total à zéro)
 4. Ajouter une nouvelle session réalisée pour une arme du râtelier, revenir sur l'écran
 Résultats attendus:
-- La section est en dernière position, sans graphe, une ligne par arme du râtelier
+- La section est en dernière position de Synthèse, absente d'Avancé, sans graphe et avec une ligne par arme du râtelier
 - Le total correspond à la somme des coups des sessions réalisées uniquement (essais compris)
 - Une arme sans session affiche 0 tir
 - Le total se met à jour après l'ajout d'une nouvelle session

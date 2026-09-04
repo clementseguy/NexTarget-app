@@ -10,6 +10,10 @@ import '../support/async_test_helpers.dart';
 import '../support/fake_session_repository.dart';
 
 class _PhotoService implements ISessionPhotoService {
+  @override
+  Future<String> duplicateStoredPhoto(String sourcePath) async =>
+      '$sourcePath.copy';
+
   final deleted = <String?>[];
 
   @override

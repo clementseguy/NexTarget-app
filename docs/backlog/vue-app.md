@@ -36,8 +36,8 @@
 | NT-023 | Création d'exercice par le coach | both | Could | L | À FAIRE | consomme sortie coach (NT-030) |
 | NT-024 | Stats d'exécution (fenêtres glissantes) | app | Could | M | À FAIRE | `usageCount` / `lastPerformedAt` |
 | NT-025 | Niveau de difficulté d'exercice | app | Could | S | À FAIRE | — |
-| NT-026 | Supprimer un exercice depuis l'interface | app | Could | S | À FAIRE | autorisé uniquement sans session liée ; contrôle dans le service, confirmation et aucune suppression en cascade |
-| NT-027 | Dupliquer un exercice | app | Could | S | À FAIRE | formulaire prérempli ; nouvel ID/date ; copie profonde des consignes et objectifs |
+| NT-026 | Supprimer un exercice depuis l'interface | app | Could | S | EN COURS | autorisé uniquement sans session liée ; contrôle dans le service, confirmation et aucune suppression en cascade |
+| NT-027 | Dupliquer un exercice | app | Could | S | EN COURS | formulaire prérempli ; nouvel ID/date ; copie profonde des consignes et objectifs |
 | NT-030 | Analyse d'une session par le coach IA | both | Must | M | FAIT | `ServerCoachAnalysisService` (si connecté) |
 | NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | FAIT | préférence `coach_persona` (Paramètres uniquement), envoi `prompt_variant` |
 | NT-033 | Écran "Coach" transverse | both | Should | L | À FAIRE | `coach_screen.dart` = placeholder |
@@ -83,10 +83,10 @@
 | NT-132 | Spike — saisie vocale d'une série | app | Could | S | À FAIRE | go/no-go en environnement stand |
 | NT-133 | Sessions libres sans séries ni scores | app | Must | L | FAIT | fusionné sur `dev` par la PR #27 le 2026-09-03 |
 | NT-134 | Graphiques d'évolution intra-session | app | Could | M | À FAIRE | score et groupement par série dans le récapitulatif et le détail ; cadrage UX préalable |
-| NT-140 | Supprimer le second écran de chargement Flutter | app | Should | S | À FAIRE | issue #30 ; conserver le splash natif, retirer `FadeInWrapper` et sa configuration morte |
-| NT-141 | Réordonner les sections de l'écran Paramètres | app | Should | S | À FAIRE | Préférences Tir, Sauvegardes & Portabilité, Coach IA, Thème, Aide |
-| NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | Should | S | À FAIRE | déplacement UI de la carte NT-017, sans doublon ni changement de calcul |
-| NT-143 | Remplacer « Copier résumé » par la duplication de session | app | Should | M | À FAIRE | formulaire prérempli, nouvel ID, date non reprise, copie profonde et photo indépendante |
+| NT-140 | Supprimer le second écran de chargement Flutter | app | Should | S | EN COURS | issue #30 ; conserver le splash natif, retirer `FadeInWrapper` et sa configuration morte |
+| NT-141 | Réordonner les sections de l'écran Paramètres | app | Should | S | EN COURS | Préférences Tir, Sauvegardes & Portabilité, Coach IA, Thème, Aide |
+| NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | Should | S | EN COURS | déplacement UI de la carte NT-017, sans doublon ni changement de calcul |
+| NT-143 | Remplacer « Copier résumé » par la duplication de session | app | Should | M | EN COURS | formulaire prérempli, nouvel ID, date non reprise, copie profonde et photo indépendante |
 
 ## Prochaines actions app (hors FAIT), par priorité
 

@@ -38,7 +38,7 @@ class SettingsScreen extends StatelessWidget {
     final sessionService = SessionService();
     final prefBox = Hive.box('app_preferences');
     String current = prefBox.get('default_hand_method', defaultValue: 'two');
-    
+
     return Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
         return Scaffold(
@@ -54,7 +54,8 @@ class SettingsScreen extends StatelessWidget {
                 const Padding(
                   padding: EdgeInsets.only(right: 12),
                   child: SizedBox(
-                    width: 20, height: 20,
+                    width: 20,
+                    height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 )
@@ -91,8 +92,11 @@ class SettingsScreen extends StatelessWidget {
                     },
                     child: CircleAvatar(
                       radius: 16,
-                      backgroundImage: authProvider.currentUser?['avatar_url'] != null
-                          ? NetworkImage(authProvider.currentUser!['avatar_url'] as String)
+                      backgroundImage: authProvider
+                                  .currentUser?['avatar_url'] !=
+                              null
+                          ? NetworkImage(
+                              authProvider.currentUser!['avatar_url'] as String)
                           : null,
                       child: authProvider.currentUser?['avatar_url'] == null
                           ? Text(
@@ -105,263 +109,309 @@ class SettingsScreen extends StatelessWidget {
                 ),
             ],
           ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-        children: [
-          Text('Thème', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Consumer<SettingsProvider>(
-                builder: (context, settings, _) {
-                  return Column(
+          body: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            children: [
+              Text('Préférences Tir',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Apparence de l\'application', style: TextStyle(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 12),
-                      SegmentedButton<AppThemeType>(
-                        segments: const [
-                          ButtonSegment(
-                            value: AppThemeType.classique,
-                            label: Text('Classique'),
-                            icon: Icon(Icons.dark_mode),
-                          ),
-                          ButtonSegment(
-                            value: AppThemeType.bleuBlancRouge,
-                            label: Text('France'),
-                            icon: Icon(Icons.flag),
-                          ),
-                        ],
-                        selected: {settings.themeType},
-                        onSelectionChanged: (s) {
-                          settings.updateTheme(s.first);
-                        },
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ),
-          const SizedBox(height: 28),
-          Text('Coach IA', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Consumer<SettingsProvider>(
-                builder: (context, settings, _) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Ton du coach', style: TextStyle(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Choisissez le style des analyses de vos sessions.',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: 12),
-                      SegmentedButton<String>(
-                        segments: const [
-                          ButtonSegment(
-                            value: 'coach_neutre',
-                            label: Text('Neutre'),
-                            icon: Icon(Icons.psychology),
-                          ),
-                          ButtonSegment(
-                            value: 'coach_cool',
-                            label: Text('Cool'),
-                            icon: Icon(Icons.emoji_emotions),
-                          ),
-                        ],
-                        selected: {settings.coachPersona},
-                        onSelectionChanged: (s) {
-                          settings.updateCoachPersona(s.first);
-                        },
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ),
-          const SizedBox(height: 28),
-          Text('Préférences Tir', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Prise par défaut (pistolet)', style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  ValueListenableBuilder(
-                    valueListenable: prefBox.listenable(keys: ['default_hand_method']),
-                    builder: (context, box, _) {
-                      final val = box.get('default_hand_method', defaultValue: current);
-                      return SegmentedButton<String>(
-                        segments: [
-                          const ButtonSegment(value: 'one', label: Text('1 main'), icon: Icon(Icons.front_hand)),
-                          ButtonSegment(value: 'two', label: const Text('2 mains'), icon: const TwoFistsIcon(size:18)),
-                        ],
-                        selected: {val},
-                        onSelectionChanged: (s) async {
-                          await box.put('default_hand_method', s.first);
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Prise par défaut: ${s.first == 'one' ? '1 main' : '2 mains'}')),
+                      Text('Prise par défaut (pistolet)',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 8),
+                      ValueListenableBuilder(
+                        valueListenable:
+                            prefBox.listenable(keys: ['default_hand_method']),
+                        builder: (context, box, _) {
+                          final val = box.get('default_hand_method',
+                              defaultValue: current);
+                          return SegmentedButton<String>(
+                            segments: [
+                              const ButtonSegment(
+                                  value: 'one',
+                                  label: Text('1 main'),
+                                  icon: Icon(Icons.front_hand)),
+                              ButtonSegment(
+                                  value: 'two',
+                                  label: const Text('2 mains'),
+                                  icon: const TwoFistsIcon(size: 18)),
+                            ],
+                            selected: {val},
+                            onSelectionChanged: (s) async {
+                              await box.put('default_hand_method', s.first);
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text(
+                                        'Prise par défaut: ${s.first == 'one' ? '1 main' : '2 mains'}')),
+                              );
+                            },
                           );
                         },
+                      ),
+                      const SizedBox(height: 20),
+                      const Divider(),
+                      const SizedBox(height: 4),
+                      WeaponRackSection(key: _weaponRackKey),
+                      const SizedBox(height: 16),
+                      const DefaultCaliberSetting(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
+              Text('Sauvegardes & Portabilité',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Exporter toutes les sessions',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      SizedBox(height: 6),
+                      Text(
+                          'Génère un JSON: sessions (séries, synthèse, analyse) + objectifs.'),
+                      SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        icon: Icon(Icons.file_download),
+                        label: Text('Exporter (.json)'),
+                        onPressed: () async {
+                          try {
+                            final file =
+                                await backup.exportAllSessionsToJsonFile();
+                            await Share.shareXFiles([XFile(file.path)],
+                                text: 'Export sessions MyCoach');
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Erreur export: $e')));
+                            }
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.save_alt),
+                        label: const Text('Enregistrer dans un dossier'),
+                        onPressed: () async {
+                          try {
+                            final file =
+                                await backup.exportAllSessionsToUserFolder();
+                            if (file == null) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Export annulé')),
+                              );
+                              return;
+                            }
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'Fichier enregistré: ${file.path.split('/').last}')),
+                            );
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text('Erreur sauvegarde: $e')),
+                              );
+                            }
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '"Exporter (.json)" permet de partager directement (mail, messagerie).\n'
+                        '"Enregistrer dans un dossier" crée le fichier dans le dossier que tu sélectionnes. '
+                        'Conseil: crée un dossier "MyCoachExports" sur ton téléphone.',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.6)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Importer des sessions',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      SizedBox(height: 6),
+                      Text(
+                          'Sélectionne un fichier JSON exporté précédemment pour réintégrer les sessions.'),
+                      SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        icon: Icon(Icons.file_upload),
+                        label: Text('Importer (.json)'),
+                        onPressed: () async {
+                          try {
+                            final result = await FilePicker.platform.pickFiles(
+                              type: FileType.custom,
+                              allowedExtensions: ['json'],
+                            );
+                            if (result == null || result.files.isEmpty) return;
+                            final path = result.files.single.path;
+                            if (path == null) return;
+                            final content = await File(path).readAsString();
+                            final imported =
+                                await backup.importSessionsFromJson(content);
+                            final total =
+                                (await sessionService.getAllSessions()).length;
+                            await _weaponRackKey.currentState?.reload();
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text(
+                                        '$imported sessions importées. Total: $total')),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Erreur import: $e')),
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Les exports ne chiffrent pas les données. Ne partage pas le fichier si tu ne fais pas confiance au destinataire.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
+                ),
+              ),
+              const SizedBox(height: 28),
+              Text('Coach IA',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Consumer<SettingsProvider>(
+                    builder: (context, settings, _) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Ton du coach',
+                              style: TextStyle(fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Choisissez le style des analyses de vos sessions.',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 12),
+                          SegmentedButton<String>(
+                            segments: const [
+                              ButtonSegment(
+                                value: 'coach_neutre',
+                                label: Text('Neutre'),
+                                icon: Icon(Icons.psychology),
+                              ),
+                              ButtonSegment(
+                                value: 'coach_cool',
+                                label: Text('Cool'),
+                                icon: Icon(Icons.emoji_emotions),
+                              ),
+                            ],
+                            selected: {settings.coachPersona},
+                            onSelectionChanged: (s) {
+                              settings.updateCoachPersona(s.first);
+                            },
+                          ),
+                        ],
                       );
                     },
                   ),
-                  const SizedBox(height: 16),
-                  const DefaultCaliberSetting(),
-                  const SizedBox(height: 20),
-                  const Divider(),
-                  const SizedBox(height: 4),
-                  WeaponRackSection(key: _weaponRackKey),
-                ],
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 28),
-          Text('Sauvegarde & Portabilité', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-          SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Exporter toutes les sessions', style: TextStyle(fontWeight: FontWeight.w600)),
-                  SizedBox(height: 6),
-                  Text('Génère un JSON: sessions (séries, synthèse, analyse) + objectifs.'),
-                  SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    icon: Icon(Icons.file_download),
-                    label: Text('Exporter (.json)'),
-                    onPressed: () async {
-                      try {
-                        final file = await backup.exportAllSessionsToJsonFile();
-                        await Share.shareXFiles([XFile(file.path)], text: 'Export sessions MyCoach');
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur export: $e')));
-                        }
-                      }
+              const SizedBox(height: 28),
+              Text('Thème',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Consumer<SettingsProvider>(
+                    builder: (context, settings, _) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Apparence de l\'application',
+                              style: TextStyle(fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 12),
+                          SegmentedButton<AppThemeType>(
+                            segments: const [
+                              ButtonSegment(
+                                value: AppThemeType.classique,
+                                label: Text('Classique'),
+                                icon: Icon(Icons.dark_mode),
+                              ),
+                              ButtonSegment(
+                                value: AppThemeType.bleuBlancRouge,
+                                label: Text('France'),
+                                icon: Icon(Icons.flag),
+                              ),
+                            ],
+                            selected: {settings.themeType},
+                            onSelectionChanged: (s) {
+                              settings.updateTheme(s.first);
+                            },
+                          ),
+                        ],
+                      );
                     },
                   ),
-                  const SizedBox(height: 8),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.save_alt),
-                    label: const Text('Enregistrer dans un dossier'),
-                    onPressed: () async {
-                      try {
-                        final file = await backup.exportAllSessionsToUserFolder();
-                        if (file == null) {
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Export annulé')),
-                          );
-                          return;
-                        }
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Fichier enregistré: ${file.path.split('/').last}')),
-                        );
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Erreur sauvegarde: $e')),
-                          );
-                        }
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '"Exporter (.json)" permet de partager directement (mail, messagerie).\n'
-                    '"Enregistrer dans un dossier" crée le fichier dans le dossier que tu sélectionnes. '
-                    'Conseil: crée un dossier "MyCoachExports" sur ton téléphone.',
-                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
-          SizedBox(height: 20),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Importer des sessions', style: TextStyle(fontWeight: FontWeight.w600)),
-                  SizedBox(height: 6),
-                  Text('Sélectionne un fichier JSON exporté précédemment pour réintégrer les sessions.'),
-                  SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    icon: Icon(Icons.file_upload),
-                    label: Text('Importer (.json)'),
-                    onPressed: () async {
-                      try {
-                        final result = await FilePicker.platform.pickFiles(
-                          type: FileType.custom,
-                          allowedExtensions: ['json'],
-                        );
-                        if (result == null || result.files.isEmpty) return;
-                        final path = result.files.single.path;
-                        if (path == null) return;
-                        final content = await File(path).readAsString();
-                        final imported = await backup.importSessionsFromJson(content);
-                        final total = (await sessionService.getAllSessions()).length;
-                        await _weaponRackKey.currentState?.reload();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('$imported sessions importées. Total: $total')),
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Erreur import: $e')),
-                          );
-                        }
-                      }
-                    },
-                  ),
-                ],
+              const SizedBox(height: 28),
+              Text('Aide',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 12),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.slideshow),
+                  title: const Text('Revoir l\'introduction'),
+                  subtitle: const Text(
+                      'Les 3 écrans de présentation du premier lancement.'),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        fullscreenDialog: true,
+                        builder: (ctx) => OnboardingScreen(
+                          onFinished: () => Navigator.of(ctx).pop(),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 28),
-          Text('Aide', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 12),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.slideshow),
-              title: const Text('Revoir l\'introduction'),
-              subtitle: const Text('Les 3 écrans de présentation du premier lancement.'),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    fullscreenDialog: true,
-                    builder: (ctx) => OnboardingScreen(
-                      onFinished: () => Navigator.of(ctx).pop(),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          SizedBox(height: 28),
-          Text('Avertissement', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          SizedBox(height: 6),
-          Text('Les exports ne chiffrent pas les données. Ne partage pas le fichier si tu ne fais pas confiance au destinataire.' , style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
-        ],
+            ],
           ),
         );
       },

@@ -6,7 +6,6 @@ import 'create_simple_session_screen.dart';
 import '../models/shooting_session.dart';
 import '../models/series.dart';
 import '../widgets/series_list.dart';
-import 'package:flutter/services.dart';
 import '../services/exercise_service.dart';
 import '../models/exercise.dart';
 import 'wizard/planned_session_wizard.dart';
@@ -87,19 +86,29 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
                 }
               },
             ),
-          IconButton(
-            icon: Icon(Icons.copy_all_outlined),
-            tooltip: 'Copier résumé',
-            onPressed: () async {
-              final resume = _buildClipboardSummary(session, series);
-              await Clipboard.setData(ClipboardData(text: resume));
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Résumé copié')),
+          if (session is! DetailedShootingSession || !session.isDraft)
+            IconButton(
+              icon: const Icon(Icons.copy_all_outlined),
+              tooltip: 'Dupliquer la session',
+              onPressed: () async {
+                final draft = _sessionService.prepareDuplication(session);
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => draft.isSimple
+                        ? CreateSimpleSessionScreen(
+                            sessionService: _sessionService,
+                            duplicationDraft: draft,
+                          )
+                        : CreateSessionScreen(
+                            initialSessionData: draft.initialSessionData,
+                            sessionService: _sessionService,
+                            duplicationDraft: draft,
+                          ),
+                  ),
                 );
-              }
-            },
-          ),
+              },
+            ),
           IconButton(
             icon: Icon(Icons.edit),
             tooltip: 'Modifier',
@@ -209,36 +218,4 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
       ),
     );
   }
-}
-
-String _buildClipboardSummary(ShootingSession s, List<Series> series) {
-  final buf = StringBuffer();
-  buf.writeln(
-      'Session ${s.date != null ? '${s.date!.day}/${s.date!.month}/${s.date!.year}' : ''}');
-  buf.writeln('Arme: ${s.weapon} | Calibre: ${s.caliber}');
-  if (s.category.isNotEmpty) {
-    buf.writeln(
-      'Catégorie: ${SessionConstants.categoryLabel(s.category)}',
-    );
-  }
-  if (s is SimpleShootingSession) {
-    buf.writeln('Session libre: ${s.shotCount} tirs à ${s.distance} m');
-  } else {
-    buf.writeln('Séries (${series.length}):');
-    for (int i = 0; i < series.length; i++) {
-      final se = series[i];
-      final prise = se.handMethod == HandMethod.oneHand ? '1M' : '2M';
-      buf.writeln(
-          '- #${i + 1}: ${se.points} pts, group. ${se.groupSize} cm, dist ${se.distance}m, prise $prise');
-    }
-  }
-  if (s.synthese != null && s.synthese!.trim().isNotEmpty) {
-    buf.writeln('Synthèse: ${s.synthese}');
-  }
-  if (s is DetailedShootingSession &&
-      s.analyse != null &&
-      s.analyse!.trim().isNotEmpty) {
-    buf.writeln('Analyse Coach: ${s.analyse}');
-  }
-  return buf.toString();
 }
