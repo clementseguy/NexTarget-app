@@ -54,6 +54,17 @@
 >
 > Livraison du **2026-09-03** : NT-014 et NT-133 sont fusionnés sur `dev`
 > (PR #28 et #27) et passent à `FAIT` conformément à l'état du code.
+>
+> Cadrage qualité du **2026-09-04** : NT-059 suit la résorption des 53 issues
+> SonarCloud ouvertes sur la PR #32 et remplace les tests de sauvegarde ignorés
+> par des tests déterministes ne dépendant pas directement des plugins Flutter.
+>
+> Cadrage correctif du **2026-09-04** : le lot de finitions UX NT-140 à
+> NT-143 formalise la suppression du second écran de démarrage (issue #30),
+> l'ordre des paramètres, le déplacement de « Tirs par arme » et la vraie
+> duplication d'une session. NT-026 est précisé pour interdire la suppression
+> d'un exercice encore référencé par une session ; NT-027 ajoute la duplication
+> d'un exercice au backlog.
 
 ## Légende des statuts
 
@@ -70,10 +81,10 @@
 |---|---|
 | 1. Carnet de tir | NT-001 → NT-009 |
 | 2. Statistiques & Objectifs | NT-010 → NT-017 |
-| 3. Exercices | NT-020 → NT-026 |
+| 3. Exercices | NT-020 → NT-027 |
 | 4. Coach IA | NT-030 → NT-034 |
 | 5. Auth & Compte | NT-040 → NT-049 |
-| 6. Qualité & Observabilité | NT-050 → NT-058 |
+| 6. Qualité & Observabilité | NT-050 → NT-059 |
 | 7. Sécurité & Secrets | NT-060 → NT-066 |
 | 8. Plateforme & Déploiement | NT-070 → NT-076 |
 | 9. Idées / hors-scope | NT-090 → NT-092 |
@@ -81,6 +92,7 @@
 | 11. Analyse de cible (photo) | NT-110 → NT-111 |
 | 12. Coach : progression & génération | NT-120 → NT-126 |
 | 13. Saisie au stand | NT-130 → NT-134 |
+| 14. Finitions UX | NT-140 → NT-143 |
 
 ---
 
@@ -254,6 +266,7 @@
 | NT-024 | Stats d'exécution (fenêtres glissantes) | app | Could | M | À FAIRE |
 | NT-025 | Niveau de difficulté d'exercice | app | Could | S | À FAIRE |
 | NT-026 | Supprimer un exercice depuis l'interface | app | Could | S | À FAIRE |
+| NT-027 | Dupliquer un exercice | app | Could | S | À FAIRE |
 
 ### NT-020 — Gérer des exercices (CRUD)
 - **Thème** : Exercices · **Portée** : app · **Dépendances** : —
@@ -293,10 +306,31 @@
 
 ### NT-026 — Supprimer un exercice depuis l'interface
 - **Thème** : Exercices · **Portée** : app · **Dépendances** : NT-020, NT-022
-- **Description** : Permettre au tireur de supprimer depuis la liste un exercice devenu inutile, sans supprimer ni rendre inaccessibles les sessions qui y étaient associées.
-- **Critères d'acceptation** : action « Supprimer » accessible depuis l'interface des exercices ; confirmation explicite avant suppression ; suppression effective du catalogue ; les sessions existantes ne sont pas supprimées ; **test manuel obligatoire : supprimer un exercice utilisé par des sessions, puis vérifier que l'historique revient proprement à « Tous les exercices », sans erreur**.
+- **Description** : Exposer l'action de suppression dans l'interface uniquement lorsqu'un exercice n'est référencé par aucune session, afin de ne pas laisser de référence orpheline dans l'historique.
+- **Critères d'acceptation** :
+  - l'action « Supprimer » est accessible depuis la liste ou la fiche d'un exercice ;
+  - avant toute suppression, l'application recherche l'identifiant de l'exercice dans toutes les sessions, quel que soit leur type ou leur statut (prévue, réalisée ou brouillon) ;
+  - si aucune session ne le référence, une confirmation nommant l'exercice est demandée, puis l'exercice est supprimé et la liste ainsi que les compteurs sont rafraîchis ; annuler ne produit aucun effet ;
+  - si au moins une session le référence, aucune suppression n'est effectuée et un message explique que l'exercice doit d'abord être dissocié des sessions concernées ; le nombre de sessions concernées est affiché ;
+  - aucune session et aucune autre donnée ne sont supprimées ou modifiées en cascade ; les associations de l'exercice à des objectifs ne bloquent pas sa suppression, car elles sont portées par l'exercice lui-même ;
+  - le contrôle d'éligibilité appartient au service et est testé, afin qu'un autre appelant que l'interface ne puisse pas contourner la règle ;
+  - tests unitaires des cas non lié, lié et erreur de lecture/écriture ; widget tests de la confirmation, du refus et de l'annulation ; recette du filtre NT-007 rejouée.
 - **Priorité** : Could (faible, mais planifié) · **Estimation** : S · **Statut** : À FAIRE.
-- **Notes** : créé à la suite de la recette NT-007 du 2026-07-24. La suppression existe déjà dans `ExerciseService` et le repository Hive, mais aucune action ne l'expose dans l'UI. Ce manque n'est pas bloquant pour la validation de NT-007.
+- **Notes** : créé à la suite de la recette NT-007 du 2026-07-24, puis précisé le 2026-09-04. Le repository sait déjà supprimer, mais `ExerciseService.deleteExercise` ne contrôle actuellement aucune référence et aucune action ne l'expose dans l'UI. Cette évolution ne nécessite pas de migration Hive.
+
+### NT-027 — Dupliquer un exercice
+- **Thème** : Exercices · **Portée** : app · **Dépendances** : NT-020
+- **Description** : À partir d'un exercice existant, préparer rapidement un nouvel exercice reprenant ses paramètres sans modifier l'original.
+- **Critères d'acceptation** :
+  - une action « Dupliquer » est disponible depuis la liste ou la fiche d'un exercice ;
+  - elle ouvre le formulaire de création prérempli avec le nom suffixé par « (copie) », la catégorie, le type, la description, la durée, le matériel, les consignes et les objectifs associés de l'exercice source ;
+  - la copie reçoit un nouvel identifiant et une nouvelle date de création ; son ordre est celui d'un nouvel exercice et non l'identité technique de la source ;
+  - les listes de consignes et d'objectifs sont copiées, sans référence mutable partagée avec l'original ;
+  - l'utilisateur peut modifier tous les champs avant d'enregistrer ; annuler le formulaire ne crée rien ;
+  - enregistrer ajoute un exercice distinct, laisse l'original inchangé et rafraîchit la liste ; une erreur d'écriture est signalée sans copie partielle ;
+  - tests unitaires du clonage et de l'échec d'écriture ; widget tests du préremplissage, de l'annulation et de la création.
+- **Priorité** : Could · **Estimation** : S · **Statut** : À FAIRE.
+- **Notes** : item de backlog ajouté le 2026-09-04. Aucune migration Hive n'est nécessaire.
 
 ---
 
@@ -476,6 +510,7 @@
 | NT-056 | Harmonisation des erreurs réseau (app) | app | Could | S | À FAIRE |
 | NT-057 | Nettoyage des widgets dupliqués (app) | app | Could | S | À FAIRE |
 | NT-058 | Fakes de repository partagés pour les tests (app) | app | Should | S | FAIT |
+| NT-059 | Résorber les issues SonarCloud de la PR #32 et les tests ignorés | app | Should | M | À FAIRE |
 
 ### NT-050 — SonarCloud + Quality Gate + couverture (app)
 - **Portée** : app · **Dépendances** : — · **Description** : Qualité continue mesurée sur l'app.
@@ -522,6 +557,31 @@
 - **Critères d'acceptation** : `test/support/fake_session_repository.dart` clone chaque session lue (comme le ferait Hive) ; `test/support/async_test_helpers.dart` fournit `captureError()` pour tester proprement une exception async (évite le piège `expect(() => asyncFn(), throwsA(...))` non awaité) ; les deux ont un test nominal + un cas d'erreur ; au moins un fake ad hoc préexistant migré vers le fake partagé à titre d'exemple.
 - **Priorité** : Should · **Estimation** : S · **Statut** : FAIT — `test/support/fake_session_repository.dart`, `test/support/async_test_helpers.dart` (+ tests dédiés) ; `test/goal_service_lot_a_test.dart` migré. Convention documentée dans `AGENTS.md`.
 - **Notes** : tâche de fond (boy scout rule), déclenchée par un débogage long lors de NT-008 (rollback du renommage d'arme). Les autres fakes ad hoc préexistants (stubs en lecture seule, mocks spécialisés) n'ont pas été touchés : risque de régression non justifié pour des fakes qui n'exposent pas ce défaut. Migration plus large possible en tâche future si souhaité.
+
+### NT-059 — Résorber les issues SonarCloud de la PR #32 et les tests ignorés
+- **Thème** : Qualité & Observabilité · **Portée** : app · **Dépendances** : NT-050, NT-051
+- **Description** : Traiter la dette qualité relevée par l'analyse SonarCloud de la PR #32 et supprimer les tests de sauvegarde actuellement ignorés ou susceptibles de s'ignorer dynamiquement à cause des platform channels.
+- **Référence SonarCloud au 2026-09-04** : [53 issues ouvertes ou confirmées sur la PR #32](https://sonarcloud.io/project/issues?id=clementseguy_NexTarget-app&pullRequest=32&s=IMPACT_RANK&sinceLeakPeriod=true&issueStatuses=OPEN%2CCONFIRMED), pour un effort Sonar estimé à 160 minutes, réparties ainsi :
+  - 40 occurrences `dart:S7112` : ajouter `const` aux constructeurs éligibles ;
+  - 5 occurrences `dart:S3776` : réduire la complexité cognitive dans `guided_session_screen.dart`, `session_service.dart`, `session_card.dart`, `hive_session_repository.dart` et `rolling_stats_service.dart` ;
+  - 5 occurrences `dart:S1192` : factoriser les littéraux dupliqués dans `session_service.dart` et `auth_service.dart` ;
+  - 2 occurrences `dart:S3358` : extraire les ternaires imbriqués de `guided_session_screen.dart` et `advanced_stats_cards.dart` ;
+  - 1 occurrence `dart:S107` : remplacer les neuf paramètres de `createGuidedDraft` par un objet de paramètres cohérent, sans casser le contrat ni les tests.
+- **Traitement des tests ignorés** :
+  - remplacer les deux tests explicitement marqués `skip:` dans `test/services/backup_service_export_folder_test.dart` par de vrais tests exécutés couvrant l'écriture dans le dossier choisi et l'annulation du sélecteur ;
+  - supprimer également le `markTestSkipped` conditionnel de `test/services/backup_service_export_test.dart`, qui peut masquer l'absence du plugin `path_provider` ;
+  - rendre injectables les frontières système utilisées par `BackupService` — sélection de dossier et résolution du répertoire temporaire — afin que les tests utilisent un répertoire temporaire et des doubles déterministes sans platform channel ; conserver `FilePicker` et `path_provider` derrière les implémentations de production ;
+  - vérifier le nom de fichier, son emplacement, son existence et le JSON exporté au format courant ; tester l'annulation sans création de fichier et la propagation d'une véritable erreur d'écriture ;
+  - supprimer les tests factices qui se contentent de vérifier que le service ou sa méthode existe.
+- **Critères d'acceptation** :
+  - les 53 issues de la référence sont corrigées et une nouvelle analyse SonarCloud ne remonte plus aucune de ces occurrences ; les éventuelles nouvelles issues introduites par le correctif sont également traitées ;
+  - aucune règle n'est neutralisée globalement et aucun `// ignore`, `NOSONAR`, classement « faux positif » ou « accepté » n'est ajouté uniquement pour faire disparaître une issue ; toute exception réellement nécessaire est rare, localisée et justifiée dans la PR ;
+  - les refactorings conservent les comportements de NT-014, NT-048, NT-131 et NT-133 et restent couverts par leurs tests existants ;
+  - aucun test du dépôt n'utilise `skip:` ou `markTestSkipped` sans justification explicite et décision documentée ; les trois mécanismes identifiés ci-dessus ont disparu ;
+  - les scénarios export vers dossier, annulation, export temporaire et erreur d'écriture s'exécutent réellement et passent en local comme en CI ;
+  - `flutter analyze --fatal-infos` et `flutter test` passent sans test ignoré ; l'analyse SonarCloud de la PR de correction est verte.
+- **Priorité** : Should · **Estimation** : M · **Statut** : À FAIRE.
+- **Notes** : inventaire obtenu via l'API SonarCloud le 2026-09-04. Les numéros de ligne peuvent évoluer après formatage ou refactoring ; les règles, fichiers et volumes ci-dessus constituent la référence. La séparation des frontières plugins améliore la testabilité sans changer le comportement utilisateur de l'export.
 
 ---
 
@@ -850,6 +910,80 @@
 - **Critères d'acceptation** : afficher les séries dans leur ordre de tir ; rendre les évolutions de score et de groupement lisibles sans suggérer une comparaison directe entre deux unités différentes ; gérer les séries incomplètes et le nombre minimal de points ; proposer le graphique dans le récapitulatif de clôture et dans la vue de consultation de la session enregistrée ; garantir lisibilité, contraste et accessibilité dans les deux thèmes.
 - **Priorité** : Could · **VM** : 3 · **Estimation** : M · **Statut** : À FAIRE.
 - **Notes** : cadrage UX requis avant développement, notamment sur un graphique combiné ou deux graphiques séparés, les échelles, les unités, les seuils d'affichage et la valeur apportée par rapport aux statistiques existantes. Cette évolution ne bloque pas NT-131.
+
+---
+
+## Thème 14 — Finitions UX
+
+*Corriger des irritants visibles sans modifier les concepts métier de l'application.*
+
+| ID | Titre | Portée | VM | Prio | Est | Statut |
+|---|---|---|---|---|---|---|
+| NT-140 | Supprimer le second écran de chargement Flutter | app | 2 | Should | S | À FAIRE |
+| NT-141 | Réordonner les sections de l'écran Paramètres | app | 2 | Should | S | À FAIRE |
+| NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | 2 | Should | S | À FAIRE |
+| NT-143 | Remplacer « Copier résumé » par la duplication de session | app | 3 | Should | M | À FAIRE |
+
+### NT-140 — Supprimer le second écran de chargement Flutter
+- **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-040, NT-075
+- **Description** : Au démarrage, conserver le splash natif puis afficher directement la destination applicative attendue. Supprimer l'overlay brandé `FadeInWrapper`, son slogan et tout délai minimal artificiel, qui dupliquent actuellement le rôle du splash natif.
+- **Critères d'acceptation** :
+  - lors d'un démarrage à froid, un seul écran de démarrage est visible : le splash natif sobre avec le logo NexTarget ;
+  - après le splash natif, l'écran attendu apparaît directement, sans `FadeInWrapper`, slogan, animation ou délai artificiel ;
+  - les parcours utilisateur authentifié, utilisateur non authentifié, premier lancement avec onboarding et callback OAuth restent fonctionnels ;
+  - le démarrage fonctionne aussi lorsque la configuration utilise ses valeurs de repli ;
+  - les paramètres `splashMinDisplayMs` et `splashFadeDurationMs`, les blocs YAML, imports, commentaires, fichiers et dépendances devenus inutiles sont supprimés ;
+  - `assets/app_logo.png` et la configuration réellement nécessaire au splash natif sont conservés ;
+  - `flutter analyze --fatal-infos` et `flutter test` passent ; le cahier de recette du démarrage est complété et régénéré.
+- **Priorité** : Should · **VM** : 2 · **Estimation** : S · **Statut** : À FAIRE.
+- **Notes** : reprend l'issue GitHub [#30](https://github.com/clementseguy/NexTarget-app/issues/30), qui fait foi pour le périmètre technique détaillé. La refonte du splash natif, du logo et des parcours d'initialisation est hors périmètre.
+
+### NT-141 — Réordonner les sections de l'écran Paramètres
+- **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-008, NT-032, NT-073, NT-075
+- **Description** : Présenter les réglages dans l'ordre de leur utilité pour le tireur, sans modifier leur comportement.
+- **Ordre attendu** :
+  1. **Préférences Tir** : prise par défaut, râtelier d'armes, calibre par défaut ;
+  2. **Sauvegardes & Portabilité** : export, import, puis avertissement sur l'absence de chiffrement des exports ;
+  3. **Coach IA** ;
+  4. **Thème** ;
+  5. **Aide**.
+- **Critères d'acceptation** :
+  - les cinq sections apparaissent exactement dans cet ordre dans le défilement vertical ;
+  - dans « Préférences Tir », les contrôles apparaissent dans l'ordre prise, arme, calibre ;
+  - le titre affiché est « Sauvegardes & Portabilité » ; les deux cartes d'export et d'import ainsi que l'avertissement non chiffré appartiennent visuellement à cette section et précèdent « Coach IA » ;
+  - aucun contrôle, texte d'aide ou comportement existant n'est supprimé ; l'import continue notamment à rafraîchir le râtelier ;
+  - l'ordre est couvert par un widget test et le rendu est vérifié dans les deux thèmes sur une largeur mobile.
+- **Priorité** : Should · **VM** : 2 · **Estimation** : S · **Statut** : À FAIRE.
+- **Notes** : simple réorganisation de `SettingsScreen`, sans migration ni modification de préférence persistée.
+
+### NT-142 — Déplacer « Tirs par arme » en bas de Synthèse
+- **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-010, NT-017
+- **Description** : Rendre le volume par arme visible dans la vue principale des statistiques en déplaçant la carte existante de l'onglet « Avancé » vers l'onglet « Synthèse ».
+- **Critères d'acceptation** :
+  - `WeaponShotCountsCard`, titrée « Tirs par arme », est la dernière carte de l'onglet « Synthèse », après la répartition par calibre ;
+  - elle n'apparaît plus dans l'onglet « Avancé » et n'est jamais rendue en double ;
+  - le calcul NT-017, les sessions prises en compte, l'ordre des armes, ainsi que les états chargement et liste vide restent inchangés ;
+  - le chargement du râtelier continue de fonctionner lors de l'ouverture et du rafraîchissement du tableau de bord ;
+  - un widget test vérifie la présence et la position dans « Synthèse » ainsi que l'absence dans « Avancé ».
+- **Priorité** : Should · **VM** : 2 · **Estimation** : S · **Statut** : À FAIRE.
+- **Notes** : déplacement de présentation uniquement ; aucun changement de modèle, de persistance ou de calcul statistique.
+
+### NT-143 — Remplacer « Copier résumé » par la duplication de session
+- **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-001, NT-002, NT-003, NT-005, NT-022, NT-133
+- **Description** : L'action représentée par une icône de copie dans le détail d'une session doit préparer une nouvelle session à partir de l'existante. Le comportement actuel, qui copie un résumé texte dans le presse-papiers, est supprimé.
+- **Parcours retenu** : toucher « Dupliquer la session » ouvre le formulaire de création correspondant au type de la source, prérempli avec sa copie. Aucun enregistrement n'a lieu avant validation. La date de la source n'est jamais reprise et aucun « maintenant » implicite ne la remplace : le champ date est vide et doit être choisi par l'utilisateur avant l'enregistrement d'une session réalisée.
+- **Critères d'acceptation** :
+  - l'action porte le libellé et le tooltip « Dupliquer la session » ; elle n'écrit plus rien dans le presse-papiers et aucun message « Résumé copié » n'apparaît ;
+  - la copie conserve le sous-type (`DetailedShootingSession` ou `SimpleShootingSession`) et tous les champs métier de la source, notamment arme, calibre, catégorie, statut, synthèse, exercices, séries et analyse éventuelle, sauf l'identifiant et la date qui sont réinitialisés ;
+  - chaque série et chaque liste sont clonées en profondeur : modifier ou supprimer la copie ne change jamais la source ;
+  - si la source possède une photo, le fichier est dupliqué lors de l'enregistrement afin que les deux sessions aient des chemins et cycles de vie indépendants ; annuler ne crée aucun fichier ;
+  - le formulaire reste entièrement modifiable ; annuler ne crée aucune session ; enregistrer crée une seule nouvelle session avec un nouvel identifiant et laisse la source inchangée ;
+  - une session réalisée ne peut pas être enregistrée tant qu'une nouvelle date valide n'a pas été choisie ; une session prévue suit les règles de date existantes ;
+  - l'action n'est pas proposée pour un brouillon guidé NT-131, dont le cycle de vie et la contrainte d'unicité restent inchangés ;
+  - en cas d'échec d'écriture ou de copie de photo, aucune session partielle ni fichier orphelin ne subsiste et un message exploitable est affiché ;
+  - tests unitaires pour les deux sous-types, le clonage profond, la photo et les rollbacks ; widget tests du préremplissage, de la date vide, de l'annulation et de la création ; cahier de recette mis à jour.
+- **Priorité** : Should · **VM** : 3 · **Estimation** : M · **Statut** : À FAIRE.
+- **Notes** : une session libre exige aujourd'hui une date à la persistance ; le passage par le formulaire rend la règle « ne pas reprendre la date » cohérente pour les deux sous-types sans introduire d'état local invalide ni migration Hive. Le partage d'un résumé texte est retiré du périmètre ; s'il redevient utile, il devra être exposé par une action explicitement nommée « Partager » ou « Copier le résumé ».
 
 ---
 

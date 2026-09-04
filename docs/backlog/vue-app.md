@@ -7,7 +7,7 @@
 > uniquement dans cette vue (règle de sync : [README.md](README.md)).
 
 **Repo** : NexTarget-app (Flutter/Dart, Hive, SonarCloud, dart_code_metrics)
-**Dernière projection** : 2026-09-04 (NT-131 fusionné sur `dev` et lot v0.7.0 prêt à intégrer dans `main`)
+**Dernière projection** : 2026-09-04 (ajout de NT-059 pour la dette SonarCloud PR #32 et les tests ignorés ; cadrage UX NT-140 à NT-143 et exercices NT-026/NT-027)
 
 ## Items app
 
@@ -36,7 +36,8 @@
 | NT-023 | Création d'exercice par le coach | both | Could | L | À FAIRE | consomme sortie coach (NT-030) |
 | NT-024 | Stats d'exécution (fenêtres glissantes) | app | Could | M | À FAIRE | `usageCount` / `lastPerformedAt` |
 | NT-025 | Niveau de difficulté d'exercice | app | Could | S | À FAIRE | — |
-| NT-026 | Supprimer un exercice depuis l'interface | app | Could | S | À FAIRE | confirmation ; sessions conservées ; recette du filtre NT-007 après suppression |
+| NT-026 | Supprimer un exercice depuis l'interface | app | Could | S | À FAIRE | autorisé uniquement sans session liée ; contrôle dans le service, confirmation et aucune suppression en cascade |
+| NT-027 | Dupliquer un exercice | app | Could | S | À FAIRE | formulaire prérempli ; nouvel ID/date ; copie profonde des consignes et objectifs |
 | NT-030 | Analyse d'une session par le coach IA | both | Must | M | FAIT | `ServerCoachAnalysisService` (si connecté) |
 | NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | FAIT | préférence `coach_persona` (Paramètres uniquement), envoi `prompt_variant` |
 | NT-033 | Écran "Coach" transverse | both | Should | L | À FAIRE | `coach_screen.dart` = placeholder |
@@ -54,6 +55,7 @@
 | NT-056 | Harmonisation des erreurs réseau | app | Could | S | À FAIRE | issue #5 ; coach déjà conforme |
 | NT-057 | Nettoyage des widgets dupliqués | app | Could | S | À FAIRE | issue #5 ; MainNavigation déjà supprimé |
 | NT-058 | Fakes de repository partagés pour les tests | app | Should | S | FAIT | `test/support/` (`FakeSessionRepository`, `captureError`) ; déclenché par NT-008 |
+| NT-059 | Résorber les issues SonarCloud de la PR #32 et les tests ignorés | app | Should | M | À FAIRE | 53 issues ; remplacer 2 `skip:` et 1 `markTestSkipped` par des tests déterministes via frontières plugins injectables |
 | NT-061 | Coach connecté uniquement (retrait clé client) | both | Must | M | FAIT | audit de clôture validé : chemin serveur unique, aucun fallback client, clé historique rotée et docs actives clarifiées |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT | `lib/migrations/` (script cohérence : à faire) |
 | NT-073 | Calibre par défaut + normalisation statistique | app | Could | S | FAIT | préférence facultative parmi les calibres connus ; saisie libre sans autoremplacement ; alias connus regroupés sans réécriture |
@@ -81,10 +83,14 @@
 | NT-132 | Spike — saisie vocale d'une série | app | Could | S | À FAIRE | go/no-go en environnement stand |
 | NT-133 | Sessions libres sans séries ni scores | app | Must | L | FAIT | fusionné sur `dev` par la PR #27 le 2026-09-03 |
 | NT-134 | Graphiques d'évolution intra-session | app | Could | M | À FAIRE | score et groupement par série dans le récapitulatif et le détail ; cadrage UX préalable |
+| NT-140 | Supprimer le second écran de chargement Flutter | app | Should | S | À FAIRE | issue #30 ; conserver le splash natif, retirer `FadeInWrapper` et sa configuration morte |
+| NT-141 | Réordonner les sections de l'écran Paramètres | app | Should | S | À FAIRE | Préférences Tir, Sauvegardes & Portabilité, Coach IA, Thème, Aide |
+| NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | Should | S | À FAIRE | déplacement UI de la carte NT-017, sans doublon ni changement de calcul |
+| NT-143 | Remplacer « Copier résumé » par la duplication de session | app | Should | M | À FAIRE | formulaire prérempli, nouvel ID, date non reprise, copie profonde et photo indépendante |
 
 ## Prochaines actions app (hors FAIT), par priorité
 
 - **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session).
-- **Should** — NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124. NT-033 : voir NT-120/NT-121.
-- **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132, NT-134. NT-023 : voir NT-122/NT-123.
+- **Should** — NT-059, NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-140, NT-141, NT-142, NT-143. NT-033 : voir NT-120/NT-121.
+- **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-027, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132, NT-134. NT-023 : voir NT-122/NT-123.
 - **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.
