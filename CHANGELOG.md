@@ -14,6 +14,7 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ### Fixed
 - NT-140 : suppression du second splash Flutter `FadeInWrapper`, de son délai artificiel et de sa configuration morte ; le splash natif et son logo sont conservés.
+- Sauvegardes : remplacement des tests d’export ignorés par des scénarios déterministes couvrant le dossier choisi, l’annulation, le répertoire temporaire, le format JSON version 3 et les erreurs d’écriture.
 
 ## [0.7.0] - 2026-09-04
 
