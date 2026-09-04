@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../models/shooting_session.dart';
+import '../constants/session_constants.dart';
 import 'auth_service.dart';
 import 'auth_session_exceptions.dart';
 import 'authenticated_http_client.dart';
@@ -45,6 +46,11 @@ class ServerCoachAnalysisService {
     DetailedShootingSession session, {
     String promptVariant = 'coach_neutre',
   }) async {
+    if (session.status != SessionConstants.statusRealisee) {
+      throw CoachAnalysisException(
+        'Seule une session réalisée peut être analysée par le Coach.',
+      );
+    }
     final body = jsonEncode({
       'session': {
         'weapon': session.weapon,

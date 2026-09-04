@@ -794,7 +794,7 @@
 | ID | Titre | Portée | VM | Prio | Est | Statut |
 |---|---|---|---|---|---|---|
 | NT-130 | Templates de session | app | 4 | Must | S | À FAIRE |
-| NT-131 | Session guidée au stand | app | 4 | Should | L | À FAIRE |
+| NT-131 | Session guidée au stand | app | 4 | Should | L | EN COURS |
 | NT-132 | Spike — saisie vocale d'une série | app | 2 | Could | S | À FAIRE |
 | NT-133 | Sessions libres sans séries ni scores | app | 4 | Must | L | FAIT |
 | NT-134 | Graphiques d'évolution intra-session | app | 3 | Could | M | À FAIRE |
@@ -817,7 +817,7 @@
 - **Synthèse et clôture** : l'étape finale récapitule au minimum le nombre de séries réalisées, le total de coups, les distances utilisées, le total de points, le matériel et les exercices associés. La synthèse et la photo restent facultatives. **« Terminer la séance »** transforme atomiquement le brouillon en session réalisée standard, l'inclut dès lors dans les statistiques et le Coach, puis redirige vers la vue de consultation de la session enregistrée. Un échec de clôture conserve un brouillon reprenable et affiche une erreur exploitable sans perte des séries.
 - **Compatibilité** : le wizard existant de conversion d'une session prévue en réalisée reste disponible pour les véritables séances planifiées. Les composants de saisie de séries peuvent être mutualisés, mais le nouveau parcours ne doit ni créer une session prévue intermédiaire ni exiger un exercice. Le changement d'arme ou de calibre entre les séries et le chrono de repos sont hors périmètre de cet item.
 - **Critères de qualité** : tests du modèle et de la migration du brouillon, de son exclusion des agrégats et du Coach, de la reprise après redémarrage, de la clôture nominale et de son rollback en erreur ; widget tests de la préparation, des entrées de création, des valeurs issues des préférences et du râtelier, de l'héritage modifiable distance/prise, des raccourcis 15/25 m, de la navigation, de l'ajout et de la fin anticipée ; test de redirection vers le détail ; aide contextuelle et cahier de recette mis à jour ; rendu vérifié dans les deux thèmes.
-- **Priorité** : Should · **VM** : 4 · **Estimation** : L · **Statut** : À FAIRE.
+- **Priorité** : Should · **VM** : 4 · **Estimation** : L · **Statut** : EN COURS — implémentation et tests sur `feature/NT-131-session-guidee-stand`, non fusionnée.
 - **Notes** : cadrage UX validé le 2026-09-04 à partir de l'usage réel au stand. Livraison décidée dans le lot prioritaire courant, immédiatement après NT-133, dont NT-131 réorganise les actions de création. NT-074 reste complémentaire pour les optimisations génériques de clavier et de navigation ; NT-130 n'est pas un prérequis à ce parcours direct.
 
 ### NT-132 — Spike — saisie vocale d'une série

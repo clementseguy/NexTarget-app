@@ -8,6 +8,8 @@ class Series {
   double groupSize;
   String comment;
   HandMethod handMethod; // prise (1 main / 2 mains)
+  bool isCompleted;
+  bool isDraftStarted;
 
   Series({
     this.id,
@@ -17,6 +19,8 @@ class Series {
     required this.groupSize,
     this.comment = '',
     this.handMethod = HandMethod.twoHands,
+    this.isCompleted = true,
+    this.isDraftStarted = true,
   });
 
   Map<String, dynamic> toMap() {
@@ -28,6 +32,8 @@ class Series {
       'group_size': groupSize,
       'comment': comment,
       'hand_method': handMethod == HandMethod.oneHand ? 'one' : 'two',
+      'completed': isCompleted,
+      'draft_started': isDraftStarted,
     };
   }
 
@@ -49,6 +55,9 @@ class Series {
       groupSize: (map['group_size'] as num?)?.toDouble() ?? 0,
       comment: map['comment'] as String? ?? '',
       handMethod: method,
+      // Les séries historiques sont des séries réalisées et validées.
+      isCompleted: map['completed'] as bool? ?? true,
+      isDraftStarted: map['draft_started'] as bool? ?? true,
     );
   }
 }

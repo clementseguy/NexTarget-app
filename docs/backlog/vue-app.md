@@ -77,15 +77,15 @@
 | NT-125 | Suivi des recommandations du coach | both | Could | L | À FAIRE | — |
 | NT-126 | Plan d'entraînement | both | Could | L | À FAIRE | dépend NT-123/NT-124 |
 | NT-130 | Templates de session | app | Must | S | À FAIRE | prototype abandonné : ne pas ajouter d'étape au parcours classique |
-| NT-131 | Session guidée au stand | app | Should | L | À FAIRE | lot prioritaire courant après NT-133 ; préparation courte, brouillon reprenable, wizard série par série, clôture vers le détail ; sans session prévue ni template préalable |
+| NT-131 | Session guidée au stand | app | Should | L | EN COURS | implémentation et tests sur `feature/NT-131-session-guidee-stand`, non fusionnée ; préparation courte, brouillon reprenable, wizard série par série, clôture vers le détail |
 | NT-132 | Spike — saisie vocale d'une série | app | Could | S | À FAIRE | go/no-go en environnement stand |
 | NT-133 | Sessions libres sans séries ni scores | app | Must | L | FAIT | fusionné sur `dev` par la PR #27 le 2026-09-03 |
 | NT-134 | Graphiques d'évolution intra-session | app | Could | M | À FAIRE | score et groupement par série dans le récapitulatif et le détail ; cadrage UX préalable |
 
 ## Prochaines actions app (hors FAIT), par priorité
 
-- **En cours** — aucun item.
+- **En cours** — NT-131.
 - **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session).
-- **Should** — NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-131. NT-033 : voir NT-120/NT-121.
+- **Should** — NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124. NT-033 : voir NT-120/NT-121.
 - **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132, NT-134. NT-023 : voir NT-122/NT-123.
 - **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.

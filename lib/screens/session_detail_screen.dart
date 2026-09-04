@@ -56,7 +56,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
         .map((s) => Series.fromMap(Map<String, dynamic>.from(s)))
         .toList();
     final isRealisee = session.status == SessionConstants.statusRealisee;
-    final bool isPlanned = !isRealisee;
+    final bool isPlanned = session.status == SessionConstants.statusPrevue;
     String? analyse = _currentSessionData!['session']['analyse'];
     return Scaffold(
       appBar: AppBar(

@@ -100,28 +100,54 @@ class DetailedShootingSession implements ShootingSession {
 
   factory DetailedShootingSession.fromMap(Map<String, dynamic> map) {
     final rawSeries = map['series'];
+    final status = map['status'] as String? ?? SessionConstants.statusRealisee;
+    if (!SessionConstants.detailedStatuses.contains(status)) {
+      throw FormatException('État de session détaillée inconnu: $status');
+    }
+    final date = _readDate(map['date']);
+    final weapon = map['weapon'] as String? ?? '';
+    final caliber = map['caliber'] as String? ?? '';
+    final category =
+        map['category'] as String? ?? SessionConstants.categoryEntrainement;
+    final parsedSeries = rawSeries is List
+        ? rawSeries
+            .whereType<Map>()
+            .map((e) => Series.fromMap(Map<String, dynamic>.from(e)))
+            .toList()
+        : <Series>[];
+    if (status == SessionConstants.statusDraft &&
+        (date == null ||
+            weapon.trim().isEmpty ||
+            caliber.trim().isEmpty ||
+            !SessionConstants.categories.contains(category) ||
+            parsedSeries.isEmpty)) {
+      throw const FormatException('Brouillon de séance guidée invalide.');
+    }
     return DetailedShootingSession(
       id: _readId(map['id']),
-      date: _readDate(map['date']),
-      weapon: map['weapon'] as String? ?? '',
-      caliber: map['caliber'] as String? ?? '',
-      series: rawSeries is List
-          ? rawSeries
-              .whereType<Map>()
-              .map((e) => Series.fromMap(Map<String, dynamic>.from(e)))
-              .toList()
-          : <Series>[],
-      status: map['status'] as String? ?? SessionConstants.statusRealisee,
+      date: date,
+      weapon: weapon,
+      caliber: caliber,
+      series: parsedSeries,
+      status: status,
       analyse: map['analyse'] as String?,
       synthese: map['synthese'] as String?,
-      category:
-          map['category'] as String? ?? SessionConstants.categoryEntrainement,
+      category: category,
       exercises: _readExercises(map['exercises']),
       photoPath: map['photoPath'] as String?,
     );
   }
 
   bool get hasAnalysis => analyse != null && analyse!.trim().isNotEmpty;
+
+  bool get isDraft => status == SessionConstants.statusDraft;
+
+  int get completedSeriesCount =>
+      series.where((item) => item.isCompleted).length;
+
+  int get completedShotCount => series
+      .where((item) => item.isCompleted)
+      .fold(0, (total, item) => total + item.shotCount);
 
   @override
   bool get hasPhoto => photoPath != null && photoPath!.trim().isNotEmpty;

@@ -139,5 +139,56 @@ void main() {
       expect(snapshot.sessions30, 2);
       expect(snapshot.avg30, 45);
     });
+
+    test('exclut un brouillon de tous les agrégats et compteurs', () async {
+      final draft = DetailedShootingSession(
+        id: 3,
+        date: now,
+        weapon: 'Glock 17',
+        caliber: '9mm',
+        status: 'brouillon',
+        category: 'match',
+        series: [
+          Series(
+            shotCount: 100,
+            distance: 25,
+            points: 999,
+            groupSize: 1,
+            isCompleted: true,
+          ),
+        ],
+      );
+      final sessions = [detailed, simple, draft];
+      final stats = StatsService(sessions, now: now);
+      final weapon = Weapon(
+        id: 'glock-17',
+        name: 'Glock 17',
+        createdAt: now,
+      );
+
+      expect(stats.sessionsCountCurrentMonth(), 2);
+      expect(stats.bestSeriesByPoints()?.points, 45);
+      expect(
+        DashboardService(sessions)
+            .generateWeaponShotCounts([weapon])[weapon.id],
+        35,
+      );
+      final rolling =
+          await RollingStatsService(_SessionRepo(sessions)).compute();
+      expect(rolling.sessions30, 2);
+
+      final goalRepo = _GoalRepo();
+      await goalRepo.put(Goal(
+        title: 'Assiduité',
+        metric: GoalMetric.sessionCount,
+        comparator: GoalComparator.greaterOrEqual,
+        targetValue: 3,
+      ));
+      await GoalService(
+        sessionRepository: _SessionRepo(sessions),
+        goalRepository: goalRepo,
+      ).recomputeAllProgress();
+      expect((await goalRepo.getAll()).single.lastMeasuredValue, 2);
+    });
   });
 }

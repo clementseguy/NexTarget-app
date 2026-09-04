@@ -7,19 +7,30 @@ import 'session_detail_screen.dart';
 import '../models/shooting_session.dart';
 import '../models/exercise.dart';
 import '../utils/session_filters.dart';
+import '../widgets/guided_draft_card.dart';
+import 'guided_session_screen.dart';
 
 class SessionsHistoryScreen extends StatefulWidget {
   final ValueChanged<String>? onTabChanged;
+  final SessionService? sessionService;
+  final ExerciseService? exerciseService;
 
-  const SessionsHistoryScreen({super.key, this.onTabChanged});
+  const SessionsHistoryScreen({
+    super.key,
+    this.onTabChanged,
+    this.sessionService,
+    this.exerciseService,
+  });
 
   @override
   SessionsHistoryScreenState createState() => SessionsHistoryScreenState();
 }
 
 class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
-  final SessionService _sessionService = SessionService();
-  final ExerciseService _exerciseService = ExerciseService();
+  late final SessionService _sessionService =
+      widget.sessionService ?? SessionService();
+  late final ExerciseService _exerciseService =
+      widget.exerciseService ?? ExerciseService();
   late Future<(List<ShootingSession>, List<Exercise>)> _dataFuture;
   String _filter = 'realized'; // realized | planned
   // Filtre exercice (NT-007), combinable avec _filter. null = "Tous les exercices".
@@ -67,6 +78,12 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
         }
         final all = snapshot.data?.$1 ?? <ShootingSession>[];
         final exercises = snapshot.data?.$2 ?? <Exercise>[];
+        final drafts = all
+            .whereType<DetailedShootingSession>()
+            .where((session) => session.status == SessionConstants.statusDraft)
+            .toList()
+          ..sort((a, b) =>
+              (b.date ?? DateTime(1970)).compareTo(a.date ?? DateTime(1970)));
         // Un exercice lié à une session peut avoir été supprimé depuis (aucune
         // suppression en cascade côté ExerciseService) : si le filtre actif ne
         // correspond plus à un exercice existant, on retombe silencieusement
@@ -97,7 +114,8 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
           // realized
           planned = <ShootingSession>[];
         }
-        final bool noDataRealized = sessions.isEmpty && _filter == 'realized';
+        final bool noDataRealized =
+            sessions.isEmpty && drafts.isEmpty && _filter == 'realized';
         final bool noDataPlannedOnly = _filter == 'planned' && planned.isEmpty;
         List<DateTime> orderedKeys = [];
         final Map<DateTime, List<ShootingSession>> grouped = {};
@@ -141,7 +159,7 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
             await Future.delayed(Duration(milliseconds: 300));
           },
           child: ListView.builder(
-            padding: EdgeInsets.only(bottom: 24, top: 8),
+            padding: EdgeInsets.only(bottom: 112, top: 8),
             itemCount: 1 +
                 (noDataRealized ? 1 : 0) +
                 (noDataPlannedOnly ? 1 : 0) +
@@ -175,6 +193,29 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
                         ],
                       ),
                     ),
+                    if (_filter == 'realized' && drafts.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+                              child: Text(
+                                'Séances en cours',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                            ),
+                            ...drafts.map(
+                              (draft) => GuidedDraftCard(
+                                draft: draft,
+                                onResume: () => _resumeDraft(draft),
+                                onAbandon: () => _abandonDraft(draft),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                       child: DropdownButtonFormField<String?>(
@@ -403,6 +444,43 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
         );
       },
     );
+  }
+
+  Future<void> _resumeDraft(DetailedShootingSession draft) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => GuidedSessionScreen(
+          draft: draft,
+          sessionService: _sessionService,
+        ),
+      ),
+    );
+    if (mounted) refreshSessions();
+  }
+
+  Future<void> _abandonDraft(DetailedShootingSession draft) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Abandonner la séance ?'),
+        content: const Text(
+          'Le brouillon et les séries enregistrées seront supprimés.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Abandonner'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await _sessionService.abandonGuidedDraft(draft);
+    if (mounted) refreshSessions();
   }
 }
 

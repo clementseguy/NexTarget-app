@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
+import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/services/backup_service.dart';
 import 'package:tir_sportif/services/session_service.dart';
 
@@ -90,6 +91,34 @@ void main() {
 
       expect(after, hasLength(before.length));
       expect(after.single.weapon, 'Existant');
+    });
+
+    test('un brouillon conserve son état et ses séries à l’import', () async {
+      final draft = DetailedShootingSession(
+        date: DateTime(2026, 9, 4, 18),
+        weapon: 'CZ 75',
+        caliber: '9 mm',
+        status: 'brouillon',
+        series: [
+          Series(
+            shotCount: 7,
+            distance: 25,
+            points: 0,
+            groupSize: 0,
+            isCompleted: false,
+            isDraftStarted: true,
+          ),
+        ],
+      );
+
+      await BackupService().importSessionsFromJson(
+        jsonEncode(payload([draft.toMap()])),
+      );
+
+      final restored = (await SessionService().getGuidedDrafts()).single;
+      expect(restored.series.single.shotCount, 7);
+      expect(restored.series.single.isDraftStarted, isTrue);
+      expect(restored.series.single.isCompleted, isFalse);
     });
   });
 }

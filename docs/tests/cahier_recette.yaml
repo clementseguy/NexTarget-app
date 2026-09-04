@@ -1,5 +1,5 @@
 version: v0.6
-last_updated: 2026-09-03
+last_updated: 2026-09-04
 features:
   - id: NT-014
     name: Comparatif glissant 30 j / 90 j et sparklines
@@ -44,6 +44,30 @@ features:
       - Sans préférence, le calibre d'une nouvelle session est vide
       - 9mm et 9x19 sont regroupés sous 9 mm, .380 ACP reste distinct et la valeur inconnue est absente de cette seule répartition
 
+  - id: NT-131
+    name: Session guidée au stand et brouillon reprenable
+    objectif: Préparer, interrompre, reprendre puis clôturer une séance détaillée sans session prévue ni exercice obligatoire.
+    preconditions:
+      - Disposer éventuellement d'un calibre et d'une prise par défaut, d'armes au râtelier et de plusieurs exercices
+    steps:
+      - Ouvrir Sessions et vérifier l'action principale Au stand ainsi que les trois créations du menu Autres créations
+      - Préparer 10 séries de 7 coups avec une arme libre suggérée par le râtelier, un calibre libre, zéro puis plusieurs exercices, une distance initiale et une prise
+      - Commencer, renseigner une série avec un score nul et un commentaire vide, puis vérifier la sauvegarde temporisée
+      - Utiliser les raccourcis 15 m et 25 m, une distance libre, modifier la prise, naviguer vers la série précédente puis la suivante
+      - Ajouter une série, quitter temporairement l'assistant, fermer puis redémarrer l'application
+      - Reprendre depuis l'action principale et depuis la carte Séance en cours de l'historique
+      - Terminer plus tôt, vérifier le nombre de séries vides retirées, puis annuler et recommencer la confirmation
+      - Dans le récapitulatif, vérifier matériel, exercices, séries, coups, distances et points ; ajouter, remplacer puis retirer une photo et saisir une synthèse
+      - Terminer la séance, puis créer deux nouveaux brouillons et en abandonner un après confirmation
+      - Exporter puis réimporter une sauvegarde contenant le brouillon restant
+    expected:
+      - La préparation propose date et heure courantes, les préférences sans autoremplacement, 10 séries de 5 coups par défaut et un volume calculé sans borne maximale à cinq
+      - L'exercice reste facultatif et ne modifie jamais le nombre de séries ; distance et prise sont héritées comme simples préremplissages indépendants
+      - Le brouillon et la saisie partielle survivent à l'interruption, apparaissent séparément en tête des Réalisées et restent absents des statistiques, objectifs, compteurs et analyses Coach
+      - La fin anticipée ne conserve aucune série vide et l'abandon supprime le brouillon et sa photo uniquement après confirmation
+      - La clôture ouvre directement le détail d'une session détaillée réalisée standard ; une erreur simulée conserve intégralement le brouillon avec un message exploitable
+      - Les sessions planifiées, réalisées détaillées, libres et le wizard de conversion prévue restent fonctionnels dans les thèmes Classique et France
+
   - id: SESS-01
     name: Sessions – création/édition
     objectif: Créer une session réalisée avec armes/séries, puis l’éditer sans perte de données.
@@ -51,7 +75,7 @@ features:
       - Application installée
       - Aucune session obligatoire
     steps:
-      - Ouvrir l’app, onglet “Réalisées”, puis “+” (le + crée une session du type de l’onglet actif)
+      - Ouvrir Sessions, Autres créations, puis Session réalisée détaillée
       - Renseigner arme, calibre, prise, au moins 1 série (coups, distance, points, groupement)
       - Enregistrer la session
       - Ouvrir la session et modifier un champ (ex: commentaire)
@@ -62,14 +86,14 @@ features:
       - La modification est bien visible après réouverture
 
   - id: SESS-01b
-    name: Sessions – bouton + selon l'onglet actif
-    objectif: Vérifier que le + crée une session du même type que l'onglet affiché (retour recette S2).
+    name: Sessions – créations secondaires explicites
+    objectif: Vérifier que les parcours historiques restent accessibles après la réorganisation NT-131.
     steps:
-      - Ouvrir Mes sessions, onglet Réalisées, toucher + et vérifier le statut prérempli
-      - Revenir, passer sur l'onglet Prévues, toucher + et vérifier le statut prérempli
+      - Ouvrir Sessions, toucher Autres créations puis Session planifiée et vérifier le statut prérempli
+      - Revenir, choisir Session réalisée détaillée, puis Session libre
     expected:
-      - Onglet Réalisées → formulaire de session réalisée ; onglet Prévues → formulaire de session prévue
-      - Aucun menu d'appui long sur le + (comportement supprimé)
+      - Les trois actions sont nommées et ouvrent leurs formulaires respectifs sans appui long ni geste caché
+      - Le parcours planifié crée toujours une véritable session prévue et la session libre reste distincte
 
   - id: SESS-02
     name: Sessions prévues (planification) + conversion wizard
@@ -89,8 +113,8 @@ features:
     preconditions:
       - Disposer éventuellement d'un calibre par défaut et d'au moins deux exercices
     steps:
-      - Dans Sessions > Réalisées, vérifier la présence du + détaillé et de l'action Session libre
-      - Passer dans Prévues et vérifier que seule l'action détaillée reste visible, puis revenir dans Réalisées
+      - Dans Sessions, ouvrir Autres créations et choisir Session libre
+      - Vérifier aussi les actions Session planifiée et Session réalisée détaillée
       - Créer une session libre avec date, arme, calibre libre, nombre de tirs, distance entière et chacune des trois catégories lors de trois essais
       - Associer zéro, un puis plusieurs exercices ; ajouter, consulter, remplacer puis supprimer une photo ; renseigner une synthèse
       - Ouvrir la carte Libre, modifier la session puis la supprimer
@@ -99,7 +123,7 @@ features:
       - Exporter puis réimporter une sauvegarde contenant sessions détaillées et libres
       - Modifier une session détaillée historique à distance décimale sans toucher la distance, puis essayer une nouvelle distance décimale
     expected:
-      - Le + détaillé conserve son parcours direct ; l'action libre est distincte par icône, libellé accessible et accent thématique
+      - Les trois créations secondaires sont distinctes par icône, libellé et sémantique accessibles
       - La session libre est toujours réalisée et refuse arme/calibre vides, tirs nuls, distance nulle ou décimale
       - Carte et détail affichent Libre, arme, calibre, catégorie, tirs, distance et exercices sans score, groupement, séries ni action Coach
       - Synthèse, photo et exercices sont conservés ; l'import/export préserve chaque sous-type et ses champs

@@ -5,6 +5,38 @@ import 'package:tir_sportif/models/shooting_session.dart';
 
 void main() {
   group('NT-133 polymorphisme des sessions', () {
+    test('sérialise un brouillon détaillé et rejette un état inconnu', () {
+      final draft = DetailedShootingSession(
+        date: DateTime(2026, 9, 4),
+        weapon: 'P',
+        caliber: '9 mm',
+        status: SessionConstants.statusDraft,
+        series: [
+          Series(
+            shotCount: 5,
+            distance: 25,
+            points: 0,
+            groupSize: 0,
+            isCompleted: false,
+            isDraftStarted: true,
+          ),
+        ],
+      );
+
+      final restored = ShootingSession.fromMap(draft.toMap());
+      expect(restored, isA<DetailedShootingSession>());
+      expect(restored.status, SessionConstants.statusDraft);
+      expect(restored.series.single.isCompleted, isFalse);
+      expect(
+        () => ShootingSession.fromMap({...draft.toMap(), 'status': 'inconnu'}),
+        throwsA(isA<FormatException>()),
+      );
+      expect(
+        () => ShootingSession.fromMap({...draft.toMap(), 'series': []}),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
     test('sérialise et relit les deux sous-types sans perte', () {
       final detailed = DetailedShootingSession(
         id: 1,
