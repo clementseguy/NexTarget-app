@@ -30,20 +30,20 @@
 
 > **Enrichissement app du 2026-09-02** : NT-133 ajoute les sessions libres et
 > introduit le socle polymorphe commun aux sessions détaillées et simplifiées.
-> Il est placé avant les autres évolutions structurelles des sessions.
+> Il a été fusionné sur `dev` le 2026-09-03 (PR #27).
+>
+> **Comparatif livré le 2026-09-03** : NT-014 est fusionné sur `dev` (PR #28).
 
 > **Arbitrage produit du 2026-09-02**, complété le **2026-09-04** : le lot
 > prioritaire regroupe NT-014, NT-048, NT-061, NT-073, NT-133 et NT-131. Il est
-> découpé en trois incréments livrables :
-> finaliser d'abord les fonctionnalités partielles et la clôture documentaire,
-> puis introduire le modèle polymorphe des sessions libres, avant de livrer le
-> parcours guidé au stand sur ce socle. Ce découpage évite que les évolutions
-> structurelles des sessions bloquent les corrections déjà avancées.
+> découpé en trois incréments livrables. Les deux premiers — finalisations
+> ciblées puis sessions libres — sont fusionnés sur `dev`. Le troisième porte
+> le parcours guidé au stand sur ce socle.
 
 > **Cadrage produit du 2026-09-04** : NT-131 ne dépend plus des templates
 > NT-130. Il porte le parcours direct « au stand », de la préparation courte au
-> brouillon reprenable puis à la session réalisée, et rejoint le lot prioritaire
-> courant immédiatement après NT-133. NT-134 réserve les graphiques
+> brouillon reprenable puis à la session réalisée, et constitue l'incrément
+> restant du lot prioritaire. NT-134 réserve les graphiques
 > score/groupement intra-session comme évolution facultative ultérieure.
 
 ## Hypothèses
@@ -78,7 +78,8 @@
 |---|---|---|---|---|
 | 0 | NT-071 (FAIT) | Corrige la perte des comptes et refresh tokens à chaque veille/redémarrage Render ; livré avec la release produit v0.6.0 (serveur v0.3.0). | NT-070 | server |
 | 0 | NT-049 (FAIT) | Diagnostic immédiat et sécurisé de la base utilisateurs et du comportement OAuth ; lot serveur autonome livré. | NT-040, NT-042 | server |
-| 1 | NT-014, NT-048, NT-061, NT-073, NT-133, NT-131 | Lot prioritaire : achever statistiques, calibres et authentification durable, clore la dette Mistral, ajouter la session libre puis livrer immédiatement la session guidée au stand. | NT-001, NT-002, NT-003, NT-004, NT-005, NT-009, NT-010, NT-017, NT-022, NT-040 | both |
+| 0 | NT-014, NT-048, NT-061, NT-073, NT-133 (FAIT) | Lot de finalisation livré sur `dev`. | NT-001, NT-003, NT-005, NT-010, NT-017, NT-022, NT-040 | both |
+| 1 | NT-131 | Prochain incrément prioritaire : session guidée directement au stand sur le socle livré par NT-133. | NT-001, NT-002, NT-003, NT-004, NT-009, NT-022, NT-073, NT-133 | app |
 | 1 | NT-100, NT-101 | Socle métier TAR : rend les sessions comparables et exploitables par stats/coach. | NT-001, NT-002 | app |
 | 2 | NT-130 | Réduit fortement la friction de saisie au stand et prépare les templates par épreuve après stabilisation de NT-073/NT-133. | NT-001, NT-073, NT-101 optionnel, NT-133 | app |
 | 3 | NT-005 (FAIT), NT-110 | Photo cible exploitable : mémoire visuelle puis contexte fiable pour le coach. | NT-001, NT-100 | app |
@@ -112,7 +113,7 @@ la migration de sessions puis le nouveau parcours interactif.
 |---|---|---|---|---|
 | 1 | NT-061 (FAIT) | Clôture Coach connecté uniquement | aligner les documents actifs, confirmer l'absence de clé, prompt, appel direct ou fallback client | conserver le proxy Mistral légitime ; aucune réécriture historique |
 | 2 | NT-073 (FAIT) | Calibre par défaut + normalisation statistique | préférence facultative, autocomplétion libre centralisée, alias 9 mm, exclusion des inconnus des seules stats par calibre | — |
-| 3 | NT-014 (EN COURS) | Comparatif 30 j vs 90 j | score et groupement indépendants, deltas absolus/relatifs, présentation mobile, sparklines à partir de cinq sessions | — |
+| 3 | NT-014 (FAIT) | Comparatif 30 j vs 90 j | score et groupement indépendants, deltas absolus/relatifs, présentation mobile, sparklines à partir de cinq sessions | — |
 | 4 | NT-048 (FAIT) | Sessions connectées durables | stockage sécurisé, refresh proactif, single-flight, retry unique, logout avec révocation best effort, mode hors ligne préservé | contrat existant réutilisé sans modification |
 
 **Version stable attendue** : les indicateurs 30/90 sont compréhensibles sur
@@ -125,7 +126,7 @@ l'historique.
 
 | Ordre | Item | Feature | App | Serveur |
 |---|---|---|---|---|
-| 1 | NT-133 | Sessions libres sans séries ni scores | modèle polymorphe et migration ; formulaire court ; arme/calibre obligatoires ; catégorie entraînement/match/test matériel ; distance entière ; synthèse/photo/exercices ; cartes, filtres, objectifs, stats, NT-017 et sauvegardes adaptés ; aucun Coach | — |
+| 1 | NT-133 (FAIT) | Sessions libres sans séries ni scores | modèle polymorphe et migration ; formulaire court ; arme/calibre obligatoires ; catégorie entraînement/match/test matériel ; distance entière ; synthèse/photo/exercices ; cartes, filtres, objectifs, stats, NT-017 et sauvegardes adaptés ; aucun Coach | — |
 
 **Version stable attendue** : une ancienne base et une ancienne sauvegarde restent
 lisibles ; le `+` actuel conserve son comportement ; l'action Libre reste
@@ -143,10 +144,9 @@ séance détaillée sans session prévue, exercice obligatoire ni template. Le
 brouillon survit aux interruptions, reste hors statistiques et Coach, puis se
 clôture en session réalisée avant redirection vers son détail.
 
-**Condition de sortie du lot** : chaque incrément respecte sa Definition of Done
-et peut être fusionné séparément. NT-133 ne doit pas retarder la livraison de
-l'incrément A si sa migration nécessite davantage de validation ; NT-131 est
-livré dès que le socle et les actions de création de NT-133 sont stabilisés.
+**État du lot** : les incréments A et B sont fusionnés sur `dev`. La sortie du
+lot dépend désormais de la livraison autonome de NT-131, selon la Definition of
+Done, sur le socle et les actions de création stabilisés par NT-133.
 
 ### Lot serveur autonome — Diagnostic OAuth
 

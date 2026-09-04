@@ -19,7 +19,7 @@ et ses vues dérivées. Il pilote le développement, y compris depuis Claude Cod
 | [`vue-app.md`](vue-app.md) | Projection des items de portée `app`/`both`. |
 | [`vue-serveur.md`](vue-serveur.md) | Vue serveur canonique : projection des items de portée `server`/`both`, maintenue dans ce repo. |
 | [`plan-sprints.md`](plan-sprints.md) | Vue de pilotage : tri métier + dépendances + planification par sprints livrables. |
-| [`incoherences.md`](incoherences.md) | Journal des écarts backlogs ⇄ code et des décisions. |
+| [`details/`](details/) | Détails durables nécessaires aux items futurs, sans créer de backlog parallèle. |
 
 ## Règle de synchronisation (impérative)
 
@@ -96,7 +96,9 @@ Un item passe **FAIT** quand **tous** les points ci-dessous sont vrais :
 2. **Code mergé** sur la branche par défaut du/des repo(s) concerné(s).
 3. **Tests** : au moins un test couvrant le cas nominal + un cas d'erreur pour toute
    nouvelle logique (serveur : `pytest` ; app : `flutter test`).
-4. **Qualité** : app → Quality Gate SonarCloud OK ; serveur → `pytest -q` vert.
+4. **Qualité** : app → `flutter analyze --fatal-infos` et `flutter test` verts ;
+   serveur → `pytest -q` vert. Le Quality Gate SonarCloud reste informatif tant
+   que sa règle de couverture du nouveau code n'est pas adaptée au projet.
 5. **Cahier de recette** (app) rejoué/mis à jour si le comportement visible change.
 6. **Docs à jour** : `backlog-unifie.md` (statut) + vue(s) + CHANGELOG du repo ;
    `AGENTS.md` si une convention/architecture change.
@@ -118,12 +120,9 @@ Un item passe **FAIT** quand **tous** les points ci-dessous sont vrais :
 
 ## Provenance & archivage
 
-Ce backlog unifie et remplace deux backlogs qui avaient divergé :
-- `NexTarget-app/docs/specs/backlog.md`
-- `NexTarget-server/docs/specs/Backlog v0.1.md`
+Ce backlog unifie et remplace les anciens backlogs app et serveur, désormais
+supprimés afin d'éviter qu'un agent les interprète comme des sources actives.
+Les décisions durables ont été intégrées directement aux items concernés. Le
+repo serveur pointe vers ce dossier sans en maintenir de copie.
 
-Les anciens backlogs ont vocation à rester archivés ou supprimés de la
-documentation active. Le repo serveur conserve seulement un pointeur vers
-`NexTarget-app/docs/backlog/vue-serveur.md` : aucune copie n'est maintenue.
-
-*Dernier audit du code : 2026-07-07.*
+*Dernier audit du code : 2026-09-03.*

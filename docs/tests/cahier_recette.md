@@ -107,7 +107,7 @@ Objectif: Afficher les statistiques macro et les dernières tendances.
 Étapes:
 1. Créer/ajouter une session avec au moins 1 série
 2. Ouvrir l’accueil/Tableau de bord (onglet Synthèse)
-3. Vérifier l’affichage des indicateurs (réalisés total, 7/30/60/90j) et cartes récap
+3. Vérifier la moyenne de points 30 j, le groupement moyen 30 j, la meilleure série et le nombre de sessions du mois
 Résultats attendus:
 - Les valeurs sont cohérentes avec les sessions existantes
 
@@ -140,7 +140,7 @@ Résultats attendus:
 ## EX-02 — Exercices – session prévue depuis un exercice d’entraînement
 Objectif: Vérifier que le nombre de séries prévues correspond au nombre de consignes.
 Étapes:
-1. Créer un exercice de type "entraînement" avec 3 consignes
+1. Créer un exercice de type "Stand" avec 3 consignes
 2. Transformer cet exercice en session prévue
 Résultats attendus:
 - La session prévue est créée avec un nombre de séries égal au nombre de consignes (3)
@@ -232,13 +232,13 @@ Objectif: Exporter les sessions et vérifier le fichier généré.
 Résultats attendus:
 - Un fichier est généré dans le dossier choisi
 
-## SEC-01 — Règles de sécurité (dashboard)
-Objectif: Afficher le bloc de règles FFTir et vérifier sa lisibilité.
+## SEC-01 — Rappels essentiels de sécurité
+Objectif: Afficher les rappels de sécurité et vérifier leur lisibilité.
 Étapes:
-1. Ouvrir l’accueil/Tableau de bord
-2. Vérifier la section “Règles de sécurité”
+1. Ouvrir l’accueil/Tableau de bord puis le panneau “Rappels Essentiels”
+2. Consulter l'onglet Sécurité
 Résultats attendus:
-- Le contenu est à jour et lisible (révision FFTir 2024)
+- Les rappels sont lisibles et le lien d'information externe est accessible
 
 ## AUTH-01 — Connexion Google – persistance longue durée (refresh token, NT-048)
 Objectif: Vérifier que la connexion reste active sans reconnexion manuelle après expiration de l'access token courant.

@@ -105,8 +105,8 @@ Toutes les modifications notables de ce projet seront listées ici.
 ### Docs
 - T2: Cahier de recette (tests manuels)
     - Générateur: `scripts/generate_cahier_recette.dart`
-    - Source: `docs/specs/cahier_recette.yaml`
-    - Sortie: `docs/cahier_recette.md`
+    - Source: `docs/tests/cahier_recette.yaml`
+    - Sortie: `docs/tests/cahier_recette.md`
     - Politique: jouer le cahier de recette avant toute MR vers `main`; mettre à jour le YAML + régénérer si comportement modifié.
 
 ### Technical (en cours)
