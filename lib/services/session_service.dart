@@ -41,6 +41,23 @@ class SessionService implements ISessionService {
       throw StateError(
           'Le repository ne prend pas en charge l’import atomique.');
     }
+    final incomingDrafts = sessions
+        .whereType<DetailedShootingSession>()
+        .where((session) => session.status == SessionConstants.statusDraft)
+        .toList();
+    for (final draft in incomingDrafts) {
+      _validateSession(draft);
+    }
+    final incomingDraftCount = incomingDrafts.length;
+    if (incomingDraftCount > 0) {
+      final existingDraftCount = (await getGuidedDrafts()).length;
+      if (incomingDraftCount + existingDraftCount > 1) {
+        throw StateError(
+          'L’import créerait plusieurs séances en cours. Abandonnez ou '
+          'terminez le brouillon existant avant de réessayer.',
+        );
+      }
+    }
     final ids = await (_repo as AtomicSessionRepository).insertAll(sessions);
     if (ids.length != sessions.length) {
       throw StateError('Import incomplet des sessions.');
@@ -110,6 +127,9 @@ class SessionService implements ISessionService {
         if (series.points < 0) {
           throw ArgumentError('Le score ne peut pas être négatif.');
         }
+        if (!series.isScoreEntered) {
+          throw ArgumentError('Le score est obligatoire.');
+        }
         if (series.groupSize <= 0) {
           throw ArgumentError('Le groupement doit être strictement positif.');
         }
@@ -170,6 +190,7 @@ class SessionService implements ISessionService {
           handMethod: initialHandMethod,
           isCompleted: false,
           isDraftStarted: false,
+          isScoreEntered: false,
         ),
       ),
     );
@@ -246,6 +267,9 @@ class SessionService implements ISessionService {
     }
     if (series.points < 0) {
       throw ArgumentError('Le score ne peut pas être négatif.');
+    }
+    if (!series.isScoreEntered) {
+      throw ArgumentError('Le score est obligatoire.');
     }
     if (series.groupSize <= 0) {
       throw ArgumentError('Le groupement doit être strictement positif.');

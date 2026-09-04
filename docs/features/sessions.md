@@ -23,7 +23,7 @@ Les catégories persistées sont `entraînement`, `match` et `test matériel`.
 
 La préparation propose la date et l'heure courantes, l'arme libre assistée par le râtelier, le calibre libre éventuellement prérempli, la catégorie, des exercices facultatifs, le nombre de séries, les coups par série, la distance initiale et la prise préférée. L'exercice n'impose jamais le nombre de séries.
 
-`Commencer la séance` crée immédiatement le brouillon. La saisie série par série préremplit les coups, hérite de la distance et de la prise précédentes sans lier les séries entre elles, et sauvegarde à chaque navigation ainsi qu'après une courte temporisation. Les distances 15 m et 25 m sont des raccourcis ; toute distance entière positive reste possible. Le commentaire est facultatif et recommandé pour le Coach.
+`Commencer la séance` crée immédiatement le brouillon. La saisie série par série préremplit les coups, hérite de la distance et de la prise précédentes sans lier les séries entre elles, et sauvegarde à chaque navigation ainsi qu'après une courte temporisation. Un score nul saisi reste distingué d'un score encore absent après reprise. Les distances 15 m et 25 m sont des raccourcis ; toute distance entière positive reste possible. Le commentaire est facultatif et recommandé pour le Coach.
 
 L'utilisateur peut corriger une série précédente, ajouter une série, quitter puis reprendre, ou terminer plus tôt après confirmation du nombre de séries vides retirées. La synthèse finale récapitule matériel, exercices, séries, coups, distances et points, puis permet une synthèse et une photo facultatives. `Terminer la séance` remplace atomiquement le brouillon par une session détaillée `réalisée` et ouvre directement son détail. En cas d'échec, le brouillon reste intégralement reprenable.
 
@@ -41,4 +41,4 @@ Les sessions libres comptent dans l'assiduité, les catégories et les volumes d
 
 ## Persistance et compatibilité
 
-Le champ `sessionType` vaut `detailed` ou `simple`. Une ancienne donnée sans ce champ est relue comme une session détaillée. Pour une session détaillée, `status` accepte `prévue`, `réalisée` ou `brouillon` ; chaque série porte deux marqueurs additifs de saisie guidée. Les séries historiques dépourvues de ces marqueurs sont relues comme enregistrées. Un type ou un état inconnu fait échouer l'import avant l'écriture des sessions.
+Le champ `sessionType` vaut `detailed` ou `simple`. Une ancienne donnée sans ce champ est relue comme une session détaillée. Pour une session détaillée, `status` accepte `prévue`, `réalisée` ou `brouillon` ; chaque série porte des marqueurs additifs de saisie guidée, dont la présence effective du score. Les séries historiques dépourvues de ces marqueurs sont relues comme enregistrées. Un type ou un état inconnu, ou un import qui créerait plusieurs brouillons, fait échouer l'import avant l'écriture des sessions.

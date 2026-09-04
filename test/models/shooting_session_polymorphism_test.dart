@@ -19,6 +19,7 @@ void main() {
             groupSize: 0,
             isCompleted: false,
             isDraftStarted: true,
+            isScoreEntered: false,
           ),
         ],
       );
@@ -27,6 +28,7 @@ void main() {
       expect(restored, isA<DetailedShootingSession>());
       expect(restored.status, SessionConstants.statusDraft);
       expect(restored.series.single.isCompleted, isFalse);
+      expect(restored.series.single.isScoreEntered, isFalse);
       expect(
         () => ShootingSession.fromMap({...draft.toMap(), 'status': 'inconnu'}),
         throwsA(isA<FormatException>()),

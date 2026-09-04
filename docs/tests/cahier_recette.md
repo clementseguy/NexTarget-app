@@ -53,14 +53,16 @@ Pré-requis:
 2. Préparer 10 séries de 7 coups avec une arme libre suggérée par le râtelier, un calibre libre, zéro puis plusieurs exercices, une distance initiale et une prise
 3. Vérifier l'alignement arme/calibre puis séries/coups/distance et la position des raccourcis 15 m et 25 m sous la distance
 4. Commencer, renseigner une série avec un score nul et un commentaire vide, puis vérifier la sauvegarde temporisée
-5. Utiliser les raccourcis 15 m et 25 m, une distance libre, modifier la prise, naviguer vers la série précédente puis la suivante
-6. Ajouter une série, quitter temporairement l'assistant, fermer puis redémarrer l'application
-7. Vérifier que l'action principale reste Au stand et reprendre depuis la carte Séance en cours de l'historique
-8. Terminer plus tôt, vérifier le nombre de séries vides retirées, puis annuler et recommencer la confirmation
-9. Dans le récapitulatif, vérifier matériel, exercices, séries, coups, distances et points ; ajouter, remplacer puis retirer une photo et saisir une synthèse
-10. Vérifier qu'une seconde création guidée est refusée tant que le brouillon existe
-11. Terminer la séance, créer un nouveau brouillon puis l'abandonner après confirmation
-12. Créer un autre brouillon, puis exporter et réimporter la sauvegarde
+5. Sur une autre série, saisir un commentaire sans score, quitter puis reprendre et vérifier que le score reste vide et obligatoire
+6. Utiliser les raccourcis 15 m et 25 m, une distance libre, modifier la prise, naviguer vers la série précédente puis la suivante
+7. Ajouter une série, quitter temporairement l'assistant, fermer puis redémarrer l'application
+8. Vérifier que l'action principale reste Au stand et reprendre depuis la carte Séance en cours de l'historique
+9. Terminer plus tôt, vérifier le nombre de séries vides retirées, puis annuler et recommencer la confirmation
+10. Dans le récapitulatif, vérifier matériel, exercices, séries, coups, distances et points ; ajouter, remplacer puis retirer une photo et saisir une synthèse
+11. Vérifier qu'une seconde création guidée est refusée tant que le brouillon existe
+12. Terminer la séance, créer un nouveau brouillon puis l'abandonner après confirmation
+13. Créer un autre brouillon, puis exporter et réimporter la sauvegarde
+14. Pendant une clôture, vérifier que l'ajout, les actions et la sortie sont désactivés ; tenter aussi de réimporter un brouillon lorsqu'un autre existe
 Résultats attendus:
 - La préparation propose date et heure courantes, les préférences sans autoremplacement, 10 séries de 5 coups par défaut et un volume calculé sans borne maximale à cinq
 - L'exercice reste facultatif et ne modifie jamais le nombre de séries ; distance et prise sont héritées comme simples préremplissages indépendants
@@ -68,6 +70,7 @@ Résultats attendus:
 - La fin anticipée ne conserve aucune série vide et l'abandon supprime le brouillon et sa photo uniquement après confirmation
 - Après abandon, aucun brouillon ne réapparaît, même brièvement, au retour dans Sessions
 - La clôture ouvre directement le détail d'une session détaillée réalisée standard sans réafficher temporairement le brouillon ; une erreur simulée conserve intégralement le brouillon avec un message exploitable
+- Un score absent ne devient jamais zéro après reprise ; aucune mutation ne peut suivre la clôture et un import ne peut jamais créer un second brouillon
 - Les sessions planifiées, réalisées détaillées, libres et le wizard de conversion prévue restent fonctionnels dans les thèmes Classique et France
 - Les filtres exercice et catégorie restent alignés dans les onglets Réalisées et Prévues ; les prévues datées sont classées par date croissante avant celles affichées Sans date
 

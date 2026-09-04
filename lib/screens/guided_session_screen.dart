@@ -68,6 +68,8 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   final _commentFocus = FocusNode();
   HandMethod _handMethod = HandMethod.twoHands;
 
+  bool get _mutationsLocked => _saving || _leaving;
+
   @override
   void initState() {
     super.initState();
@@ -130,8 +132,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
     _shotsController.text = series.shotCount > 0 ? '${series.shotCount}' : '';
     _distanceController.text =
         series.distance > 0 ? series.distance.toStringAsFixed(0) : '';
-    _pointsController.text =
-        series.isDraftStarted || series.isCompleted ? '${series.points}' : '';
+    _pointsController.text = series.isScoreEntered ? '${series.points}' : '';
     _groupController.text = series.groupSize > 0
         ? series.groupSize.toString().replaceFirst(RegExp(r'\.0$'), '')
         : '';
@@ -158,6 +159,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
         handMethod: _handMethod,
         isCompleted: completed,
         isDraftStarted: true,
+        isScoreEntered: _pointsController.text.trim().isNotEmpty,
       );
 
   String? _validationMessage() {
@@ -181,6 +183,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   }
 
   void _onFieldChanged() {
+    if (_mutationsLocked) return;
     _draft.series[_currentIndex] = _seriesFromFields(completed: false);
     _autosaveTimer?.cancel();
     _autosaveTimer = Timer(_autosaveDelay, () {
@@ -233,7 +236,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   }
 
   Future<void> _previous() async {
-    if (_currentIndex == 0) return;
+    if (_mutationsLocked || _currentIndex == 0) return;
     if (!await _saveCurrent(validate: false) || !mounted) return;
     setState(() {
       _currentIndex--;
@@ -242,6 +245,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   }
 
   Future<void> _next() async {
+    if (_mutationsLocked) return;
     if (!await _saveCurrent(validate: true) || !mounted) return;
     if (_currentIndex == _draft.series.length - 1) {
       if (_draft.series.any((item) => !item.isCompleted)) {
@@ -258,6 +262,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   }
 
   Future<void> _addSeries() async {
+    if (_mutationsLocked) return;
     if (_showSummary) {
       _draft.synthese = _summaryController.text.trim();
     }
@@ -276,6 +281,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
         handMethod: base.handMethod,
         isCompleted: false,
         isDraftStarted: false,
+        isScoreEntered: false,
       ),
     );
     try {
@@ -290,6 +296,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   }
 
   Future<void> _finishEarly() async {
+    if (_mutationsLocked) return;
     if (_currentHasInput && !_currentSeries.isCompleted) {
       if (!await _saveCurrent(validate: true) || !mounted) return;
     } else if (!await _saveCurrent(validate: false) || !mounted) {
@@ -337,7 +344,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   }
 
   Future<void> _leave() async {
-    if (_leaving) return;
+    if (_mutationsLocked) return;
     _leaving = true;
     if (_showSummary) {
       _draft.synthese = _summaryController.text.trim();
@@ -367,6 +374,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   }
 
   void _onSummaryChanged(String value) {
+    if (_mutationsLocked) return;
     _draft.synthese = value.trim();
     _autosaveTimer?.cancel();
     _autosaveTimer = Timer(_autosaveDelay, () {
@@ -376,6 +384,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   }
 
   Future<void> _abandon() async {
+    if (_mutationsLocked) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -413,6 +422,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   }
 
   Future<void> _pickPhoto(ImageSource source) async {
+    if (_mutationsLocked || _photoBusy) return;
     setState(() => _photoBusy = true);
     final previousPath = _draft.photoPath;
     try {
@@ -431,6 +441,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   }
 
   Future<void> _removePhoto() async {
+    if (_mutationsLocked || _photoBusy) return;
     final previousPath = _draft.photoPath;
     _draft.photoPath = null;
     try {
@@ -441,7 +452,9 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
   }
 
   Future<void> _complete() async {
+    if (_mutationsLocked || _photoBusy) return;
     setState(() => _saving = true);
+    FocusScope.of(context).unfocus();
     _autosaveTimer?.cancel();
     await _saveQueue.catchError((_) {});
     _draft.synthese = _summaryController.text.trim();
@@ -490,17 +503,18 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
               : 'Série ${_currentIndex + 1} / ${_draft.series.length}'),
           leading: IconButton(
             tooltip: 'Quitter temporairement',
-            onPressed: _leave,
+            onPressed: _mutationsLocked ? null : _leave,
             icon: const Icon(Icons.close),
           ),
           actions: [
             IconButton(
               tooltip: 'Ajouter une série',
-              onPressed: _addSeries,
+              onPressed: _mutationsLocked ? null : _addSeries,
               icon: const Icon(Icons.playlist_add),
             ),
             PopupMenuButton<String>(
               tooltip: 'Actions de la séance',
+              enabled: !_mutationsLocked,
               onSelected: (value) {
                 if (value == 'early') _finishEarly();
                 if (value == 'abandon') _abandon();
@@ -525,7 +539,10 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
             ),
           ],
         ),
-        body: _showSummary ? _buildSummary() : _buildSeries(),
+        body: AbsorbPointer(
+          absorbing: _mutationsLocked,
+          child: _showSummary ? _buildSummary() : _buildSeries(),
+        ),
       ),
     );
   }
@@ -802,7 +819,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
             const Spacer(),
             FilledButton.icon(
               key: const Key('complete_guided_session'),
-              onPressed: _saving ? null : _complete,
+              onPressed: _saving || _photoBusy ? null : _complete,
               icon: _saving
                   ? const SizedBox.square(
                       dimension: 18,

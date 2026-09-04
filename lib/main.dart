@@ -13,6 +13,7 @@ import 'migrations/migration_4_add_photo_path_field.dart';
 import 'migrations/migration_5_create_weapons_box.dart';
 import 'migrations/migration_6_add_session_type.dart';
 import 'migrations/migration_7_add_guided_draft_fields.dart';
+import 'migrations/migration_8_add_score_entered_field.dart';
 import 'constants/session_constants.dart';
 import 'providers/navigation_provider.dart';
 import 'providers/settings_provider.dart';
@@ -43,6 +44,7 @@ Future<void> main() async {
     Migration5CreateWeaponsBox(), // v5
     Migration6AddSessionType(), // v6
     Migration7AddGuidedDraftFields(), // v7
+    Migration8AddScoreEnteredField(), // v8
   ], schemaStore);
   await runner.run();
 

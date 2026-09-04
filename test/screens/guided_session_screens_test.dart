@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,6 +21,22 @@ import 'package:tir_sportif/widgets/guided_draft_card.dart';
 import 'package:tir_sportif/widgets/caliber_autocomplete_field.dart';
 
 import '../support/fake_session_repository.dart';
+
+class _DelayedCompletionSessionService extends SessionService {
+  final completionStarted = Completer<void>();
+  final releaseCompletion = Completer<void>();
+
+  _DelayedCompletionSessionService({required super.repository});
+
+  @override
+  Future<DetailedShootingSession> completeGuidedDraft(
+    DetailedShootingSession draft,
+  ) async {
+    if (!completionStarted.isCompleted) completionStarted.complete();
+    await releaseCompletion.future;
+    return super.completeGuidedDraft(draft);
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -220,6 +237,54 @@ void main() {
     expect(restored.series.first.points, 0);
   });
 
+  testWidgets('un score absent reste vide après reprise du brouillon',
+      (tester) async {
+    await setLargeSurface(tester);
+    final draft = await service.createGuidedDraft(
+      date: DateTime(2026, 9, 4),
+      weapon: 'Pistolet',
+      caliber: '9 mm',
+      category: 'entraînement',
+      exercises: const [],
+      seriesCount: 1,
+      shotsPerSeries: 5,
+      initialDistance: 25,
+      initialHandMethod: HandMethod.twoHands,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GuidedSessionScreen(draft: draft, sessionService: service),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('guided_comment')),
+      'Commentaire sans score',
+    );
+    await tester.pump(const Duration(milliseconds: 700));
+    final restored = (await service.getGuidedDrafts()).single;
+    expect(restored.series.single.isDraftStarted, isTrue);
+    expect(restored.series.single.isScoreEntered, isFalse);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GuidedSessionScreen(draft: restored, sessionService: service),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final points = tester.widget<TextFormField>(
+      find.byKey(const Key('guided_points')),
+    );
+    expect(points.controller?.text, isEmpty);
+
+    await tester.enterText(find.byKey(const Key('guided_group')), '8');
+    await tester.tap(find.byKey(const Key('guided_next')));
+    await tester.pump();
+    expect(find.textContaining('Le score est obligatoire'), findsOneWidget);
+    expect(find.text('Série 1 / 1'), findsOneWidget);
+  });
+
   testWidgets('ajoute une série et termine plus tôt après confirmation',
       (tester) async {
     await setLargeSurface(tester);
@@ -414,6 +479,67 @@ void main() {
     expect(find.byType(SessionDetailScreen), findsOneWidget);
     expect((await service.getGuidedDrafts()), isEmpty);
     expect((await service.getAllSessions()).single.status, 'réalisée');
+  });
+
+  testWidgets('verrouille toutes les mutations pendant la clôture',
+      (tester) async {
+    await setLargeSurface(tester);
+    final delayedService =
+        _DelayedCompletionSessionService(repository: repository);
+    addTearDown(() {
+      if (!delayedService.releaseCompletion.isCompleted) {
+        delayedService.releaseCompletion.complete();
+      }
+    });
+    final draft = await delayedService.createGuidedDraft(
+      date: DateTime(2026, 9, 4),
+      weapon: 'Pistolet',
+      caliber: '9 mm',
+      category: 'match',
+      exercises: const [],
+      seriesCount: 1,
+      shotsPerSeries: 5,
+      initialDistance: 25,
+      initialHandMethod: HandMethod.twoHands,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GuidedSessionScreen(
+          draft: draft,
+          sessionService: delayedService,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('guided_points')), '45');
+    await tester.enterText(find.byKey(const Key('guided_group')), '8');
+    await tester.tap(find.byKey(const Key('guided_next')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('complete_guided_session')));
+    await delayedService.completionStarted.future;
+    await tester.pump();
+
+    final addButton = tester.widget<IconButton>(
+      find.widgetWithIcon(IconButton, Icons.playlist_add),
+    );
+    final actions = tester.widget<PopupMenuButton<String>>(
+      find.byType(PopupMenuButton<String>),
+    );
+    expect(addButton.onPressed, isNull);
+    expect(actions.enabled, isFalse);
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.close))
+          .onPressed,
+      isNull,
+    );
+
+    delayedService.releaseCompletion.complete();
+    await tester.pumpAndSettle();
+    final stored = (await delayedService.getAllSessions()).single;
+    expect(stored.status, 'réalisée');
+    expect(stored.series, hasLength(1));
   });
 
   testWidgets('une erreur de clôture conserve le brouillon et l’explique',

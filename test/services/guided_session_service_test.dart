@@ -94,12 +94,14 @@ void main() {
         handMethod: HandMethod.twoHands,
         isCompleted: false,
         isDraftStarted: true,
+        isScoreEntered: false,
       );
       await service.saveGuidedDraft(draft);
 
       var restored = (await service.getGuidedDrafts()).single;
       expect(restored.series.first.isDraftStarted, isTrue);
       expect(restored.series.first.distance, 15);
+      expect(restored.series.first.isScoreEntered, isFalse);
 
       restored.series[0] = Series(
         shotCount: 5,
@@ -113,6 +115,27 @@ void main() {
       restored = (await service.getGuidedDrafts()).single;
       expect(restored.completedSeriesCount, 1);
       expect(restored.completedShotCount, 5);
+    });
+
+    test('refuse une série terminée dont le score n’a jamais été saisi',
+        () async {
+      final draft = await create(seriesCount: 1);
+      draft.series[0] = Series(
+        shotCount: 5,
+        distance: 25,
+        points: 0,
+        groupSize: 8,
+        isCompleted: true,
+        isDraftStarted: true,
+        isScoreEntered: false,
+      );
+
+      expect(
+        await captureError(() => service.saveGuidedDraft(draft)),
+        isA<ArgumentError>(),
+      );
+      final restored = (await service.getGuidedDrafts()).single;
+      expect(restored.series.single.isCompleted, isFalse);
     });
 
     test('clôture atomiquement avec les seules séries enregistrées', () async {

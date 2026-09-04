@@ -10,6 +10,7 @@ class Series {
   HandMethod handMethod; // prise (1 main / 2 mains)
   bool isCompleted;
   bool isDraftStarted;
+  bool isScoreEntered;
 
   Series({
     this.id,
@@ -21,6 +22,7 @@ class Series {
     this.handMethod = HandMethod.twoHands,
     this.isCompleted = true,
     this.isDraftStarted = true,
+    this.isScoreEntered = true,
   });
 
   Map<String, dynamic> toMap() {
@@ -34,6 +36,7 @@ class Series {
       'hand_method': handMethod == HandMethod.oneHand ? 'one' : 'two',
       'completed': isCompleted,
       'draft_started': isDraftStarted,
+      'score_entered': isScoreEntered,
     };
   }
 
@@ -58,6 +61,12 @@ class Series {
       // Les séries historiques sont des séries réalisées et validées.
       isCompleted: map['completed'] as bool? ?? true,
       isDraftStarted: map['draft_started'] as bool? ?? true,
+      // Une ancienne série terminée est historique et possède donc un
+      // score. Pour un ancien brouillon partiel, seul un score non nul prouve
+      // qu'il a effectivement été saisi.
+      isScoreEntered: map['score_entered'] as bool? ??
+          ((map['completed'] as bool? ?? true) ||
+              ((map['points'] as num?)?.toInt() ?? 0) != 0),
     );
   }
 }
