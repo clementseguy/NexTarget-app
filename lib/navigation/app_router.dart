@@ -8,6 +8,7 @@ import '../screens/sessions_history_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/create_session_screen.dart';
 import '../screens/create_simple_session_screen.dart';
+import '../screens/guided_session_preparation_screen.dart';
 import '../screens/goal_edit_screen.dart';
 import '../screens/exercises_list_screen.dart';
 import '../screens/login_screen.dart';
@@ -17,6 +18,7 @@ import '../data/local_db_hive.dart';
 import '../models/goal.dart';
 import '../widgets/help_button.dart';
 import '../widgets/app_bar_title.dart';
+import '../services/session_service.dart';
 
 /// Classe responsable de la gestion des routes nommées de l'application
 class AppRouter {
@@ -96,7 +98,6 @@ class AppNavigator extends StatelessWidget {
 
   final GlobalKey<SessionsHistoryScreenState> _historyKey =
       GlobalKey<SessionsHistoryScreenState>();
-  final ValueNotifier<String> _sessionsTab = ValueNotifier('realized');
 
   @override
   Widget build(BuildContext context) {
@@ -172,8 +173,10 @@ class AppNavigator extends StatelessWidget {
         const HelpButton(
           title: 'Mes sessions',
           points: [
-            'Le bouton + crée une session du même type que l\'onglet affiché : réalisée ou prévue.',
-            'Dans Réalisées, le bouton avec l’icône de saisie rapide crée une session libre sans séries, score ni groupement.',
+            'Le bouton "Au stand" permet de créer rapidement une session.',
+            'Vous pouvez aussi planifier des sessions dans le futur via le menu de création.',
+            'Vous pouvez aussi créer des sessions libres ou des sessions détaillées via le menu de création.',
+            'Une séance en cours se reprend depuis sa carte et reste hors statistiques et Coach jusqu’à sa clôture.',
             'Chaque session contient vos séries : coups, distance, points, groupement, prise.',
             'Ouvrez une session réalisée pour la synthèse, les exercices travaillés et l\'analyse du coach IA.',
             'Un appui long sur une carte permet de la supprimer.',
@@ -216,61 +219,132 @@ class AppNavigator extends StatelessWidget {
       children: [
         SessionsHistoryScreen(
           key: _historyKey,
-          onTabChanged: (tab) => _sessionsTab.value = tab,
         ),
         Positioned(
           bottom: 24,
-          right: 24,
-          child: Semantics(
-            button: true,
-            label: 'Créer une session détaillée',
-            child: FloatingActionButton(
-              heroTag: 'fab_create_session',
-              onPressed: () {
-                // Le + crée une session du même type que l'onglet affiché :
-                // onglet "Prévues" → session prévue, sinon session réalisée
-                // (retour de recette S2 ; l'ancien appui long est supprimé).
-                final planned =
-                    _historyKey.currentState?.currentFilter == 'planned';
-                Navigator.of(context)
-                    .push(MaterialPageRoute(
-                      builder: (ctx) => CreateSessionScreen(
-                        initialSessionData:
-                            planned ? plannedSessionTemplate() : null,
-                      ),
-                    ))
-                    .then((_) => _historyKey.currentState?.refreshSessions());
-              },
-              tooltip: 'Créer une session détaillée',
-              child: const Icon(Icons.add),
-            ),
+          right: 16,
+          child: _SessionCreationActions(
+            historyKey: _historyKey,
           ),
         ),
-        Positioned(
-          bottom: 92,
-          right: 24,
-          child: ValueListenableBuilder<String>(
-            valueListenable: _sessionsTab,
-            builder: (context, tab, _) {
-              if (tab != 'realized') return const SizedBox.shrink();
-              final colors = Theme.of(context).colorScheme;
-              return Semantics(
-                button: true,
-                label: 'Créer une session libre',
-                child: FloatingActionButton(
-                  heroTag: 'fab_create_simple_session',
-                  tooltip: 'Créer une session libre',
-                  backgroundColor: colors.secondaryContainer,
-                  foregroundColor: colors.onSecondaryContainer,
-                  onPressed: () => Navigator.of(context)
-                      .push(MaterialPageRoute(
-                        builder: (_) => const CreateSimpleSessionScreen(),
-                      ))
-                      .then((_) => _historyKey.currentState?.refreshSessions()),
-                  child: const Icon(Icons.playlist_add),
-                ),
-              );
-            },
+      ],
+    );
+  }
+}
+
+class _SessionCreationActions extends StatefulWidget {
+  final GlobalKey<SessionsHistoryScreenState> historyKey;
+
+  const _SessionCreationActions({required this.historyKey});
+
+  @override
+  State<_SessionCreationActions> createState() =>
+      _SessionCreationActionsState();
+}
+
+class _SessionCreationActionsState extends State<_SessionCreationActions> {
+  final SessionService _sessionService = SessionService();
+
+  Future<void> _open(Widget screen) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => screen),
+    );
+    if (!mounted) return;
+    widget.historyKey.currentState?.refreshSessions();
+  }
+
+  Future<void> _primaryAction() async {
+    final drafts = await _sessionService.getGuidedDrafts();
+    if (!mounted) return;
+    if (drafts.isEmpty) {
+      await _open(
+        GuidedSessionPreparationScreen(
+          sessionService: _sessionService,
+          onSessionChanged: () async {
+            await widget.historyKey.currentState?.refreshSessions();
+          },
+        ),
+      );
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Une séance est déjà en cours. Reprenez-la depuis sa carte ou '
+          'abandonnez-la avant d’en commencer une nouvelle.',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showOtherCreations() async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Wrap(
+          children: [
+            const ListTile(title: Text('Autres créations')),
+            ListTile(
+              leading: const Icon(Icons.event_outlined),
+              title: const Text('Session planifiée'),
+              onTap: () => Navigator.pop(sheetContext, 'planned'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.fact_check_outlined),
+              title: const Text('Session réalisée détaillée'),
+              onTap: () => Navigator.pop(sheetContext, 'detailed'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.playlist_add),
+              title: const Text('Session libre'),
+              onTap: () => Navigator.pop(sheetContext, 'simple'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || action == null) return;
+    switch (action) {
+      case 'planned':
+        await _open(
+          CreateSessionScreen(
+              initialSessionData: AppNavigator.plannedSessionTemplate()),
+        );
+        return;
+      case 'detailed':
+        await _open(const CreateSessionScreen());
+        return;
+      case 'simple':
+        await _open(const CreateSimpleSessionScreen());
+        return;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Semantics(
+          button: true,
+          label: 'Autres créations de session',
+          child: FloatingActionButton.small(
+            heroTag: 'fab_other_session_creations',
+            tooltip: 'Autres créations',
+            onPressed: _showOtherCreations,
+            child: const Icon(Icons.add),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Semantics(
+          button: true,
+          label: 'Commencer une séance au stand',
+          child: FloatingActionButton.extended(
+            heroTag: 'fab_guided_session',
+            tooltip: 'Au stand',
+            onPressed: _primaryAction,
+            icon: const Icon(Icons.sports_score),
+            label: const Text('Au stand'),
           ),
         ),
       ],

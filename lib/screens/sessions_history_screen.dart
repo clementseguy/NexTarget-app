@@ -7,19 +7,30 @@ import 'session_detail_screen.dart';
 import '../models/shooting_session.dart';
 import '../models/exercise.dart';
 import '../utils/session_filters.dart';
+import '../widgets/guided_draft_card.dart';
+import 'guided_session_screen.dart';
 
 class SessionsHistoryScreen extends StatefulWidget {
   final ValueChanged<String>? onTabChanged;
+  final SessionService? sessionService;
+  final ExerciseService? exerciseService;
 
-  const SessionsHistoryScreen({super.key, this.onTabChanged});
+  const SessionsHistoryScreen({
+    super.key,
+    this.onTabChanged,
+    this.sessionService,
+    this.exerciseService,
+  });
 
   @override
   SessionsHistoryScreenState createState() => SessionsHistoryScreenState();
 }
 
 class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
-  final SessionService _sessionService = SessionService();
-  final ExerciseService _exerciseService = ExerciseService();
+  late final SessionService _sessionService =
+      widget.sessionService ?? SessionService();
+  late final ExerciseService _exerciseService =
+      widget.exerciseService ?? ExerciseService();
   late Future<(List<ShootingSession>, List<Exercise>)> _dataFuture;
   String _filter = 'realized'; // realized | planned
   // Filtre exercice (NT-007), combinable avec _filter. null = "Tous les exercices".
@@ -39,10 +50,12 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
     });
   }
 
-  void refreshSessions() {
+  Future<void> refreshSessions() async {
+    final future = _loadData();
     setState(() {
-      _dataFuture = _loadData();
+      _dataFuture = future;
     });
+    await future;
   }
 
   Future<(List<ShootingSession>, List<Exercise>)> _loadData() async {
@@ -67,6 +80,12 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
         }
         final all = snapshot.data?.$1 ?? <ShootingSession>[];
         final exercises = snapshot.data?.$2 ?? <Exercise>[];
+        final drafts = all
+            .whereType<DetailedShootingSession>()
+            .where((session) => session.status == SessionConstants.statusDraft)
+            .toList()
+          ..sort((a, b) =>
+              (b.date ?? DateTime(1970)).compareTo(a.date ?? DateTime(1970)));
         // Un exercice lié à une session peut avoir été supprimé depuis (aucune
         // suppression en cascade côté ExerciseService) : si le filtre actif ne
         // correspond plus à un exercice existant, on retombe silencieusement
@@ -87,7 +106,18 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
             .toList();
         final plannedAll = filtered
             .where((s) => s.status == SessionConstants.statusPrevue)
-            .toList();
+            .toList()
+          ..sort((a, b) {
+            if (a.date == null && b.date == null) {
+              return (a.id ?? 0).compareTo(b.id ?? 0);
+            }
+            if (a.date == null) return 1;
+            if (b.date == null) return -1;
+            final dateOrder = a.date!.compareTo(b.date!);
+            return dateOrder != 0
+                ? dateOrder
+                : (a.id ?? 0).compareTo(b.id ?? 0);
+          });
 
         List<ShootingSession> sessions = realizedAll;
         List<ShootingSession> planned = plannedAll;
@@ -97,7 +127,8 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
           // realized
           planned = <ShootingSession>[];
         }
-        final bool noDataRealized = sessions.isEmpty && _filter == 'realized';
+        final bool noDataRealized =
+            sessions.isEmpty && drafts.isEmpty && _filter == 'realized';
         final bool noDataPlannedOnly = _filter == 'planned' && planned.isEmpty;
         List<DateTime> orderedKeys = [];
         final Map<DateTime, List<ShootingSession>> grouped = {};
@@ -136,12 +167,9 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
           nextPlannedDate = datedPlanned.first.date;
         }
         return RefreshIndicator(
-          onRefresh: () async {
-            refreshSessions();
-            await Future.delayed(Duration(milliseconds: 300));
-          },
+          onRefresh: refreshSessions,
           child: ListView.builder(
-            padding: EdgeInsets.only(bottom: 24, top: 8),
+            padding: EdgeInsets.only(bottom: 112, top: 8),
             itemCount: 1 +
                 (noDataRealized ? 1 : 0) +
                 (noDataPlannedOnly ? 1 : 0) +
@@ -175,56 +203,99 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
                         ],
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                      child: DropdownButtonFormField<String?>(
-                        initialValue: effectiveExerciseFilter,
-                        isExpanded: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Filtrer par exercice',
-                          prefixIcon: Icon(Icons.filter_alt_outlined),
-                          isDense: true,
-                          border: OutlineInputBorder(),
-                        ),
-                        items: [
-                          const DropdownMenuItem<String?>(
-                              value: null, child: Text('Tous les exercices')),
-                          ...exercises.map((e) => DropdownMenuItem<String?>(
-                                value: e.id,
-                                child: Text(e.name,
-                                    overflow: TextOverflow.ellipsis),
-                              )),
-                        ],
-                        onChanged: (id) => setState(() => _exerciseFilter = id),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                      child: DropdownButtonFormField<String?>(
-                        initialValue: _categoryFilter,
-                        isExpanded: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Filtrer par catégorie',
-                          prefixIcon: Icon(Icons.category_outlined),
-                          isDense: true,
-                          border: OutlineInputBorder(),
-                        ),
-                        items: [
-                          const DropdownMenuItem<String?>(
-                            value: null,
-                            child: Text('Toutes les catégories'),
-                          ),
-                          ...SessionConstants.categories.map(
-                            (category) => DropdownMenuItem<String?>(
-                              value: category,
+                    if (_filter == 'realized' && drafts.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
                               child: Text(
-                                SessionConstants.categoryLabel(category),
+                                'Séances en cours',
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
+                            ),
+                            ...drafts.map(
+                              (draft) => GuidedDraftCard(
+                                draft: draft,
+                                onResume: () => _resumeDraft(draft),
+                                onAbandon: () => _abandonDraft(draft),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String?>(
+                              initialValue: effectiveExerciseFilter,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                labelText: 'Exercice',
+                                prefixIcon: Icon(Icons.filter_alt_outlined),
+                                isDense: true,
+                                border: OutlineInputBorder(),
+                              ),
+                              items: [
+                                const DropdownMenuItem<String?>(
+                                  value: null,
+                                  child: Text(
+                                    'Tous les exercices',
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                ...exercises.map(
+                                  (e) => DropdownMenuItem<String?>(
+                                    value: e.id,
+                                    child: Text(
+                                      e.name,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (id) =>
+                                  setState(() => _exerciseFilter = id),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: DropdownButtonFormField<String?>(
+                              initialValue: _categoryFilter,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                labelText: 'Catégorie',
+                                prefixIcon: Icon(Icons.category_outlined),
+                                isDense: true,
+                                border: OutlineInputBorder(),
+                              ),
+                              items: [
+                                const DropdownMenuItem<String?>(
+                                  value: null,
+                                  child: Text(
+                                    'Toutes les catégories',
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                ...SessionConstants.categories.map(
+                                  (category) => DropdownMenuItem<String?>(
+                                    value: category,
+                                    child: Text(
+                                      SessionConstants.categoryLabel(category),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (category) =>
+                                  setState(() => _categoryFilter = category),
                             ),
                           ),
                         ],
-                        onChanged: (category) =>
-                            setState(() => _categoryFilter = category),
                       ),
                     ),
                     if (_filter == 'realized')
@@ -403,6 +474,44 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
         );
       },
     );
+  }
+
+  Future<void> _resumeDraft(DetailedShootingSession draft) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => GuidedSessionScreen(
+          draft: draft,
+          sessionService: _sessionService,
+          onSessionChanged: refreshSessions,
+        ),
+      ),
+    );
+    if (mounted) refreshSessions();
+  }
+
+  Future<void> _abandonDraft(DetailedShootingSession draft) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Abandonner la séance ?'),
+        content: const Text(
+          'Le brouillon et les séries enregistrées seront supprimés.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Abandonner'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await _sessionService.abandonGuidedDraft(draft);
+    if (mounted) refreshSessions();
   }
 }
 
@@ -585,19 +694,30 @@ class _Stat extends StatelessWidget {
             child: Icon(icon, size: 18, color: color),
           ),
           SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6))),
-              Text(value,
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-            ],
+                    fontSize: 11,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
+                  ),
+                ),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
           ),
         ],
       ),

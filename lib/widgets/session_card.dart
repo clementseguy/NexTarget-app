@@ -19,7 +19,8 @@ class SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = DateTime.tryParse(session['date'] ?? '') ?? DateTime.now();
+    final date = DateTime.tryParse(session['date']?.toString() ?? '');
+    final dateLabel = date == null ? 'Sans date' : '${date.day}/${date.month}';
     final isPlanned = session['status'] == 'prévue';
     final isSimple = session['sessionType'] == 'simple';
     final exerciseIds = session['exercises'] is List
@@ -68,9 +69,13 @@ class SessionCard extends StatelessWidget {
                   children: [
                     Icon(Icons.calendar_today, size: 21, color: accent),
                     const SizedBox(height: 3),
-                    Text(
-                      '${date.day}/${date.month}',
-                      style: const TextStyle(fontSize: 12),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        dateLabel,
+                        maxLines: 1,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ),
                     if (isSimple) ...[
                       const SizedBox(height: 5),

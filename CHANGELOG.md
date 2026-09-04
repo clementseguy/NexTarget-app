@@ -5,6 +5,14 @@ Toutes les modifications notables de ce projet seront listées ici.
 ## [Non publié]
 
 ### Added
+- NT-131 : session détaillée guidée directement au stand, sans session prévue, exercice ni template obligatoire.
+    - Action principale « Au stand », reprise de l'unique brouillon depuis sa carte et menu secondaire explicite pour les créations planifiée, réalisée détaillée et libre.
+    - Préparation compacte avec préférences de calibre et de prise, râtelier, exercices facultatifs et volume libre ; saisie plein écran série par série avec héritage, raccourcis 15/25 m, navigation, ajout, fin anticipée et sauvegarde temporisée.
+    - Statut persistant `brouillon`, migration Hive additive, reprise après redémarrage, abandon confirmé avec nettoyage photo et cycle import/export préservé.
+    - Synthèse finale avec photo facultative, clôture atomique vers une session réalisée standard et redirection directe vers son détail ; brouillons exclus des statistiques, objectifs, compteurs et du Coach.
+    - Synchronisation de l'historique avant chaque sortie du parcours afin qu'un brouillon clôturé ou abandonné ne soit jamais réaffiché, même temporairement.
+    - Harmonisation mobile des champs de préparation et des raccourcis de distance ; filtres d'historique alignés, sessions prévues datées triées chronologiquement, sessions non datées identifiées explicitement et aide contextuelle simplifiée.
+    - Correctifs de revue : distinction persistante entre score nul et score absent, verrouillage des mutations pendant la clôture et refus atomique des imports qui créeraient plusieurs brouillons.
 - NT-014 : comparatif global glissant 30 j / 90 j des points et groupements moyens par série, avec deltas absolus/relatifs et sparklines par session à partir de cinq sessions exploitables.
     - Fenêtres emboîtées à bornes calendaires déterministes et horloge injectable ; sessions prévues/libres exclues, scores nuls conservés et groupements non strictement positifs ou non finis ignorés uniquement pour cette métrique.
     - Présentation compacte à deux lignes, états explicites pour population insuffisante et division par zéro, lisible dans les thèmes sombre et France sans dépendre uniquement de la couleur.
@@ -91,7 +99,7 @@ Toutes les modifications notables de ce projet seront listées ici.
     - Plus aucune clé/config Mistral côté client : `AppConfig` (sélection de clé), `assets/config.yaml`, `config.example.yaml` et `scripts/build_apk.sh` purgés ; assets `coach_prompt*.yaml` retirés (le prompt vit côté serveur, NT-031).
     - Section « Analyse Coach » : sans compte, message clair + bouton « Se connecter » (route `/login`) ; le carnet de tir reste 100 % hors-ligne.
     - Prints `[DEBUG]` hérités retirés des fichiers coach.
-    - ⚠️ Rotation de la clé Mistral historique : action manuelle (console Mistral + env Render), hors code.
+    - Rotation de la clé Mistral historique : action manuelle (console Mistral + env Render), hors code.
 
 ## [0.4.0] - Unreleased
 ### Technical

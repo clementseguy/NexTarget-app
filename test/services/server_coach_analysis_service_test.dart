@@ -7,6 +7,7 @@ import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/services/auth_service.dart';
 import 'package:tir_sportif/services/server_coach_analysis_service.dart';
+import 'package:tir_sportif/constants/session_constants.dart';
 
 DetailedShootingSession _session() => DetailedShootingSession(
       weapon: 'Glock 17',
@@ -39,6 +40,23 @@ void main() {
         baseUrl: 'http://x', authService: dummyAuthService, client: client);
     final out = await svc.analyzeSession(_session());
     expect(out, 'OK');
+  });
+
+  test('un brouillon est rejeté avant tout appel Coach', () async {
+    var called = false;
+    final client = MockClient((req) async {
+      called = true;
+      return http.Response('{"analysis":"OK"}', 200);
+    });
+    final svc = ServerCoachAnalysisService(
+        baseUrl: 'http://x', authService: dummyAuthService, client: client);
+    final draft = _session()..status = SessionConstants.statusDraft;
+
+    await expectLater(
+      svc.analyzeSession(draft),
+      throwsA(predicate((e) => e.toString().contains('session réalisée'))),
+    );
+    expect(called, isFalse);
   });
 
   test(

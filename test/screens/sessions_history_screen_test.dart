@@ -64,6 +64,33 @@ void main() {
   }
 
   group('SessionsHistoryScreen - filtre par exercice (NT-007)', () {
+    testWidgets('aligne les deux filtres sur une largeur mobile',
+        (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(body: SessionsHistoryScreen()),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      final exerciseFilter = find.byWidgetPredicate(
+        (widget) =>
+            widget is DropdownButtonFormField<String?> &&
+            widget.decoration.labelText == 'Exercice',
+      );
+      final categoryFilter = find.byWidgetPredicate(
+        (widget) =>
+            widget is DropdownButtonFormField<String?> &&
+            widget.decoration.labelText == 'Catégorie',
+      );
+      expect(tester.getTopLeft(exerciseFilter).dy,
+          tester.getTopLeft(categoryFilter).dy);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets(
         'le résumé compte la libre comme session sans fausser les séries par session',
         (tester) async {
@@ -122,7 +149,7 @@ void main() {
 
       await pumpScreen(tester);
 
-      expect(find.text('Filtrer par exercice'), findsOneWidget);
+      expect(find.text('Exercice'), findsOneWidget);
       // Les deux sessions apparaissent (regroupées par jour car dates différentes).
       expect(find.text('1/1/2025'), findsOneWidget);
       expect(find.text('2/1/2025'), findsOneWidget);
@@ -212,7 +239,7 @@ void main() {
       await tester.tap(find.text('Prévues'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Filtrer par exercice'), findsOneWidget);
+      expect(find.text('Exercice'), findsOneWidget);
     });
 
     testWidgets(
@@ -245,6 +272,58 @@ void main() {
           findsOneWidget);
       expect(find.text('Essaie un autre exercice ou réinitialise le filtre.'),
           findsOneWidget);
+    });
+
+    testWidgets(
+        'aligne les filtres et trie les prévues par date croissante, sans date à la fin',
+        (tester) async {
+      await sessionService.addSession(DetailedShootingSession(
+        weapon: 'Plus tard',
+        caliber: '22LR',
+        date: DateTime(2026, 10, 20),
+        status: SessionConstants.statusPrevue,
+        series: [Series(distance: 10, points: 0, groupSize: 0)],
+      ));
+      await sessionService.addSession(DetailedShootingSession(
+        weapon: 'Sans date',
+        caliber: '22LR',
+        date: null,
+        status: SessionConstants.statusPrevue,
+        series: [Series(distance: 10, points: 0, groupSize: 0)],
+      ));
+      await sessionService.addSession(DetailedShootingSession(
+        weapon: 'Plus tôt',
+        caliber: '22LR',
+        date: DateTime(2026, 9, 10),
+        status: SessionConstants.statusPrevue,
+        series: [Series(distance: 10, points: 0, groupSize: 0)],
+      ));
+
+      await pumpScreen(tester);
+
+      final exerciseFilter = find.byWidgetPredicate(
+        (widget) =>
+            widget is DropdownButtonFormField<String?> &&
+            widget.decoration.labelText == 'Exercice',
+      );
+      final categoryFilter = find.byWidgetPredicate(
+        (widget) =>
+            widget is DropdownButtonFormField<String?> &&
+            widget.decoration.labelText == 'Catégorie',
+      );
+      expect(tester.getTopLeft(exerciseFilter).dy,
+          tester.getTopLeft(categoryFilter).dy);
+
+      await tester.tap(find.text('Prévues'));
+      await tester.pumpAndSettle();
+
+      expect(tester.getTopLeft(exerciseFilter).dy,
+          tester.getTopLeft(categoryFilter).dy);
+      final earlierY = tester.getTopLeft(find.text('Plus tôt')).dy;
+      final laterY = tester.getTopLeft(find.text('Plus tard')).dy;
+      final undatedY = tester.getTopLeft(find.text('Sans date').last).dy;
+      expect(earlierY, lessThan(laterY));
+      expect(laterY, lessThan(undatedY));
     });
 
     testWidgets('revenir à "Tous les exercices" réaffiche toutes les sessions',

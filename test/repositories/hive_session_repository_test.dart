@@ -52,6 +52,34 @@ void main() {
     expect(stored.series, isEmpty);
   });
 
+  test('persiste et relit un brouillon avec sa saisie partielle', () async {
+    final repo = HiveSessionRepository();
+    final draft = DetailedShootingSession(
+      date: DateTime(2026, 9, 4),
+      weapon: 'Pistolet',
+      caliber: '9 mm',
+      status: 'brouillon',
+      series: [
+        Series(
+          shotCount: 7,
+          distance: 25,
+          points: 0,
+          groupSize: 0,
+          isCompleted: false,
+          isDraftStarted: true,
+        ),
+      ],
+    );
+
+    final id = await repo.insert(draft);
+    final stored = (await repo.getAll()).single as DetailedShootingSession;
+
+    expect(id, isNonNegative);
+    expect(stored.status, 'brouillon');
+    expect(stored.series.single.isCompleted, isFalse);
+    expect(stored.series.single.isDraftStarted, isTrue);
+  });
+
   test('update with preserveExistingSeriesIfEmpty keeps prior series',
       () async {
     final repo = HiveSessionRepository();

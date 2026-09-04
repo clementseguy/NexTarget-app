@@ -7,6 +7,15 @@ class SessionConstants {
   /// Statut : session prévue (non encore effectuée)
   static const String statusPrevue = 'prévue';
 
+  /// Statut : session détaillée guidée en cours de saisie au stand
+  static const String statusDraft = 'brouillon';
+
+  static const List<String> detailedStatuses = [
+    statusRealisee,
+    statusPrevue,
+    statusDraft,
+  ];
+
   /// Nom de la box Hive pour les sessions
   static const String hiveBoxSessions = 'sessions';
 
