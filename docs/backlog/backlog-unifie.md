@@ -3,10 +3,10 @@
 > **Ce fichier est l'unique source de vérité produit.** Les fichiers
 > [`vue-app.md`](vue-app.md) et [`vue-serveur.md`](vue-serveur.md) en sont des
 > **projections** : rien ne doit exister uniquement dans une vue. Règles de
-> gouvernance dans [`README.md`](README.md), historique des arbitrages dans
-> [`incoherences.md`](incoherences.md).
+> gouvernance dans [`README.md`](README.md). Les arbitrages durables sont
+> consignés dans les items concernés, sans journal parallèle.
 
-- **Statuts** : les statuts reflètent l'**état réel du code** au 2026-09-02, pas
+- **Statuts** : les statuts reflètent l'**état réel du code** au 2026-09-03, pas
   les intentions des anciens backlogs.
 - **IDs** : `NT-XXX`, stables, jamais réutilisés. Les trous de numérotation sont
   volontaires (réservés à l'insertion future dans un thème).
@@ -31,7 +31,7 @@
 > v0.3.0.
 >
 > Enrichissement fonctionnel du **2026-09-02** : sessions libres sans séries,
-> score ni groupement (NT-133). Statuts code inchangés.
+> score ni groupement (NT-133), livré et fusionné sur `dev` le 2026-09-03.
 >
 > Cadrage produit du **2026-09-02** : critères détaillés de NT-014, NT-073,
 > NT-048 et NT-133 validés. NT-048 est passé `both / FAIT` le **2026-09-02**
@@ -40,6 +40,9 @@
 > logout best effort) sur la même branche que ce cadrage. L'audit de clôture
 > de NT-061 confirme l'absence de chemin Mistral direct côté client et la
 > rotation de la clé historique.
+>
+> Livraison du **2026-09-03** : NT-014 et NT-133 sont fusionnés sur `dev`
+> (PR #28 et #27) et passent à `FAIT` conformément à l'état du code.
 
 ## Légende des statuts
 
@@ -160,7 +163,7 @@
 | NT-011 | Statistiques explicatives / évolution | app | Should | M | FAIT |
 | NT-012 | Objectifs mesurables | app | Must | M | FAIT |
 | NT-013 | Hauts faits (records) | app | Should | S | FAIT |
-| NT-014 | Comparatif glissant 30j vs 90j + sparkline | app | Could | M | EN COURS |
+| NT-014 | Comparatif glissant 30j vs 90j + sparkline | app | Could | M | FAIT |
 | NT-015 | Recommandations croisées Objectifs ⇄ Exercices | app | Could | M | À FAIRE |
 | NT-016 | Objectifs enrichis : statuts étendus, journal, vue détail | app | Could | M | À FAIRE |
 | NT-017 | Compteur de tirs par arme du râtelier | app | Should | S | FAIT |
@@ -173,9 +176,9 @@
 
 ### NT-011 — Statistiques explicatives / évolution
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-010
-- **Description** : Courbes/analyses expliquant l'évolution (cf. `docs/features/stats_explicatives.md`).
+- **Description** : Courbes et analyses expliquant l'évolution ; règles courantes dans [`docs/features/statistiques.md`](../features/statistiques.md).
 - **Critères d'acceptation** : évolution temporelle d'au moins une métrique clé ; lisible sur mobile.
-- **Statut** : FAIT — `docs/features/statistiques.md`, `evolution_chart.md`.
+- **Statut** : FAIT — `docs/features/statistiques.md`, `DashboardService`, `EvolutionChart`.
 
 ### NT-012 — Objectifs mesurables
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-010
@@ -204,7 +207,7 @@
   - l'interface reprend la structure validée à deux lignes, reste compacte sur mobile et lisible dans les deux thèmes, sans dépendre uniquement de la couleur ;
   - aucun libellé automatique « amélioration », « baisse » ou « stagnation » n'est déduit de seuils métier : les courbes, signes, unités et deltas restent factuels ;
   - les calculs utilisent une horloge injectable, ne reposent pas sur une limite silencieuse de séries et sont couverts par des tests déterministes des bornes, populations, valeurs nulles et scénarios divergents.
-- **Priorité** : Could · **Statut** : EN COURS — implémentation applicative complète sur la branche feature : populations score/groupement indépendantes, fenêtres emboîtées et bornées, deltas absolus/relatifs, carte Progression alignée sur ces deux deltas, états insuffisants, sparklines par session, UI mobile/deux thèmes, aide contextuelle et gestion explicite des écarts masqués par l'arrondi. Le passage à `FAIT` reste conditionné par la revue, la recette manuelle, la Quality Gate et la fusion sur `dev` conformément à la DoD.
+- **Priorité** : Could · **Statut** : FAIT — fusionné sur `dev` par la PR #28 le 2026-09-03 ; populations score/groupement indépendantes, fenêtres emboîtées et bornées, deltas absolus/relatifs, carte Progression alignée, états insuffisants, sparklines par session, UI mobile et aide contextuelle.
 
 ### NT-015 — Recommandations croisées Objectifs ⇄ Exercices
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-012, NT-021
@@ -221,7 +224,7 @@
 ### NT-017 — Compteur de tirs par arme du râtelier
 - **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : NT-002, NT-008, NT-009
 - **Description** : Le tireur visualise le volume total de tirs réalisé avec chacune des armes actuellement présentes dans son râtelier.
-- **Critères d'acceptation** : dans `Statistiques > Avancé`, une section placée en toute dernière position affiche un simple compteur par arme du râtelier, sans graphe ; toutes les armes du râtelier sont affichées, y compris avec un compteur à zéro ; pour chaque arme, le total est la somme des `shotCount` de toutes les séries des sessions détaillées réalisées dont le champ `weapon` correspond exactement au nom de l'arme après normalisation (espaces en début/fin ignorés, casse ignorée) ; les sessions prévues sont exclues ; tous les tirs des séries correspondantes sont comptés, essais compris, indépendamment des points ou scores ; le compteur est recalculé après ajout, modification ou suppression d'une session et après ajout, renommage ou suppression d'une arme ; supprimer une arme retire son compteur sans altérer les sessions. Lorsque NT-133 est livré, ce total inclut également le `shotCount` porté directement par chaque session libre de la même arme.
+- **Critères d'acceptation** : dans `Statistiques > Avancé`, une section placée en toute dernière position affiche un simple compteur par arme du râtelier, sans graphe ; toutes les armes du râtelier sont affichées, y compris avec un compteur à zéro ; pour chaque arme, le total est la somme des `shotCount` de toutes les séries des sessions détaillées réalisées dont le champ `weapon` correspond exactement au nom de l'arme après normalisation (espaces en début/fin ignorés, casse ignorée) ; les sessions prévues sont exclues ; tous les tirs des séries correspondantes sont comptés, essais compris, indépendamment des points ou scores ; le compteur est recalculé après ajout, modification ou suppression d'une session et après ajout, renommage ou suppression d'une arme ; supprimer une arme retire son compteur sans altérer les sessions. Ce total inclut également le `shotCount` porté directement par chaque session libre de la même arme.
 - **Priorité** : Should · **Estimation** : S · **Statut** : FAIT — livré en v0.6.0 ; `DashboardService.generateWeaponShotCounts`, `WeaponShotCountsCard` (dernière section de `Statistiques > Avancé`).
 - **Notes** : calcul local à partir des sessions, sans graphe ni relation persistée session → arme. Exemple : deux sessions réalisées de 10 séries de 5 coups associées à `CZ 75 SP-01 Shadow` affichent `100 tirs`.
 
@@ -288,7 +291,7 @@
 
 ## Thème 4 — Coach IA
 
-*Analyse IA des séances via le serveur NexTarget. **Décision : coach connecté uniquement** (cf. NT-061, [incoherences.md](incoherences.md) I2).*
+*Analyse IA des séances via le serveur NexTarget. **Décision : coach connecté uniquement** (voir NT-061).*
 
 | ID | Titre | Portée | Prio | Est | Statut |
 |---|---|---|---|---|---|
@@ -536,7 +539,7 @@
   - la clé Mistral historique est révoquée/rotée ;
   - le carnet de tir reste utilisable hors-ligne (le coach seul devient online-only).
 - **Priorité** : Must · **Statut** : FAIT (code, 2026-07-07, sprint S1 ; clôture auditée le 2026-09-02) — `CoachAnalysisService` direct supprimé, plus aucune clé/config/prompt Mistral côté client (`AppConfig`, `config.yaml`, `build_apk.sh` purgés), analyse protégée par l'auth avec message clair et CTA login ; la clé Mistral historique a été rotée par le mainteneur.
-- **Notes** : l'audit de clôture confirme que `ServerCoachAnalysisService` est l'unique chemin d'analyse dans l'app et qu'aucun appel local, proxy de secours ou fallback Mistral client ne subsiste. Le client serveur Mistral reste légitimement côté backend. Les documents actifs décrivant encore l'ancien build avec clé/prompt local ont été corrigés ; changelogs, release notes et specs versionnées restent conservés comme historique. Voir [incoherences.md](incoherences.md) I2.
+- **Notes** : l'audit de clôture confirme que `ServerCoachAnalysisService` est l'unique chemin d'analyse dans l'app et qu'aucun appel local, proxy de secours ou fallback Mistral client ne subsiste. Le client serveur Mistral reste légitimement côté backend. Les notes de version conservent uniquement le contexte historique nécessaire.
 
 ### NT-062 — Rate limiting de l'endpoint coach
 - **Portée** : server · **Dépendances** : NT-060 · **Description** : Empêcher l'abus qui viderait le quota Mistral.
@@ -642,7 +645,7 @@
 | NT-092 | Thèmes visuels (thème clair « France ») | app | Could | S | FAIT |
 
 ### NT-090 — Thème ASCII Art
-- **Portée** : app · **Description** : Thème visuel ASCII Art (cf. `docs/specs/ascii_art_theme.md`). · **Priorité** : Won't-now · **Statut** : À FAIRE.
+- **Portée** : app · **Description** : Évaluer un thème visuel ASCII Art si une valeur produit est démontrée. · **Priorité** : Won't-now · **Statut** : À FAIRE.
 
 ### NT-091 — Revoir les règles de sécurité FFTir
 - **Portée** : app · **Description** : Intégrer/mettre à jour les règles de sécurité FFTir. · **Priorité** : Won't-now · **Statut** : À FAIRE.
@@ -654,7 +657,7 @@
 
 ## Thème 10 — Disciplines officielles & TAR
 
-*Aligner l'app sur les disciplines officielles FFTir — en priorité le TAR armes de poing 25 m (épreuves 830/831/832). Référentiel détaillé : [`docs/specs/referentiel_tar_25m.md`](../specs/referentiel_tar_25m.md) (règlement CNS TAR 2025-2026).*
+*Aligner l'app sur les disciplines officielles FFTir — en priorité le TAR armes de poing 25 m (épreuves 830/831/832). Référentiel détaillé : [`details/referentiel-tar-25m.md`](details/referentiel-tar-25m.md) (règlement CNS TAR 2025-2026).*
 
 | ID | Titre | Portée | VM | Prio | Est | Statut |
 |---|---|---|---|---|---|---|
@@ -667,7 +670,7 @@
 ### NT-100 — Référentiel des disciplines officielles (TAR 25 m)
 - **Thème** : Disciplines & TAR · **Portée** : app · **Dépendances** : —
 - **Description** : Référentiel embarqué des épreuves officielles (830/831/832 en premier) — séquences essai/précision/vitesse, temps, cibles, scoring — pour que sessions, stats et coach parlent le langage de la discipline du tireur.
-- **Critères d'acceptation** : référentiel versionné par saison (asset YAML, seed [`referentiel_tar_25m.md`](../specs/referentiel_tar_25m.md)) ; épreuves 830, 831, 832 décrites (séquences, temps, cibles, scoring — gong = 5 pts en 2025-2026) ; dimensions des cibles C50, cible vitesse 25 m et gongs exposées aux autres features (NT-111 notamment).
+- **Critères d'acceptation** : référentiel versionné par saison (asset YAML, seed [`details/referentiel-tar-25m.md`](details/referentiel-tar-25m.md)) ; épreuves 830, 831, 832 décrites (séquences, temps, cibles, scoring — gong = 5 pts en 2025-2026) ; dimensions des cibles C50, cible vitesse 25 m et gongs exposées aux autres features (NT-111 notamment).
 - **Priorité** : Must · **VM** : 5 · **Statut** : À FAIRE. · **Notes** : source règlement CNS TAR 2025-2026 (diffusion 12/01/2026) ; les règles évoluent chaque saison → champ `saison` obligatoire. Le prototype `117ca83` a été abandonné sans fusion le 2026-07-24 : voir le [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md) avant toute reprise.
 
 ### NT-101 — Sessions & séries typées discipline
@@ -786,7 +789,7 @@
 | NT-130 | Templates de session | app | 4 | Must | S | À FAIRE |
 | NT-131 | Session live au stand | app | 4 | Should | M | À FAIRE |
 | NT-132 | Spike — saisie vocale d'une série | app | 2 | Could | S | À FAIRE |
-| NT-133 | Sessions libres sans séries ni scores | app | 4 | Must | L | EN COURS |
+| NT-133 | Sessions libres sans séries ni scores | app | 4 | Must | L | FAIT |
 
 ### NT-130 — Templates de session
 - **Thème** : Saisie au stand · **Portée** : app · **Dépendances** : NT-001, NT-073
@@ -818,7 +821,7 @@
 - **Import, export et rétrocompatibilité** : le format JSON exporté contient un discriminant stable `sessionType` valant `detailed` ou `simple`. Les anciennes données Hive et les anciens exports dépourvus de discriminant sont relus comme des sessions détaillées sans perte de données. L'import et l'export acceptent les sauvegardes contenant uniquement des sessions historiques ou un mélange des deux types ; un cycle export puis import conserve le sous-type et tous les champs de chaque session. L'évolution du format reste additive ; un discriminant inconnu produit une erreur explicite sans import partiel ni altération des données locales.
 - **Coach IA** : une session libre ne peut pas être envoyée à l'analyse Coach et son écran de détail ne propose pas cette action ; l'absence de séries, score et groupement ne doit produire ni payload artificiel ni donnée de substitution.
 - **Critères de qualité** : migration de schéma et test de migration ; tests de sérialisation des deux sous-types et des données historiques sans discriminant ; tests des champs obligatoires, des catégories et des validations `shotCount`/distance entière ; tests de la photo et de l'absence d'analyse Coach ; tests des agrégats, objectifs d'assiduité, compteurs NT-017 et exclusion des métriques de séries ; widget tests des deux actions flottantes, de l'onglet Prévues, des cartes dans les deux thèmes et de l'aide contextuelle ; cahier de recette mis à jour.
-- **Priorité** : Must · **VM** : 4 · **Estimation** : L · **Statut** : EN COURS.
+- **Priorité** : Must · **VM** : 4 · **Estimation** : L · **Statut** : FAIT — fusionné sur `dev` par la PR #27 le 2026-09-03.
 - **Notes** : `SimpleShootingSession` est le nom technique retenu ; « Session libre » est exclusivement le label utilisateur. Le champ de commentaires réutilise la notion et le libellé de **synthèse** des sessions détaillées. Préserver le parcours actuel du `+` est non négociable, conformément au [REX TAR & saisie rapide](rex-tar-saisie-rapide-2026-07-24.md).
 
 ---
@@ -1021,7 +1024,7 @@ de planification.*
 | Priorité produit | Progression sur les **disciplines officielles**, en premier lieu le **TAR armes de poing 25 m** (épreuves 830/831/832). |
 | NT-005 (photo) | Remonté **Could → Must** — socle du thème 11 ; livré le 2026-07-17 (PR #12). |
 | Analyse photo | Approche **qualitative multimodale** (NT-111) retenue ; NT-006 (CV métrique) maintenu en Icebox, à réévaluer après retour d'usage. |
-| Référentiel TAR | Versionné par saison ; seed extrait du règlement CNS TAR 2025-2026 → [`docs/specs/referentiel_tar_25m.md`](../specs/referentiel_tar_25m.md). |
+| Référentiel TAR | Versionné par saison ; seed extrait du règlement CNS TAR 2025-2026 → [`details/referentiel-tar-25m.md`](details/referentiel-tar-25m.md). |
 
 ### Décisions prises (2026-09-02)
 

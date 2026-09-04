@@ -26,7 +26,7 @@
 | NT-011 | Statistiques explicatives / évolution | app | Should | M | FAIT | `stats_service`, `evolution_chart` |
 | NT-012 | Objectifs mesurables | app | Must | M | FAIT | `Goal`, `goal_service` |
 | NT-013 | Hauts faits (records) | app | Should | S | FAIT | `GoalMetric` (best*) |
-| NT-014 | Comparatif 30j vs 90j + sparkline | app | Could | M | EN COURS | implémentation complète sur branche feature : score et groupement indépendants, carte Progression alignée, deltas absolu/relatif, un point par session, sparkline à partir de 5 sessions exploitables, arrondis explicites, aide contextuelle, UI mobile et deux thèmes ; revue, recette, Quality Gate et fusion `dev` requises avant `FAIT` |
+| NT-014 | Comparatif 30j vs 90j + sparkline | app | Could | M | FAIT | fusionné sur `dev` par la PR #28 le 2026-09-03 ; score et groupement indépendants, carte Progression alignée, deltas absolu/relatif et sparklines par session |
 | NT-015 | Recommandations Objectifs ⇄ Exercices | app | Could | M | À FAIRE | dépend NT-012, NT-021 |
 | NT-016 | Objectifs enrichis : statuts étendus, journal, vue détail | app | Could | M | À FAIRE | issue #5 |
 | NT-017 | Compteur de tirs par arme du râtelier | app | Should | S | FAIT | livré en v0.6.0 ; compteurs simples en bas de Statistiques > Avancé ; étendu par NT-133 aux tirs des sessions libres réalisées |
@@ -60,7 +60,7 @@
 | NT-074 | Saisie séries plein écran + navigation | app | Could | M | À FAIRE | — |
 | NT-075 | Onboarding + aide contextuelle | app | Could | M | FAIT | `OnboardingGate` (3 écrans) + `HelpButton` ; ajustements recette 2026-07-09 |
 | NT-076 | Cache stats + compactage Hive | app | Could | M | À FAIRE | — |
-| NT-090 | Thème ASCII Art | app | Won't-now | M | À FAIRE | `docs/specs/ascii_art_theme.md` |
+| NT-090 | Thème ASCII Art | app | Won't-now | M | À FAIRE | idée conservée uniquement dans le backlog |
 | NT-091 | Règles de sécurité FFTir | app | Won't-now | S | À FAIRE | — |
 | NT-092 | Thèmes visuels (thème clair « France ») | app | Could | S | FAIT | — |
 | NT-100 | Référentiel des disciplines officielles (TAR 25 m) | app | Must | M | À FAIRE | seed existant ; prototype non fusionné abandonné, design préalable requis |
@@ -79,12 +79,12 @@
 | NT-130 | Templates de session | app | Must | S | À FAIRE | prototype abandonné : ne pas ajouter d'étape au parcours classique |
 | NT-131 | Session live au stand | app | Should | M | À FAIRE | saisie au fil du tir + chrono repos |
 | NT-132 | Spike — saisie vocale d'une série | app | Could | S | À FAIRE | go/no-go en environnement stand |
-| NT-133 | Sessions libres sans séries ni scores | app | Must | L | EN COURS | implémenté sur branche feature ; fusion, Quality Gate et recette manuelle encore requis |
+| NT-133 | Sessions libres sans séries ni scores | app | Must | L | FAIT | fusionné sur `dev` par la PR #27 le 2026-09-03 |
 
 ## Prochaines actions app (hors FAIT), par priorité
 
-- **En cours** — NT-014, NT-133.
+- **En cours** — aucun item.
 - **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session).
 - **Should** — NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-131. NT-033 : voir NT-120/NT-121.
-- **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132. NT-023 : voir NT-122/NT-123. NT-014 conserve cette priorité mais est déjà en cours.
+- **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132. NT-023 : voir NT-122/NT-123.
 - **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.

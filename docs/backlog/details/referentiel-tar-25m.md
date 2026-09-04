@@ -4,7 +4,7 @@
 > validé Comité Directeur FFTir du 06/12/2025, diffusion du 12/01/2026) :
 > https://www.fftir.org/wp-content/uploads/2026/01/CNS-TAR-Reglement-TAR-2025-2026-Diffusion-20260112.pdf
 >
-> ⚠️ Le règlement évolue **chaque saison** (ex. 2025-2026 : gong ramené à
+> Attention : le règlement évolue **chaque saison** (ex. 2025-2026 : gong ramené à
 > 5 pts pour les armes de poing). Le référentiel embarqué doit être versionné
 > par saison (`saison` obligatoire). Ce fichier est le seed de l'asset
 > `disciplines_tar.yaml` (NT-100).

@@ -112,7 +112,7 @@ features:
     steps:
       - Créer/ajouter une session avec au moins 1 série
       - Ouvrir l’accueil/Tableau de bord (onglet Synthèse)
-      - Vérifier l’affichage des indicateurs (réalisés total, 7/30/60/90j) et cartes récap
+      - Vérifier la moyenne de points 30 j, le groupement moyen 30 j, la meilleure série et le nombre de sessions du mois
     expected:
       - Les valeurs sont cohérentes avec les sessions existantes
 
@@ -149,7 +149,7 @@ features:
     name: Exercices – session prévue depuis un exercice d’entraînement
     objectif: Vérifier que le nombre de séries prévues correspond au nombre de consignes.
     steps:
-      - Créer un exercice de type "entraînement" avec 3 consignes
+      - Créer un exercice de type "Stand" avec 3 consignes
       - Transformer cet exercice en session prévue
     expected:
       - La session prévue est créée avec un nombre de séries égal au nombre de consignes (3)
@@ -250,13 +250,13 @@ features:
       - Un fichier est généré dans le dossier choisi
 
   - id: SEC-01
-    name: Règles de sécurité (dashboard)
-    objectif: Afficher le bloc de règles FFTir et vérifier sa lisibilité.
+    name: Rappels essentiels de sécurité
+    objectif: Afficher les rappels de sécurité et vérifier leur lisibilité.
     steps:
-      - Ouvrir l’accueil/Tableau de bord
-      - Vérifier la section “Règles de sécurité”
+      - Ouvrir l’accueil/Tableau de bord puis le panneau “Rappels Essentiels”
+      - Consulter l'onglet Sécurité
     expected:
-      - Le contenu est à jour et lisible (révision FFTir 2024)
+      - Les rappels sont lisibles et le lien d'information externe est accessible
 
   - id: AUTH-01
     name: Connexion Google – persistance longue durée (refresh token, NT-048)

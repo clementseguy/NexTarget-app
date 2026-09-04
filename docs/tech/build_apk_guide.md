@@ -95,4 +95,4 @@ variables d'environnement du déploiement.
 
 ---
 
-**Dernière mise à jour** : 2 septembre 2026 — clarification NT-061.
+**Dernière vérification** : 3 septembre 2026.

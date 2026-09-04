@@ -1,10 +1,10 @@
 # REX — prototype TAR et saisie rapide abandonné
 
-**Date de décision** : 2026-07-24  
-**Items concernés** : NT-100, NT-101, NT-073, NT-130  
+**Date de décision** : 2026-07-24
+**Items concernés** : NT-100, NT-101, NT-073, NT-130
 **Branche abandonnée** :
-`feat/NT-100-NT-101-NT-073-NT-130-socle-tar-saisie-rapide`  
-**Dernier commit du prototype** : `117ca83`  
+`feat/NT-100-NT-101-NT-073-NT-130-socle-tar-saisie-rapide`
+**Dernier commit du prototype** : `117ca83`
 **Issue de la revue** : PR fermée sans fusion ; aucun code de cette branche ne
 fait partie de `dev`.
 

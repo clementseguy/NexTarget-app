@@ -15,7 +15,7 @@
 
 > Important : **le serveur n'est plus « OAuth-only ».** Il expose aussi le **proxy Coach IA**
 > (`/coach/analyze-session`). Les anciens statuts « M1/M2 supprimés/décalés » sont
-> **périmés** — voir [incoherences.md](incoherences.md) I1.
+> **périmés** et supprimés ; le proxy Coach est bien une responsabilité active du serveur.
 
 ## Items serveur
 
@@ -70,5 +70,5 @@ besoin d'évoluer pour l'adoption app (vérifié le 2026-09-02).
 
 L'`AGENTS.md` du serveur décrit désormais correctement le proxy Coach, le rate
 limiting, le profil enrichi et PostgreSQL. Les anciennes specs conservées sous
-`docs/specs/_archive/` restent historiques et ne constituent pas la source de
-vérité. Voir [incoherences.md](incoherences.md) I1, I3 et I6.
+Les anciens backlogs serveur ont été supprimés : ce document est l'unique vue
+serveur locale et reste une projection du backlog unifié.
