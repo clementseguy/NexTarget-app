@@ -4,12 +4,12 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
-import 'dart:convert' as _i5;
+import 'dart:convert' as _i6;
 import 'dart:typed_data' as _i7;
 
 import 'package:http/http.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i6;
+import 'package:mockito/src/dummies.dart' as _i5;
 import 'package:tir_sportif/services/auth_service.dart' as _i3;
 
 // ignore_for_file: type=lint
@@ -78,6 +78,36 @@ class MockAuthService extends _i1.Mock implements _i3.AuthService {
       ) as _i4.Future<Map<String, dynamic>>);
 
   @override
+  _i4.Future<String> getValidAccessToken() => (super.noSuchMethod(
+        Invocation.method(
+          #getValidAccessToken,
+          [],
+        ),
+        returnValue: _i4.Future<String>.value(_i5.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getValidAccessToken,
+            [],
+          ),
+        )),
+      ) as _i4.Future<String>);
+
+  @override
+  _i4.Future<String> forceRefreshAfterUnauthorized() => (super.noSuchMethod(
+        Invocation.method(
+          #forceRefreshAfterUnauthorized,
+          [],
+        ),
+        returnValue: _i4.Future<String>.value(_i5.dummyValue<String>(
+          this,
+          Invocation.method(
+            #forceRefreshAfterUnauthorized,
+            [],
+          ),
+        )),
+      ) as _i4.Future<String>);
+
+  @override
   _i4.Future<String?> getToken() => (super.noSuchMethod(
         Invocation.method(
           #getToken,
@@ -94,6 +124,15 @@ class MockAuthService extends _i1.Mock implements _i3.AuthService {
         ),
         returnValue: _i4.Future<String?>.value(),
       ) as _i4.Future<String?>);
+
+  @override
+  _i4.Future<bool> hasToken() => (super.noSuchMethod(
+        Invocation.method(
+          #hasToken,
+          [],
+        ),
+        returnValue: _i4.Future<bool>.value(false),
+      ) as _i4.Future<bool>);
 
   @override
   _i4.Future<bool> isAuthenticated() => (super.noSuchMethod(
@@ -135,15 +174,6 @@ class MockAuthService extends _i1.Mock implements _i3.AuthService {
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
-
-  @override
-  _i4.Future<bool> hasToken() => (super.noSuchMethod(
-        Invocation.method(
-          #hasToken,
-          [],
-        ),
-        returnValue: _i4.Future<bool>.value(false),
-      ) as _i4.Future<bool>);
 }
 
 /// A class which mocks [Client].
@@ -201,7 +231,7 @@ class MockClient extends _i1.Mock implements _i2.Client {
     Uri? url, {
     Map<String, String>? headers,
     Object? body,
-    _i5.Encoding? encoding,
+    _i6.Encoding? encoding,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -232,7 +262,7 @@ class MockClient extends _i1.Mock implements _i2.Client {
     Uri? url, {
     Map<String, String>? headers,
     Object? body,
-    _i5.Encoding? encoding,
+    _i6.Encoding? encoding,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -263,7 +293,7 @@ class MockClient extends _i1.Mock implements _i2.Client {
     Uri? url, {
     Map<String, String>? headers,
     Object? body,
-    _i5.Encoding? encoding,
+    _i6.Encoding? encoding,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -294,7 +324,7 @@ class MockClient extends _i1.Mock implements _i2.Client {
     Uri? url, {
     Map<String, String>? headers,
     Object? body,
-    _i5.Encoding? encoding,
+    _i6.Encoding? encoding,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -331,7 +361,7 @@ class MockClient extends _i1.Mock implements _i2.Client {
           [url],
           {#headers: headers},
         ),
-        returnValue: _i4.Future<String>.value(_i6.dummyValue<String>(
+        returnValue: _i4.Future<String>.value(_i5.dummyValue<String>(
           this,
           Invocation.method(
             #read,

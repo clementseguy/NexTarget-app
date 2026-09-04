@@ -1,16 +1,20 @@
 # REX — prototype TAR et saisie rapide abandonné
 
-**Date de décision** : 2026-07-24  
-**Items concernés** : NT-100, NT-101, NT-073, NT-130  
+**Date de décision** : 2026-07-24
+**Items concernés** : NT-100, NT-101, NT-073, NT-130
 **Branche abandonnée** :
-`feat/NT-100-NT-101-NT-073-NT-130-socle-tar-saisie-rapide`  
-**Dernier commit du prototype** : `117ca83`  
+`feat/NT-100-NT-101-NT-073-NT-130-socle-tar-saisie-rapide`
+**Dernier commit du prototype** : `117ca83`
 **Issue de la revue** : PR fermée sans fusion ; aucun code de cette branche ne
 fait partie de `dev`.
 
 ## Décision
 
 Le prototype est abandonné. Les quatre items restent **À FAIRE**.
+
+> **Mise à jour du 2026-09-02** : cette phrase décrit l'état au moment de la
+> décision. NT-073 a depuis été repris indépendamment et est **FAIT** ;
+> NT-100, NT-101 et NT-130 restent **À FAIRE**.
 
 La branche a démontré la faisabilité technique de plusieurs éléments
 (référentiel YAML, persistance de la discipline, génération de séries TAR,
@@ -173,7 +177,7 @@ existante.
 ### NT-073
 
 - La normalisation réduit les doublons sans modifier une saisie inconnue.
-- Le dernier calibre est repris de manière prévisible et reste modifiable.
+- Le calibre par défaut explicite est repris de manière prévisible et reste modifiable ; aucun « dernier calibre utilisé » implicite n'est mémorisé.
 - Cette reprise n'ajoute aucune étape au parcours.
 
 ### NT-130
@@ -194,4 +198,3 @@ existante.
 5. Mettre à jour le cahier de recette avant la PR.
 6. Ne réutiliser du prototype abandonné que des idées ou données revues
    explicitement ; aucun cherry-pick global.
-

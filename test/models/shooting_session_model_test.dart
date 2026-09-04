@@ -5,7 +5,7 @@ import 'package:tir_sportif/models/series.dart';
 void main() {
   group('ShootingSession model mapping & flags', () {
     test('toMap/fromMap roundtrip with series and fields', () {
-      final ss = ShootingSession(
+      final ss = DetailedShootingSession(
         id: 12,
         date: DateTime(2025, 10, 7, 12, 0, 0),
         weapon: 'P',
@@ -49,7 +49,7 @@ void main() {
     });
 
     test('hasPhoto is false for a blank photoPath', () {
-      final ss = ShootingSession(
+      final ss = DetailedShootingSession(
         weapon: 'P', caliber: '22LR', series: const [], photoPath: '   ',
       );
       expect(ss.hasPhoto, isFalse);

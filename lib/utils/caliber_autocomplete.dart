@@ -1,40 +1,27 @@
 import '../config/app_config.dart';
+export 'caliber_normalization.dart';
+import 'caliber_normalization.dart';
 
-String _norm(String s) {
-  var t = s.trim().toLowerCase();
-  t = t.replaceAll('×', 'x');
-  t = t.replaceAll('mm', '');
-  t = t.replaceAll(RegExp(r'\s+'), '');
-  return t;
+/// Retourne les suggestions sans jamais remplacer automatiquement la saisie.
+List<String> suggestCalibers(String input, {List<String>? calibers}) {
+  final catalog = calibers ?? AppConfig.I.calibers;
+  final query = normalizeCaliberSearch(input);
+  if (query.isEmpty) return catalog;
+  return catalog
+      .where((caliber) => normalizeCaliberSearch(caliber).contains(query))
+      .toList(growable: false);
 }
 
-class CaliberAutocompleteResult {
-  final String? autoReplacement;
-  final List<String> suggestions;
-  CaliberAutocompleteResult({this.autoReplacement, required this.suggestions});
+bool isKnownCaliber(String value, {List<String>? calibers}) {
+  final key = normalizeCaliberSearch(value);
+  if (key.isEmpty) return false;
+  return (calibers ?? AppConfig.I.calibers)
+      .any((caliber) => normalizeCaliberSearch(caliber) == key);
 }
 
-CaliberAutocompleteResult suggestFor(String input) {
-  final list = AppConfig.I.calibers;
-  final normIn = _norm(input);
-  if (normIn.isEmpty) return CaliberAutocompleteResult(autoReplacement: null, suggestions: const []);
-  final matches = <String>[];
-  for (final c in list) {
-    final n = _norm(c);
-    if (n.contains(normIn)) matches.add(c);
-    if (n == normIn) {
-      return CaliberAutocompleteResult(autoReplacement: c, suggestions: const []);
-    }
-  }
-  if (matches.length == 1) {
-    return CaliberAutocompleteResult(autoReplacement: matches.first, suggestions: const []);
-  }
-  return CaliberAutocompleteResult(autoReplacement: null, suggestions: matches);
-}
-
+/// Résout uniquement les calibres reconnus vers leur libellé statistique.
+/// Une valeur inconnue retourne `null` et reste intacte dans la session.
 String pickInitialCaliber({String? existing, String? defaultCaliber}) {
-  final e = (existing ?? '').trim();
-  if (e.isNotEmpty) return e;
-  final d = (defaultCaliber ?? '').trim();
-  return d;
+  if (existing != null) return existing;
+  return defaultCaliber ?? '';
 }

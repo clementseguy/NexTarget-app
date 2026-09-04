@@ -51,7 +51,8 @@ Map<String, dynamic> _sessionData({String? photoPath}) => {
       'session': {
         'weapon': 'Pistolet 22',
         'caliber': '.22 LR',
-        'status': SessionConstants.statusPrevue, // évite les contraintes date/séries pour simplifier le montage
+        'status': SessionConstants
+            .statusPrevue, // évite les contraintes date/séries pour simplifier le montage
         'category': SessionConstants.categoryEntrainement,
         'synthese': '',
         'exercises': <String>[],
@@ -64,8 +65,10 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() async {
-    await AppConfig.load(); // échoue silencieusement (assets indisponibles en test) et installe la config par défaut
-    final tempDir = await Directory.systemTemp.createTemp('nt_session_form_test_');
+    await AppConfig
+        .load(); // échoue silencieusement (assets indisponibles en test) et installe la config par défaut
+    final tempDir =
+        await Directory.systemTemp.createTemp('nt_session_form_test_');
     Hive.init(tempDir.path);
     if (!Hive.isBoxOpen('app_preferences')) {
       await Hive.openBox('app_preferences');
@@ -88,6 +91,7 @@ void main() {
               body: SessionForm(
                 key: formKey,
                 initialSessionData: _sessionData(),
+                isEdit: true,
                 photoService: photoService,
                 onSave: (s) => saved = s,
               ),
@@ -103,7 +107,8 @@ void main() {
         await tester.pump(); // pickAndStore résolu, _photoPath mis à jour
 
         expect(photoService.pickCalls, [ImageSource.gallery]);
-        expect(find.text('Reprendre'), findsOneWidget); // preuve que _photoPath n'est plus null
+        expect(find.text('Reprendre'),
+            findsOneWidget); // preuve que _photoPath n'est plus null
         expect(find.byIcon(Icons.close), findsOneWidget);
 
         final ok = formKey.currentState!.validateAndBuild();
@@ -130,6 +135,7 @@ void main() {
               body: SessionForm(
                 key: formKey,
                 initialSessionData: _sessionData(),
+                isEdit: true,
                 photoService: photoService,
                 onSave: (s) => saved = s,
               ),
@@ -150,7 +156,8 @@ void main() {
         expect(find.text('Aucune photo pour le moment'), findsOneWidget);
         expect(find.byIcon(Icons.close), findsNothing);
         // La photo était temporaire (jamais persistée) : elle est bien nettoyée.
-        expect(photoService.deletedPaths, contains('/nonexistent/photos/picked.jpg'));
+        expect(photoService.deletedPaths,
+            contains('/nonexistent/photos/picked.jpg'));
 
         final ok = formKey.currentState!.validateAndBuild();
         expect(ok, isTrue);
@@ -202,7 +209,8 @@ void main() {
         await tester.tap(find.byIcon(Icons.close));
         await tester.pump();
 
-        expect(photoService.deletedPaths, contains('/nonexistent/photos/replacement.jpg'));
+        expect(photoService.deletedPaths,
+            contains('/nonexistent/photos/replacement.jpg'));
         expect(photoService.deletedPaths, isNot(contains(initialPath)));
 
         final ok = formKey.currentState!.validateAndBuild();

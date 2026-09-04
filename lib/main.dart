@@ -11,6 +11,9 @@ import 'migrations/migration_2_add_exercises_field.dart';
 import 'migrations/migration_3_create_exercises_box.dart';
 import 'migrations/migration_4_add_photo_path_field.dart';
 import 'migrations/migration_5_create_weapons_box.dart';
+import 'migrations/migration_6_add_session_type.dart';
+import 'migrations/migration_7_add_guided_draft_fields.dart';
+import 'migrations/migration_8_add_score_entered_field.dart';
 import 'constants/session_constants.dart';
 import 'providers/navigation_provider.dart';
 import 'providers/settings_provider.dart';
@@ -31,7 +34,7 @@ Future<void> main() async {
   await initializeDateFormatting('fr_FR');
   await AppConfig.load();
   await Hive.initFlutter();
-  
+
   // Run schema migrations (Hive structural adjustments) before opening boxes / using data.
   final schemaStore = SchemaVersionStore();
   final runner = MigrationRunner([
@@ -39,15 +42,28 @@ Future<void> main() async {
     Migration3CreateExercisesBox(), // v3
     Migration4AddPhotoPathField(), // v4
     Migration5CreateWeaponsBox(), // v5
+    Migration6AddSessionType(), // v6
+    Migration7AddGuidedDraftFields(), // v7
+    Migration8AddScoreEnteredField(), // v8
   ], schemaStore);
   await runner.run();
-  
+
   // Register adapters for goals
-  if (!Hive.isAdapterRegistered(40)) Hive.registerAdapter(GoalMetricAdapter());
-  if (!Hive.isAdapterRegistered(41)) Hive.registerAdapter(GoalComparatorAdapter());
-  if (!Hive.isAdapterRegistered(42)) Hive.registerAdapter(GoalStatusAdapter());
-  if (!Hive.isAdapterRegistered(43)) Hive.registerAdapter(GoalPeriodAdapter());
-  if (!Hive.isAdapterRegistered(44)) Hive.registerAdapter(GoalAdapter());
+  if (!Hive.isAdapterRegistered(40)) {
+    Hive.registerAdapter(GoalMetricAdapter());
+  }
+  if (!Hive.isAdapterRegistered(41)) {
+    Hive.registerAdapter(GoalComparatorAdapter());
+  }
+  if (!Hive.isAdapterRegistered(42)) {
+    Hive.registerAdapter(GoalStatusAdapter());
+  }
+  if (!Hive.isAdapterRegistered(43)) {
+    Hive.registerAdapter(GoalPeriodAdapter());
+  }
+  if (!Hive.isAdapterRegistered(44)) {
+    Hive.registerAdapter(GoalAdapter());
+  }
 
   await Hive.openBox(SessionConstants.hiveBoxSessions);
   if (!Hive.isBoxOpen('app_preferences')) {
@@ -99,15 +115,15 @@ void _initDeepLinks() {
 /// - https://nextarget-server.onrender.com/?token=XYZ (URL web)
 void _handleDeepLink(Uri uri) {
   bool isOAuthCallback = false;
-  
+
   // Vérifier si c'est un callback OAuth (scheme custom)
   if (uri.scheme == AppConfig.I.authCallbackScheme && uri.host == 'callback') {
     isOAuthCallback = true;
   }
   // Vérifier si c'est un callback OAuth (URL web du backend avec token)
-  else if (uri.scheme == 'https' && 
-           uri.host == 'nextarget-server.onrender.com' && 
-           uri.queryParameters.containsKey('token')) {
+  else if (uri.scheme == 'https' &&
+      uri.host == 'nextarget-server.onrender.com' &&
+      uri.queryParameters.containsKey('token')) {
     isOAuthCallback = true;
   }
 
@@ -116,7 +132,7 @@ void _handleDeepLink(Uri uri) {
     final context = navigatorKey.currentContext;
     if (context != null) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      
+
       // Ne traiter le callback que si on est en train de se connecter
       // (évite de rejouer un ancien deep link au démarrage)
       if (authProvider.isLoading || !authProvider.isAuthenticated) {
@@ -124,14 +140,17 @@ void _handleDeepLink(Uri uri) {
         authProvider.handleAuthCallback(uri).then((_) {
           // Navigation forcée vers l'écran d'accueil après authentification
           if (authProvider.isAuthenticated) {
-            navigatorKey.currentState?.pushNamedAndRemoveUntil('/', (route) => false);
+            navigatorKey.currentState
+                ?.pushNamedAndRemoveUntil('/', (route) => false);
           }
         }).catchError((e) {
-          AppLogger.I.error('AUTH: erreur lors du traitement du callback OAuth', e);
+          AppLogger.I
+              .error('AUTH: erreur lors du traitement du callback OAuth', e);
         });
       }
     } else {
-      AppLogger.I.error('AUTH: contexte de navigation non disponible pour OAuth');
+      AppLogger.I
+          .error('AUTH: contexte de navigation non disponible pour OAuth');
     }
   }
 }

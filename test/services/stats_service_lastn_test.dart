@@ -8,7 +8,7 @@ void main() {
   test('lastNSortedSeriesAsc returns newest on the right with ASC order', () {
     final now = DateTime.now();
     // Build 3 sessions with dates increasing and multiple series each
-    final s1 = ShootingSession(
+    final s1 = DetailedShootingSession(
       date: now.subtract(const Duration(days: 3)),
       weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
       series: [
@@ -16,14 +16,14 @@ void main() {
         Series(distance: 10, points: 11, groupSize: 29),
       ],
     );
-    final s2 = ShootingSession(
+    final s2 = DetailedShootingSession(
       date: now.subtract(const Duration(days: 2)),
       weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
       series: [
         Series(distance: 10, points: 20, groupSize: 25),
       ],
     );
-    final s3 = ShootingSession(
+    final s3 = DetailedShootingSession(
       date: now.subtract(const Duration(days: 1)),
       weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
       series: [

@@ -5,7 +5,7 @@ import 'async_test_helpers.dart';
 import 'fake_session_repository.dart';
 
 ShootingSession _session({int? id, required String weapon, List<Series> series = const []}) =>
-    ShootingSession(
+    DetailedShootingSession(
       id: id,
       weapon: weapon,
       caliber: '9mm',

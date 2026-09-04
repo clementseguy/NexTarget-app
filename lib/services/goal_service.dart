@@ -4,6 +4,7 @@ import '../repositories/session_repository.dart';
 import '../repositories/hive_session_repository.dart';
 import '../repositories/goal_repository.dart';
 import '../interfaces/goal_service_interface.dart';
+import '../utils/session_filters.dart';
 
 /// Lot B: objet valeur regroupant les stats macro pour l'écran Objectifs.
 class MacroAchievementStats {
@@ -147,8 +148,9 @@ class GoalService implements IGoalService {
   // --- End Lot A additions ---
 
   Goal _computeProgress(Goal goal, List<ShootingSession> sessions) {
+    final realizedSessions = SessionFilters.realizedWithDate(sessions);
     // Filtrer selon la période si définie
-    List<ShootingSession> filtered = sessions;
+    List<ShootingSession> filtered = realizedSessions;
     // Conserver copie brute pour calcul tendance (période précédente)
     List<ShootingSession> previousSlice = const [];
     if (goal.period != GoalPeriod.none) {
@@ -165,7 +167,7 @@ class GoalService implements IGoalService {
           threshold = DateTime.fromMillisecondsSinceEpoch(0);
           break;
       }
-      filtered = sessions.where((s) {
+      filtered = realizedSessions.where((s) {
         final d = s.date ?? DateTime.fromMillisecondsSinceEpoch(0);
         return d.isAfter(threshold);
       }).toList();
@@ -176,7 +178,7 @@ class GoalService implements IGoalService {
       final prevEnd = goal.period == GoalPeriod.rollingWeek
           ? now.subtract(const Duration(days: 7))
           : now.subtract(const Duration(days: 30));
-      previousSlice = sessions.where((s) {
+      previousSlice = realizedSessions.where((s) {
         final d = s.date ?? DateTime.fromMillisecondsSinceEpoch(0);
         return d.isAfter(prevStart) && d.isBefore(prevEnd);
       }).toList();

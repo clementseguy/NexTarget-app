@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
+import '../../constants/session_constants.dart';
 import '../../models/shooting_session.dart';
 import '../../models/series.dart';
 import '../../models/exercise.dart';
@@ -14,13 +15,14 @@ import '../../services/server_coach_analysis_service.dart';
 import '../../services/session_service.dart';
 import '../../utils/markdown_sanitizer.dart';
 import '../../widgets/coach_analysis_card.dart';
+import '../../widgets/session_chip.dart';
 
 /// Carte header récapitulative de la session
 class SessionHeaderCard extends StatelessWidget {
   final ShootingSession session;
   final List<Series> series;
   final bool planned;
-  
+
   const SessionHeaderCard({
     super.key,
     required this.session,
@@ -28,16 +30,22 @@ class SessionHeaderCard extends StatelessWidget {
     this.planned = false,
   });
 
-  int get totalPoints => series.fold(0, (a,b)=> a + b.points);
+  int get totalPoints => series.fold(0, (a, b) => a + b.points);
   double get avgPoints => series.isEmpty ? 0 : totalPoints / series.length;
   double get avgGroup => () {
-    final vals = series.where((s)=> s.groupSize > 0).map((e)=> e.groupSize).toList();
-    if (vals.isEmpty) return 0.0;
-    return vals.reduce((a,b)=> a+b) / vals.length;
-  }();
+        final vals = series
+            .where((s) => s.groupSize > 0)
+            .map((e) => e.groupSize)
+            .toList();
+        if (vals.isEmpty) return 0.0;
+        return vals.reduce((a, b) => a + b) / vals.length;
+      }();
 
   @override
   Widget build(BuildContext context) {
+    if (session is SimpleShootingSession) {
+      return _SimpleSessionHeader(session: session as SimpleShootingSession);
+    }
     final date = session.date;
     final colorScheme = Theme.of(context).colorScheme;
     final Color accent = planned ? colorScheme.primary : colorScheme.secondary;
@@ -47,7 +55,9 @@ class SessionHeaderCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: planned ? colorScheme.primary.withValues(alpha:0.4): colorScheme.onSurface.withValues(alpha: 0.12),
+          color: planned
+              ? colorScheme.primary.withValues(alpha: 0.4)
+              : colorScheme.onSurface.withValues(alpha: 0.12),
           width: 0.8,
         ),
       ),
@@ -62,7 +72,9 @@ class SessionHeaderCard extends StatelessWidget {
                 Icon(Icons.calendar_today, size: 18, color: accent),
                 SizedBox(width: 8),
                 Text(
-                  date != null ? '${date.day}/${date.month}/${date.year}' : 'Date inconnue',
+                  date != null
+                      ? '${date.day}/${date.month}/${date.year}'
+                      : 'Date inconnue',
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 Spacer(),
@@ -90,7 +102,7 @@ class SessionHeaderCard extends StatelessWidget {
                 ),
                 if (session.category.isNotEmpty)
                   SessionChip(
-                    text: session.category,
+                    text: SessionConstants.categoryLabel(session.category),
                     icon: Icons.category,
                     color: colorScheme.secondary,
                   ),
@@ -106,11 +118,80 @@ class SessionHeaderCard extends StatelessWidget {
               children: [
                 StatBlock(label: 'Total', value: '$totalPoints pts'),
                 DividerVert(),
-                StatBlock(label: 'Moy. série', value: avgPoints.toStringAsFixed(1)),
+                StatBlock(
+                    label: 'Moy. série', value: avgPoints.toStringAsFixed(1)),
                 DividerVert(),
                 StatBlock(
                   label: 'Group. moy',
-                  value: avgGroup>0? '${avgGroup.toStringAsFixed(1)} cm':'-',
+                  value:
+                      avgGroup > 0 ? '${avgGroup.toStringAsFixed(1)} cm' : '-',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SimpleSessionHeader extends StatelessWidget {
+  final SimpleShootingSession session;
+
+  const _SimpleSessionHeader({required this.session});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final date = session.date!;
+    final distance = session.distance == session.distance.truncateToDouble()
+        ? session.distance.toInt().toString()
+        : session.distance.toString();
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colors.secondary.withValues(alpha: 0.65)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(simpleSessionIcon, color: colors.secondary),
+                const SizedBox(width: 8),
+                Text(
+                  'Session libre',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const Spacer(),
+                Text('${date.day}/${date.month}/${date.year}'),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                SessionChip(text: session.weapon, icon: Icons.security),
+                SessionChip(text: session.caliber, icon: Icons.bolt),
+                SessionChip(
+                  text: SessionConstants.categoryLabel(session.category),
+                  icon: Icons.category,
+                  color: colors.secondary,
+                ),
+                SessionChip(
+                  text: '${session.shotCount} tirs',
+                  icon: Icons.adjust,
+                  color: colors.secondary,
+                ),
+                SessionChip(
+                  text: '$distance m',
+                  icon: Icons.social_distance,
+                  color: colors.secondary,
                 ),
               ],
             ),
@@ -123,7 +204,7 @@ class SessionHeaderCard extends StatelessWidget {
 
 /// Section analyse coach avec bouton génération
 class SessionCoachAnalysisSection extends StatefulWidget {
-  final ShootingSession session;
+  final DetailedShootingSession session;
   final String? analyse;
   final VoidCallback onAnalyseUpdated;
 
@@ -135,10 +216,12 @@ class SessionCoachAnalysisSection extends StatefulWidget {
   });
 
   @override
-  State<SessionCoachAnalysisSection> createState() => _SessionCoachAnalysisSectionState();
+  State<SessionCoachAnalysisSection> createState() =>
+      _SessionCoachAnalysisSectionState();
 }
 
-class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSection> {
+class _SessionCoachAnalysisSectionState
+    extends State<SessionCoachAnalysisSection> {
   bool _isAnalysing = false;
 
   /// Coach « connecté uniquement » (NT-061, décision produit du
@@ -188,7 +271,7 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
             ],
           ),
         );
-        
+
         // Enregistrer la réponse dans la session
         final updatedSession = widget.session..analyse = coachReply;
         await SessionService().updateSession(updatedSession);
@@ -200,7 +283,8 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('Erreur'),
-            content: const Text('Une erreur est survenue lors de l\'analyse, veuillez réesayer ultérieurement.'),
+            content: const Text(
+                'Une erreur est survenue lors de l\'analyse, veuillez réesayer ultérieurement.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
@@ -240,9 +324,12 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
       color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ExpansionTile(
-        initiallyExpanded: widget.analyse != null && widget.analyse!.trim().isNotEmpty,
-        leading: Icon(Icons.analytics, color: Theme.of(context).colorScheme.secondary),
-        title: Text('Analyse Coach', style: TextStyle(fontWeight: FontWeight.w600)),
+        initiallyExpanded:
+            widget.analyse != null && widget.analyse!.trim().isNotEmpty,
+        leading: Icon(Icons.analytics,
+            color: Theme.of(context).colorScheme.secondary),
+        title: Text('Analyse Coach',
+            style: TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(
           (widget.analyse != null && widget.analyse!.trim().isNotEmpty)
               ? 'Analyse disponible'
@@ -252,7 +339,8 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
         children: [
           if (_isAnalysing) ...[
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
               child: Column(
                 children: [
                   LinearProgressIndicator(),
@@ -271,13 +359,16 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
               builder: (context, authProvider, _) {
                 if (!authProvider.isAuthenticated) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0, vertical: 8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.lock_outline, size: 18, color: Theme.of(context).colorScheme.secondary),
+                            Icon(Icons.lock_outline,
+                                size: 18,
+                                color: Theme.of(context).colorScheme.secondary),
                             const SizedBox(width: 8),
                             const Expanded(
                               child: Text(
@@ -293,7 +384,8 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
                           child: OutlinedButton.icon(
                             icon: const Icon(Icons.login),
                             label: const Text('Se connecter'),
-                            onPressed: () => Navigator.of(context).pushNamed(AppRouter.login),
+                            onPressed: () => Navigator.of(context)
+                                .pushNamed(AppRouter.login),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -302,17 +394,20 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
                   );
                 }
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.play_arrow),
                       label: Text(
-                        (widget.analyse != null && widget.analyse!.trim().isNotEmpty)
+                        (widget.analyse != null &&
+                                widget.analyse!.trim().isNotEmpty)
                             ? 'Re-générer'
                             : 'Lancer analyse',
                       ),
-                      onPressed: (widget.analyse == null || widget.analyse!.trim().isEmpty)
+                      onPressed: (widget.analyse == null ||
+                              widget.analyse!.trim().isEmpty)
                           ? _launchAnalysis
                           : null,
                     ),
@@ -325,7 +420,8 @@ class _SessionCoachAnalysisSectionState extends State<SessionCoachAnalysisSectio
             SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: CoachAnalysisCard(analyse: sanitizeCoachMarkdown(widget.analyse!)),
+              child: CoachAnalysisCard(
+                  analyse: sanitizeCoachMarkdown(widget.analyse!)),
             ),
             SizedBox(height: 12),
           ],
@@ -351,7 +447,7 @@ class SessionExercisesSection extends StatelessWidget {
     final nameMap = {for (final e in allExercises) e.id: e.name};
     final names = exerciseIds.map((id) => nameMap[id] ?? id).toList();
     if (names.isEmpty) return SizedBox.shrink();
-    
+
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -362,9 +458,11 @@ class SessionExercisesSection extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.fitness_center, size: 18, color: Theme.of(context).colorScheme.secondary),
+                Icon(Icons.fitness_center,
+                    size: 18, color: Theme.of(context).colorScheme.secondary),
                 SizedBox(width: 8),
-                Text('Exercices travaillés', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('Exercices travaillés',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             SizedBox(height: 10),
@@ -376,9 +474,16 @@ class SessionExercisesSection extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.12)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -407,7 +512,7 @@ class SessionSyntheseSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (synthese.trim().isEmpty) return SizedBox.shrink();
-    
+
     return Card(
       color: Theme.of(context).colorScheme.surface,
       elevation: 2,
@@ -419,7 +524,10 @@ class SessionSyntheseSection extends StatelessWidget {
           children: [
             Text(
               'Synthèse du tireur',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
             Text(
@@ -464,9 +572,11 @@ class SessionPhotoSection extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.photo_camera_outlined, size: 18, color: Theme.of(context).colorScheme.secondary),
+                Icon(Icons.photo_camera_outlined,
+                    size: 18, color: Theme.of(context).colorScheme.secondary),
                 const SizedBox(width: 8),
-                const Text('Photo de la cible', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Photo de la cible',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 10),
@@ -482,7 +592,10 @@ class SessionPhotoSection extends StatelessWidget {
                   errorBuilder: (context, error, stackTrace) => Container(
                     width: double.infinity,
                     height: 120,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.06),
                     alignment: Alignment.center,
                     child: const Text('Photo introuvable'),
                   ),
@@ -514,59 +627,29 @@ class SessionPhotoSection extends StatelessWidget {
   }
 }
 
-/// Chip générique pour affichage session
-class SessionChip extends StatelessWidget {
-  final String text;
-  final IconData icon;
-  final Color? color;
-  final bool overrideBase;
-  
-  const SessionChip({
-    super.key,
-    required this.text,
-    required this.icon,
-    this.color,
-    this.overrideBase = false,
-  });
-  
-  @override
-  Widget build(BuildContext context) {
-    final Color base = color ?? (overrideBase ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7));
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: base.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: base.withValues(alpha: 0.55), width: 0.6),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: base),
-          SizedBox(width: 4),
-          Text(text, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: base)),
-        ],
-      ),
-    );
-  }
-}
-
 /// Bloc statistique générique
 class StatBlock extends StatelessWidget {
   final String label;
   final String value;
-  
+
   const StatBlock({super.key, required this.label, required this.value});
-  
+
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7))),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7))),
           SizedBox(height: 4),
-          Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text(value,
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -576,9 +659,12 @@ class StatBlock extends StatelessWidget {
 /// Divider vertical
 class DividerVert extends StatelessWidget {
   const DividerVert({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
-    return Container(width: 1, height: 32, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12));
+    return Container(
+        width: 1,
+        height: 32,
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12));
   }
 }

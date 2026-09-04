@@ -8,13 +8,11 @@ import '../../models/exercise.dart';
 import '../../services/goal_service.dart';
 import '../../models/goal.dart';
 import 'package:hive/hive.dart';
-import '../../services/preferences_service.dart';
-import '../../utils/caliber_autocomplete.dart';
 import 'wizard_steps.dart';
 
 /// Wizard de conversion Session prévue -> réalisée
 class PlannedSessionWizard extends StatefulWidget {
-  final ShootingSession session; // session prévue initiale
+  final DetailedShootingSession session; // session prévue initiale
   const PlannedSessionWizard({super.key, required this.session});
 
   @override
@@ -22,7 +20,7 @@ class PlannedSessionWizard extends StatefulWidget {
 }
 
 class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
-  late ShootingSession _session; // copie mutable
+  late DetailedShootingSession _session; // copie mutable
   int _step = 0; // 0 = intro, 1..series = séries, last = synthèse
   final _formIntro = GlobalKey<FormState>();
   final _formSynthese = GlobalKey<FormState>();
@@ -33,8 +31,6 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
   bool _saving = false;
   late TextEditingController _caliberCtrl;
   final FocusNode _caliberFocus = FocusNode();
-  String _lastCalTxt = '';
-  bool _showAll = false;
   final SessionService _service = SessionService();
   final ExerciseService _exerciseService = ExerciseService();
   final GoalService _goalService = GoalService();
@@ -47,16 +43,9 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
     super.initState();
     _session = widget.session;
     _weaponCtrl = TextEditingController(text: _session.weapon);
-  _caliberDraft = pickInitialCaliber(existing: _session.caliber, defaultCaliber: PreferencesService().getDefaultCaliber());
+    // Le wizard modifie une session existante : sa valeur prévaut toujours.
+    _caliberDraft = _session.caliber;
     _caliberCtrl = TextEditingController(text: _caliberDraft ?? '');
-    _lastCalTxt = _caliberCtrl.text;
-    _caliberFocus.addListener((){
-      if (_caliberFocus.hasFocus) {
-        setState(()=> _showAll = true);
-      } else {
-        if (_showAll) setState(()=> _showAll = false);
-      }
-    });
     _categoryDraft = _session.category;
     _syntheseDraft = _session.synthese; // peut contenir "Session créée à partir de ..."
     _loadExerciseAndGoals();
@@ -116,7 +105,10 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
     if (controller.points <= 0) missing.add('Points');
     if (controller.groupSize <= 0) missing.add('Groupement');
     if (controller.shotCount <= 0) missing.add('Coups');
-    if (controller.distance <= 0) missing.add('Distance');
+    if (controller.distance <= 0 ||
+        controller.distance != controller.distance.truncateToDouble()) {
+      missing.add('Distance entière');
+    }
     if ((controller.comment == null) || controller.comment!.trim().isEmpty) missing.add('Commentaire');
     if (missing.isNotEmpty) {
       if (mounted) {
@@ -221,19 +213,7 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
       caliberFocusNode: _caliberFocus,
       categoryDraft: _categoryDraft,
       onCaliberChanged: (txt) {
-        final wasDeletion = txt.length < _lastCalTxt.length;
-        _lastCalTxt = txt;
-        if (!wasDeletion) {
-          final res = suggestFor(txt);
-          if (res.autoReplacement != null && _caliberCtrl.text != res.autoReplacement) {
-            _caliberCtrl.value = TextEditingValue(
-              text: res.autoReplacement!,
-              selection: TextSelection.collapsed(offset: res.autoReplacement!.length),
-            );
-            _lastCalTxt = res.autoReplacement!;
-          }
-        }
-        _caliberDraft = _caliberCtrl.text;
+        _caliberDraft = txt;
       },
       onCaliberSaved: (v) => _caliberDraft = v ?? '',
       onCategorySaved: (v) => _categoryDraft = v ?? SessionConstants.categoryEntrainement,

@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../models/shooting_session.dart';
+import '../constants/session_constants.dart';
 import 'auth_service.dart';
+import 'auth_session_exceptions.dart';
 import 'authenticated_http_client.dart';
 import 'coach_analysis_exception.dart';
 
@@ -41,9 +43,14 @@ class ServerCoachAnalysisService {
   /// [promptVariant] permet la future sélection de persona coach
   /// (neutre / cool), défaut = 'coach_neutre'.
   Future<String> analyzeSession(
-    ShootingSession session, {
+    DetailedShootingSession session, {
     String promptVariant = 'coach_neutre',
   }) async {
+    if (session.status != SessionConstants.statusRealisee) {
+      throw CoachAnalysisException(
+        'Seule une session réalisée peut être analysée par le Coach.',
+      );
+    }
     final body = jsonEncode({
       'session': {
         'weapon': session.weapon,
@@ -64,10 +71,16 @@ class ServerCoachAnalysisService {
             body: body,
           )
           .timeout(const Duration(seconds: 45));
+    } on SessionExpiredException {
+      throw CoachAnalysisException('Session expirée, reconnectez-vous.');
+    } on NetworkUnavailableException catch (e) {
+      throw CoachAnalysisException(
+          'Coach indisponible (réseau) : ${e.message}');
     } on TimeoutException {
       throw CoachAnalysisException('Le serveur ne répond pas (timeout).');
     } on SocketException catch (e) {
-      throw CoachAnalysisException('Connexion impossible (réseau ou DNS): ${e.message}');
+      throw CoachAnalysisException(
+          'Connexion impossible (réseau ou DNS): ${e.message}');
     } catch (e) {
       throw CoachAnalysisException('Erreur réseau inattendue: $e');
     }
@@ -79,7 +92,8 @@ class ServerCoachAnalysisService {
       throw CoachAnalysisException('Données de session invalides.');
     }
     if (response.statusCode == 429) {
-      throw CoachAnalysisException('Trop de requêtes (429), réessayez plus tard.');
+      throw CoachAnalysisException(
+          'Trop de requêtes (429), réessayez plus tard.');
     }
     if (response.statusCode >= 500) {
       throw CoachAnalysisException('Erreur serveur (${response.statusCode}).');

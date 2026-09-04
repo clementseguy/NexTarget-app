@@ -7,7 +7,7 @@ void main() {
   group('FlatDistributionBar', () {
     testWidgets('displays loading state', (WidgetTester tester) async {
       const emptyData = DistributionData.empty('Test Distribution');
-      
+
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -23,9 +23,10 @@ void main() {
       expect(find.text('Calcul des répartitions...'), findsOneWidget);
     });
 
-    testWidgets('displays empty state when no data', (WidgetTester tester) async {
+    testWidgets('displays empty state when no data',
+        (WidgetTester tester) async {
       const emptyData = DistributionData.empty('Test Distribution');
-      
+
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -41,7 +42,8 @@ void main() {
       expect(find.text('Aucune donnée disponible'), findsOneWidget);
     });
 
-    testWidgets('displays segmented bar with data', (WidgetTester tester) async {
+    testWidgets('displays segmented bar with data',
+        (WidgetTester tester) async {
       const data = DistributionData(
         data: {
           'entraînement': 60.0,
@@ -51,7 +53,7 @@ void main() {
         title: 'Répartition Catégories',
         isPercentage: false,
       );
-      
+
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -64,17 +66,18 @@ void main() {
       );
 
       expect(find.text('Répartition Catégories'), findsOneWidget);
-      expect(find.text('entraînement'), findsOneWidget);
-      expect(find.text('match'), findsOneWidget);
-      expect(find.text('test matériel'), findsOneWidget);
-      
+      expect(find.text('Entraînement'), findsOneWidget);
+      expect(find.text('Match'), findsOneWidget);
+      expect(find.text('Test matériel'), findsOneWidget);
+
       // Vérifier la présence des valeurs brutes exactes dans la légende (plus de pourcentages affichés)
       expect(find.text('60'), findsOneWidget);
       expect(find.text('30'), findsOneWidget);
       expect(find.text('10'), findsOneWidget);
     });
 
-    testWidgets('handles percentage data correctly', (WidgetTester tester) async {
+    testWidgets('handles percentage data correctly',
+        (WidgetTester tester) async {
       const data = DistributionData(
         data: {
           '10m': 50.0,
@@ -84,7 +87,7 @@ void main() {
         title: 'Répartition Distances',
         isPercentage: true,
       );
-      
+
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -97,7 +100,7 @@ void main() {
       );
 
       expect(find.text('Répartition Distances'), findsOneWidget);
-      
+
       // Avec isPercentage = true, ne devrait plus afficher les pourcentages dans la légende
       expect(find.text('10m'), findsOneWidget);
       expect(find.text('25m'), findsOneWidget);
@@ -114,7 +117,7 @@ void main() {
         title: 'Test',
         isPercentage: false,
       );
-      
+
       // Test avec largeur mobile
       await tester.pumpWidget(
         MaterialApp(
@@ -132,7 +135,7 @@ void main() {
 
       // Vérifier que le widget s'affiche sans erreur
       expect(find.text('Test'), findsOneWidget);
-      
+
       // Test avec largeur desktop
       await tester.pumpWidget(
         MaterialApp(
@@ -161,7 +164,7 @@ void main() {
         title: 'Filtered Test',
         isPercentage: false,
       );
-      
+
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

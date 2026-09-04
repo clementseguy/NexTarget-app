@@ -7,12 +7,18 @@ import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/services/auth_service.dart';
 import 'package:tir_sportif/services/server_coach_analysis_service.dart';
+import 'package:tir_sportif/constants/session_constants.dart';
 
-ShootingSession _session() => ShootingSession(
+DetailedShootingSession _session() => DetailedShootingSession(
       weapon: 'Glock 17',
       caliber: '9mm',
       series: [
-        Series(shotCount: 5, distance: 25, points: 45, groupSize: 8.5, comment: 'stable'),
+        Series(
+            shotCount: 5,
+            distance: 25,
+            points: 45,
+            groupSize: 8.5,
+            comment: 'stable'),
       ],
       synthese: 'RAS',
     );
@@ -26,21 +32,44 @@ void main() {
   test('analyzeSession success returns analysis text', () async {
     final client = MockClient((req) async {
       expect(req.url.path, '/coach/analyze-session');
-      return http.Response('{"analysis":"OK","model":"m","generated_at":"2026-07-07T10:00:00Z"}', 200);
+      return http.Response(
+          '{"analysis":"OK","model":"m","generated_at":"2026-07-07T10:00:00Z"}',
+          200);
     });
-    final svc = ServerCoachAnalysisService(baseUrl: 'http://x', authService: dummyAuthService, client: client);
+    final svc = ServerCoachAnalysisService(
+        baseUrl: 'http://x', authService: dummyAuthService, client: client);
     final out = await svc.analyzeSession(_session());
     expect(out, 'OK');
   });
 
-  test('analyzeSession envoie le prompt_variant choisi (NT-032), défaut coach_neutre', () async {
+  test('un brouillon est rejeté avant tout appel Coach', () async {
+    var called = false;
+    final client = MockClient((req) async {
+      called = true;
+      return http.Response('{"analysis":"OK"}', 200);
+    });
+    final svc = ServerCoachAnalysisService(
+        baseUrl: 'http://x', authService: dummyAuthService, client: client);
+    final draft = _session()..status = SessionConstants.statusDraft;
+
+    await expectLater(
+      svc.analyzeSession(draft),
+      throwsA(predicate((e) => e.toString().contains('session réalisée'))),
+    );
+    expect(called, isFalse);
+  });
+
+  test(
+      'analyzeSession envoie le prompt_variant choisi (NT-032), défaut coach_neutre',
+      () async {
     final capturedVariants = <String>[];
     final client = MockClient((req) async {
       final body = jsonDecode(req.body) as Map<String, dynamic>;
       capturedVariants.add(body['prompt_variant'] as String);
       return http.Response('{"analysis":"OK"}', 200);
     });
-    final svc = ServerCoachAnalysisService(baseUrl: 'http://x', authService: dummyAuthService, client: client);
+    final svc = ServerCoachAnalysisService(
+        baseUrl: 'http://x', authService: dummyAuthService, client: client);
 
     await svc.analyzeSession(_session());
     await svc.analyzeSession(_session(), promptVariant: 'coach_cool');
@@ -50,31 +79,46 @@ void main() {
 
   test('analyzeSession 401 throws session expirée', () async {
     final client = MockClient((req) async => http.Response('{}', 401));
-    final svc = ServerCoachAnalysisService(baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    expect(() => svc.analyzeSession(_session()), throwsA(predicate((e) => e.toString().contains('Session expirée'))));
+    final svc = ServerCoachAnalysisService(
+        baseUrl: 'http://x', authService: dummyAuthService, client: client);
+    expect(() => svc.analyzeSession(_session()),
+        throwsA(predicate((e) => e.toString().contains('Session expirée'))));
   });
 
   test('analyzeSession 429 throws trop de requêtes', () async {
     final client = MockClient((req) async => http.Response('{}', 429));
-    final svc = ServerCoachAnalysisService(baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    expect(() => svc.analyzeSession(_session()), throwsA(predicate((e) => e.toString().contains('Trop de requêtes'))));
+    final svc = ServerCoachAnalysisService(
+        baseUrl: 'http://x', authService: dummyAuthService, client: client);
+    expect(() => svc.analyzeSession(_session()),
+        throwsA(predicate((e) => e.toString().contains('Trop de requêtes'))));
   });
 
   test('analyzeSession 5xx throws erreur serveur', () async {
     final client = MockClient((req) async => http.Response('{}', 503));
-    final svc = ServerCoachAnalysisService(baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    expect(() => svc.analyzeSession(_session()), throwsA(predicate((e) => e.toString().contains('Erreur serveur'))));
+    final svc = ServerCoachAnalysisService(
+        baseUrl: 'http://x', authService: dummyAuthService, client: client);
+    expect(() => svc.analyzeSession(_session()),
+        throwsA(predicate((e) => e.toString().contains('Erreur serveur'))));
   });
 
   test('analyzeSession malformed content throws réponse vide', () async {
-    final client = MockClient((req) async => http.Response('{"analysis":""}', 200));
-    final svc = ServerCoachAnalysisService(baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    expect(() => svc.analyzeSession(_session()), throwsA(predicate((e) => e.toString().contains('Réponse vide'))));
+    final client =
+        MockClient((req) async => http.Response('{"analysis":""}', 200));
+    final svc = ServerCoachAnalysisService(
+        baseUrl: 'http://x', authService: dummyAuthService, client: client);
+    expect(() => svc.analyzeSession(_session()),
+        throwsA(predicate((e) => e.toString().contains('Réponse vide'))));
   });
 
-  test('analyzeSession SocketException produces user-friendly message', () async {
-    final client = MockClient((req) async => throw SocketException('Failed host lookup'));
-    final svc = ServerCoachAnalysisService(baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    expect(() => svc.analyzeSession(_session()), throwsA(predicate((e) => e.toString().contains('Connexion impossible'))));
+  test('analyzeSession SocketException produces user-friendly message',
+      () async {
+    final client =
+        MockClient((req) async => throw SocketException('Failed host lookup'));
+    final svc = ServerCoachAnalysisService(
+        baseUrl: 'http://x', authService: dummyAuthService, client: client);
+    expect(
+        () => svc.analyzeSession(_session()),
+        throwsA(
+            predicate((e) => e.toString().contains('Connexion impossible'))));
   });
 }
