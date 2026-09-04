@@ -14,7 +14,7 @@ NexTarget est le carnet de tir sportif du tireur solo : saisie des sessions
 - **Stack** : Flutter / Dart (SDK `>=3.0.0 <4.0.0`), stockage local **Hive**
 - **State management** : `provider` (`ChangeNotifier`)
 - **Backend** : NexTarget-server (OAuth + proxy Coach IA), consommé via `http`
-- **Version** : voir `pubspec.yaml` (`version:`) — actuellement 0.6.0
+- **Version** : voir `pubspec.yaml` (`version:`) — actuellement 0.7.0
 - **Package id historique** : `tir_sportif` (branding affiché = *NexTarget*, ne pas renommer le package)
 - **Langue** : identifiants en **anglais** ; commentaires, docs et **UI en français** ; certaines valeurs métier sont en français (`"réalisée"`, `"entraînement"`) — les conserver telles quelles.
 

@@ -4,6 +4,8 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Non publié]
 
+## [0.7.0] - 2026-09-04
+
 ### Added
 - NT-131 : session détaillée guidée directement au stand, sans session prévue, exercice ni template obligatoire.
     - Action principale « Au stand », reprise de l'unique brouillon depuis sa carte et menu secondaire explicite pour les créations planifiée, réalisée détaillée et libre.
@@ -38,10 +40,13 @@ Toutes les modifications notables de ce projet seront listées ici.
 - NT-133 : les nouvelles distances saisies dans une session détaillée doivent être des entiers strictement positifs ; les anciennes distances décimales restent lisibles et ne sont jamais réécrites automatiquement.
 - NT-073 : suppression de l'entrée générique `Autre` ; les calibres inconnus restent saisis et persistés librement, participent aux statistiques globales et sont exclus des seules répartitions par calibre.
 
+### Quality
+- Quality Gate locale de release : `flutter analyze --fatal-infos` sans issue et 455 tests réussis, 2 ignorés.
+
 ### Documentation
 - Cadrage détaillé du lot NT-014/NT-048/NT-073/NT-133 et alignement des vues app/serveur et du plan de sprints.
 - NT-061 : clôture documentaire après confirmation de la rotation de la clé Mistral et audit du client ; aucun appel Mistral direct, prompt, secret ou fallback local ne subsiste dans l'app. Les notes des anciennes versions restent conservées comme historique.
-- Cahier de recette : ajout de AUTH-01 à AUTH-04 (persistance longue durée, déconnexion, résilience réseau, migration installation historique) et précision de COACH-03 (message distinct session expirée / réseau indisponible).
+- Cahier de recette : ajout des parcours NT-014, NT-073, NT-131 et NT-133, de AUTH-01 à AUTH-04 (persistance longue durée, déconnexion, résilience réseau, migration installation historique) et précision de COACH-03 (message distinct session expirée / réseau indisponible).
 
 ## [0.6.0] - 2026-09-02
 

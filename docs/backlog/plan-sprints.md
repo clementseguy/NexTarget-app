@@ -36,14 +36,13 @@
 
 > **Arbitrage produit du 2026-09-02**, complété le **2026-09-04** : le lot
 > prioritaire regroupe NT-014, NT-048, NT-061, NT-073, NT-133 et NT-131. Il est
-> découpé en trois incréments livrables. Les deux premiers — finalisations
-> ciblées puis sessions libres — sont fusionnés sur `dev`. Le troisième porte
-> le parcours guidé au stand sur ce socle.
+> découpé en trois incréments livrables, tous fusionnés sur `dev` et préparés
+> pour la release v0.7.0.
 
 > **Cadrage produit du 2026-09-04** : NT-131 ne dépend plus des templates
 > NT-130. Il porte le parcours direct « au stand », de la préparation courte au
-> brouillon reprenable puis à la session réalisée, et constitue l'incrément
-> restant du lot prioritaire. NT-134 réserve les graphiques
+> brouillon reprenable puis à la session réalisée. Il a été fusionné sur `dev`
+> par la PR #31. NT-134 réserve les graphiques
 > score/groupement intra-session comme évolution facultative ultérieure.
 
 ## Hypothèses
@@ -79,7 +78,7 @@
 | 0 | NT-071 (FAIT) | Corrige la perte des comptes et refresh tokens à chaque veille/redémarrage Render ; livré avec la release produit v0.6.0 (serveur v0.3.0). | NT-070 | server |
 | 0 | NT-049 (FAIT) | Diagnostic immédiat et sécurisé de la base utilisateurs et du comportement OAuth ; lot serveur autonome livré. | NT-040, NT-042 | server |
 | 0 | NT-014, NT-048, NT-061, NT-073, NT-133 (FAIT) | Lot de finalisation livré sur `dev`. | NT-001, NT-003, NT-005, NT-010, NT-017, NT-022, NT-040 | both |
-| 1 | NT-131 | Prochain incrément prioritaire : session guidée directement au stand sur le socle livré par NT-133. | NT-001, NT-002, NT-003, NT-004, NT-009, NT-022, NT-073, NT-133 | app |
+| 0 | NT-131 (FAIT) | Session guidée directement au stand sur le socle livré par NT-133 ; fusionnée sur `dev` par la PR #31. | NT-001, NT-002, NT-003, NT-004, NT-009, NT-022, NT-073, NT-133 | app |
 | 1 | NT-100, NT-101 | Socle métier TAR : rend les sessions comparables et exploitables par stats/coach. | NT-001, NT-002 | app |
 | 2 | NT-130 | Réduit fortement la friction de saisie au stand et prépare les templates par épreuve après stabilisation de NT-073/NT-133. | NT-001, NT-073, NT-101 optionnel, NT-133 | app |
 | 3 | NT-005 (FAIT), NT-110 | Photo cible exploitable : mémoire visuelle puis contexte fiable pour le coach. | NT-001, NT-100 | app |
@@ -137,16 +136,16 @@ les métriques de séries les ignorent ; aucune analyse Coach n'est proposée.
 
 | Ordre | Item | Feature | App | Serveur |
 |---|---|---|---|---|
-| 1 | NT-131 | Session guidée au stand | action principale « Au stand », préparation courte, brouillon reprenable, saisie série par série, récapitulatif et clôture vers le détail | — |
+| 1 | NT-131 (FAIT) | Session guidée au stand | action principale « Au stand », préparation courte, brouillon reprenable, saisie série par série, récapitulatif et clôture vers le détail | — |
 
 **Version stable attendue** : depuis l'écran Sessions, l'utilisateur démarre une
 séance détaillée sans session prévue, exercice obligatoire ni template. Le
 brouillon survit aux interruptions, reste hors statistiques et Coach, puis se
 clôture en session réalisée avant redirection vers son détail.
 
-**État du lot** : les incréments A et B sont fusionnés sur `dev`. La sortie du
-lot dépend désormais de la livraison autonome de NT-131, selon la Definition of
-Done, sur le socle et les actions de création stabilisés par NT-133.
+**État du lot** : les trois incréments sont fusionnés sur `dev`. Le lot complet
+est candidat à la release v0.7.0, sous réserve de la Quality Gate, de la recette
+manuelle de release et de la MR `dev` vers `main`.
 
 ### Lot serveur autonome — Diagnostic OAuth
 

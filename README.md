@@ -32,14 +32,15 @@
 
 ## Fonctionnalités
 
-- **Carnet de tir complet** : sessions (arme, calibre, catégorie), séries détaillées (coups, distance, points, groupement, prise 1/2 mains), sessions prévues, réalisée et assistant en stand.
+- **Carnet de tir complet** : sessions détaillées, libres ou prévues, avec un parcours guidé « Au stand » qui sauvegarde automatiquement une séance interrompue et permet de la reprendre.
 - **Râtelier d'armes** : gérez vos armes une seule fois (Paramètres > Préférences Tir), retrouvez-les en saisie de session, et suivez le volume de tirs par arme dans Statistiques.
-- **Statistiques** : moyennes glissantes 30/90 j, évolution score & groupement, records, distributions, corrélations, indice de régularité.
+- **Calibres** : calibre par défaut facultatif, autocomplétion sans saisie forcée et regroupement statistique des alias connus.
+- **Statistiques** : comparatif glissant 30/90 j avec deltas et courbes, évolution score et groupement, records, distributions, corrélations et indice de régularité.
 - **Objectifs mesurables** : cibles chiffrées (score, groupement…), progression automatique, hauts faits.
 - **Exercices** : catalogue d'entraînements (stand/maison) avec consignes, reliés aux objectifs et aux sessions ; planification en un geste.
 - **Coach IA** : analyse personnalisée de chaque séance (via Mistral), ton **neutre** ou **cool** au choix. Nécessite un compte (connexion Google).
 - **Thèmes** : sombre « Classique » et clair « France ».
-- **Vie privée par défaut** : stockage local, compte optionnel, export/import JSON.
+- **Vie privée par défaut** : stockage local, compte optionnel avec session durable, export/import JSON.
 
 ## Démarrage rapide
 
@@ -73,7 +74,7 @@ Un fichier `assets/config.example.yaml` est fourni comme modèle.
 | Garde-fou | Détail |
 |---|---|
 | Analyse statique | `flutter_lints` actif, zéro issue exigé (`flutter analyze --fatal-infos` en CI) |
-| Tests | 418 tests unitaires & widgets : 416 réussis, 2 ignorés (`flutter test`) |
+| Tests | 457 tests unitaires et widgets : 455 réussis, 2 ignorés (`flutter test`) |
 | CI | GitHub Actions + SonarCloud (push `dev`/`main`, PR vers `main`) |
 | Pré-commit | `./scripts/verify_before_commit.sh` (analyse + tests, variante `fast`) — hook : `ln -sf ../../scripts/verify_before_commit.sh .git/hooks/pre-commit` |
 | Recette manuelle | [Cahier de recette](docs/tests/cahier_recette.md) généré depuis `docs/tests/cahier_recette.yaml` (`dart run scripts/generate_cahier_recette.dart`), à rejouer avant toute MR vers `main` |

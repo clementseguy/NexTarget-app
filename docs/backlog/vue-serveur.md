@@ -11,7 +11,7 @@
 > de copie ; aucune synchronisation inverse n'est attendue (voir gouvernance).
 
 **Repo** : NexTarget-server (FastAPI + SQLModel + PostgreSQL en production, SQLite en développement/tests, OAuth + proxy IA)
-**Dernière projection** : 2026-09-02 (NT-048 passé `both / FAIT` : adoption app des refresh tokens livrée, contrat serveur inchangé ; clôture NT-061 clarifiée)
+**Dernière projection** : 2026-09-04 (préparation de la release app v0.7.0 ; NT-048 et NT-061 restent `FAIT`, sans changement du contrat serveur v0.3.0)
 
 > Important : **le serveur n'est plus « OAuth-only ».** Il expose aussi le **proxy Coach IA**
 > (`/coach/analyze-session`). Les anciens statuts « M1/M2 supprimés/décalés » sont

@@ -95,4 +95,4 @@ variables d'environnement du déploiement.
 
 ---
 
-**Dernière vérification** : 3 septembre 2026.
+**Dernière vérification** : 4 septembre 2026.

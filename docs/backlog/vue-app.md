@@ -7,7 +7,7 @@
 > uniquement dans cette vue (règle de sync : [README.md](README.md)).
 
 **Repo** : NexTarget-app (Flutter/Dart, Hive, SonarCloud, dart_code_metrics)
-**Dernière projection** : 2026-09-04 (cadrage détaillé de NT-131 et ajout de NT-134)
+**Dernière projection** : 2026-09-04 (NT-131 fusionné sur `dev` et lot v0.7.0 prêt à intégrer dans `main`)
 
 ## Items app
 
@@ -77,14 +77,13 @@
 | NT-125 | Suivi des recommandations du coach | both | Could | L | À FAIRE | — |
 | NT-126 | Plan d'entraînement | both | Could | L | À FAIRE | dépend NT-123/NT-124 |
 | NT-130 | Templates de session | app | Must | S | À FAIRE | prototype abandonné : ne pas ajouter d'étape au parcours classique |
-| NT-131 | Session guidée au stand | app | Should | L | EN COURS | implémentation et tests sur `feature/NT-131-session-guidee-stand`, non fusionnée ; préparation courte, brouillon reprenable, wizard série par série, clôture vers le détail |
+| NT-131 | Session guidée au stand | app | Should | L | FAIT | fusionné sur `dev` par la PR #31 le 2026-09-04 ; préparation courte, brouillon reprenable, saisie série par série et clôture vers le détail |
 | NT-132 | Spike — saisie vocale d'une série | app | Could | S | À FAIRE | go/no-go en environnement stand |
 | NT-133 | Sessions libres sans séries ni scores | app | Must | L | FAIT | fusionné sur `dev` par la PR #27 le 2026-09-03 |
 | NT-134 | Graphiques d'évolution intra-session | app | Could | M | À FAIRE | score et groupement par série dans le récapitulatif et le détail ; cadrage UX préalable |
 
 ## Prochaines actions app (hors FAIT), par priorité
 
-- **En cours** — NT-131.
 - **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session).
 - **Should** — NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124. NT-033 : voir NT-120/NT-121.
 - **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132, NT-134. NT-023 : voir NT-122/NT-123.
