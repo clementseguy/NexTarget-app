@@ -1,7 +1,5 @@
 import 'package:hive/hive.dart';
 import '../models/series.dart';
-import '../config/app_config.dart';
-import '../utils/caliber_autocomplete.dart';
 
 class PreferencesService {
   static const _boxName = 'app_preferences';
@@ -25,7 +23,7 @@ class PreferencesService {
 
   String? getDefaultCaliber() {
     final v = _box.get(_defaultCaliberKey);
-    if (v is String && isKnownCaliber(v)) return v;
+    if (v is String && v.trim().isNotEmpty) return v;
     return null;
   }
 
@@ -33,15 +31,7 @@ class PreferencesService {
     if (caliber == null || caliber.trim().isEmpty) {
       await _box.delete(_defaultCaliberKey);
     } else {
-      final value = caliber.trim();
-      if (!isKnownCaliber(value)) {
-        throw ArgumentError.value(caliber, 'caliber', 'Calibre non reconnu');
-      }
-      final canonicalValue = AppConfig.I.calibers.firstWhere(
-        (candidate) =>
-            normalizeCaliberSearch(candidate) == normalizeCaliberSearch(value),
-      );
-      await _box.put(_defaultCaliberKey, canonicalValue);
+      await _box.put(_defaultCaliberKey, caliber.trim());
     }
   }
 

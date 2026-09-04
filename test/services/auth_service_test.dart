@@ -15,13 +15,6 @@ void main() {
 
     setUp(() {
       mockStorage = MockFlutterSecureStorage();
-      // Par défaut, aucune paire NT-048 en stockage : les tests qui ne s'y
-      // intéressent pas retombent sur le fallback legacy (jwt_token) sans
-      // avoir à stuber cette clé individuellement.
-      when(mockStorage.read(key: 'auth_token_set'))
-          .thenAnswer((_) async => null);
-      // Idem pour l'email legacy : par défaut absent, sauf stub explicite.
-      when(mockStorage.read(key: 'user_email')).thenAnswer((_) async => null);
       authService = AuthService(
         authBaseUrl: 'https://test-api.com',
         callbackScheme: 'testapp',
@@ -41,7 +34,8 @@ void main() {
       });
 
       test('retourne null si aucun token', () async {
-        when(mockStorage.read(key: 'jwt_token')).thenAnswer((_) async => null);
+        when(mockStorage.read(key: 'jwt_token'))
+            .thenAnswer((_) async => null);
 
         final token = await authService.getToken();
 
@@ -60,7 +54,8 @@ void main() {
       });
 
       test('retourne false si token est null', () async {
-        when(mockStorage.read(key: 'jwt_token')).thenAnswer((_) async => null);
+        when(mockStorage.read(key: 'jwt_token'))
+            .thenAnswer((_) async => null);
 
         final result = await authService.hasToken();
 
@@ -68,7 +63,8 @@ void main() {
       });
 
       test('retourne false si token est vide', () async {
-        when(mockStorage.read(key: 'jwt_token')).thenAnswer((_) async => '');
+        when(mockStorage.read(key: 'jwt_token'))
+            .thenAnswer((_) async => '');
 
         final result = await authService.hasToken();
 
@@ -78,8 +74,10 @@ void main() {
 
     group('logout', () {
       test('supprime le token et l\'email', () async {
-        when(mockStorage.delete(key: 'jwt_token')).thenAnswer((_) async => {});
-        when(mockStorage.delete(key: 'user_email')).thenAnswer((_) async => {});
+        when(mockStorage.delete(key: 'jwt_token'))
+            .thenAnswer((_) async => {});
+        when(mockStorage.delete(key: 'user_email'))
+            .thenAnswer((_) async => {});
 
         await authService.logout();
 
@@ -90,7 +88,8 @@ void main() {
 
     group('updateProfile', () {
       test('lève une exception si non authentifié (pas de token)', () async {
-        when(mockStorage.read(key: 'jwt_token')).thenAnswer((_) async => null);
+        when(mockStorage.read(key: 'jwt_token'))
+            .thenAnswer((_) async => null);
 
         expect(
           () => authService.updateProfile(experienceLevel: 'beginner'),

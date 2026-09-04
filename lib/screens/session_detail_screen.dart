@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../services/session_service.dart';
 import '../constants/session_constants.dart';
 import 'create_session_screen.dart';
-import 'create_simple_session_screen.dart';
 import '../models/shooting_session.dart';
 import '../models/series.dart';
 import '../widgets/series_list.dart';
@@ -11,6 +10,7 @@ import '../services/exercise_service.dart';
 import '../models/exercise.dart';
 import 'wizard/planned_session_wizard.dart';
 import 'session_detail/session_detail_components.dart';
+
 
 class SessionDetailScreen extends StatefulWidget {
   final Map<String, dynamic> sessionData;
@@ -37,33 +37,29 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
   Future<void> _loadExercises() async {
     try {
       final list = await _exerciseService.listAll();
-      if (mounted) setState(() => _allExercises = list);
+      if (mounted) setState(()=> _allExercises = list);
     } catch (_) {}
   }
 
+
   @override
   Widget build(BuildContext context) {
-    if (_currentSessionData == null ||
-        _currentSessionData!['session'] == null ||
-        _currentSessionData!['series'] == null) {
+    if (_currentSessionData == null || _currentSessionData!['session'] == null || _currentSessionData!['series'] == null) {
       return Scaffold(
         appBar: AppBar(title: Text('Détail de la session')),
         body: Center(child: CircularProgressIndicator()),
       );
     }
-    final session = ShootingSession.fromMap(_currentSessionData!['session']);
-    final series = (_currentSessionData!['series'] as List<dynamic>)
-        .map((s) => Series.fromMap(Map<String, dynamic>.from(s)))
-        .toList();
-    final isRealisee = session.status == SessionConstants.statusRealisee;
-    final bool isPlanned = session.status == SessionConstants.statusPrevue;
+  final session = ShootingSession.fromMap(_currentSessionData!['session']);
+  final series = (_currentSessionData!['series'] as List<dynamic>).map((s) => Series.fromMap(Map<String, dynamic>.from(s))).toList();
+  final isRealisee = session.status == SessionConstants.statusRealisee;
+  final bool isPlanned = !isRealisee;
     String? analyse = _currentSessionData!['session']['analyse'];
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-            session is SimpleShootingSession ? 'Session libre' : 'Session'),
+        title: Text('Session'),
         actions: [
-          if (isPlanned && session is DetailedShootingSession)
+          if (isPlanned) 
             IconButton(
               icon: const Icon(Icons.play_circle_outline),
               tooltip: 'Démarrer',
@@ -77,12 +73,10 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
                 if (converted == true) {
                   // Recharger session depuis service
                   final all = await _sessionService.getAllSessions();
-                  final updated = all.firstWhere((s) => s.id == session.id,
-                      orElse: () => session);
+                  final updated = all.firstWhere((s)=> s.id == session.id, orElse: ()=> session);
                   setState(() {
                     _currentSessionData!['session'] = updated.toMap();
-                    _currentSessionData!['series'] =
-                        updated.series.map((s) => s.toMap()).toList();
+                    _currentSessionData!['series'] = updated.series.map((s)=> s.toMap()).toList();
                   });
                 }
               },
@@ -95,8 +89,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
               await Clipboard.setData(ClipboardData(text: resume));
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Résumé copié')),
-                );
+                  SnackBar(content: Text('Résumé copié')),);
               }
             },
           ),
@@ -107,12 +100,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => session is SimpleShootingSession
-                      ? CreateSimpleSessionScreen(initialSession: session)
-                      : CreateSessionScreen(
-                          initialSessionData: widget.sessionData,
-                          isEdit: true,
-                        ),
+                  builder: (context) => CreateSessionScreen(initialSessionData: widget.sessionData, isEdit: true),
                 ),
               );
               if (context.mounted) {
@@ -130,13 +118,8 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
                   title: Text('Supprimer la session ?'),
                   content: Text('Cette action est irréversible.'),
                   actions: [
-                    TextButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: Text('Annuler')),
-                    TextButton(
-                        onPressed: () => Navigator.pop(ctx, true),
-                        child: Text('Supprimer',
-                            style: TextStyle(color: Colors.red))),
+                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Annuler')),
+                    TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Supprimer', style: TextStyle(color: Colors.red))),
                   ],
                 ),
               );
@@ -153,8 +136,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
       body: ListView(
         padding: EdgeInsets.all(16),
         children: [
-          SessionHeaderCard(
-              session: session, series: series, planned: isPlanned),
+          SessionHeaderCard(session: session, series: series, planned: isPlanned),
           if (session.hasPhoto) ...[
             SizedBox(height: 16),
             SessionPhotoSection(photoPath: session.photoPath!),
@@ -166,40 +148,33 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
               allExercises: _allExercises,
             ),
           ],
-          if (isRealisee && session is DetailedShootingSession) ...[
+          if (isRealisee) ...[
             SizedBox(height: 16),
             SessionCoachAnalysisSection(
               session: session,
               analyse: analyse,
               onAnalyseUpdated: () async {
                 final all = await _sessionService.getAllSessions();
-                final updated = all.firstWhere((s) => s.id == session.id,
-                    orElse: () => session);
+                final updated = all.firstWhere((s)=> s.id == session.id, orElse: ()=> session);
                 setState(() {
                   _currentSessionData!['session'] = updated.toMap();
-                  _currentSessionData!['series'] =
-                      updated.series.map((s) => s.toMap()).toList();
+                  _currentSessionData!['series'] = updated.series.map((s)=> s.toMap()).toList();
                 });
               },
             ),
           ],
-          if (session is DetailedShootingSession) ...[
-            SizedBox(height: 28),
-            Row(
-              children: [
-                Icon(Icons.list_alt, size: 18, color: Colors.amberAccent),
-                SizedBox(width: 8),
-                Text('Séries',
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Spacer(),
-                Text('${series.length} au total',
-                    style: TextStyle(fontSize: 12, color: Colors.white70)),
-              ],
-            ),
-            SizedBox(height: 8),
-            SeriesList(series: series),
-          ],
+          SizedBox(height: 28),
+          Row(
+            children: [
+              Icon(Icons.list_alt, size: 18, color: Colors.amberAccent),
+              SizedBox(width: 8),
+              Text('Séries', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Spacer(),
+              Text('${series.length} au total', style: TextStyle(fontSize: 12, color: Colors.white70)),
+            ],
+          ),
+          SizedBox(height: 8),
+          SeriesList(series: series),
           if (session.synthese != null && session.synthese!.trim().isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 24.0),
@@ -213,31 +188,19 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
 
 String _buildClipboardSummary(ShootingSession s, List<Series> series) {
   final buf = StringBuffer();
-  buf.writeln(
-      'Session ${s.date != null ? '${s.date!.day}/${s.date!.month}/${s.date!.year}' : ''}');
+  buf.writeln('Session ${s.date != null ? '${s.date!.day}/${s.date!.month}/${s.date!.year}' : ''}');
   buf.writeln('Arme: ${s.weapon} | Calibre: ${s.caliber}');
-  if (s.category.isNotEmpty) {
-    buf.writeln(
-      'Catégorie: ${SessionConstants.categoryLabel(s.category)}',
-    );
-  }
-  if (s is SimpleShootingSession) {
-    buf.writeln('Session libre: ${s.shotCount} tirs à ${s.distance} m');
-  } else {
-    buf.writeln('Séries (${series.length}):');
-    for (int i = 0; i < series.length; i++) {
-      final se = series[i];
-      final prise = se.handMethod == HandMethod.oneHand ? '1M' : '2M';
-      buf.writeln(
-          '- #${i + 1}: ${se.points} pts, group. ${se.groupSize} cm, dist ${se.distance}m, prise $prise');
-    }
+  if (s.category.isNotEmpty) buf.writeln('Catégorie: ${s.category}');
+  buf.writeln('Séries (${series.length}):');
+  for (int i=0;i<series.length;i++) {
+    final se = series[i];
+    final prise = se.handMethod == HandMethod.oneHand ? '1M' : '2M';
+    buf.writeln('- #${i+1}: ${se.points} pts, group. ${se.groupSize} cm, dist ${se.distance}m, prise $prise');
   }
   if (s.synthese != null && s.synthese!.trim().isNotEmpty) {
     buf.writeln('Synthèse: ${s.synthese}');
   }
-  if (s is DetailedShootingSession &&
-      s.analyse != null &&
-      s.analyse!.trim().isNotEmpty) {
+  if (s.analyse != null && s.analyse!.trim().isNotEmpty) {
     buf.writeln('Analyse Coach: ${s.analyse}');
   }
   return buf.toString();

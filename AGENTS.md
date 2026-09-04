@@ -14,7 +14,7 @@ NexTarget est le carnet de tir sportif du tireur solo : saisie des sessions
 - **Stack** : Flutter / Dart (SDK `>=3.0.0 <4.0.0`), stockage local **Hive**
 - **State management** : `provider` (`ChangeNotifier`)
 - **Backend** : NexTarget-server (OAuth + proxy Coach IA), consommé via `http`
-- **Version** : voir `pubspec.yaml` (`version:`) — actuellement 0.7.0
+- **Version** : voir `pubspec.yaml` (`version:`) — actuellement 0.6.0
 - **Package id historique** : `tir_sportif` (branding affiché = *NexTarget*, ne pas renommer le package)
 - **Langue** : identifiants en **anglais** ; commentaires, docs et **UI en français** ; certaines valeurs métier sont en français (`"réalisée"`, `"entraînement"`) — les conserver telles quelles.
 
@@ -26,6 +26,7 @@ Le **quoi/pourquoi** vit dans le backlog unifié, pas ici :
 - **Vue app** : [`docs/backlog/vue-app.md`](docs/backlog/vue-app.md).
 - **Vue serveur canonique** : [`docs/backlog/vue-serveur.md`](docs/backlog/vue-serveur.md).
 - **Gouvernance / DoD / convention d'IDs** : [`docs/backlog/README.md`](docs/backlog/README.md).
+- **Écarts & décisions** : [`docs/backlog/incoherences.md`](docs/backlog/incoherences.md).
 
 Le backlog et ses vues se modifient **uniquement dans `NexTarget-app`**. Le repo
 `NexTarget-server` peut pointer vers la vue serveur canonique, mais ne maintient
@@ -119,7 +120,7 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 - **Framework** : `flutter_test` + `mockito` (mocks générés → `*.mocks.dart` via
   `build_runner`).
 - **Organisation** : `test/` reflète `lib/` (`test/models`, `test/services`,
-  `test/repositories`, `test/screens`, `test/forms`, `test/migrations`). ~103 fichiers
+  `test/repositories`, `test/screens`, `test/forms`, `test/migrations`). ~67 fichiers
   de test aujourd'hui — **maintenir cette couverture**.
 - **Attendu pour toute évolution** : au moins un test nominal + un cas d'erreur.
   Nouveau service/logique → test unitaire. Nouvel écran → widget test. Changement de
@@ -166,7 +167,7 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
   des tests (nominal + erreur) ; viser ~60 % sur le nouveau code, sans y
   sacrifier des tests de layout à faible valeur.
 - **Cahier de recette** : `docs/tests/cahier_recette.md` généré depuis
-  `docs/tests/cahier_recette.yaml` (`scripts/generate_cahier_recette.dart`). Le
+  `docs/specs/cahier_recette.yaml` (`scripts/generate_cahier_recette.dart`). Le
   **rejouer avant toute MR vers `main`** ; si un comportement visible change, mettre
   à jour le YAML **et** régénérer.
 

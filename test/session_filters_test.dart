@@ -7,21 +7,21 @@ import 'package:tir_sportif/utils/session_filters.dart';
 void main() {
   group('SessionFilters.realizedWithDate', () {
     test('garde uniquement les sessions réalisées avec date non nulle', () {
-      final s1 = DetailedShootingSession(
+      final s1 = ShootingSession(
         id: 1,
         date: DateTime(2025, 10, 1),
         weapon: 'P', caliber: '22LR',
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
       );
-      final s2 = DetailedShootingSession(
+      final s2 = ShootingSession(
         id: 2,
         date: null,
         weapon: 'P', caliber: '22LR',
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 80, groupSize: 25)],
       );
-      final s3 = DetailedShootingSession(
+      final s3 = ShootingSession(
         id: 3,
         date: DateTime(2025, 10, 2),
         weapon: 'P', caliber: '22LR',
@@ -37,7 +37,7 @@ void main() {
 
   group('SessionFilters.byExercise', () {
     ShootingSession makeSession({required int id, required List<String> exercises, String status = SessionConstants.statusRealisee}) {
-      return DetailedShootingSession(
+      return ShootingSession(
         id: id,
         date: DateTime(2025, 10, id),
         weapon: 'P', caliber: '22LR',

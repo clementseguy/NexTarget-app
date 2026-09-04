@@ -9,7 +9,3 @@ abstract class SessionRepository {
   Future<void> delete(int id);
   Future<void> clearAll();
 }
-
-abstract class AtomicSessionRepository {
-  Future<List<int>> insertAll(List<ShootingSession> sessions);
-}

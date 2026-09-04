@@ -48,11 +48,11 @@ void main() {
     test('Basic averages 30/60 days', () async {
       final now = DateTime.now();
       final sessions = [
-        DetailedShootingSession(id: 1, date: now.subtract(const Duration(days: 10)), weapon: 'Pistolet', caliber: '22LR', series: [
+        ShootingSession(id: 1, date: now.subtract(const Duration(days: 10)), weapon: 'Pistolet', caliber: '22LR', series: [
           Series(distance: 10, points: 45, groupSize: 20),
           Series(distance: 10, points: 50, groupSize: 22),
         ]), // total 95
-        DetailedShootingSession(id: 2, date: now.subtract(const Duration(days: 40)), weapon: 'Pistolet', caliber: '22LR', series: [
+        ShootingSession(id: 2, date: now.subtract(const Duration(days: 40)), weapon: 'Pistolet', caliber: '22LR', series: [
           Series(distance: 10, points: 40, groupSize: 25),
           Series(distance: 10, points: 42, groupSize: 24),
         ]), // total 82 (in 60 window only)

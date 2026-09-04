@@ -74,7 +74,7 @@ void main() {
     });
 
     test('updateSession supprime l\'ancienne photo si elle est remplacée', () async {
-      final session = DetailedShootingSession(
+      final session = ShootingSession(
         weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: const [], photoPath: '/docs/old.jpg',
       );
@@ -88,7 +88,7 @@ void main() {
     });
 
     test('updateSession ne supprime rien si la photo est inchangée', () async {
-      final session = DetailedShootingSession(
+      final session = ShootingSession(
         weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: const [], photoPath: '/docs/same.jpg',
       );
@@ -100,7 +100,7 @@ void main() {
     });
 
     test('updateSession supprime l\'ancienne photo si elle est retirée', () async {
-      final session = DetailedShootingSession(
+      final session = ShootingSession(
         weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: const [], photoPath: '/docs/old.jpg',
       );
@@ -113,7 +113,7 @@ void main() {
     });
 
     test('deleteSession supprime la photo associée', () async {
-      final session = DetailedShootingSession(
+      final session = ShootingSession(
         weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: const [], photoPath: '/docs/to_delete.jpg',
       );
@@ -125,7 +125,7 @@ void main() {
     });
 
     test('deleteSession ne tente pas de supprimer si aucune photo n\'est associée', () async {
-      final session = DetailedShootingSession(
+      final session = ShootingSession(
         weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
         series: const [],
       );
@@ -137,9 +137,9 @@ void main() {
     });
 
     test('clearAllSessions supprime toutes les photos existantes avant la purge', () async {
-      final s1 = DetailedShootingSession(weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee, series: const [], photoPath: '/docs/a.jpg');
-      final s2 = DetailedShootingSession(weapon: 'C', caliber: '9mm', status: SessionConstants.statusRealisee, series: const [], photoPath: '/docs/b.jpg');
-      final s3 = DetailedShootingSession(weapon: 'R', caliber: '.38', status: SessionConstants.statusRealisee, series: const []);
+      final s1 = ShootingSession(weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee, series: const [], photoPath: '/docs/a.jpg');
+      final s2 = ShootingSession(weapon: 'C', caliber: '9mm', status: SessionConstants.statusRealisee, series: const [], photoPath: '/docs/b.jpg');
+      final s3 = ShootingSession(weapon: 'R', caliber: '.38', status: SessionConstants.statusRealisee, series: const []);
       await service.addSession(s1);
       await service.addSession(s2);
       await service.addSession(s3);

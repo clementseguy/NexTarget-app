@@ -26,8 +26,7 @@ void main() {
     // vrai fichier ne complète jamais ses I/O tant qu'on est dans la zone
     // fake-async d'un testWidgets, ce qui bloque indéfiniment tout appel
     // Hive fait directement dans le corps du test ou depuis initState().
-    final dir = await Directory.systemTemp
-        .createTemp('nt_history_exercise_filter_test_');
+    final dir = await Directory.systemTemp.createTemp('nt_history_exercise_filter_test_');
     Hive.init(dir.path);
     await Hive.openBox('sessions', bytes: Uint8List(0));
     await Hive.openBox('exercises', bytes: Uint8List(0));
@@ -64,84 +63,21 @@ void main() {
   }
 
   group('SessionsHistoryScreen - filtre par exercice (NT-007)', () {
-    testWidgets('aligne les deux filtres sur une largeur mobile',
-        (tester) async {
-      await tester.binding.setSurfaceSize(const Size(390, 844));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(body: SessionsHistoryScreen()),
-        ),
-      );
-      await tester.pump();
-      await tester.pump();
-
-      final exerciseFilter = find.byWidgetPredicate(
-        (widget) =>
-            widget is DropdownButtonFormField<String?> &&
-            widget.decoration.labelText == 'Exercice',
-      );
-      final categoryFilter = find.byWidgetPredicate(
-        (widget) =>
-            widget is DropdownButtonFormField<String?> &&
-            widget.decoration.labelText == 'Catégorie',
-      );
-      expect(tester.getTopLeft(exerciseFilter).dy,
-          tester.getTopLeft(categoryFilter).dy);
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets(
-        'le résumé compte la libre comme session sans fausser les séries par session',
-        (tester) async {
-      await sessionService.addSession(DetailedShootingSession(
-        weapon: 'P',
-        caliber: '22LR',
-        date: DateTime(2025, 1, 1),
-        status: SessionConstants.statusRealisee,
-        series: [
-          Series(distance: 10, points: 90, groupSize: 20),
-          Series(distance: 10, points: 80, groupSize: 25),
-        ],
-      ));
-      await sessionService.addSession(SimpleShootingSession(
-        weapon: 'P',
-        caliber: '22LR',
-        date: DateTime(2025, 1, 2),
-        shotCount: 30,
-        distance: 10,
-        category: SessionConstants.categoryEntrainement,
-      ));
-
-      await pumpScreen(tester);
-
-      expect(find.text('Séries/session'), findsOneWidget);
-      expect(find.text('2.0'), findsOneWidget);
-    });
-
-    testWidgets(
-        'le sélecteur "Tous les exercices" affiche toutes les sessions réalisées',
-        (tester) async {
-      await exerciseService.addExerciseLegacy(
-          name: 'Précision debout', category: 'précision');
-      await exerciseService.addExerciseLegacy(
-          name: 'Vitesse', category: 'vitesse');
+    testWidgets('le sélecteur "Tous les exercices" affiche toutes les sessions réalisées', (tester) async {
+      await exerciseService.addExerciseLegacy(name: 'Précision debout', category: 'précision');
+      await exerciseService.addExerciseLegacy(name: 'Vitesse', category: 'vitesse');
       final ex = await exerciseService.listAll();
       final exA = ex.firstWhere((e) => e.name == 'Précision debout').id;
       final exB = ex.firstWhere((e) => e.name == 'Vitesse').id;
 
-      await sessionService.addSession(DetailedShootingSession(
-        weapon: 'P',
-        caliber: '22LR',
-        date: DateTime(2025, 1, 1),
+      await sessionService.addSession(ShootingSession(
+        weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
         exercises: [exA],
       ));
-      await sessionService.addSession(DetailedShootingSession(
-        weapon: 'P',
-        caliber: '22LR',
-        date: DateTime(2025, 1, 2),
+      await sessionService.addSession(ShootingSession(
+        weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 2),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 80, groupSize: 25)],
         exercises: [exB],
@@ -149,34 +85,27 @@ void main() {
 
       await pumpScreen(tester);
 
-      expect(find.text('Exercice'), findsOneWidget);
+      expect(find.text('Filtrer par exercice'), findsOneWidget);
       // Les deux sessions apparaissent (regroupées par jour car dates différentes).
       expect(find.text('1/1/2025'), findsOneWidget);
       expect(find.text('2/1/2025'), findsOneWidget);
     });
 
-    testWidgets('sélectionner un exercice réduit la liste aux sessions liées',
-        (tester) async {
-      await exerciseService.addExerciseLegacy(
-          name: 'Précision debout', category: 'précision');
-      await exerciseService.addExerciseLegacy(
-          name: 'Vitesse', category: 'vitesse');
+    testWidgets('sélectionner un exercice réduit la liste aux sessions liées', (tester) async {
+      await exerciseService.addExerciseLegacy(name: 'Précision debout', category: 'précision');
+      await exerciseService.addExerciseLegacy(name: 'Vitesse', category: 'vitesse');
       final ex = await exerciseService.listAll();
       final exA = ex.firstWhere((e) => e.name == 'Précision debout').id;
       final exB = ex.firstWhere((e) => e.name == 'Vitesse').id;
 
-      await sessionService.addSession(DetailedShootingSession(
-        weapon: 'P',
-        caliber: '22LR',
-        date: DateTime(2025, 1, 1),
+      await sessionService.addSession(ShootingSession(
+        weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
         exercises: [exA],
       ));
-      await sessionService.addSession(DetailedShootingSession(
-        weapon: 'P',
-        caliber: '22LR',
-        date: DateTime(2025, 1, 2),
+      await sessionService.addSession(ShootingSession(
+        weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 2),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 80, groupSize: 25)],
         exercises: [exB],
@@ -195,28 +124,21 @@ void main() {
       expect(find.text('1/1/2025'), findsNothing);
     });
 
-    testWidgets(
-        'le filtre exercice se combine avec le filtre réalisées/prévues',
-        (tester) async {
-      await exerciseService.addExerciseLegacy(
-          name: 'Précision debout', category: 'précision');
+    testWidgets('le filtre exercice se combine avec le filtre réalisées/prévues', (tester) async {
+      await exerciseService.addExerciseLegacy(name: 'Précision debout', category: 'précision');
       final ex = await exerciseService.listAll();
       final exA = ex.first.id;
 
       // Réalisée avec l'exercice -> doit apparaître en onglet "Réalisées" + filtre exercice.
-      await sessionService.addSession(DetailedShootingSession(
-        weapon: 'P',
-        caliber: '22LR',
-        date: DateTime(2025, 1, 1),
+      await sessionService.addSession(ShootingSession(
+        weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
         exercises: [exA],
       ));
       // Prévue avec le même exercice -> ne doit PAS apparaître en onglet "Réalisées" + filtre exercice.
-      await sessionService.addSession(DetailedShootingSession(
-        weapon: 'P',
-        caliber: '22LR',
-        date: null,
+      await sessionService.addSession(ShootingSession(
+        weapon: 'P', caliber: '22LR', date: null,
         status: SessionConstants.statusPrevue,
         series: [Series(distance: 10, points: 0, groupSize: 0)],
         exercises: [exA],
@@ -239,23 +161,17 @@ void main() {
       await tester.tap(find.text('Prévues'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Exercice'), findsOneWidget);
+      expect(find.text('Filtrer par exercice'), findsOneWidget);
     });
 
-    testWidgets(
-        'sélectionner un exercice sans session correspondante affiche un état vide dédié',
-        (tester) async {
-      await exerciseService.addExerciseLegacy(
-          name: 'Précision debout', category: 'précision');
-      await exerciseService.addExerciseLegacy(
-          name: 'Vitesse', category: 'vitesse');
+    testWidgets('sélectionner un exercice sans session correspondante affiche un état vide dédié', (tester) async {
+      await exerciseService.addExerciseLegacy(name: 'Précision debout', category: 'précision');
+      await exerciseService.addExerciseLegacy(name: 'Vitesse', category: 'vitesse');
       final ex = await exerciseService.listAll();
       final exA = ex.firstWhere((e) => e.name == 'Précision debout').id;
 
-      await sessionService.addSession(DetailedShootingSession(
-        weapon: 'P',
-        caliber: '22LR',
-        date: DateTime(2025, 1, 1),
+      await sessionService.addSession(ShootingSession(
+        weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
         exercises: [exA],
@@ -268,86 +184,25 @@ void main() {
       await tester.tap(find.text('Vitesse').last);
       await tester.pumpAndSettle();
 
-      expect(find.text('Aucune session réalisée pour cet exercice'),
-          findsOneWidget);
-      expect(find.text('Essaie un autre exercice ou réinitialise le filtre.'),
-          findsOneWidget);
+      expect(find.text('Aucune session réalisée pour cet exercice'), findsOneWidget);
+      expect(find.text('Essaie un autre exercice ou réinitialise le filtre.'), findsOneWidget);
     });
 
-    testWidgets(
-        'aligne les filtres et trie les prévues par date croissante, sans date à la fin',
-        (tester) async {
-      await sessionService.addSession(DetailedShootingSession(
-        weapon: 'Plus tard',
-        caliber: '22LR',
-        date: DateTime(2026, 10, 20),
-        status: SessionConstants.statusPrevue,
-        series: [Series(distance: 10, points: 0, groupSize: 0)],
-      ));
-      await sessionService.addSession(DetailedShootingSession(
-        weapon: 'Sans date',
-        caliber: '22LR',
-        date: null,
-        status: SessionConstants.statusPrevue,
-        series: [Series(distance: 10, points: 0, groupSize: 0)],
-      ));
-      await sessionService.addSession(DetailedShootingSession(
-        weapon: 'Plus tôt',
-        caliber: '22LR',
-        date: DateTime(2026, 9, 10),
-        status: SessionConstants.statusPrevue,
-        series: [Series(distance: 10, points: 0, groupSize: 0)],
-      ));
-
-      await pumpScreen(tester);
-
-      final exerciseFilter = find.byWidgetPredicate(
-        (widget) =>
-            widget is DropdownButtonFormField<String?> &&
-            widget.decoration.labelText == 'Exercice',
-      );
-      final categoryFilter = find.byWidgetPredicate(
-        (widget) =>
-            widget is DropdownButtonFormField<String?> &&
-            widget.decoration.labelText == 'Catégorie',
-      );
-      expect(tester.getTopLeft(exerciseFilter).dy,
-          tester.getTopLeft(categoryFilter).dy);
-
-      await tester.tap(find.text('Prévues'));
-      await tester.pumpAndSettle();
-
-      expect(tester.getTopLeft(exerciseFilter).dy,
-          tester.getTopLeft(categoryFilter).dy);
-      final earlierY = tester.getTopLeft(find.text('Plus tôt')).dy;
-      final laterY = tester.getTopLeft(find.text('Plus tard')).dy;
-      final undatedY = tester.getTopLeft(find.text('Sans date').last).dy;
-      expect(earlierY, lessThan(laterY));
-      expect(laterY, lessThan(undatedY));
-    });
-
-    testWidgets('revenir à "Tous les exercices" réaffiche toutes les sessions',
-        (tester) async {
-      await exerciseService.addExerciseLegacy(
-          name: 'Précision debout', category: 'précision');
-      await exerciseService.addExerciseLegacy(
-          name: 'Vitesse', category: 'vitesse');
+    testWidgets('revenir à "Tous les exercices" réaffiche toutes les sessions', (tester) async {
+      await exerciseService.addExerciseLegacy(name: 'Précision debout', category: 'précision');
+      await exerciseService.addExerciseLegacy(name: 'Vitesse', category: 'vitesse');
       final ex = await exerciseService.listAll();
       final exA = ex.firstWhere((e) => e.name == 'Précision debout').id;
       final exB = ex.firstWhere((e) => e.name == 'Vitesse').id;
 
-      await sessionService.addSession(DetailedShootingSession(
-        weapon: 'P',
-        caliber: '22LR',
-        date: DateTime(2025, 1, 1),
+      await sessionService.addSession(ShootingSession(
+        weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
         exercises: [exA],
       ));
-      await sessionService.addSession(DetailedShootingSession(
-        weapon: 'P',
-        caliber: '22LR',
-        date: DateTime(2025, 1, 2),
+      await sessionService.addSession(ShootingSession(
+        weapon: 'P', caliber: '22LR', date: DateTime(2025, 1, 2),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 80, groupSize: 25)],
         exercises: [exB],

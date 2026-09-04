@@ -1,80 +1,6 @@
-version: v0.7
-last_updated: 2026-09-04
+version: v0.6
+last_updated: 2026-09-02
 features:
-  - id: NT-014
-    name: Comparatif glissant 30 j / 90 j et sparklines
-    objectif: Vérifier les deux métriques indépendantes, leurs populations et leur présentation mobile.
-    preconditions:
-      - Disposer d'au moins une série réalisée récente, une série réalisée entre J-90 et J-31, et cinq sessions exploitables pour afficher chaque sparkline
-    steps:
-      - Ouvrir Statistiques > Avancé dans le thème Classique puis dans le thème France
-      - Ouvrir l'aide depuis Synthèse et vérifier les explications de Régularité, Progression, Dynamique des performances et des courbes
-      - Vérifier les lignes Points par série et Groupement par série sur une petite largeur mobile
-      - Comparer manuellement les moyennes 30 j et 90 j, le delta absolu et le pourcentage relatif
-      - Utiliser deux moyennes qui s'arrondissent toutes deux à 14,4 mais conservent un faible écart réel
-      - Ajouter une session prévue, une session libre et une série à zéro point sans groupement, puis rouvrir le comparatif
-      - Tester successivement quatre puis cinq sessions exploitables pour chaque métrique
-      - Vérifier un jeu de données où le score progresse tandis que le groupement s'élargit
-    expected:
-      - La fenêtre 90 j inclut les 30 derniers jours et le comparatif exige une série récente plus une série antérieure ; J-30 et J-90 à minuit restent inclus même lorsque l'heure courante est plus tardive
-      - Les sessions prévues et libres ne changent aucune valeur ; le score nul reste compté et le groupement invalide est ignoré uniquement pour cette métrique
-      - Chaque ligne affiche ses moyennes, son delta signé et son pourcentage ; une base 90 j nulle ou une population insuffisante produit un message explicite
-      - La carte Progression affiche sur une ligne les mêmes pourcentages de groupement puis de score que le comparatif
-      - Si une décimale masque l'écart, les moyennes et le delta passent à deux décimales et restent cohérents avec le pourcentage
-      - Une baisse du groupement conserve un delta négatif et affiche un pourcentage positif, sans verdict global
-      - Chaque sparkline reste masquée à quatre sessions et apparaît à cinq avec un point moyen par session
-      - Aucun débordement n'apparaît et la compréhension ne dépend pas de la couleur dans les deux thèmes
-      - L'aide explique que Progression reprend les deux pourcentages du comparatif emboîté 30 j/90 j
-
-  - id: NT-073
-    name: Calibre par défaut et statistiques par calibre
-    objectif: Vérifier le préremplissage explicite, la saisie libre et le regroupement statistique sans réécriture.
-    preconditions:
-      - Disposer de sessions réalisées avec les calibres 9mm, 9x19, .380 ACP et une valeur libre inconnue
-    steps:
-      - Dans Paramètres > Préférences Tir, choisir .45 ACP comme calibre par défaut
-      - Créer une session réalisée puis une session prévue depuis leurs onglets
-      - Modifier librement le calibre proposé, enregistrer, puis rouvrir les sessions en édition et dans le wizard
-      - Effacer la préférence et créer une nouvelle session
-      - Ouvrir Statistiques et consulter la répartition par calibre
-    expected:
-      - La préférence ne propose que les calibres reconnus et persiste après redémarrage
-      - Les deux nouvelles sessions sont préremplies avec .45 ACP sans étape supplémentaire
-      - La saisie n'est jamais autoremplacée et l'édition comme le wizard conservent exactement la valeur enregistrée
-      - Sans préférence, le calibre d'une nouvelle session est vide
-      - 9mm et 9x19 sont regroupés sous 9 mm, .380 ACP reste distinct et la valeur inconnue est absente de cette seule répartition
-
-  - id: NT-131
-    name: Session guidée au stand et brouillon reprenable
-    objectif: Préparer, interrompre, reprendre puis clôturer une séance détaillée sans session prévue ni exercice obligatoire.
-    preconditions:
-      - Disposer éventuellement d'un calibre et d'une prise par défaut, d'armes au râtelier et de plusieurs exercices
-    steps:
-      - Ouvrir Sessions et vérifier l'action principale Au stand ainsi que les trois créations du menu Autres créations
-      - Préparer 10 séries de 7 coups avec une arme libre suggérée par le râtelier, un calibre libre, zéro puis plusieurs exercices, une distance initiale et une prise
-      - Vérifier l'alignement arme/calibre puis séries/coups/distance et la position des raccourcis 15 m et 25 m sous la distance
-      - Commencer, renseigner une série avec un score nul et un commentaire vide, puis vérifier la sauvegarde temporisée
-      - Sur une autre série, saisir un commentaire sans score, quitter puis reprendre et vérifier que le score reste vide et obligatoire
-      - Utiliser les raccourcis 15 m et 25 m, une distance libre, modifier la prise, naviguer vers la série précédente puis la suivante
-      - Ajouter une série, quitter temporairement l'assistant, fermer puis redémarrer l'application
-      - Vérifier que l'action principale reste Au stand et reprendre depuis la carte Séance en cours de l'historique
-      - Terminer plus tôt, vérifier le nombre de séries vides retirées, puis annuler et recommencer la confirmation
-      - Dans le récapitulatif, vérifier matériel, exercices, séries, coups, distances et points ; ajouter, remplacer puis retirer une photo et saisir une synthèse
-      - Vérifier qu'une seconde création guidée est refusée tant que le brouillon existe
-      - Terminer la séance, créer un nouveau brouillon puis l'abandonner après confirmation
-      - Créer un autre brouillon, puis exporter et réimporter la sauvegarde
-      - Pendant une clôture, vérifier que l'ajout, les actions et la sortie sont désactivés ; tenter aussi de réimporter un brouillon lorsqu'un autre existe
-    expected:
-      - La préparation propose date et heure courantes, les préférences sans autoremplacement, 10 séries de 5 coups par défaut et un volume calculé sans borne maximale à cinq
-      - L'exercice reste facultatif et ne modifie jamais le nombre de séries ; distance et prise sont héritées comme simples préremplissages indépendants
-      - Le brouillon et la saisie partielle survivent à l'interruption, apparaissent séparément en tête des Réalisées et restent absents des statistiques, objectifs, compteurs et analyses Coach
-      - La fin anticipée ne conserve aucune série vide et l'abandon supprime le brouillon et sa photo uniquement après confirmation
-      - Après abandon, aucun brouillon ne réapparaît, même brièvement, au retour dans Sessions
-      - La clôture ouvre directement le détail d'une session détaillée réalisée standard sans réafficher temporairement le brouillon ; une erreur simulée conserve intégralement le brouillon avec un message exploitable
-      - Un score absent ne devient jamais zéro après reprise ; aucune mutation ne peut suivre la clôture et un import ne peut jamais créer un second brouillon
-      - Les sessions planifiées, réalisées détaillées, libres et le wizard de conversion prévue restent fonctionnels dans les thèmes Classique et France
-      - Les filtres exercice et catégorie restent alignés dans les onglets Réalisées et Prévues ; les prévues datées sont classées par date croissante avant celles affichées Sans date
-
   - id: SESS-01
     name: Sessions – création/édition
     objectif: Créer une session réalisée avec armes/séries, puis l’éditer sans perte de données.
@@ -82,7 +8,7 @@ features:
       - Application installée
       - Aucune session obligatoire
     steps:
-      - Ouvrir Sessions, Autres créations, puis Session réalisée détaillée
+      - Ouvrir l’app, onglet “Réalisées”, puis “+” (le + crée une session du type de l’onglet actif)
       - Renseigner arme, calibre, prise, au moins 1 série (coups, distance, points, groupement)
       - Enregistrer la session
       - Ouvrir la session et modifier un champ (ex: commentaire)
@@ -93,14 +19,14 @@ features:
       - La modification est bien visible après réouverture
 
   - id: SESS-01b
-    name: Sessions – créations secondaires explicites
-    objectif: Vérifier que les parcours historiques restent accessibles après la réorganisation NT-131.
+    name: Sessions – bouton + selon l'onglet actif
+    objectif: Vérifier que le + crée une session du même type que l'onglet affiché (retour recette S2).
     steps:
-      - Ouvrir Sessions, toucher Autres créations puis Session planifiée et vérifier le statut prérempli
-      - Revenir, choisir Session réalisée détaillée, puis Session libre
+      - Ouvrir Mes sessions, onglet Réalisées, toucher + et vérifier le statut prérempli
+      - Revenir, passer sur l'onglet Prévues, toucher + et vérifier le statut prérempli
     expected:
-      - Les trois actions sont nommées et ouvrent leurs formulaires respectifs sans appui long ni geste caché
-      - Le parcours planifié crée toujours une véritable session prévue et la session libre reste distincte
+      - Onglet Réalisées → formulaire de session réalisée ; onglet Prévues → formulaire de session prévue
+      - Aucun menu d'appui long sur le + (comportement supprimé)
 
   - id: SESS-02
     name: Sessions prévues (planification) + conversion wizard
@@ -114,36 +40,13 @@ features:
       - La session disparaît des “prévues” et figure dans les sessions réalisées
       - Les séries saisies via le wizard sont bien persistées
 
-  - id: SESS-03
-    name: Sessions libres sans séries ni scores (NT-133)
-    objectif: Créer, relire, modifier et supprimer une session libre sans dégrader le parcours détaillé.
-    preconditions:
-      - Disposer éventuellement d'un calibre par défaut et d'au moins deux exercices
-    steps:
-      - Dans Sessions, ouvrir Autres créations et choisir Session libre
-      - Vérifier aussi les actions Session planifiée et Session réalisée détaillée
-      - Créer une session libre avec date, arme, calibre libre, nombre de tirs, distance entière et chacune des trois catégories lors de trois essais
-      - Associer zéro, un puis plusieurs exercices ; ajouter, consulter, remplacer puis supprimer une photo ; renseigner une synthèse
-      - Ouvrir la carte Libre, modifier la session puis la supprimer
-      - Vérifier l'aide contextuelle Sessions et les thèmes Classique et France
-      - Contrôler statistiques, objectifs d'assiduité, filtres catégorie/exercice et compteur de tirs de l'arme
-      - Exporter puis réimporter une sauvegarde contenant sessions détaillées et libres
-      - Modifier une session détaillée historique à distance décimale sans toucher la distance, puis essayer une nouvelle distance décimale
-    expected:
-      - Les trois créations secondaires sont distinctes par icône, libellé et sémantique accessibles
-      - La session libre est toujours réalisée et refuse arme/calibre vides, tirs nuls, distance nulle ou décimale
-      - Carte et détail affichent Libre, arme, calibre, catégorie, tirs, distance et exercices sans score, groupement, séries ni action Coach
-      - Synthèse, photo et exercices sont conservés ; l'import/export préserve chaque sous-type et ses champs
-      - Les agrégats d'assiduité et volumes incluent la session libre, contrairement aux métriques de séries ; un calibre inconnu est absent de la seule répartition par calibre
-      - La distance décimale historique reste affichée sans arrondi ni réécriture et doit être corrigée vers un entier avant enregistrement
-
   - id: DASH-01
     name: Tableau de bord – statistiques récap
     objectif: Afficher les statistiques macro et les dernières tendances.
     steps:
       - Créer/ajouter une session avec au moins 1 série
       - Ouvrir l’accueil/Tableau de bord (onglet Synthèse)
-      - Vérifier la moyenne de points 30 j, le groupement moyen 30 j, la meilleure série et le nombre de sessions du mois
+      - Vérifier l’affichage des indicateurs (réalisés total, 7/30/60/90j) et cartes récap
     expected:
       - Les valeurs sont cohérentes avec les sessions existantes
 
@@ -180,7 +83,7 @@ features:
     name: Exercices – session prévue depuis un exercice d’entraînement
     objectif: Vérifier que le nombre de séries prévues correspond au nombre de consignes.
     steps:
-      - Créer un exercice de type "Stand" avec 3 consignes
+      - Créer un exercice de type "entraînement" avec 3 consignes
       - Transformer cet exercice en session prévue
     expected:
       - La session prévue est créée avec un nombre de séries égal au nombre de consignes (3)
@@ -191,11 +94,9 @@ features:
     steps:
       - Ouvrir création de session, focus sur calibre → voir liste complète
       - Taper un alias (ex: 9mm) et sélectionner une option
-      - Saisir une valeur libre sans choisir de suggestion
     expected:
       - La liste s’affiche au focus
       - La sélection remplit le champ correctement
-      - La saisie n'est jamais remplacée automatiquement et la valeur libre est conservée
 
   - id: CAL-02
     name: Calibres – préférence par défaut
@@ -205,7 +106,6 @@ features:
       - Créer une nouvelle session
     expected:
       - Le champ calibre est prérempli avec le calibre par défaut
-      - Une édition conserve son calibre enregistré, même si la préférence a changé
 
   - id: PREF-01
     name: Réglages – préférences utilisateur (Hive)
@@ -281,63 +181,13 @@ features:
       - Un fichier est généré dans le dossier choisi
 
   - id: SEC-01
-    name: Rappels essentiels de sécurité
-    objectif: Afficher les rappels de sécurité et vérifier leur lisibilité.
+    name: Règles de sécurité (dashboard)
+    objectif: Afficher le bloc de règles FFTir et vérifier sa lisibilité.
     steps:
-      - Ouvrir l’accueil/Tableau de bord puis le panneau “Rappels Essentiels”
-      - Consulter l'onglet Sécurité
+      - Ouvrir l’accueil/Tableau de bord
+      - Vérifier la section “Règles de sécurité”
     expected:
-      - Les rappels sont lisibles et le lien d'information externe est accessible
-
-  - id: AUTH-01
-    name: Connexion Google – persistance longue durée (refresh token, NT-048)
-    objectif: Vérifier que la connexion reste active sans reconnexion manuelle après expiration de l'access token courant.
-    preconditions:
-      - Compte Google configuré
-    steps:
-      - Se connecter avec Google depuis Paramètres
-      - Utiliser l'app normalement (profil, Coach) pendant une durée dépassant la validité de l'access token courant
-    expected:
-      - Aucune demande de reconnexion : le renouvellement de l'access token est transparent
-      - Le profil et le Coach restent accessibles sans interruption visible
-
-  - id: AUTH-02
-    name: Déconnexion – révocation serveur et nettoyage local (NT-048)
-    objectif: Vérifier qu'une déconnexion efface systématiquement la session locale, même si le serveur est injoignable.
-    preconditions:
-      - Utilisateur connecté
-    steps:
-      - Depuis le profil, se déconnecter avec une connexion réseau fonctionnelle
-      - Se reconnecter, puis couper le réseau (mode avion) et se déconnecter à nouveau
-    expected:
-      - Dans les deux cas, l'app repasse immédiatement en mode non connecté (bouton "Se connecter" visible)
-      - Aucune donnée d'authentification ne subsiste localement après la déconnexion, même hors ligne
-
-  - id: AUTH-03
-    name: Résilience réseau – session connectée préservée hors ligne (NT-048)
-    objectif: Vérifier qu'une coupure réseau ne déconnecte jamais l'utilisateur et ne bloque pas le carnet.
-    preconditions:
-      - Utilisateur connecté
-    steps:
-      - Couper le réseau (mode avion)
-      - Consulter le carnet de tir, les statistiques, les objectifs et les exercices
-      - Ouvrir une session réalisée et tenter de lancer l'analyse Coach
-      - Réactiver le réseau
-    expected:
-      - Le carnet, les statistiques, les objectifs et les exercices restent pleinement utilisables hors ligne
-      - Le Coach indique clairement son indisponibilité réseau (pas un message de session expirée)
-      - L'utilisateur reste connecté (pas de retour forcé à l'écran de connexion) ; le Coach redevient utilisable une fois le réseau rétabli
-
-  - id: AUTH-04
-    name: Migration – installation existante sans refresh token (NT-048)
-    objectif: Vérifier qu'une installation connectée avant NT-048 (sans refresh token stocké) demande une unique reconnexion Google.
-    preconditions:
-      - Installation existante avec un access token stocké avant le déploiement de NT-048 (pas de refresh token)
-    steps:
-      - Ouvrir l'app après la mise à jour et attendre l'expiration de l'ancien access token (ou solliciter le profil/Coach)
-    expected:
-      - L'app demande une reconnexion Google une seule fois (message clair, pas de boucle ni de crash)
-      - Après cette reconnexion, la persistance longue durée (AUTH-01) fonctionne normalement
+      - Le contenu est à jour et lisible (révision FFTir 2024)
 
   - id: COACH-01
     name: Analyse coach – utilisateur connecté (via serveur)
@@ -366,15 +216,14 @@ features:
 
   - id: COACH-03
     name: Analyse coach – gestion des erreurs (session expirée / serveur indisponible)
-    objectif: Vérifier qu'une erreur d'analyse reste claire, distingue session expirée et panne réseau, et ne bloque pas l'app.
+    objectif: Vérifier qu'une erreur d'analyse reste claire et ne bloque pas l'app.
     preconditions:
-      - Utilisateur connecté avec un refresh token invalide/expiré/révoqué (ou serveur temporairement indisponible / réseau coupé)
+      - Utilisateur connecté avec un token expiré ou invalide (ou serveur temporairement indisponible)
     steps:
-      - Lancer l'analyse coach avec une session dont la reconnexion échoue (refresh invalide) : un message "Session expirée, reconnectez-vous." s'affiche
-      - Lancer l'analyse coach hors ligne (réseau coupé) : un message distinct d'indisponibilité réseau s'affiche (pas "session expirée")
+      - Lancer l'analyse coach dans ces conditions dégradées
     expected:
-      - Les deux messages sont clairement différenciés (session à reconnecter vs réseau indisponible)
-      - Aucun crash, l'app reste utilisable ensuite ; hors ligne, l'utilisateur n'est pas déconnecté (cf. AUTH-03)
+      - Un message d'erreur clair s'affiche ("Session expirée, reconnectez-vous." ou équivalent)
+      - Aucun crash, l'app reste utilisable ensuite
 
   - id: COACH-04
     name: Coach – sélection du ton (neutre / cool) (NT-032)

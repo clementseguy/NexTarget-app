@@ -99,7 +99,7 @@ void main() {
       final sessionRepo = _MemSessionRepo();
       final service = WeaponService(weaponRepository: weaponRepo, sessionRepository: sessionRepo);
       await service.addWeapon('Glock 17');
-      await sessionRepo.insert(DetailedShootingSession(weapon: 'Glock 17', caliber: '9mm', series: const []));
+      await sessionRepo.insert(ShootingSession(weapon: 'Glock 17', caliber: '9mm', series: const []));
 
       await _pump(tester, service);
       expect(find.text('Glock 17'), findsOneWidget);
@@ -136,7 +136,7 @@ void main() {
       final sessionRepo = _MemSessionRepo();
       final service = WeaponService(weaponRepository: weaponRepo, sessionRepository: sessionRepo);
       await service.addWeapon('CZ 75');
-      await sessionRepo.insert(DetailedShootingSession(weapon: 'CZ 75', caliber: '9mm', series: const []));
+      await sessionRepo.insert(ShootingSession(weapon: 'CZ 75', caliber: '9mm', series: const []));
 
       await _pump(tester, service);
 

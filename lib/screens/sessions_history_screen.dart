@@ -7,35 +7,22 @@ import 'session_detail_screen.dart';
 import '../models/shooting_session.dart';
 import '../models/exercise.dart';
 import '../utils/session_filters.dart';
-import '../widgets/guided_draft_card.dart';
-import 'guided_session_screen.dart';
+
 
 class SessionsHistoryScreen extends StatefulWidget {
-  final ValueChanged<String>? onTabChanged;
-  final SessionService? sessionService;
-  final ExerciseService? exerciseService;
-
-  const SessionsHistoryScreen({
-    super.key,
-    this.onTabChanged,
-    this.sessionService,
-    this.exerciseService,
-  });
+  const SessionsHistoryScreen({super.key});
 
   @override
   SessionsHistoryScreenState createState() => SessionsHistoryScreenState();
 }
 
 class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
-  late final SessionService _sessionService =
-      widget.sessionService ?? SessionService();
-  late final ExerciseService _exerciseService =
-      widget.exerciseService ?? ExerciseService();
+  final SessionService _sessionService = SessionService();
+  final ExerciseService _exerciseService = ExerciseService();
   late Future<(List<ShootingSession>, List<Exercise>)> _dataFuture;
   String _filter = 'realized'; // realized | planned
   // Filtre exercice (NT-007), combinable avec _filter. null = "Tous les exercices".
   String? _exerciseFilter;
-  String? _categoryFilter;
 
   /// Onglet actif, exposé pour que le bouton + (AppNavigator) crée une
   /// session du même statut que l'onglet affiché.
@@ -45,17 +32,12 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
   void initState() {
     super.initState();
     refreshSessions();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) widget.onTabChanged?.call(_filter);
-    });
   }
 
-  Future<void> refreshSessions() async {
-    final future = _loadData();
+  void refreshSessions() {
     setState(() {
-      _dataFuture = future;
+      _dataFuture = _loadData();
     });
-    await future;
   }
 
   Future<(List<ShootingSession>, List<Exercise>)> _loadData() async {
@@ -73,445 +55,230 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<(List<ShootingSession>, List<Exercise>)>(
-      future: _dataFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        final all = snapshot.data?.$1 ?? <ShootingSession>[];
-        final exercises = snapshot.data?.$2 ?? <Exercise>[];
-        final drafts = all
-            .whereType<DetailedShootingSession>()
-            .where((session) => session.status == SessionConstants.statusDraft)
-            .toList()
-          ..sort((a, b) =>
-              (b.date ?? DateTime(1970)).compareTo(a.date ?? DateTime(1970)));
-        // Un exercice lié à une session peut avoir été supprimé depuis (aucune
-        // suppression en cascade côté ExerciseService) : si le filtre actif ne
-        // correspond plus à un exercice existant, on retombe silencieusement
-        // sur "Tous les exercices" plutôt que de planter le DropdownButtonFormField.
-        final effectiveExerciseFilter =
-            exercises.any((e) => e.id == _exerciseFilter)
-                ? _exerciseFilter
-                : null;
-        final bool hasExerciseFilter = effectiveExerciseFilter != null;
-        final exerciseFiltered =
-            SessionFilters.byExercise(all, effectiveExerciseFilter);
-        final filtered =
-            SessionFilters.byCategory(exerciseFiltered, _categoryFilter);
-        final realizedAll = filtered
-            .where((s) =>
-                (s.status == SessionConstants.statusRealisee) &&
-                (s.date != null))
-            .toList();
-        final plannedAll = filtered
-            .where((s) => s.status == SessionConstants.statusPrevue)
-            .toList()
-          ..sort((a, b) {
-            if (a.date == null && b.date == null) {
-              return (a.id ?? 0).compareTo(b.id ?? 0);
-            }
-            if (a.date == null) return 1;
-            if (b.date == null) return -1;
-            final dateOrder = a.date!.compareTo(b.date!);
-            return dateOrder != 0
-                ? dateOrder
-                : (a.id ?? 0).compareTo(b.id ?? 0);
-          });
-
-        List<ShootingSession> sessions = realizedAll;
-        List<ShootingSession> planned = plannedAll;
-        if (_filter == 'planned') {
-          sessions = <ShootingSession>[];
-        } else {
-          // realized
-          planned = <ShootingSession>[];
-        }
-        final bool noDataRealized =
-            sessions.isEmpty && drafts.isEmpty && _filter == 'realized';
-        final bool noDataPlannedOnly = _filter == 'planned' && planned.isEmpty;
-        List<DateTime> orderedKeys = [];
-        final Map<DateTime, List<ShootingSession>> grouped = {};
-        if (_filter == 'realized') {
-          sessions.sort((a, b) => b.date!.compareTo(a.date!));
-          for (final s in sessions) {
-            final d = s.date!;
-            final key = DateTime(d.year, d.month, d.day);
-            grouped.putIfAbsent(key, () => []);
-            grouped[key]!.add(s);
+        future: _dataFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
           }
-          orderedKeys = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
-        } else {
-          // planned view: we won't group by day; treat each planned session as a flat list
-          orderedKeys = [];
-        }
-        // Stats header (different for planned vs realized)
-        final int nbSessions = sessions.length;
-        final detailedSessions = sessions.whereType<DetailedShootingSession>();
-        final int totalSeries = detailedSessions.fold(
-          0,
-          (sum, session) => sum + session.series.length,
-        );
-        final int detailedSessionCount = detailedSessions.length;
-        final double avgSeries =
-            detailedSessionCount > 0 ? totalSeries / detailedSessionCount : 0;
-        final int daysActive = grouped.length;
-        // Planned metrics
-        int plannedCount = planned.length;
-        int plannedWithDate = planned.where((p) => p.date != null).length;
-        int plannedWithoutDate = plannedCount - plannedWithDate;
-        DateTime? nextPlannedDate;
-        final datedPlanned = planned.where((p) => p.date != null).toList();
-        if (datedPlanned.isNotEmpty) {
-          datedPlanned.sort((a, b) => a.date!.compareTo(b.date!));
-          nextPlannedDate = datedPlanned.first.date;
-        }
-        return RefreshIndicator(
-          onRefresh: refreshSessions,
-          child: ListView.builder(
-            padding: EdgeInsets.only(bottom: 112, top: 8),
-            itemCount: 1 +
-                (noDataRealized ? 1 : 0) +
-                (noDataPlannedOnly ? 1 : 0) +
-                (_filter == 'realized' ? orderedKeys.length : planned.length) +
-                (planned.isNotEmpty && _filter == 'realized' ? 2 : 0),
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: SegmentedButton<String>(
-                              segments: const [
-                                ButtonSegment(
-                                    value: 'realized',
-                                    label: Text('Réalisées')),
-                                ButtonSegment(
-                                    value: 'planned', label: Text('Prévues')),
-                              ],
-                              selected: {_filter},
-                              onSelectionChanged: (selection) {
-                                setState(() => _filter = selection.first);
-                                widget.onTabChanged?.call(_filter);
-                              },
-                            ),
+      final all = snapshot.data?.$1 ?? <ShootingSession>[];
+      final exercises = snapshot.data?.$2 ?? <Exercise>[];
+      // Un exercice lié à une session peut avoir été supprimé depuis (aucune
+      // suppression en cascade côté ExerciseService) : si le filtre actif ne
+      // correspond plus à un exercice existant, on retombe silencieusement
+      // sur "Tous les exercices" plutôt que de planter le DropdownButtonFormField.
+      final effectiveExerciseFilter = exercises.any((e) => e.id == _exerciseFilter) ? _exerciseFilter : null;
+      final bool hasExerciseFilter = effectiveExerciseFilter != null;
+      final exerciseFiltered = SessionFilters.byExercise(all, effectiveExerciseFilter);
+      final realizedAll = exerciseFiltered.where((s) => (s.status == SessionConstants.statusRealisee) && (s.date != null)).toList();
+      final plannedAll = exerciseFiltered.where((s) => s.status == SessionConstants.statusPrevue).toList();
+
+      List<ShootingSession> sessions = realizedAll;
+      List<ShootingSession> planned = plannedAll;
+      if (_filter == 'planned') {
+        sessions = <ShootingSession>[];
+      } else { // realized
+        planned = <ShootingSession>[];
+      }
+            final bool noDataRealized = sessions.isEmpty && _filter == 'realized';
+            final bool noDataPlannedOnly = _filter == 'planned' && planned.isEmpty;
+            List<DateTime> orderedKeys = [];
+            final Map<DateTime,List<ShootingSession>> grouped = {};
+            if (_filter == 'realized') {
+              sessions.sort((a,b)=> b.date!.compareTo(a.date!));
+              for (final s in sessions) {
+                final d = s.date!;
+                final key = DateTime(d.year, d.month, d.day);
+                grouped.putIfAbsent(key, ()=> []); grouped[key]!.add(s);
+              }
+              orderedKeys = grouped.keys.toList()..sort((a,b)=> b.compareTo(a));
+            } else {
+              // planned view: we won't group by day; treat each planned session as a flat list
+              orderedKeys = [];
+            }
+            // Stats header (different for planned vs realized)
+            final int nbSessions = sessions.length;
+            final int totalSeries = sessions.fold(0, (sum, s) => sum + (s.series.length));
+            final double avgSeries = nbSessions > 0 ? totalSeries / nbSessions : 0;
+            final int daysActive = grouped.length;
+            // Planned metrics
+            int plannedCount = planned.length;
+            int plannedWithDate = planned.where((p)=> p.date!=null).length;
+            int plannedWithoutDate = plannedCount - plannedWithDate;
+            DateTime? nextPlannedDate;
+            final datedPlanned = planned.where((p)=> p.date!=null).toList();
+            if (datedPlanned.isNotEmpty) {
+              datedPlanned.sort((a,b)=> a.date!.compareTo(b.date!));
+              nextPlannedDate = datedPlanned.first.date;
+            }
+            return RefreshIndicator(
+              onRefresh: () async { refreshSessions(); await Future.delayed(Duration(milliseconds:300)); },
+              child: ListView.builder(
+                padding: EdgeInsets.only(bottom: 24, top: 8),
+                itemCount: 1 + (noDataRealized ? 1 : 0) + (noDataPlannedOnly ? 1 : 0) + (_filter=='realized' ? orderedKeys.length : planned.length) + (planned.isNotEmpty && _filter=='realized' ? 2 : 0),
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal:16.0, vertical: 8),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: SegmentedButton<String>(
+                                  segments: const [
+                                    ButtonSegment(value: 'realized', label: Text('Réalisées')),
+                                    ButtonSegment(value: 'planned', label: Text('Prévues')),
+                                  ],
+                                  selected: {_filter},
+                                  onSelectionChanged: (s)=> setState(()=> _filter = s.first),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                    if (_filter == 'realized' && drafts.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
-                              child: Text(
-                                'Séances en cours',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                          child: DropdownButtonFormField<String?>(
+                            initialValue: effectiveExerciseFilter,
+                            isExpanded: true,
+                            decoration: const InputDecoration(
+                              labelText: 'Filtrer par exercice',
+                              prefixIcon: Icon(Icons.filter_alt_outlined),
+                              isDense: true,
+                              border: OutlineInputBorder(),
                             ),
-                            ...drafts.map(
-                              (draft) => GuidedDraftCard(
-                                draft: draft,
-                                onResume: () => _resumeDraft(draft),
-                                onAbandon: () => _abandonDraft(draft),
-                              ),
+                            items: [
+                              const DropdownMenuItem<String?>(value: null, child: Text('Tous les exercices')),
+                              ...exercises.map((e) => DropdownMenuItem<String?>(
+                                    value: e.id,
+                                    child: Text(e.name, overflow: TextOverflow.ellipsis),
+                                  )),
+                            ],
+                            onChanged: (id) => setState(() => _exerciseFilter = id),
+                          ),
+                        ),
+                        if (_filter == 'realized')
+                          _SummaryHeader(nbSessions: nbSessions, totalSeries: totalSeries, avgSeries: avgSeries, daysActive: daysActive)
+                        else
+                          _PlannedHeader(
+                            totalPlanned: plannedCount,
+                            withDate: plannedWithDate,
+                            withoutDate: plannedWithoutDate,
+                            nextDate: nextPlannedDate,
+                          ),
+                      ],
+                    );
+                  }
+                  int cursor = 1;
+                  if (noDataPlannedOnly) {
+                    if (index == cursor) {
+                      return Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Column(
+                          children: [
+                            Icon(Icons.pending_actions, size: 48, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
+                            SizedBox(height: 12),
+                            Text(hasExerciseFilter ? 'Aucune session prévue pour cet exercice' : 'Aucune session prévue', style: TextStyle(fontWeight: FontWeight.w600)),
+                            SizedBox(height: 8),
+                            Text(
+                              hasExerciseFilter ? 'Essaie un autre exercice ou réinitialise le filtre.' : 'Crée une session prévue depuis le +',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                             ),
                           ],
                         ),
-                      ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: DropdownButtonFormField<String?>(
-                              initialValue: effectiveExerciseFilter,
-                              isExpanded: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Exercice',
-                                prefixIcon: Icon(Icons.filter_alt_outlined),
-                                isDense: true,
-                                border: OutlineInputBorder(),
-                              ),
-                              items: [
-                                const DropdownMenuItem<String?>(
-                                  value: null,
-                                  child: Text(
-                                    'Tous les exercices',
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                ...exercises.map(
-                                  (e) => DropdownMenuItem<String?>(
-                                    value: e.id,
-                                    child: Text(
-                                      e.name,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              onChanged: (id) =>
-                                  setState(() => _exerciseFilter = id),
+                      );
+                    }
+                    cursor++;
+                  }
+                  if (noDataRealized) {
+                    if (index == cursor) {
+                      return Padding(
+                        padding: const EdgeInsets.all(48.0),
+                        child: Column(
+                          children: [
+                            Icon(Icons.insights_outlined, size: 48, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.24)),
+                            SizedBox(height: 12),
+                            Text(hasExerciseFilter ? 'Aucune session réalisée pour cet exercice' : 'Aucune session réalisée', style: TextStyle(fontWeight: FontWeight.w600)),
+                            SizedBox(height: 8),
+                            Text(
+                              hasExerciseFilter ? 'Essaie un autre exercice ou réinitialise le filtre.' : 'Utilise le bouton + pour ajouter ta première.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: DropdownButtonFormField<String?>(
-                              initialValue: _categoryFilter,
-                              isExpanded: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Catégorie',
-                                prefixIcon: Icon(Icons.category_outlined),
-                                isDense: true,
-                                border: OutlineInputBorder(),
-                              ),
-                              items: [
-                                const DropdownMenuItem<String?>(
-                                  value: null,
-                                  child: Text(
-                                    'Toutes les catégories',
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                ...SessionConstants.categories.map(
-                                  (category) => DropdownMenuItem<String?>(
-                                    value: category,
-                                    child: Text(
-                                      SessionConstants.categoryLabel(category),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              onChanged: (category) =>
-                                  setState(() => _categoryFilter = category),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (_filter == 'realized')
-                      _SummaryHeader(
-                          nbSessions: nbSessions,
-                          totalSeries: totalSeries,
-                          avgSeries: avgSeries,
-                          daysActive: daysActive)
-                    else
-                      _PlannedHeader(
-                        totalPlanned: plannedCount,
-                        withDate: plannedWithDate,
-                        withoutDate: plannedWithoutDate,
-                        nextDate: nextPlannedDate,
-                      ),
-                  ],
-                );
-              }
-              int cursor = 1;
-              if (noDataPlannedOnly) {
-                if (index == cursor) {
-                  return Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Column(
-                      children: [
-                        Icon(Icons.pending_actions,
-                            size: 48,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.24)),
-                        SizedBox(height: 12),
-                        Text(
-                            hasExerciseFilter
-                                ? 'Aucune session prévue pour cet exercice'
-                                : 'Aucune session prévue',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
-                        SizedBox(height: 8),
-                        Text(
-                          hasExerciseFilter
-                              ? 'Essaie un autre exercice ou réinitialise le filtre.'
-                              : 'Crée une session prévue depuis le +',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.6)),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-                cursor++;
-              }
-              if (noDataRealized) {
-                if (index == cursor) {
-                  return Padding(
-                    padding: const EdgeInsets.all(48.0),
-                    child: Column(
-                      children: [
-                        Icon(Icons.insights_outlined,
-                            size: 48,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.24)),
-                        SizedBox(height: 12),
-                        Text(
-                            hasExerciseFilter
-                                ? 'Aucune session réalisée pour cet exercice'
-                                : 'Aucune session réalisée',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
-                        SizedBox(height: 8),
-                        Text(
-                          hasExerciseFilter
-                              ? 'Essaie un autre exercice ou réinitialise le filtre.'
-                              : 'Utilise le bouton + pour ajouter ta première.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.6)),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-                cursor++;
-              }
-              if (planned.isNotEmpty && _filter == 'realized') {
-                if (index == cursor) {
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                    child: Text('Sessions prévues',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: Colors.amberAccent)),
-                  );
-                }
-                cursor++;
-                if (index == cursor) {
-                  return Column(
-                    children: planned
-                        .map((p) => Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12.0, vertical: 4),
-                              child: SessionCard(
-                                session: p.toMap(),
-                                series: p.series.map((s) => s.toMap()).toList(),
-                                onTap: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          SessionDetailScreen(sessionData: {
-                                        'session': p.toMap(),
-                                        'series': p.series
-                                            .map((s) => s.toMap())
-                                            .toList(),
-                                      }),
-                                    ),
-                                  );
-                                  refreshSessions();
-                                },
-                              ),
-                            ))
-                        .toList(),
-                  );
-                }
-                cursor++;
-              }
-              if (_filter == 'planned') {
-                final plannedIndex = index - cursor;
-                if (plannedIndex < 0 || plannedIndex >= planned.length) {
-                  return SizedBox.shrink();
-                }
-                final p = planned[plannedIndex];
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
-                  child: SessionCard(
-                    session: p.toMap(),
-                    series: p.series.map((s) => s.toMap()).toList(),
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              SessionDetailScreen(sessionData: {
-                            'session': p.toMap(),
-                            'series': p.series.map((s) => s.toMap()).toList(),
-                          }),
+                          ],
                         ),
                       );
-                      refreshSessions();
-                    },
-                  ),
-                );
-              } else {
-                final dayIndex = index - cursor;
-                final day = orderedKeys[dayIndex];
-                final list = grouped[day]!;
-                return _DaySection(
-                    day: day,
-                    sessions: list,
-                    onChanged: refreshSessions,
-                    sessionService: _sessionService);
-              }
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _resumeDraft(DetailedShootingSession draft) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => GuidedSessionScreen(
-          draft: draft,
-          sessionService: _sessionService,
-          onSessionChanged: refreshSessions,
-        ),
-      ),
-    );
-    if (mounted) refreshSessions();
-  }
-
-  Future<void> _abandonDraft(DetailedShootingSession draft) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Abandonner la séance ?'),
-        content: const Text(
-          'Le brouillon et les séries enregistrées seront supprimés.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Annuler'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Abandonner'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-    await _sessionService.abandonGuidedDraft(draft);
-    if (mounted) refreshSessions();
+                    }
+                    cursor++;
+                  }
+                  if (planned.isNotEmpty && _filter == 'realized') {
+                    if (index == cursor) {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(16,8,16,4),
+                        child: Text('Sessions prévues', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.amberAccent)),
+                      );
+                    }
+                    cursor++;
+                    if (index == cursor) {
+                      return Column(
+                        children: planned.map((p)=> Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
+                          child: SessionCard(
+                            session: p.toMap(),
+                            series: p.series.map((s)=> s.toMap()).toList(),
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SessionDetailScreen(sessionData: {
+                                    'session': p.toMap(),
+                                    'series': p.series.map((s)=> s.toMap()).toList(),
+                                  }),
+                                ),
+                              );
+                              refreshSessions();
+                            },
+                          ),
+                        )).toList(),
+                      );
+                    }
+                    cursor++;
+                  }
+                  if (_filter == 'planned') {
+                    final plannedIndex = index - cursor;
+                    if (plannedIndex < 0 || plannedIndex >= planned.length) return SizedBox.shrink();
+                    final p = planned[plannedIndex];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
+                      child: SessionCard(
+                        session: p.toMap(),
+                        series: p.series.map((s)=> s.toMap()).toList(),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SessionDetailScreen(sessionData: {
+                                'session': p.toMap(),
+                                'series': p.series.map((s)=> s.toMap()).toList(),
+                              }),
+                            ),
+                          );
+                          refreshSessions();
+                        },
+                      ),
+                    );
+                  } else {
+                    final dayIndex = index - cursor;
+                    final day = orderedKeys[dayIndex];
+                    final list = grouped[day]!;
+                    return _DaySection(day: day, sessions: list, onChanged: refreshSessions, sessionService: _sessionService);
+                  }
+                },
+              ),
+            );
+        },
+      );
   }
 }
 
@@ -520,15 +287,11 @@ class _SummaryHeader extends StatelessWidget {
   final int totalSeries;
   final double avgSeries;
   final int daysActive;
-  const _SummaryHeader(
-      {required this.nbSessions,
-      required this.totalSeries,
-      required this.avgSeries,
-      required this.daysActive});
+  const _SummaryHeader({required this.nbSessions, required this.totalSeries, required this.avgSeries, required this.daysActive});
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16,16,16,12),
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         elevation: 2,
@@ -541,41 +304,23 @@ class _SummaryHeader extends StatelessWidget {
                 children: [
                   Icon(Icons.timeline, color: Colors.amberAccent),
                   SizedBox(width: 8),
-                  Text('Résumé',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text('Résumé', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ],
               ),
               SizedBox(height: 12),
               Row(
                 children: [
-                  _Stat(
-                      label: 'Sessions',
-                      value: nbSessions.toString(),
-                      icon: Icons.track_changes,
-                      color: Colors.amberAccent),
+                  _Stat(label: 'Sessions', value: nbSessions.toString(), icon: Icons.track_changes, color: Colors.amberAccent),
                   _VerticalDivider(),
-                  _Stat(
-                      label: 'Séries',
-                      value: totalSeries.toString(),
-                      icon: Icons.list_alt,
-                      color: Colors.lightBlueAccent),
+                  _Stat(label: 'Séries', value: totalSeries.toString(), icon: Icons.list_alt, color: Colors.lightBlueAccent),
                 ],
               ),
               SizedBox(height: 10),
               Row(
                 children: [
-                  _Stat(
-                      label: 'Séries/session',
-                      value: avgSeries.toStringAsFixed(1),
-                      icon: Icons.stacked_line_chart,
-                      color: Colors.pinkAccent),
+                  _Stat(label: 'Moy./session', value: avgSeries.toStringAsFixed(1), icon: Icons.stacked_line_chart, color: Colors.pinkAccent),
                   _VerticalDivider(),
-                  _Stat(
-                      label: 'Jours actifs',
-                      value: daysActive.toString(),
-                      icon: Icons.event_available,
-                      color: Colors.tealAccent),
+                  _Stat(label: 'Jours actifs', value: daysActive.toString(), icon: Icons.event_available, color: Colors.tealAccent),
                 ],
               ),
             ],
@@ -591,17 +336,12 @@ class _PlannedHeader extends StatelessWidget {
   final int withDate;
   final int withoutDate;
   final DateTime? nextDate;
-  const _PlannedHeader(
-      {required this.totalPlanned,
-      required this.withDate,
-      required this.withoutDate,
-      required this.nextDate});
+  const _PlannedHeader({required this.totalPlanned, required this.withDate, required this.withoutDate, required this.nextDate});
   @override
   Widget build(BuildContext context) {
-    String nextLabel =
-        nextDate != null ? '${nextDate!.day}/${nextDate!.month}' : '-';
+    String nextLabel = nextDate != null ? '${nextDate!.day}/${nextDate!.month}' : '-';
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16,16,16,12),
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         elevation: 2,
@@ -614,43 +354,23 @@ class _PlannedHeader extends StatelessWidget {
                 children: [
                   Icon(Icons.pending_actions, color: Colors.blueAccent),
                   SizedBox(width: 8),
-                  Text('Résumé des sessions prévues',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.lightBlue[100])),
+                  Text('Résumé des sessions prévues', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.lightBlue[100])),
                 ],
               ),
               SizedBox(height: 12),
               Row(
                 children: [
-                  _Stat(
-                      label: 'Total',
-                      value: totalPlanned.toString(),
-                      icon: Icons.list_alt,
-                      color: Colors.blueAccent),
+                  _Stat(label: 'Total', value: totalPlanned.toString(), icon: Icons.list_alt, color: Colors.blueAccent),
                   _VerticalDivider(),
-                  _Stat(
-                      label: 'Datées',
-                      value: withDate.toString(),
-                      icon: Icons.event,
-                      color: Colors.indigoAccent),
+                  _Stat(label: 'Datées', value: withDate.toString(), icon: Icons.event, color: Colors.indigoAccent),
                 ],
               ),
               SizedBox(height: 10),
               Row(
                 children: [
-                  _Stat(
-                      label: 'Sans date',
-                      value: withoutDate.toString(),
-                      icon: Icons.help_outline,
-                      color: Colors.deepPurpleAccent),
+                  _Stat(label: 'Sans date', value: withoutDate.toString(), icon: Icons.help_outline, color: Colors.deepPurpleAccent),
                   _VerticalDivider(),
-                  _Stat(
-                      label: 'Prochaine',
-                      value: nextLabel,
-                      icon: Icons.schedule,
-                      color: Colors.cyanAccent),
+                  _Stat(label: 'Prochaine', value: nextLabel, icon: Icons.schedule, color: Colors.cyanAccent),
                 ],
               ),
             ],
@@ -663,11 +383,7 @@ class _PlannedHeader extends StatelessWidget {
 
 class _VerticalDivider extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => Container(
-      width: 1,
-      height: 42,
-      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
-      margin: EdgeInsets.symmetric(horizontal: 8));
+  Widget build(BuildContext context) => Container(width: 1, height: 42, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12), margin: EdgeInsets.symmetric(horizontal: 8));
 }
 
 class _Stat extends StatelessWidget {
@@ -675,11 +391,7 @@ class _Stat extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
-  const _Stat(
-      {required this.label,
-      required this.value,
-      required this.icon,
-      required this.color});
+  const _Stat({required this.label, required this.value, required this.icon, required this.color});
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -694,30 +406,12 @@ class _Stat extends StatelessWidget {
             child: Icon(icon, size: 18, color: color),
           ),
           SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.6),
-                  ),
-                ),
-                Text(
-                  value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
+              Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+            ],
           ),
         ],
       ),
@@ -730,11 +424,7 @@ class _DaySection extends StatelessWidget {
   final List<ShootingSession> sessions;
   final VoidCallback onChanged;
   final SessionService sessionService;
-  const _DaySection(
-      {required this.day,
-      required this.sessions,
-      required this.onChanged,
-      required this.sessionService});
+  const _DaySection({required this.day, required this.sessions, required this.onChanged, required this.sessionService});
   @override
   Widget build(BuildContext context) {
     final title = '${day.day}/${day.month}/${day.year}';
@@ -747,98 +437,71 @@ class _DaySection extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6),
             child: Row(
               children: [
-                Icon(Icons.calendar_today,
-                    size: 14, color: Theme.of(context).colorScheme.primary),
+                Icon(Icons.calendar_today, size: 14, color: Theme.of(context).colorScheme.primary),
                 SizedBox(width: 6),
-                Text(title,
-                    style:
-                        TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                 SizedBox(width: 8),
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.07),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.07),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(
-                      '${sessions.length} session${sessions.length > 1 ? 's' : ''}',
-                      style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.6))),
+                  child: Text('${sessions.length} session${sessions.length>1? 's':''}', style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
                 )
               ],
             ),
           ),
           ...sessions.map((session) => Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
-                child: GestureDetector(
-                  onLongPress: () async {
-                    final action = await showModalBottomSheet<String>(
-                      context: context,
-                      builder: (ctx) => SafeArea(
-                        child: Wrap(children: [
-                          ListTile(
-                              leading: Icon(Icons.delete, color: Colors.red),
-                              title: Text('Supprimer'),
-                              onTap: () => Navigator.pop(ctx, 'delete')),
-                          ListTile(
-                              leading: Icon(Icons.close),
-                              title: Text('Annuler'),
-                              onTap: () => Navigator.pop(ctx, null)),
-                        ]),
-                      ),
-                    );
-                    if (action == 'delete' && session.id != null) {
-                      if (!context.mounted) return;
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: Text('Supprimer la session ?'),
-                          content: Text('Cette action est irréversible.'),
-                          actions: [
-                            TextButton(
-                                onPressed: () => Navigator.pop(ctx, false),
-                                child: Text('Annuler')),
-                            TextButton(
-                                onPressed: () => Navigator.pop(ctx, true),
-                                child: Text('Supprimer',
-                                    style: TextStyle(color: Colors.red))),
-                          ],
-                        ),
-                      );
-                      if (confirm == true) {
-                        await sessionService.deleteSession(session.id!);
-                        onChanged();
-                      }
-                    }
-                  },
-                  child: SessionCard(
-                    session: session.toMap(),
-                    series: session.series.map((s) => s.toMap()).toList(),
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              SessionDetailScreen(sessionData: {
-                            'session': session.toMap(),
-                            'series':
-                                session.series.map((s) => s.toMap()).toList(),
-                          }),
-                        ),
-                      );
-                      onChanged();
-                    },
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
+            child: GestureDetector(
+              onLongPress: () async {
+                final action = await showModalBottomSheet<String>(
+                  context: context,
+                  builder: (ctx) => SafeArea(
+                    child: Wrap(children: [
+                      ListTile(leading: Icon(Icons.delete, color: Colors.red), title: Text('Supprimer'), onTap: ()=> Navigator.pop(ctx, 'delete')),
+                      ListTile(leading: Icon(Icons.close), title: Text('Annuler'), onTap: ()=> Navigator.pop(ctx, null)),
+                    ]),
                   ),
-                ),
-              )),
+                );
+                if (action == 'delete' && session.id != null) {
+                  if (!context.mounted) return;
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text('Supprimer la session ?'),
+                      content: Text('Cette action est irréversible.'),
+                      actions: [
+                        TextButton(onPressed: ()=> Navigator.pop(ctx, false), child: Text('Annuler')),
+                        TextButton(onPressed: ()=> Navigator.pop(ctx, true), child: Text('Supprimer', style: TextStyle(color: Colors.red))),
+                      ],
+                    ),
+                  );
+                  if (confirm == true) {
+                    await sessionService.deleteSession(session.id!);
+                    onChanged();
+                  }
+                }
+              },
+              child: SessionCard(
+                session: session.toMap(),
+                series: session.series.map((s) => s.toMap()).toList(),
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SessionDetailScreen(sessionData: {
+                        'session': session.toMap(),
+                        'series': session.series.map((s) => s.toMap()).toList(),
+                      }),
+                    ),
+                  );
+                  onChanged();
+                },
+              ),
+            ),
+          )),
         ],
       ),
     );

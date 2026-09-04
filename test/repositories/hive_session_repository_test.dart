@@ -18,10 +18,8 @@ void main() {
 
   test('insert returns an id and getAll returns stored session', () async {
     final repo = HiveSessionRepository();
-    final sess = DetailedShootingSession(
-      weapon: 'P',
-      caliber: '22LR',
-      status: 'réalisée',
+    final sess = ShootingSession(
+      weapon: 'P', caliber: '22LR', status: 'réalisée',
       date: DateTime.now(),
       series: [Series(distance: 10, points: 50, groupSize: 20, shotCount: 5)],
     );
@@ -32,77 +30,23 @@ void main() {
     expect(all.first.series.first.points, 50);
   });
 
-  test('persiste une session libre sans série', () async {
+  test('update with preserveExistingSeriesIfEmpty keeps prior series', () async {
     final repo = HiveSessionRepository();
-    final session = SimpleShootingSession(
-      date: DateTime(2026, 9, 1),
-      weapon: 'Pistolet',
-      caliber: '9mm',
-      shotCount: 25,
-      distance: 15,
-      exercises: const ['e1'],
-    );
-
-    final id = await repo.insert(session);
-    final stored = (await repo.getAll()).single;
-
-    expect(id, isNonNegative);
-    expect(stored, isA<SimpleShootingSession>());
-    expect((stored as SimpleShootingSession).shotCount, 25);
-    expect(stored.series, isEmpty);
-  });
-
-  test('persiste et relit un brouillon avec sa saisie partielle', () async {
-    final repo = HiveSessionRepository();
-    final draft = DetailedShootingSession(
-      date: DateTime(2026, 9, 4),
-      weapon: 'Pistolet',
-      caliber: '9 mm',
-      status: 'brouillon',
-      series: [
-        Series(
-          shotCount: 7,
-          distance: 25,
-          points: 0,
-          groupSize: 0,
-          isCompleted: false,
-          isDraftStarted: true,
-        ),
-      ],
-    );
-
-    final id = await repo.insert(draft);
-    final stored = (await repo.getAll()).single as DetailedShootingSession;
-
-    expect(id, isNonNegative);
-    expect(stored.status, 'brouillon');
-    expect(stored.series.single.isCompleted, isFalse);
-    expect(stored.series.single.isDraftStarted, isTrue);
-  });
-
-  test('update with preserveExistingSeriesIfEmpty keeps prior series',
-      () async {
-    final repo = HiveSessionRepository();
-    final sess = DetailedShootingSession(
-      weapon: 'P',
-      caliber: '22LR',
-      status: 'réalisée',
+    final sess = ShootingSession(
+      weapon: 'P', caliber: '22LR', status: 'réalisée',
       date: DateTime.now(),
       series: [Series(distance: 10, points: 40, groupSize: 22, shotCount: 5)],
     );
     final id = await repo.insert(sess);
 
     // Update with empty series but preserveExistingSeriesIfEmpty=true
-    final updated = DetailedShootingSession(
+    final updated = ShootingSession(
       id: id,
-      weapon: 'P',
-      caliber: '22LR',
-      status: 'réalisée',
+      weapon: 'P', caliber: '22LR', status: 'réalisée',
       date: sess.date,
       series: const [],
     );
-    final usedFallback =
-        await repo.update(updated, preserveExistingSeriesIfEmpty: true);
+    final usedFallback = await repo.update(updated, preserveExistingSeriesIfEmpty: true);
     expect(usedFallback, isTrue);
     final all = await repo.getAll();
     expect(all.first.series, isNotEmpty);
@@ -110,10 +54,8 @@ void main() {
 
   test('delete and clearAll remove items', () async {
     final repo = HiveSessionRepository();
-    final sess = DetailedShootingSession(
-      weapon: 'P',
-      caliber: '22LR',
-      status: 'réalisée',
+    final sess = ShootingSession(
+      weapon: 'P', caliber: '22LR', status: 'réalisée',
       date: DateTime.now(),
       series: [Series(distance: 10, points: 40, groupSize: 22, shotCount: 5)],
     );
@@ -128,26 +70,17 @@ void main() {
     expect(all, isEmpty);
   });
 
-  test(
-      'update throws when the underlying Hive write fails (au lieu de renvoyer false silencieusement)',
-      () async {
+  test('update throws when the underlying Hive write fails (au lieu de renvoyer false silencieusement)', () async {
     final repo = HiveSessionRepository();
-    final sess = DetailedShootingSession(
-      weapon: 'P',
-      caliber: '22LR',
-      status: 'réalisée',
+    final sess = ShootingSession(
+      weapon: 'P', caliber: '22LR', status: 'réalisée',
       date: DateTime.now(),
       series: [Series(distance: 10, points: 40, groupSize: 22, shotCount: 5)],
     );
     final id = await repo.insert(sess);
     await Hive.box('sessions').close(); // force l'échec du prochain accès Hive
 
-    final updated = DetailedShootingSession(
-        id: id,
-        weapon: 'P',
-        caliber: '22LR',
-        status: 'réalisée',
-        series: sess.series);
+    final updated = ShootingSession(id: id, weapon: 'P', caliber: '22LR', status: 'réalisée', series: sess.series);
     await expectLater(
       repo.update(updated, preserveExistingSeriesIfEmpty: false),
       throwsA(isA<StateError>()),

@@ -96,27 +96,6 @@ class LocalDatabaseHive {
     }
   }
 
-  /// Insère plusieurs sessions dans une unique écriture Hive.
-  Future<List<int>> insertSessions(
-    List<({Map<String, dynamic> session, List<Map<String, dynamic>> series})> entries,
-  ) async {
-    if (entries.isEmpty) return const [];
-    final intKeyValues = _box.keys.whereType<int>();
-    var nextKey = intKeyValues.isEmpty
-        ? 0
-        : intKeyValues.reduce((a, b) => a > b ? a : b) + 1;
-    final values = <int, dynamic>{};
-    final keys = <int>[];
-    for (final entry in entries) {
-      final key = nextKey++;
-      final session = Map<String, dynamic>.from(entry.session)..['id'] = key;
-      values[key] = {'session': session, 'series': entry.series};
-      keys.add(key);
-    }
-    await _box.putAll(values);
-    return keys;
-  }
-
   /// Met à jour une session existante dans la base de données.
   /// Retourne true si la mise à jour a réussi, false sinon.
   Future<bool> updateSession(Map<String, dynamic> session, List<Map<String, dynamic>> seriesList) async {

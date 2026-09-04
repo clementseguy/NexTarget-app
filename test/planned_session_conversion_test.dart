@@ -17,7 +17,7 @@ void main() {
     });
     test('convert planned to realized updates status and date', () async {
       final service = SessionService();
-      final session = DetailedShootingSession(
+      final session = ShootingSession(
         weapon: 'Pistol',
         caliber: '22LR',
         series: [Series(distance: 1, points: 0, groupSize: 0, shotCount: 1, comment: '')],

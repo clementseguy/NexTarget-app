@@ -10,7 +10,7 @@ class DashboardSummary {
   final int sessionsThisMonth;
   final bool hasBestScore;
   final bool hasBestGroupSize;
-
+  
   const DashboardSummary({
     required this.avgPoints30Days,
     required this.avgGroupSize30Days,
@@ -20,7 +20,7 @@ class DashboardSummary {
     required this.hasBestScore,
     required this.hasBestGroupSize,
   });
-
+  
   /// Constructeur pour état vide
   const DashboardSummary.empty()
       : avgPoints30Days = 0.0,
@@ -42,7 +42,7 @@ class EvolutionData {
   final String unit;
   final double minY;
   final double maxY;
-
+  
   const EvolutionData({
     required this.dataPoints,
     required this.sma3Points,
@@ -53,7 +53,7 @@ class EvolutionData {
     required this.minY,
     required this.maxY,
   });
-
+  
   /// Constructeur pour état vide
   const EvolutionData.empty(this.title, this.unit)
       : dataPoints = const [],
@@ -69,13 +69,13 @@ class DistributionData {
   final Map<String, double> data; // label -> valeur (% ou count)
   final String title;
   final bool isPercentage;
-
+  
   const DistributionData({
     required this.data,
     required this.title,
     required this.isPercentage,
   });
-
+  
   /// Constructeur pour état vide
   const DistributionData.empty(this.title, {this.isPercentage = true})
       : data = const {};
@@ -85,12 +85,12 @@ class DistributionData {
 class PointsHistogramData {
   final List<HistogramBucket> buckets;
   final String title;
-
+  
   const PointsHistogramData({
     required this.buckets,
     required this.title,
   });
-
+  
   const PointsHistogramData.empty(this.title) : buckets = const [];
 }
 
@@ -99,7 +99,7 @@ class HistogramBucket {
   final int count;
   final double startValue;
   final double endValue;
-
+  
   const HistogramBucket({
     required this.label,
     required this.count,
@@ -113,18 +113,17 @@ class HistogramBucket {
 /// Données pour les cartes statistiques avancées
 class AdvancedStatsData {
   final double consistency; // 0-100 ou -1 si pas assez de données
-  final double progression; // pourcentage ou NaN si pas assez de données
+  final double progression; // pourcentage ou NaN si pas assez de données  
   final String? dominantHandMethod; // 'one' ou 'two' ou null si pas de données
-  final double
-      dominantHandMethodPercentage; // pourcentage de séries avec la prise dominante
-
+  final double dominantHandMethodPercentage; // pourcentage de séries avec la prise dominante
+  
   const AdvancedStatsData({
     required this.consistency,
     required this.progression,
     required this.dominantHandMethod,
     required this.dominantHandMethodPercentage,
   });
-
+  
   const AdvancedStatsData.empty()
       : consistency = -1,
         progression = double.nan,
@@ -132,66 +131,24 @@ class AdvancedStatsData {
         dominantHandMethodPercentage = 0.0;
 }
 
-/// Moyenne d'une session utilisée par une sparkline du comparatif NT-014.
-class SessionMetricPoint {
-  final DateTime date;
-  final double value;
-
-  const SessionMetricPoint({required this.date, required this.value});
-}
-
-/// Comparaison d'une métrique entre deux fenêtres glissantes emboîtées.
-class EvolutionMetricComparison {
-  final double? avg30Days;
-  final double? avg90Days;
-  final double? absoluteDelta;
-  final double? relativeDeltaPercent;
-  final int recentSeriesCount;
-  final int earlierSeriesCount;
-  final List<SessionMetricPoint> sessionPoints;
-
-  const EvolutionMetricComparison({
+/// Données pour la comparaison d'évolutions 30j/90j
+class EvolutionComparisonData {
+  final double avg30Days;
+  final double avg90Days;
+  final double delta; // avg30 - avg90
+  final String title;
+  
+  const EvolutionComparisonData({
     required this.avg30Days,
     required this.avg90Days,
-    required this.absoluteDelta,
-    required this.relativeDeltaPercent,
-    required this.recentSeriesCount,
-    required this.earlierSeriesCount,
-    required this.sessionPoints,
-  });
-
-  const EvolutionMetricComparison.empty()
-      : avg30Days = null,
-        avg90Days = null,
-        absoluteDelta = null,
-        relativeDeltaPercent = null,
-        recentSeriesCount = 0,
-        earlierSeriesCount = 0,
-        sessionPoints = const [];
-
-  bool get hasComparison => recentSeriesCount > 0 && earlierSeriesCount > 0;
-
-  bool get hasSparkline => sessionPoints.length >= 5;
-}
-
-/// Données des deux lignes du comparatif global 30 j / 90 j (NT-014).
-class EvolutionComparisonData {
-  final EvolutionMetricComparison score;
-  final EvolutionMetricComparison groupSize;
-  final bool hasRequiredPopulation;
-  final String title;
-
-  const EvolutionComparisonData({
-    required this.score,
-    required this.groupSize,
-    required this.hasRequiredPopulation,
+    required this.delta,
     required this.title,
   });
-
+  
   const EvolutionComparisonData.empty(this.title)
-      : score = const EvolutionMetricComparison.empty(),
-        groupSize = const EvolutionMetricComparison.empty(),
-        hasRequiredPopulation = false;
+      : avg30Days = 0,
+        avg90Days = 0,
+        delta = 0;
 }
 
 /// Point pour le nuage de corrélation
@@ -201,7 +158,7 @@ class CorrelationPoint {
   final int sessionId;
   final Color sessionColor;
   final int seriesIndex;
-
+  
   const CorrelationPoint({
     required this.x,
     required this.y,
@@ -217,14 +174,14 @@ class CorrelationData {
   final double maxX;
   final double maxY;
   final String title;
-
+  
   const CorrelationData({
     required this.points,
     required this.maxX,
     required this.maxY,
     required this.title,
   });
-
+  
   const CorrelationData.empty(this.title)
       : points = const [],
         maxX = 50,
@@ -241,7 +198,7 @@ class HandSpecificData {
   final double maxY;
   final double minY2; // pour groupement
   final double maxY2; // pour groupement
-
+  
   const HandSpecificData({
     required this.pointsData,
     required this.groupSizeData,
@@ -252,7 +209,7 @@ class HandSpecificData {
     required this.minY2,
     required this.maxY2,
   });
-
+  
   const HandSpecificData.empty(this.title)
       : pointsData = const [],
         groupSizeData = const [],

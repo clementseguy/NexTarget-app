@@ -10,12 +10,12 @@
 > `NexTarget-app`. Le repo `NexTarget-server` pointe vers lui sans en maintenir
 > de copie ; aucune synchronisation inverse n'est attendue (voir gouvernance).
 
-**Repo** : NexTarget-server (FastAPI + SQLModel + PostgreSQL en production, SQLite en développement/tests, OAuth + proxy IA)
-**Dernière projection** : 2026-09-04 (préparation de la release app v0.7.0 ; NT-048 et NT-061 restent `FAIT`, sans changement du contrat serveur v0.3.0)
+**Repo** : NexTarget-server (FastAPI + SQLModel + SQLite, OAuth + proxy IA)
+**Dernière projection** : 2026-09-02 (spécification Neon/Alembic de NT-071)
 
 > Important : **le serveur n'est plus « OAuth-only ».** Il expose aussi le **proxy Coach IA**
 > (`/coach/analyze-session`). Les anciens statuts « M1/M2 supprimés/décalés » sont
-> **périmés** et supprimés ; le proxy Coach est bien une responsabilité active du serveur.
+> **périmés** — voir [incoherences.md](incoherences.md) I1.
 
 ## Items serveur
 
@@ -40,35 +40,32 @@
 | NT-045 | Stats publiques / partage de profil | both | Won't-now | M | À FAIRE | — |
 | NT-046 | Gamification | both | Won't-now | L | À FAIRE | — |
 | NT-047 | Apple Sign In | both | Won't-now | M | À FAIRE | roadmap v0.2 |
-| NT-048 | Refresh tokens + rotation | both | Should | M | FAIT | expiration glissante 30 j, `/refresh`, `/revoke`, rotation et détection de rejeu ; contrat vérifié conforme et inchangé lors de l'adoption app |
+| NT-048 | Refresh tokens + rotation | server | Should | M | FAIT | `/auth/token/refresh` + `/revoke`, rotation + détection de rejeu |
 | NT-049 | Interface d’administration read-only des utilisateurs | server | Should | M | FAIT | `GET /app/admin/users` : page HTML admin protégée, consultation uniquement ; audit du login Google documenté |
 | NT-053 | Logging structuré + tracing | server | Should | M | FAIT | logs JSON + corrélation X-Request-ID (sans OTel) |
 | NT-054 | Tests OAuth mockés | server | Should | M | FAIT | `test_oauth_flows.py` : flows complets Google/Facebook mockés |
 | NT-055 | CI serveur (tests + couverture) | server | Should | S | FAIT | `.github/workflows/ci.yml` (pytest + cov, Python 3.11) |
 | NT-060 | Proxy Mistral (clé hors client) | server | Must | M | FAIT | `services/mistral_client.py`, `core/config.py` |
-| NT-061 | Coach connecté uniquement + rotation clé | both | Must | M | FAIT | audit de clôture validé ; clé historique rotée ; proxy Mistral serveur conservé comme chemin légitime unique |
+| NT-061 | Coach connecté uniquement + rotation clé | both | Must | M | FAIT | code livré (S1) ; rotation clé = action manuelle |
 | NT-062 | Rate limiting endpoint coach | server | Must | S | FAIT | `services/rate_limiter.py` (10/5min) |
 | NT-063 | State OAuth à usage unique (CSRF) | server | Must | S | FAIT | `services/oauth_state.py` |
 | NT-064 | Vérification du type de token JWT | server | Must | S | FAIT | `core/security.py`, `api/deps.py` |
 | NT-065 | Restreindre CORS par environnement | server | Should | S | FAIT | `CORS_ALLOW_ORIGINS` ; `*` en dev, aucune origine sinon |
 | NT-066 | Vérification du nonce Google | server | Should | S | FAIT | nonce OIDC vérifié au callback (400 sinon) |
 | NT-070 | Déploiement serveur (Render) | server | Must | S | FAIT | `render.yaml`, `docs/tech/render_setup.md` |
-| NT-071 | Migration SQLite → Postgres Neon + Alembic | server | Must | M | FAIT | livré avec v0.6.0 (serveur v0.3.0) ; Neon Frankfurt, Alembic, URLs et rôles runtime/migration séparés |
+| NT-071 | Migration SQLite → Postgres Neon + Alembic | server | Must | M | À FAIRE | Render Free + Neon Free Frankfurt ; base vide, URLs runtime/migration séparées, issue serveur #9 |
 | NT-006 | Analyse d'image de la cible | both | Won't-now | L | À FAIRE | vraisemblablement côté serveur |
 
 ## Prochaines actions serveur (hors FAIT), par priorité
 
-- **Must** — NT-122 (sortie coach structurée).
+- **Must** — NT-071 (persistance PostgreSQL Neon + Alembic), NT-122 (sortie coach structurée).
 - **Should** — NT-033 (voir NT-120/NT-121), NT-111, NT-121, NT-123, NT-124.
 - **Could** — NT-034, NT-044, NT-125, NT-126.
 - **Won't-now** — NT-045, NT-046, NT-047, NT-006.
 
-NT-048 est désormais `FAIT` des deux côtés : le contrat serveur n'a pas eu
-besoin d'évoluer pour l'adoption app (vérifié le 2026-09-02).
-
 ## Note de cohérence documentaire
 
-L'`AGENTS.md` du serveur décrit désormais correctement le proxy Coach, le rate
-limiting, le profil enrichi et PostgreSQL. Les anciennes specs conservées sous
-Les anciens backlogs serveur ont été supprimés : ce document est l'unique vue
-serveur locale et reste une projection du backlog unifié.
+L'`AGENTS.md` du serveur est **périmé** sur 3 points (il décrit un état antérieur) :
+« aucune fonctionnalité IA », « pas de rate limiting », « User minimal (email + provider) ».
+Le code contredit les trois (proxy coach, rate limiter, profil enrichi). À corriger —
+suivi dans [incoherences.md](incoherences.md) I3/I6.

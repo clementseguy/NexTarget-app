@@ -27,7 +27,7 @@ void main() {
     }
 
     Map<String, dynamic> sessionData({String? photoPath}) {
-      final session = DetailedShootingSession(
+      final session = ShootingSession(
         weapon: 'Pistolet test',
         caliber: '22LR',
         status: SessionConstants.statusPrevue,

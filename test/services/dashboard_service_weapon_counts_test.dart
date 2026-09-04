@@ -9,7 +9,7 @@ void main() {
   group('DashboardService.generateWeaponShotCounts (NT-017)', () {
     test('additionne les shotCount des sessions réalisées correspondantes, essais compris', () {
       final sessions = [
-        DetailedShootingSession(
+        ShootingSession(
           id: 1,
           date: DateTime(2026, 1, 1),
           weapon: '  CZ 75 SP-01 Shadow  ', // espaces de bord ignorés
@@ -17,7 +17,7 @@ void main() {
           status: SessionConstants.statusRealisee,
           series: List.generate(10, (_) => Series(distance: 25, points: 45, groupSize: 5, shotCount: 5)),
         ),
-        DetailedShootingSession(
+        ShootingSession(
           id: 2,
           date: DateTime(2026, 1, 2),
           weapon: 'cz 75 sp-01 shadow', // casse différente
@@ -35,7 +35,7 @@ void main() {
 
     test('exclut les sessions prévues', () {
       final sessions = [
-        DetailedShootingSession(
+        ShootingSession(
           id: 1,
           date: DateTime(2026, 1, 1),
           weapon: 'Glock 17',
@@ -53,7 +53,7 @@ void main() {
 
     test('une saisie seulement proche ne compte pas', () {
       final sessions = [
-        DetailedShootingSession(
+        ShootingSession(
           id: 1,
           date: DateTime(2026, 1, 1),
           weapon: 'CZ 09',

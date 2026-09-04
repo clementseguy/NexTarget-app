@@ -1,0 +1,472 @@
+openapi: 3.1.0
+info:
+  title: NexTarget Backend API
+  version: 0.1.0
+  description: |
+    Backend léger et sécurisé pour application mobile avec:
+    - Authentification OAuth uniquement (Google, Facebook)
+    - Pas de stockage de mots de passe
+    - Gestion du profil utilisateur
+  contact:
+    name: NexTarget Team
+    email: contact@nextarget.local
+
+servers:
+  - url: http://localhost:8000
+    description: Développement local
+  - url: https://nextarget-server.onrender.com
+    description: Production 
+
+tags:
+  - name: health
+    description: Endpoints de santé du service
+  - name: auth
+    description: Authentification et gestion OAuth
+  - name: users
+    description: Gestion du profil utilisateur
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Vérifie que le serveur est opérationnel
+      tags:
+        - health
+      responses:
+        '200':
+          description: Service OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /auth/google/login:
+    get:
+      summary: Initier le flux OAuth Google
+      description: |
+        Génère une URL d'autorisation Google avec state et nonce sécurisés.
+        
+        **Mode JSON (default - pour apps natives)** :
+        Retourne `{"auth_url": "...", "state": "..."}` - conforme RFC 8252
+        
+        **Mode Redirect (pour web)** :
+        Redirige (HTTP 302) directement vers Google OAuth
+        
+        **Flow mobile (mode=json)** :
+        1. App appelle ce endpoint pour obtenir `auth_url`
+        2. App ouvre `auth_url` dans WebView ou navigateur
+        3. Utilisateur s'authentifie avec Google
+        4. Google redirige vers `/callback` avec code
+        5. Backend échange code contre tokens
+        6. Backend redirige vers `nextarget://callback?token=JWT` (court-vivant, 10 min)
+        7. App intercepte le custom scheme et extrait le token
+        8. App appelle `/auth/token/exchange` pour obtenir un access_token long-vivant (60 min)
+        
+        **Flow web (mode=redirect)** :
+        1. Navigateur accède à cet endpoint
+        2. Serveur redirige (302) vers Google OAuth
+        3. Utilisateur s'authentifie
+        4. Google redirige vers `/callback`
+        
+      tags:
+        - auth
+      parameters:
+        - name: session_nonce
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Valeur opaque fournie par le client pour lier la session
+        - name: mode
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [json, redirect]
+            default: json
+          description: |
+            Mode de réponse:
+            - `json` (default): Retourne JSON avec auth_url (pour apps natives)
+            - `redirect`: Redirige HTTP 302 vers Google (pour web)
+      responses:
+        '200':
+          description: URL d'autorisation Google (mode=json)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth_url:
+                    type: string
+                    example: https://accounts.google.com/o/oauth2/v2/auth?client_id=...
+                  state:
+                    type: string
+                    example: abc123xyz
+        '302':
+          description: Redirection vers Google OAuth (mode=redirect)
+        '500':
+          description: Configuration OAuth Google manquante
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/google/callback:
+    get:
+      summary: Callback OAuth Google (Mobile)
+      description: |
+        Échange le code d'autorisation contre un id_token, vérifie la signature,
+        upsert l'utilisateur dans la base, et redirige vers `nextarget://callback?token=JWT`.
+        
+        **Important** : Ce endpoint fait une redirection HTTP 302 vers le custom scheme mobile.
+        Le token retourné est court-vivant (10 minutes) et doit être échangé immédiatement
+        via `/auth/token/exchange` pour obtenir un access_token long-vivant.
+        
+      tags:
+        - auth
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Code d'autorisation retourné par Google
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: State pour validation CSRF
+      responses:
+        '302':
+          description: Redirection vers nextarget://callback?token=SHORT_LIVED_JWT
+        '400':
+          description: Code ou state invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur lors de la création utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/token/exchange:
+    post:
+      summary: Échanger callback token contre access token
+      description: |
+        Échange un token de callback court-vivant (10 min) reçu via le custom scheme
+        contre un access token long-vivant (60 min) utilisable pour les API calls.
+        
+        **Flow** :
+        1. App intercepte `nextarget://callback?token=SHORT_JWT`
+        2. App extrait le token de l'URL
+        3. App appelle cet endpoint avec le callback_token
+        4. Backend vérifie et valide le token
+        5. Backend retourne un access_token long-vivant
+        6. App stocke l'access_token de manière sécurisée
+        
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - callback_token
+              properties:
+                callback_token:
+                  type: string
+                  description: Token court-vivant reçu via nextarget://callback
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODk1MjM...
+      responses:
+        '200':
+          description: Exchange réussi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  token_type:
+                    type: string
+                    default: bearer
+                    example: bearer
+                  expires_in:
+                    type: integer
+                    description: Durée de validité en secondes (3600 = 60 min)
+                    example: 3600
+                  email:
+                    type: string
+                    format: email
+                    example: user@gmail.com
+                  provider:
+                    type: string
+                    enum: [google, facebook]
+                    example: google
+                  user_id:
+                    type: string
+                    format: uuid
+                    example: 123e4567-e89b-12d3-a456-426614174000
+        '400':
+          description: Token invalide ou payload manquant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token expiré ou signature invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Utilisateur non trouvé ou inactif
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/facebook/start:
+    get:
+      summary: Initier le flux OAuth Facebook
+      description: |
+        Génère une URL d'autorisation Facebook avec state sécurisé.
+        Le client doit rediriger l'utilisateur vers `auth_url` retourné.
+      tags:
+        - auth
+      parameters:
+        - name: session_nonce
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Valeur opaque fournie par le client pour lier la session
+      responses:
+        '200':
+          description: URL d'autorisation Facebook
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth_url:
+                    type: string
+                    example: https://www.facebook.com/v18.0/dialog/oauth?client_id=...
+                  state:
+                    type: string
+                    example: xyz789abc
+        '500':
+          description: Configuration OAuth Facebook manquante
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/facebook/callback:
+    get:
+      summary: Callback OAuth Facebook (Mobile)
+      description: |
+        Échange le code d'autorisation contre un access_token Facebook, récupère les infos
+        utilisateur via Graph API (/me), upsert l'utilisateur dans la base, et redirige
+        vers le custom scheme mobile.
+        
+        Si l'email est manquant (utilisateur a refusé la permission), un email de fallback est utilisé.
+        
+        **Important** : Ce endpoint fait une redirection HTTP 302 vers le custom scheme mobile,
+        de la même manière que le callback Google.
+      tags:
+        - auth
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Code d'autorisation retourné par Facebook
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: State pour validation CSRF
+      responses:
+        '302':
+          description: Redirection vers nextarget://callback avec token
+        '400':
+          description: Code ou state invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erreur lors de la création utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/me:
+    get:
+      summary: Obtenir le profil utilisateur courant
+      description: Retourne les informations complètes de l'utilisateur authentifié via JWT (incluant profil, avatar, expérience et date d'inscription)
+      tags:
+        - users
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profil utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '401':
+          description: Token manquant ou invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/me/profile:
+    patch:
+      summary: Modifier le profil utilisateur
+      description: |
+        Met à jour les champs modifiables du profil de l'utilisateur authentifié.
+        Seuls les champs présents dans le body sont mis à jour (merge partiel).
+        
+        - `display_name` : définir un pseudo personnalisé. Envoyer `null` pour revenir au nom fourni par l'IdP au prochain login.
+        - `experience_level` : choisir son niveau (`beginner`, `advanced`, `expert`). Envoyer `null` pour réinitialiser.
+      tags:
+        - users
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileUpdate'
+            examples:
+              update_name:
+                summary: Modifier le pseudo
+                value:
+                  display_name: "Mon Pseudo"
+              update_level:
+                summary: Choisir son niveau
+                value:
+                  experience_level: "advanced"
+              update_both:
+                summary: Modifier pseudo et niveau
+                value:
+                  display_name: "Pro Player"
+                  experience_level: "expert"
+      responses:
+        '200':
+          description: Profil mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '401':
+          description: Token manquant ou invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Erreur de validation (display_name trop long, experience_level invalide)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT Bearer token obtenu via /auth/{google,facebook}/callback (OAuth uniquement).
+        Format: `Authorization: Bearer <token>`
+
+  schemas:
+    UserPublic:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        is_active:
+          type: boolean
+          example: true
+        provider:
+          type: string
+          enum: [google, facebook]
+          example: google
+        display_name:
+          type: string
+          nullable: true
+          example: Alice Dupont
+          description: Nom affiché (initialisé depuis l'IdP, modifiable par l'utilisateur)
+        avatar_url:
+          type: string
+          nullable: true
+          format: uri
+          example: https://lh3.googleusercontent.com/a/photo.jpg
+          description: URL de la photo de profil (depuis l'IdP, rafraîchie à chaque login)
+        experience_level:
+          type: string
+          nullable: true
+          enum: [beginner, advanced, expert]
+          example: beginner
+          description: Niveau d'expérience choisi par l'utilisateur
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-10-21T14:30:00Z"
+          description: Date d'inscription
+
+    UserProfileUpdate:
+      type: object
+      description: Champs modifiables du profil utilisateur. Seuls les champs envoyés sont mis à jour.
+      properties:
+        display_name:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+          example: Mon Pseudo
+          description: Nom affiché (null pour revenir au nom IdP au prochain login)
+        experience_level:
+          type: string
+          nullable: true
+          enum: [beginner, advanced, expert]
+          example: advanced
+          description: Niveau d'expérience
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          example: "Invalid credentials"
+
+security:
+  - BearerAuth: []

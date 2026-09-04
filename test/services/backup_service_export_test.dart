@@ -57,7 +57,7 @@ void main() {
       final backupService = BackupService();
       
       // Add a test session
-      final testSession = DetailedShootingSession(
+      final testSession = ShootingSession(
         weapon: 'Test Weapon',
         caliber: '22LR',
         date: DateTime(2024, 5, 15),

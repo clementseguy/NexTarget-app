@@ -18,12 +18,4 @@ class SessionFilters {
     if (exerciseId == null) return sessions.toList();
     return sessions.where((s) => s.exercises.contains(exerciseId)).toList();
   }
-
-  static List<ShootingSession> byCategory(
-    Iterable<ShootingSession> sessions,
-    String? category,
-  ) {
-    if (category == null) return sessions.toList();
-    return sessions.where((session) => session.category == category).toList();
-  }
 }

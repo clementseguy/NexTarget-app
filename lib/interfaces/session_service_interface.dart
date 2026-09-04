@@ -6,51 +6,26 @@ import '../models/series.dart';
 abstract class ISessionService {
   /// Récupère toutes les sessions
   Future<List<ShootingSession>> getAllSessions();
-
+  
   /// Ajoute une nouvelle session
   Future<void> addSession(ShootingSession session);
-
+  
   /// Met à jour une session existante
   Future<void> updateSession(
     ShootingSession session, {
     bool preserveExistingSeriesIfEmpty = true,
     bool warnOnFallback = true,
   });
-
+  
   /// Supprime une session par son ID
   Future<void> deleteSession(int id);
-
+  
   /// Supprime toutes les sessions
   Future<void> clearAllSessions();
-
-  /// Crée et persiste immédiatement l'unique session guidée en brouillon.
-  Future<DetailedShootingSession> createGuidedDraft({
-    required DateTime date,
-    required String weapon,
-    required String caliber,
-    required String category,
-    required List<String> exercises,
-    required int seriesCount,
-    required int shotsPerSeries,
-    required int initialDistance,
-    required HandMethod initialHandMethod,
-  });
-
-  Future<List<DetailedShootingSession>> getGuidedDrafts();
-
-  Future<DetailedShootingSession> saveGuidedDraft(
-    DetailedShootingSession draft,
-  );
-
-  Future<DetailedShootingSession> completeGuidedDraft(
-    DetailedShootingSession draft,
-  );
-
-  Future<void> abandonGuidedDraft(DetailedShootingSession draft);
-
+  
   /// Convertit une session prévue en session réalisée
-  Future<DetailedShootingSession> convertPlannedToRealized({
-    required DetailedShootingSession session,
+  Future<ShootingSession> convertPlannedToRealized({
+    required ShootingSession session,
     String? weapon,
     String? caliber,
     String? category,
@@ -58,11 +33,10 @@ abstract class ISessionService {
     DateTime? forcedDate,
     List<Series>? updatedSeries,
   });
-
+  
   /// Met à jour une série spécifique dans une session prévue
-  Future<void> updateSingleSeries(
-      DetailedShootingSession session, int seriesIndex, Series newSeries);
-
+  Future<void> updateSingleSeries(ShootingSession session, int seriesIndex, Series newSeries);
+  
   /// Crée une session prévue à partir d'un exercice
-  Future<DetailedShootingSession> planFromExercise(Exercise exercise);
+  Future<ShootingSession> planFromExercise(Exercise exercise);
 }

@@ -4,50 +4,6 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Non publié]
 
-## [0.7.0] - 2026-09-04
-
-### Added
-- NT-131 : session détaillée guidée directement au stand, sans session prévue, exercice ni template obligatoire.
-    - Action principale « Au stand », reprise de l'unique brouillon depuis sa carte et menu secondaire explicite pour les créations planifiée, réalisée détaillée et libre.
-    - Préparation compacte avec préférences de calibre et de prise, râtelier, exercices facultatifs et volume libre ; saisie plein écran série par série avec héritage, raccourcis 15/25 m, navigation, ajout, fin anticipée et sauvegarde temporisée.
-    - Statut persistant `brouillon`, migration Hive additive, reprise après redémarrage, abandon confirmé avec nettoyage photo et cycle import/export préservé.
-    - Synthèse finale avec photo facultative, clôture atomique vers une session réalisée standard et redirection directe vers son détail ; brouillons exclus des statistiques, objectifs, compteurs et du Coach.
-    - Synchronisation de l'historique avant chaque sortie du parcours afin qu'un brouillon clôturé ou abandonné ne soit jamais réaffiché, même temporairement.
-    - Harmonisation mobile des champs de préparation et des raccourcis de distance ; filtres d'historique alignés, sessions prévues datées triées chronologiquement, sessions non datées identifiées explicitement et aide contextuelle simplifiée.
-    - Correctifs de revue : distinction persistante entre score nul et score absent, verrouillage des mutations pendant la clôture et refus atomique des imports qui créeraient plusieurs brouillons.
-- NT-014 : comparatif global glissant 30 j / 90 j des points et groupements moyens par série, avec deltas absolus/relatifs et sparklines par session à partir de cinq sessions exploitables.
-    - Fenêtres emboîtées à bornes calendaires déterministes et horloge injectable ; sessions prévues/libres exclues, scores nuls conservés et groupements non strictement positifs ou non finis ignorés uniquement pour cette métrique.
-    - Présentation compacte à deux lignes, états explicites pour population insuffisante et division par zéro, lisible dans les thèmes sombre et France sans dépendre uniquement de la couleur.
-    - Ajustements de recette : titre « Dynamique des performances · 30 j vs 90 j », précision accrue lorsque l'arrondi masque un écart, sparklines sans ligne de référence ambiguë avec valeurs ancienne/récente, deltas placés à droite des moyennes, carte Progression compacte alignée sur les pourcentages score/groupement du comparatif, et aide contextuelle dédiée.
-    - Suppression de la limite silencieuse des 1 000 dernières séries dans les agrégats globaux concernés ; l'ancien calcul legacy 30/60 par total de session est clarifié comme distinct et reste non affiché.
-- NT-133 : sessions libres réalisées sans séries, score, groupement ni analyse Coach.
-    - Modèle polymorphe `ShootingSession` avec sous-types détaillé et libre, discriminant JSON stable et migration Hive additive rétrocompatible.
-    - Action flottante dédiée dans l'onglet Réalisées, formulaire court, cartes et détail identifiés « Libre », photo, synthèse et exercices facultatifs.
-    - Statistiques d'assiduité, objectifs, filtres, volumes et compteurs de tirs par arme adaptés sans contaminer les métriques fondées sur les séries.
-    - Import de sauvegardes mixtes prévalidé et écrit atomiquement ; un type inconnu ne modifie aucune session locale.
-- NT-048 : adoption app des refresh tokens (rotation) — le serveur était déjà livré.
-    - `AuthService` stocke access token, refresh token et expirations dans `flutter_secure_storage` sous une clé unique (remplacement atomique de la paire à chaque rotation) ; migration transparente depuis l'ancien stockage (accès + email seuls) vers une reconnexion Google unique.
-    - Renouvellement proactif de l'access token juste avant expiration, et unique renouvellement + rejeu de la requête après un `401` (`AuthenticatedHttpClient`), sans boucle ; mécanisme single-flight partagé entre appels concurrents pour ne jamais consommer deux fois le même refresh token.
-    - Requêtes rejouées depuis une copie neuve (jamais l'objet `BaseRequest` déjà finalisé), y compris pour un corps initialement streamé.
-    - Profil et Coach IA passent par le même mécanisme authentifié ; un refresh invalide/expiré/révoqué/rejoué termine la session (reconnexion Google requise) alors qu'une panne réseau préserve les tokens et ne déconnecte jamais (carnet, statistiques, objectifs et exercices restent utilisables hors ligne ; le Coach signale clairement son indisponibilité réseau).
-    - Déconnexion : révocation serveur (`/auth/token/revoke`) en best effort puis nettoyage local systématique, y compris hors ligne.
-- NT-073 : calibre par défaut facultatif, sélectionné parmi le référentiel configuré et appliqué uniquement aux nouvelles sessions réalisées ou prévues.
-- NT-073 : autocomplétion commune aux formulaires et au wizard, sans autoremplacement, ainsi qu'une répartition statistique par calibre reconnu regroupant les alias 9 mm.
-
-### Changed
-- NT-133 : cartes de sessions compactées avec badges thématiques, indicateur dédié aux sessions libres, présence d'une analyse Coach et métriques visuelles ; formulaire libre aligné sur le formulaire détaillé et moyenne de séries corrigée pour exclure les sessions libres.
-- NT-133 : bloc date/type centré verticalement dans les cartes et libellés de catégories affichés avec une majuscule initiale dans toute l'application, sans modifier leur valeur persistée.
-- NT-133 : les nouvelles distances saisies dans une session détaillée doivent être des entiers strictement positifs ; les anciennes distances décimales restent lisibles et ne sont jamais réécrites automatiquement.
-- NT-073 : suppression de l'entrée générique `Autre` ; les calibres inconnus restent saisis et persistés librement, participent aux statistiques globales et sont exclus des seules répartitions par calibre.
-
-### Quality
-- Quality Gate locale de release : `flutter analyze --fatal-infos` sans issue et 455 tests réussis, 2 ignorés.
-
-### Documentation
-- Cadrage détaillé du lot NT-014/NT-048/NT-073/NT-133 et alignement des vues app/serveur et du plan de sprints.
-- NT-061 : clôture documentaire après confirmation de la rotation de la clé Mistral et audit du client ; aucun appel Mistral direct, prompt, secret ou fallback local ne subsiste dans l'app. Les notes des anciennes versions restent conservées comme historique.
-- Cahier de recette : ajout des parcours NT-014, NT-073, NT-131 et NT-133, de AUTH-01 à AUTH-04 (persistance longue durée, déconnexion, résilience réseau, migration installation historique) et précision de COACH-03 (message distinct session expirée / réseau indisponible).
-
 ## [0.6.0] - 2026-09-02
 
 ### Added
@@ -57,7 +13,6 @@ Toutes les modifications notables de ce projet seront listées ici.
     - `utils/weapon_autocomplete.dart` centralise la normalisation et l'autocomplétion, réutilisées par `WeaponAutocompleteField` dans le formulaire de session (`SessionForm`) et le wizard de conversion (`WizardIntroStep`) : la saisie libre reste toujours prioritaire.
     - Export JSON inclut le râtelier ; import rétrocompatible avec les anciens fichiers sans râtelier, fusionné sans effacer le râtelier local (`BackupService`).
     - `DashboardService.generateWeaponShotCounts` + `WeaponShotCountsCard` : compteur de tirs par arme du râtelier en toute dernière section de `Statistiques > Avancé`, calculé depuis les seules sessions réalisées (essais compris), sans graphe.
-- NT-071 : migration de la production de SQLite éphémère vers PostgreSQL Neon avec Alembic, livrée dans la release produit v0.6.0 via NexTarget-server v0.3.0 ; connexions et rôles runtime/migration séparés, migrations avant démarrage et procédures de sauvegarde/restauration/rollback documentées, sans changement du contrat d'API mobile.
 
 ### Quality
 - NT-058 : fakes de repository partagés pour les tests (`test/support/`).
@@ -104,7 +59,7 @@ Toutes les modifications notables de ce projet seront listées ici.
     - Plus aucune clé/config Mistral côté client : `AppConfig` (sélection de clé), `assets/config.yaml`, `config.example.yaml` et `scripts/build_apk.sh` purgés ; assets `coach_prompt*.yaml` retirés (le prompt vit côté serveur, NT-031).
     - Section « Analyse Coach » : sans compte, message clair + bouton « Se connecter » (route `/login`) ; le carnet de tir reste 100 % hors-ligne.
     - Prints `[DEBUG]` hérités retirés des fichiers coach.
-    - Rotation de la clé Mistral historique : action manuelle (console Mistral + env Render), hors code.
+    - ⚠️ Rotation de la clé Mistral historique : action manuelle (console Mistral + env Render), hors code.
 
 ## [0.4.0] - Unreleased
 ### Technical
@@ -118,8 +73,8 @@ Toutes les modifications notables de ce projet seront listées ici.
 ### Docs
 - T2: Cahier de recette (tests manuels)
     - Générateur: `scripts/generate_cahier_recette.dart`
-    - Source: `docs/tests/cahier_recette.yaml`
-    - Sortie: `docs/tests/cahier_recette.md`
+    - Source: `docs/specs/cahier_recette.yaml`
+    - Sortie: `docs/cahier_recette.md`
     - Politique: jouer le cahier de recette avant toute MR vers `main`; mettre à jour le YAML + régénérer si comportement modifié.
 
 ### Technical (en cours)

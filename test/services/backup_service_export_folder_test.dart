@@ -54,7 +54,7 @@ void main() {
       
       // Exemple de session pour référence (commenté pour éviter des erreurs de variable non utilisée):
       /*
-      DetailedShootingSession(
+      ShootingSession(
         weapon: 'Test Export',
         caliber: '9mm',
         date: DateTime(2024, 5, 15),

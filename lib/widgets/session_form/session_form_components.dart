@@ -12,8 +12,7 @@ class FormSummaryHeader extends StatelessWidget {
   final int totalPoints;
   final double avgPoints;
   final double? dominantDistance;
-  final bool showStats;
-
+  
   const FormSummaryHeader({
     super.key,
     required this.date,
@@ -22,17 +21,7 @@ class FormSummaryHeader extends StatelessWidget {
     required this.totalPoints,
     required this.avgPoints,
     required this.dominantDistance,
-  }) : showStats = true;
-
-  const FormSummaryHeader.dateOnly({
-    super.key,
-    required this.date,
-    required this.onPickDate,
-  })  : seriesCount = 0,
-        totalPoints = 0,
-        avgPoints = 0,
-        dominantDistance = null,
-        showStats = false;
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -49,9 +38,7 @@ class FormSummaryHeader extends StatelessWidget {
                 const Icon(Icons.event, color: Colors.amberAccent),
                 const SizedBox(width: 8),
                 Text(
-                  date != null
-                      ? '${date!.day}/${date!.month}/${date!.year}'
-                      : 'Date ?',
+                  date != null ? '${date!.day}/${date!.month}/${date!.year}' : 'Date ?',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
@@ -62,42 +49,40 @@ class FormSummaryHeader extends StatelessWidget {
                 ),
               ],
             ),
-            if (showStats) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  MiniStat(
-                    label: 'Séries',
-                    value: seriesCount.toString(),
-                    icon: Icons.list_alt,
-                    color: Colors.lightBlueAccent,
-                  ),
-                  const DividerV(),
-                  MiniStat(
-                    label: 'Total',
-                    value: totalPoints.toString(),
-                    icon: Icons.score,
-                    color: Colors.pinkAccent,
-                  ),
-                  const DividerV(),
-                  MiniStat(
-                    label: 'Moy.',
-                    value: avgPoints.toStringAsFixed(1),
-                    icon: Icons.stacked_line_chart,
-                    color: Colors.greenAccent,
-                  ),
-                  const DividerV(),
-                  MiniStat(
-                    label: 'Dist.',
-                    value: dominantDistance != null
-                        ? '${dominantDistance!.toStringAsFixed(0)}m'
-                        : '-',
-                    icon: Icons.social_distance,
-                    color: Colors.tealAccent,
-                  ),
-                ],
-              ),
-            ],
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                MiniStat(
+                  label: 'Séries',
+                  value: seriesCount.toString(),
+                  icon: Icons.list_alt,
+                  color: Colors.lightBlueAccent,
+                ),
+                const DividerV(),
+                MiniStat(
+                  label: 'Total',
+                  value: totalPoints.toString(),
+                  icon: Icons.score,
+                  color: Colors.pinkAccent,
+                ),
+                const DividerV(),
+                MiniStat(
+                  label: 'Moy.',
+                  value: avgPoints.toStringAsFixed(1),
+                  icon: Icons.stacked_line_chart,
+                  color: Colors.greenAccent,
+                ),
+                const DividerV(),
+                MiniStat(
+                  label: 'Dist.',
+                  value: dominantDistance != null
+                      ? '${dominantDistance!.toStringAsFixed(0)}m'
+                      : '-',
+                  icon: Icons.social_distance,
+                  color: Colors.tealAccent,
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -377,11 +362,9 @@ class SessionPhotoField extends StatelessWidget {
           children: [
             Row(
               children: const [
-                Icon(Icons.photo_camera_outlined,
-                    color: Colors.amberAccent, size: 20),
+                Icon(Icons.photo_camera_outlined, color: Colors.amberAccent, size: 20),
                 SizedBox(width: 8),
-                Text('Photo de la cible',
-                    style: TextStyle(fontWeight: FontWeight.w600)),
+                Text('Photo de la cible', style: TextStyle(fontWeight: FontWeight.w600)),
               ],
             ),
             const SizedBox(height: 12),
@@ -411,8 +394,7 @@ class SessionPhotoField extends StatelessWidget {
                         height: 180,
                         color: Colors.black12,
                         alignment: Alignment.center,
-                        child: const Text('Photo introuvable',
-                            style: TextStyle(color: Colors.white70)),
+                        child: const Text('Photo introuvable', style: TextStyle(color: Colors.white70)),
                       ),
                     ),
                   ),

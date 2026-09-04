@@ -23,14 +23,14 @@ class _Repo implements SessionRepository {
 void main() {
   test('RollingStatsService excludes planned sessions (Lot C)', () async {
     final now = DateTime.now();
-    final sReal = DetailedShootingSession(
+    final sReal = ShootingSession(
       id: 1,
       date: now.subtract(const Duration(days: 10)),
       weapon: 'Pistolet', caliber: '22LR',
       status: SessionConstants.statusRealisee,
       series: [Series(distance: 10, points: 50, groupSize: 20)],
     );
-    final sPlan = DetailedShootingSession(
+    final sPlan = ShootingSession(
       id: 2,
       date: now.subtract(const Duration(days: 5)),
       weapon: 'Pistolet', caliber: '22LR',

@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import '../../constants/session_constants.dart';
 import '../../models/series.dart';
 import '../../models/exercise.dart';
 import '../../models/goal.dart';
 import '../../widgets/weapon_autocomplete_field.dart';
-import '../../widgets/caliber_autocomplete_field.dart';
 
 /// Étape introduction du wizard (exercice, arme, calibre, catégorie)
 class WizardIntroStep extends StatelessWidget {
@@ -41,7 +38,6 @@ class WizardIntroStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasExercise = linkedExercise != null || loadingExercise;
-    final displayedCategory = SessionConstants.categoryLabel(categoryDraft);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Form(
@@ -57,85 +53,62 @@ class WizardIntroStep extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Exercice',
-                        style: Theme.of(context).textTheme.titleMedium),
+                    Text('Exercice', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
-                    if (!hasExercise)
-                      const Text('Pas d\'exercice associé',
-                          style: TextStyle(color: Colors.white60))
-                    else if (loadingExercise)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.0),
-                        child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2)),
-                      )
+                    if (!hasExercise) const Text('Pas d\'exercice associé', style: TextStyle(color: Colors.white60))
+                    else if (loadingExercise) const Padding(
+                      padding: EdgeInsets.symmetric(vertical:8.0),
+                      child: SizedBox(width:24, height:24, child: CircularProgressIndicator(strokeWidth:2)),
+                    )
                     else if (linkedExercise != null) ...[
-                      Text(linkedExercise!.name,
-                          style: const TextStyle(fontWeight: FontWeight.w600)),
-                      if (linkedExercise!.description != null &&
-                          linkedExercise!.description!.trim().isNotEmpty) ...[
+                      Text(linkedExercise!.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      if (linkedExercise!.description != null && linkedExercise!.description!.trim().isNotEmpty) ...[
                         const SizedBox(height: 6),
-                        Text(linkedExercise!.description!,
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.white70)),
+                        Text(linkedExercise!.description!, style: const TextStyle(fontSize: 12, color: Colors.white70)),
                       ],
                       if (goals.isNotEmpty) ...[
                         const SizedBox(height: 10),
                         Wrap(
                           spacing: 6,
                           runSpacing: 6,
-                          children: goals
-                              .map((g) => Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.08),
-                                      borderRadius: BorderRadius.circular(18),
-                                      border: Border.all(color: Colors.white12),
-                                    ),
-                                    child: Text(g.title,
-                                        style: const TextStyle(fontSize: 11)),
-                                  ))
-                              .toList(),
+                          children: goals.map((g)=> Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: Colors.white12),
+                            ),
+                            child: Text(g.title, style: const TextStyle(fontSize: 11)),
+                          )).toList(),
                         ),
                       ],
-                    ] else
-                      const Text('Exercice introuvable',
-                          style:
-                              TextStyle(color: Colors.redAccent, fontSize: 12)),
+                    ]
+                    else const Text('Exercice introuvable', style: TextStyle(color: Colors.redAccent, fontSize: 12)),
                     const SizedBox(height: 12),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            Text('Informations session',
-                style: Theme.of(context).textTheme.titleMedium),
+            Text('Informations session', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             WeaponAutocompleteField(
               controller: weaponController,
               labelText: 'Arme',
             ),
-            CaliberAutocompleteField(
-              controller: caliberController,
+            Focus(
               focusNode: caliberFocusNode,
-              onChanged: onCaliberChanged,
-              onSaved: onCaliberSaved,
+              child: TextFormField(
+                controller: caliberController,
+                decoration: const InputDecoration(labelText: 'Calibre'),
+                onChanged: onCaliberChanged,
+                onSaved: onCaliberSaved,
+              ),
             ),
             TextFormField(
-              initialValue: displayedCategory,
+              initialValue: categoryDraft,
               decoration: const InputDecoration(labelText: 'Catégorie'),
-              onSaved: (value) {
-                if (value?.trim() == displayedCategory &&
-                    categoryDraft != null) {
-                  onCategorySaved(categoryDraft);
-                  return;
-                }
-                onCategorySaved(SessionConstants.categoryValue(value));
-              },
+              onSaved: onCategorySaved,
             ),
             const SizedBox(height: 24),
             Align(
@@ -170,9 +143,7 @@ class WizardSeriesStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final consigne = controller.consigne.trim().isEmpty
-        ? 'Pas de consigne'
-        : controller.consigne;
+    final consigne = controller.consigne.trim().isEmpty ? 'Pas de consigne' : controller.consigne;
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -184,98 +155,58 @@ class WizardSeriesStep extends StatelessWidget {
               children: [
                 Text(consigne, style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 16),
-                Row(children: [
-                  Expanded(
-                      child: TextFormField(
+                Row(children:[
+                  Expanded(child: TextFormField(
                     key: ValueKey('points_${seriesIndex}_${controller.points}'),
                     initialValue: '',
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Points'),
-                    onChanged: (v) {
-                      controller.points = int.tryParse(v) ?? 0;
-                    },
-                    validator: (_) =>
-                        (controller.showErrors && controller.points <= 0)
-                            ? 'Requis'
-                            : null,
+                    onChanged: (v){ controller.points = int.tryParse(v) ?? 0; },
+                    validator: (_) => (controller.showErrors && controller.points<=0) ? 'Requis' : null,
                   )),
                   const SizedBox(width: 12),
-                  Expanded(
-                      child: TextFormField(
-                    key: ValueKey(
-                        'group_${seriesIndex}_${controller.groupSize}'),
+                  Expanded(child: TextFormField(
+                    key: ValueKey('group_${seriesIndex}_${controller.groupSize}'),
                     initialValue: '',
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: const InputDecoration(labelText: 'Groupement'),
-                    onChanged: (v) {
-                      controller.groupSize = double.tryParse(v) ?? 0;
-                    },
-                    validator: (_) =>
-                        (controller.showErrors && controller.groupSize <= 0)
-                            ? 'Requis'
-                            : null,
+                    onChanged: (v){ controller.groupSize = double.tryParse(v) ?? 0; },
+                    validator: (_) => (controller.showErrors && controller.groupSize<=0) ? 'Requis' : null,
                   )),
                 ]),
                 const SizedBox(height: 12),
-                Row(children: [
-                  Expanded(
-                      child: TextFormField(
-                    key: ValueKey(
-                        'shots_${seriesIndex}_${controller.shotCount}'),
+                Row(children:[
+                  Expanded(child: TextFormField(
+                    key: ValueKey('shots_${seriesIndex}_${controller.shotCount}'),
                     initialValue: controller.shotCount.toString(),
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Coups'),
-                    onChanged: (v) {
-                      controller.shotCount =
-                          int.tryParse(v) ?? controller.shotCount;
-                    },
-                    validator: (_) =>
-                        (controller.showErrors && controller.shotCount <= 0)
-                            ? 'Requis'
-                            : null,
+                    onChanged: (v){ controller.shotCount = int.tryParse(v) ?? controller.shotCount; },
+                    validator: (_) => (controller.showErrors && controller.shotCount<=0) ? 'Requis' : null,
                   )),
                   const SizedBox(width: 12),
-                  Expanded(
-                      child: TextFormField(
+                  Expanded(child: TextFormField(
                     key: ValueKey('dist_${seriesIndex}_${controller.distance}'),
                     initialValue: controller.distance.toString(),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    decoration:
-                        const InputDecoration(labelText: 'Distance (m)'),
-                    onChanged: (v) {
-                      controller.distance =
-                          double.tryParse(v) ?? controller.distance;
-                    },
-                    validator: (_) => (controller.showErrors &&
-                            (controller.distance <= 0 ||
-                                controller.distance !=
-                                    controller.distance.truncateToDouble()))
-                        ? 'Entier requis'
-                        : null,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(labelText: 'Distance (m)'),
+                    onChanged: (v){ controller.distance = double.tryParse(v) ?? controller.distance; },
+                    validator: (_) => (controller.showErrors && controller.distance<=0) ? 'Requis' : null,
                   )),
                 ]),
                 const SizedBox(height: 12),
                 HandMethodSelector(
                   initial: controller.handMethod,
-                  onChanged: (m) {
-                    controller.handMethod = m;
-                  },
+                  onChanged: (m){ controller.handMethod = m; },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   key: ValueKey('comment_$seriesIndex'),
                   initialValue: '',
-                  decoration:
-                      const InputDecoration(labelText: 'Commentaire série'),
-                  onChanged: (v) => controller.comment = v,
+                  decoration: const InputDecoration(labelText: 'Commentaire série'),
+                  onChanged: (v)=> controller.comment = v,
                   maxLines: null,
-                  validator: (_) => (controller.showErrors &&
-                          (controller.comment == null ||
-                              controller.comment!.trim().isEmpty))
-                      ? 'Requis'
-                      : null,
+                  validator: (_) => (controller.showErrors && (controller.comment==null || controller.comment!.trim().isEmpty)) ? 'Requis' : null,
                 ),
                 const SizedBox(height: 28),
                 Align(
@@ -341,12 +272,7 @@ class WizardSyntheseStep extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: saving ? null : onFinish,
                 icon: const Icon(Icons.check),
-                label: saving
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Terminer'),
+                label: saving ? const SizedBox(width:16, height:16, child: CircularProgressIndicator(strokeWidth:2)) : const Text('Terminer'),
               ),
             ),
           ],
@@ -378,21 +304,20 @@ class SeriesStepController {
   }) : showErrors = false;
 
   Series build() => Series(
-        points: points,
-        groupSize: groupSize,
-        comment: comment ?? '',
-        shotCount: shotCount,
-        distance: distance,
-        handMethod: handMethod,
-      );
+    points: points,
+    groupSize: groupSize,
+    comment: comment ?? '',
+    shotCount: shotCount,
+    distance: distance,
+    handMethod: handMethod,
+  );
 }
 
 /// Sélecteur de prise (une main / deux mains)
 class HandMethodSelector extends StatefulWidget {
   final HandMethod initial;
   final ValueChanged<HandMethod> onChanged;
-  const HandMethodSelector(
-      {super.key, required this.initial, required this.onChanged});
+  const HandMethodSelector({super.key, required this.initial, required this.onChanged});
   @override
   State<HandMethodSelector> createState() => _HandMethodSelectorState();
 }
@@ -400,16 +325,8 @@ class HandMethodSelector extends StatefulWidget {
 class _HandMethodSelectorState extends State<HandMethodSelector> {
   late HandMethod _method;
   @override
-  void initState() {
-    super.initState();
-    _method = widget.initial;
-  }
-
-  void _set(HandMethod m) {
-    setState(() => _method = m);
-    widget.onChanged(m);
-  }
-
+  void initState() { super.initState(); _method = widget.initial; }
+  void _set(HandMethod m){ setState(()=> _method = m); widget.onChanged(m); }
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -417,22 +334,13 @@ class _HandMethodSelectorState extends State<HandMethodSelector> {
         Text('Prise', style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(width: 12),
         ToggleButtons(
-          isSelected: [
-            _method == HandMethod.oneHand,
-            _method == HandMethod.twoHands
-          ],
+          isSelected: [_method == HandMethod.oneHand, _method == HandMethod.twoHands],
           borderRadius: BorderRadius.circular(12),
           constraints: const BoxConstraints(minHeight: 34, minWidth: 46),
-          onPressed: (i) {
-            _set(i == 0 ? HandMethod.oneHand : HandMethod.twoHands);
-          },
+          onPressed: (i){ _set(i==0? HandMethod.oneHand : HandMethod.twoHands); },
           children: const [
-            Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Icon(Icons.front_hand, size: 18)),
-            Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: TwoHandsIconMini()),
+            Padding(padding: EdgeInsets.symmetric(horizontal:8), child: Icon(Icons.front_hand, size:18)),
+            Padding(padding: EdgeInsets.symmetric(horizontal:8), child: TwoHandsIconMini()),
           ],
         ),
       ],
@@ -446,19 +354,9 @@ class TwoHandsIconMini extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = IconTheme.of(context).color ?? Colors.white;
-    return SizedBox(
-        width: 30,
-        height: 18,
-        child: Stack(children: [
-          Positioned(
-              left: 0,
-              top: 0,
-              child: Icon(Icons.front_hand,
-                  size: 14, color: color.withValues(alpha: 0.8))),
-          Positioned(
-              left: 12,
-              top: 0,
-              child: Icon(Icons.front_hand, size: 16, color: color)),
-        ]));
+    return SizedBox(width: 30, height: 18, child: Stack(children:[
+      Positioned(left: 0, top:0, child: Icon(Icons.front_hand, size:14, color: color.withValues(alpha:0.8))),
+      Positioned(left: 12, top:0, child: Icon(Icons.front_hand, size:16, color: color)),
+    ]));
   }
 }
