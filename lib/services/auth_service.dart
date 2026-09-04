@@ -80,6 +80,11 @@ class AuthService {
   // (cf. _doRefresh). Ne remplace pas le single-flight, le complète.
   int _sessionGeneration = 0;
 
+  // Sérialise uniquement les mutations du stockage sécurisé. Un logout peut
+  // ainsi attendre une écriture locale déjà commencée puis l'effacer, sans
+  // jamais attendre la requête réseau d'un refresh en vol.
+  Future<void> _storageMutationTail = Future<void>.value();
+
   AuthService({
     required String authBaseUrl,
     String? callbackScheme,
@@ -217,9 +222,22 @@ class AuthService {
     );
   }
 
+  /// Exécute les écritures et suppressions locales dans leur ordre d'arrivée.
+  Future<T> _serializeStorageMutation<T>(Future<T> Function() mutation) async {
+    final previous = _storageMutationTail;
+    final release = Completer<void>();
+    _storageMutationTail = release.future;
+    await previous;
+    try {
+      return await mutation();
+    } finally {
+      release.complete();
+    }
+  }
+
   /// Remplace atomiquement la paire de tokens (un seul write storage).
   Future<void> _persistTokenResponse(Map<String, dynamic> data,
-      {String? emailFallback}) async {
+      {String? emailFallback, int? expectedGeneration}) async {
     final now = DateTime.now().toUtc();
     final expiresIn = data['expires_in'] as int? ?? 0;
     final refreshExpiresIn = data['refresh_expires_in'] as int?;
@@ -232,13 +250,22 @@ class AuthService {
           : null,
       email: (data['email'] as String?) ?? emailFallback,
     );
-    await _storage.write(key: _tokenSetKey, value: jsonEncode(set.toJson()));
+    await _serializeStorageMutation(() async {
+      if (expectedGeneration != null &&
+          expectedGeneration != _sessionGeneration) {
+        throw SessionExpiredException(
+            'Session terminée pendant le renouvellement.');
+      }
+      await _storage.write(key: _tokenSetKey, value: jsonEncode(set.toJson()));
+    });
   }
 
   Future<void> _clearAll() async {
-    await _storage.delete(key: _tokenSetKey);
-    await _storage.delete(key: _legacyTokenKey);
-    await _storage.delete(key: _legacyEmailKey);
+    await _serializeStorageMutation(() async {
+      await _storage.delete(key: _tokenSetKey);
+      await _storage.delete(key: _legacyTokenKey);
+      await _storage.delete(key: _legacyEmailKey);
+    });
   }
 
   // ---------------------------------------------------------------------
@@ -351,7 +378,15 @@ class AuthService {
     }
 
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    await _persistTokenResponse(data, emailFallback: set.email);
+    await _persistTokenResponse(
+      data,
+      emailFallback: set.email,
+      expectedGeneration: generation,
+    );
+    if (generation != _sessionGeneration) {
+      throw SessionExpiredException(
+          'Session terminée pendant le renouvellement.');
+    }
     return data['access_token'] as String;
   }
 
@@ -394,8 +429,10 @@ class AuthService {
         await logout();
         return false;
       }
-      // Statut inattendu (5xx...) : erreur transitoire, pas une session invalide.
-      return false;
+      // Seul un 401 confirme une session invalide. Tout autre statut est une
+      // vérification indisponible ou inattendue et ne doit pas déconnecter.
+      throw NetworkUnavailableException(
+          'Vérification indisponible (${response.statusCode}).');
     } on SessionExpiredException {
       return false;
     } on NetworkUnavailableException {
@@ -403,6 +440,13 @@ class AuthService {
       // Propagée pour que l'appelant distingue ce cas d'une session invalide
       // (ne doit pas déconnecter l'utilisateur).
       rethrow;
+    } on TimeoutException {
+      throw NetworkUnavailableException('Le serveur ne répond pas (timeout).');
+    } on SocketException catch (e) {
+      throw NetworkUnavailableException(
+          'Connexion impossible (réseau ou DNS): ${e.message}');
+    } on http.ClientException catch (e) {
+      throw NetworkUnavailableException('Connexion impossible: ${e.message}');
     } catch (e) {
       AppLogger.I.error('AUTH: erreur lors de la vérification du token', e);
       return false;
@@ -429,9 +473,16 @@ class AuthService {
         await logout();
         throw SessionExpiredException('Session expirée, reconnectez-vous.');
       } else {
-        throw Exception(
-            'Erreur lors de la récupération du profil (${response.statusCode})');
+        throw NetworkUnavailableException(
+            'Profil temporairement indisponible (${response.statusCode}).');
       }
+    } on TimeoutException {
+      throw NetworkUnavailableException('Le serveur ne répond pas (timeout).');
+    } on SocketException catch (e) {
+      throw NetworkUnavailableException(
+          'Connexion impossible (réseau ou DNS): ${e.message}');
+    } on http.ClientException catch (e) {
+      throw NetworkUnavailableException('Connexion impossible: ${e.message}');
     } catch (e) {
       if (e is SessionExpiredException || e is NetworkUnavailableException) {
         rethrow;
@@ -484,9 +535,10 @@ class AuthService {
     }
   }
 
-  /// Déconnexion : efface immédiatement (sans attendre le réseau) toutes les
-  /// données d'authentification locales, puis tente la révocation serveur en
-  /// best effort en arrière-plan (sans bloquer l'appelant ni l'UI dessus).
+  /// Déconnexion : invalide immédiatement la génération courante, attend la
+  /// fin d'une éventuelle mutation locale déjà commencée, puis efface toutes
+  /// les données d'authentification sans attendre le réseau. La révocation
+  /// serveur est tentée en best effort en arrière-plan.
   ///
   /// Incrémente d'abord un compteur de génération : toute rotation déjà en
   /// vol (single-flight) qui obtiendrait sa réponse après ce point ne

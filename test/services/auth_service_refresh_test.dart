@@ -265,6 +265,84 @@ void main() {
   });
 
   group('panne réseau', () {
+    test('isAuthenticated propage un 5xx sans effacer la session', () async {
+      store['auth_token_set'] = jsonEncode({
+        'access_token': 'still_valid',
+        'refresh_token': 'refresh_1',
+        'access_expires_at': DateTime.now()
+            .toUtc()
+            .add(const Duration(hours: 1))
+            .toIso8601String(),
+        'refresh_expires_at': DateTime.now()
+            .toUtc()
+            .add(const Duration(days: 30))
+            .toIso8601String(),
+        'email': 'tireur@example.com',
+      });
+      final client =
+          MockClient((req) async => http.Response('indisponible', 503));
+
+      await expectLater(
+        buildService(client).isAuthenticated(),
+        throwsA(isA<NetworkUnavailableException>()),
+      );
+      expect(store.containsKey('auth_token_set'), isTrue);
+    });
+
+    test('getUserInfo propage un 5xx sans effacer la session', () async {
+      store['auth_token_set'] = jsonEncode({
+        'access_token': 'still_valid',
+        'refresh_token': 'refresh_1',
+        'access_expires_at': DateTime.now()
+            .toUtc()
+            .add(const Duration(hours: 1))
+            .toIso8601String(),
+        'refresh_expires_at': DateTime.now()
+            .toUtc()
+            .add(const Duration(days: 30))
+            .toIso8601String(),
+        'email': 'tireur@example.com',
+      });
+      final client =
+          MockClient((req) async => http.Response('indisponible', 503));
+
+      await expectLater(
+        buildService(client).getUserInfo(),
+        throwsA(isA<NetworkUnavailableException>()),
+      );
+      expect(store.containsKey('auth_token_set'), isTrue);
+    });
+
+    for (final error in <Object>[
+      const SocketException('pas de réseau'),
+      TimeoutException('timeout'),
+    ]) {
+      test(
+          'isAuthenticated propage ${error.runtimeType} sans effacer la session',
+          () async {
+        store['auth_token_set'] = jsonEncode({
+          'access_token': 'still_valid',
+          'refresh_token': 'refresh_1',
+          'access_expires_at': DateTime.now()
+              .toUtc()
+              .add(const Duration(hours: 1))
+              .toIso8601String(),
+          'refresh_expires_at': DateTime.now()
+              .toUtc()
+              .add(const Duration(days: 30))
+              .toIso8601String(),
+          'email': 'tireur@example.com',
+        });
+        final client = MockClient((req) async => throw error);
+
+        await expectLater(
+          buildService(client).isAuthenticated(),
+          throwsA(isA<NetworkUnavailableException>()),
+        );
+        expect(store.containsKey('auth_token_set'), isTrue);
+      });
+    }
+
     test(
         'au démarrage (proactif) : tokens préservés, exception réseau propagée',
         () async {
@@ -437,6 +515,59 @@ void main() {
         200,
       ));
       await expectLater(refreshFuture, throwsA(isA<SessionExpiredException>()));
+      expect(store.containsKey('auth_token_set'), isFalse);
+    });
+
+    test('sérialise le logout avec une écriture de refresh déjà commencée',
+        () async {
+      store['auth_token_set'] = jsonEncode({
+        'access_token': 'about_to_expire',
+        'refresh_token': 'refresh_1',
+        'access_expires_at': DateTime.now()
+            .toUtc()
+            .add(const Duration(seconds: 5))
+            .toIso8601String(),
+        'refresh_expires_at': DateTime.now()
+            .toUtc()
+            .add(const Duration(days: 30))
+            .toIso8601String(),
+        'email': 'tireur@example.com',
+      });
+      final writeStarted = Completer<void>();
+      final finishWrite = Completer<void>();
+      when(storage.write(key: anyNamed('key'), value: anyNamed('value')))
+          .thenAnswer((inv) async {
+        writeStarted.complete();
+        await finishWrite.future;
+        store[inv.namedArguments[#key] as String] =
+            inv.namedArguments[#value] as String;
+      });
+      final client = MockClient((req) async {
+        if (req.url.path == '/auth/token/refresh') {
+          return http.Response(
+            jsonEncode(
+                exchangePayload(access: 'access_2', refresh: 'refresh_2')),
+            200,
+          );
+        }
+        return http.Response('', 204);
+      });
+
+      final service = buildService(client);
+      final refreshExpectation = expectLater(
+        service.getValidAccessToken(),
+        throwsA(isA<SessionExpiredException>()),
+      );
+      await writeStarted.future;
+
+      var logoutCompleted = false;
+      final logoutFuture = service.logout().then((_) => logoutCompleted = true);
+      await Future<void>.delayed(Duration.zero);
+      expect(logoutCompleted, isFalse);
+
+      finishWrite.complete();
+      await logoutFuture;
+      await refreshExpectation;
       expect(store.containsKey('auth_token_set'), isFalse);
     });
 

@@ -40,8 +40,12 @@ Toutes les modifications notables de ce projet seront listées ici.
 - NT-133 : les nouvelles distances saisies dans une session détaillée doivent être des entiers strictement positifs ; les anciennes distances décimales restent lisibles et ne sont jamais réécrites automatiquement.
 - NT-073 : suppression de l'entrée générique `Autre` ; les calibres inconnus restent saisis et persistés librement, participent aux statistiques globales et sont exclus des seules répartitions par calibre.
 
+### Fixed
+- NT-048 : une indisponibilité transitoire de `/users/me` (réseau, timeout ou erreur serveur 5xx) préserve désormais la session locale au démarrage.
+- NT-048 : les mutations du stockage sécurisé sont sérialisées afin qu'un refresh en cours ne puisse jamais restaurer une paire de tokens après la fin d'un logout concurrent.
+
 ### Quality
-- Quality Gate locale de release : `flutter analyze --fatal-infos` sans issue et 455 tests réussis, 2 ignorés.
+- Quality Gate locale de release : `flutter analyze --fatal-infos` sans issue et 460 tests réussis, 2 ignorés.
 
 ### Documentation
 - Cadrage détaillé du lot NT-014/NT-048/NT-073/NT-133 et alignement des vues app/serveur et du plan de sprints.

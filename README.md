@@ -74,7 +74,7 @@ Un fichier `assets/config.example.yaml` est fourni comme modèle.
 | Garde-fou | Détail |
 |---|---|
 | Analyse statique | `flutter_lints` actif, zéro issue exigé (`flutter analyze --fatal-infos` en CI) |
-| Tests | 457 tests unitaires et widgets : 455 réussis, 2 ignorés (`flutter test`) |
+| Tests | 462 tests unitaires et widgets : 460 réussis, 2 ignorés (`flutter test`) |
 | CI | GitHub Actions + SonarCloud (push `dev`/`main`, PR vers `main`) |
 | Pré-commit | `./scripts/verify_before_commit.sh` (analyse + tests, variante `fast`) — hook : `ln -sf ../../scripts/verify_before_commit.sh .git/hooks/pre-commit` |
 | Recette manuelle | [Cahier de recette](docs/tests/cahier_recette.md) généré depuis `docs/tests/cahier_recette.yaml` (`dart run scripts/generate_cahier_recette.dart`), à rejouer avant toute MR vers `main` |
