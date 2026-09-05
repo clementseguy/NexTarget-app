@@ -59,6 +59,12 @@
 > SonarCloud ouvertes sur la PR #32 et remplace les tests de sauvegarde ignorés
 > par des tests déterministes ne dépendant pas directement des plugins Flutter.
 >
+> Planification du **2026-09-05** : le prochain lot de stabilisation regroupe
+> NT-025, NT-056, NT-057, NT-059, NT-077 et NT-144. NT-056 est cadré sur les
+> seuls flux réseau Auth, Profil et Coach ; NT-077 extrait le contrôle de
+> cohérence Hive resté en note de NT-072 ; NT-144 porte l'hygiène documentaire
+> et la réorganisation du backlog.
+>
 > Cadrage correctif du **2026-09-04** : le lot de finitions UX NT-140 à
 > NT-143 formalise la suppression du second écran de démarrage (issue #30),
 > l'ordre des paramètres, le déplacement de « Tirs par arme » et la vraie
@@ -86,13 +92,13 @@
 | 5. Auth & Compte | NT-040 → NT-049 |
 | 6. Qualité & Observabilité | NT-050 → NT-059 |
 | 7. Sécurité & Secrets | NT-060 → NT-066 |
-| 8. Plateforme & Déploiement | NT-070 → NT-076 |
+| 8. Plateforme & Déploiement | NT-070 → NT-077 |
 | 9. Idées / hors-scope | NT-090 → NT-092 |
 | 10. Disciplines officielles & TAR | NT-100 → NT-104 |
 | 11. Analyse de cible (photo) | NT-110 → NT-111 |
 | 12. Coach : progression & génération | NT-120 → NT-126 |
 | 13. Saisie au stand | NT-130 → NT-134 |
-| 14. Finitions UX | NT-140 → NT-143 |
+| 14. Finitions UX | NT-140 → NT-144 |
 
 ---
 
@@ -264,7 +270,7 @@
 | NT-022 | Lier exercices ↔ sessions | app | Should | S | FAIT |
 | NT-023 | Création d'exercice par le coach | both | Could | L | À FAIRE |
 | NT-024 | Stats d'exécution (fenêtres glissantes) | app | Could | M | À FAIRE |
-| NT-025 | Niveau de difficulté d'exercice | app | Could | S | À FAIRE |
+| NT-025 | Niveau de difficulté d'exercice | app | Could | M | À FAIRE |
 | NT-026 | Supprimer un exercice depuis l'interface | app | Could | S | EN COURS |
 | NT-027 | Dupliquer un exercice | app | Could | S | EN COURS |
 
@@ -299,10 +305,19 @@
 - **Priorité** : Could · **Statut** : À FAIRE.
 
 ### NT-025 — Niveau de difficulté d'exercice
-- **Thème** : Exercices · **Portée** : app · **Dépendances** : NT-020
-- **Description** : Classer les exercices par difficulté (beginner/advanced/expert).
-- **Critères d'acceptation** : champ difficulté sur `Exercise` ; filtrable.
-- **Priorité** : Could · **Statut** : À FAIRE.
+- **Thème** : Exercices · **Portée** : app · **Dépendances** : NT-020, NT-027, NT-072
+- **Description** : Ajouter un niveau facultatif aux exercices pour faciliter le choix d'un contenu adapté, sans attribuer arbitrairement une difficulté aux exercices existants.
+- **Critères d'acceptation** :
+  - `Exercise` porte un champ facultatif à valeurs contrôlées `beginner`, `advanced` ou `expert`, affichées « Débutant », « Avancé » et « Expert » dans l'interface ;
+  - créer ou modifier un exercice permet de choisir ou d'effacer sa difficulté ; les autres champs et validations restent inchangés ;
+  - les exercices historiques sans valeur restent valides et sont présentés comme « Non renseignée », sans classement automatique ;
+  - la liste peut être filtrée par « Tous », « Non renseignée » ou chacun des trois niveaux ; ce filtre se combine avec les filtres et tris existants ;
+  - la duplication NT-027 reprend la difficulté de la source tout en laissant le champ modifiable avant création ;
+  - l'évolution du modèle et de Hive est additive et versionnée conformément à NT-072 ; aucun `typeId` ni index de champ existant n'est réutilisé ;
+  - les anciennes sauvegardes sans difficulté restent importables ; les nouveaux exports/imports conservent la valeur ; une valeur inconnue est traitée comme non renseignée sans faire échouer toute la sauvegarde ;
+  - les tests couvrent la sérialisation actuelle et historique, la migration, la création/édition, les filtres combinés, la duplication et le cycle export/import.
+- **Priorité** : Could · **Estimation** : M · **Statut** : À FAIRE.
+- **Notes** : aucune difficulté n'est déduite de la catégorie, du type, de la durée ou des performances du tireur.
 
 ### NT-026 — Supprimer un exercice depuis l'interface
 - **Thème** : Exercices · **Portée** : app · **Dépendances** : NT-020, NT-022
@@ -507,7 +522,7 @@
 | NT-053 | Logging structuré + tracing (serveur) | server | Should | M | FAIT |
 | NT-054 | Tests OAuth mockés (providers externes) | server | Should | M | FAIT |
 | NT-055 | CI serveur (tests + couverture) | server | Should | S | FAIT |
-| NT-056 | Harmonisation des erreurs réseau (app) | app | Could | S | À FAIRE |
+| NT-056 | Harmonisation des erreurs réseau (app) | app | Could | M | À FAIRE |
 | NT-057 | Nettoyage des widgets dupliqués (app) | app | Could | S | À FAIRE |
 | NT-058 | Fakes de repository partagés pour les tests (app) | app | Should | S | FAIT |
 | NT-059 | Résorber les issues SonarCloud de la PR #32 et les tests ignorés | app | Should | M | À FAIRE |
@@ -542,14 +557,34 @@
 - **Priorité** : Should · **Statut** : FAIT (2026-07-09, sprint S3) — `.github/workflows/ci.yml` (pytest + pytest-cov, Python 3.11, push/PR).
 
 ### NT-056 — Harmonisation des erreurs réseau (app)
-- **Portée** : app · **Dépendances** : — · **Description** : Unifier la présentation des erreurs réseau (timeout, DNS, HTTP) sur tous les flux (auth, profil, backup) sur le modèle du coach (messages user-friendly via exception dédiée).
-- **Critères d'acceptation** : mêmes familles de messages partout ; aucun message technique brut à l'écran.
-- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue #5 ; le flux coach est déjà conforme (v0.5.0).
+- **Thème** : Qualité & Observabilité · **Portée** : app · **Dépendances** : NT-040, NT-048, NT-061
+- **Description** : Présenter de manière cohérente et actionnable les erreurs des flux réellement réseau de l'application : authentification OAuth et renouvellement de session, consultation ou modification du profil, et Coach IA.
+- **Périmètre explicite** : les sauvegardes locales, l'import/export, Hive, les fichiers et les erreurs purement locales sont exclus de cet item.
+- **Critères d'acceptation** :
+  - une traduction centralisée transforme les erreurs techniques ou métier en informations de présentation cohérentes, sans imposer un composant visuel unique à tous les écrans ;
+  - les familles au minimum distinguées sont : absence de connexion ou DNS, délai dépassé, service indisponible ou erreur serveur, limitation de débit, session expirée ou révoquée, requête invalide et erreur inattendue ;
+  - les messages affichés sont compréhensibles en français et ne révèlent jamais de code HTTP, détail DNS, exception brute, `toString()` technique ou message interne du serveur ; les détails utiles au diagnostic passent par le mécanisme de journalisation existant ;
+  - toute erreur transitoire et rejouable propose systématiquement une action « Réessayer » qui relance uniquement l'opération concernée, sans boucle de tentatives automatiques ;
+  - une session confirmée expirée, révoquée ou définitivement invalide propose systématiquement « Se reconnecter » et conduit au parcours d'authentification ; cette action n'est pas affichée pour une simple panne réseau ;
+  - une erreur transitoire ne déconnecte pas l'utilisateur, n'efface pas ses jetons et ne bloque pas les fonctions locales de l'application ; les garanties de renouvellement et de retry unique de NT-048 sont conservées ;
+  - les erreurs de saisie ou requêtes invalides conservent une correction locale explicite et ne proposent pas un nouvel essai trompeur ;
+  - Auth, Profil et Coach partagent le même vocabulaire et les mêmes décisions d'action tout en conservant leur contexte métier ; aucun contrat serveur n'est modifié ;
+  - les tests couvrent chaque famille, l'absence de fuite technique, la conservation de l'état authentifié lors d'une panne transitoire, la reconnexion après invalidation confirmée et l'exécution réelle des actions proposées sur chaque parcours concerné.
+- **Priorité** : Could · **Estimation** : M · **Statut** : À FAIRE.
+- **Notes** : repris de l'issue #5. Le Coach fournit déjà une base de messages orientés utilisateur, à aligner avec la traduction commune plutôt qu'à réécrire sans nécessité. Hors périmètre : file d'attente hors ligne, retries multiples automatiques et modification des API serveur.
 
 ### NT-057 — Nettoyage des widgets dupliqués (app)
-- **Portée** : app · **Dépendances** : — · **Description** : Chasse aux widgets/écrans dupliqués ou morts et factorisation.
-- **Critères d'acceptation** : inventaire fait ; doublons supprimés ou factorisés ; aucune régression (tests verts).
-- **Priorité** : Could · **Statut** : À FAIRE. · **Notes** : repris de l'issue #5 ; `MainNavigation` (doublon d'`AppNavigator`) déjà supprimé en v0.5.0.
+- **Thème** : Qualité & Observabilité · **Portée** : app · **Dépendances** : NT-051
+- **Description** : Réduire la dette UI avérée dans `lib/screens`, `lib/widgets` et la navigation en supprimant le code sans appelant et les duplications qui compliquent réellement la maintenance.
+- **Critères d'acceptation** :
+  - un inventaire court identifie, avec leurs appelants ou l'absence d'appelant, les écrans, widgets, routes et imports candidats ; sa résolution est traçable dans la PR ;
+  - les fichiers, routes et imports morts ne sont supprimés qu'après vérification statique et recherche globale de leurs usages ;
+  - une factorisation n'est réalisée que pour du code actif répété à au moins deux endroits et seulement si le résultat est plus simple que les variantes d'origine ;
+  - aucun comportement, libellé, mise en page, navigation ou contrat public n'est modifié intentionnellement ; les changements fonctionnels découverts sont sortis du lot et tracés séparément ;
+  - aucune abstraction spéculative, refonte générale d'architecture ou réorganisation globale du dépôt n'est introduite ;
+  - les tests des parcours touchés sont conservés ou adaptés sans perte de couverture ; `flutter analyze --fatal-infos` et la suite Flutter complète passent.
+- **Priorité** : Could · **Estimation** : S · **Statut** : À FAIRE.
+- **Notes** : repris de l'issue #5 ; `MainNavigation`, doublon d'`AppNavigator`, a déjà été supprimé en v0.5.0 et ne fait donc pas partie du livrable restant.
 
 ### NT-058 — Fakes de repository partagés pour les tests (app)
 - **Thème** : Qualité & Observabilité · **Portée** : app · **Dépendances** : —
@@ -646,6 +681,7 @@
 | NT-074 | Saisie séries plein écran + navigation rapide | app | Could | M | À FAIRE |
 | NT-075 | Onboarding + aide contextuelle | app | Could | M | FAIT |
 | NT-076 | Cache stats + compactage Hive | app | Could | M | À FAIRE |
+| NT-077 | Vérifier automatiquement la cohérence du schéma Hive | app | Should | S | À FAIRE |
 
 ### NT-070 — Déploiement serveur (Render)
 - **Portée** : server · **Dépendances** : — · **Critères d'acceptation** : déploiement via `render.yaml` ; variables d'env (JWT, OAuth, `MISTRAL_API_KEY`) documentées.
@@ -675,7 +711,7 @@
 - **Portée** : app · **Dépendances** : — · **Description** : Runner générique de migrations de schéma local (ancien P5).
 - **Critères d'acceptation** : `MigrationRunner` applique les migrations par version croissante ; version stockée.
 - **Statut** : FAIT — `lib/migrations/` (`MigrationRunner`, `SchemaVersionStore`, migrations 2 & 3).
-- **Notes** : le **script de vérification de cohérence de schéma** (part du P5) reste À FAIRE — le tracer comme sous-tâche si besoin.
+- **Notes** : le contrôle automatique de cohérence du schéma, reliquat du P5, est désormais extrait et planifié explicitement dans NT-077.
 
 ### NT-073 — Calibre par défaut + normalisation statistique
 - **Portée** : app · **Dépendances** : NT-001 · **Description** : Améliorer l'hygiène des données sans retirer la liberté de saisie : proposer une liste cohérente, permettre un calibre par défaut explicite et regrouper uniquement les alias connus dans les statistiques par calibre. Aucun « dernier calibre utilisé » n'est mémorisé.
@@ -704,6 +740,21 @@
 ### NT-076 — Cache stats + compactage Hive
 - **Portée** : app · **Dépendances** : NT-010 · **Description** : Cache mémoire des stats (TTL courte) + compactage Hive périodique (ancien P8).
 - **Critères d'acceptation** : stats mises en cache ; compactage déclenché sur seuil. · **Priorité** : Could · **Statut** : À FAIRE.
+
+### NT-077 — Vérifier automatiquement la cohérence du schéma Hive
+- **Thème** : Plateforme & Déploiement · **Portée** : app · **Dépendances** : NT-051, NT-072
+- **Description** : Détecter avant fusion les migrations manquantes et les réutilisations accidentelles d'identifiants Hive susceptibles de rendre les données locales illisibles.
+- **Critères d'acceptation** :
+  - une commande déterministe et en lecture seule vérifie le schéma déclaré sans ouvrir ni modifier les boxes ou fichiers utilisateur ;
+  - les versions de migration enregistrées dans le point d'entrée sont uniques, ordonnées et forment la séquence attendue jusqu'à la version courante ; chaque fichier ou classe de migration attendu est enregistré et couvert par un test ;
+  - les `typeId` de `@HiveType` sont uniques ; un registre versionné conserve aussi les identifiants historiquement attribués afin qu'une suppression de modèle ne rende jamais son identifiant réutilisable ;
+  - les index `@HiveField` sont uniques dans chaque type et les index retirés restent réservés dans ce registre ; tout ajout ou retrait de champ exige une évolution explicite du registre ;
+  - tout écart échoue avec un diagnostic indiquant le type, le champ ou la migration concernée et la correction attendue ;
+  - le contrôle est exécuté par `scripts/verify_before_commit.sh` et par la CI existante, sans dépendance à un état local particulier ;
+  - des tests de la vérification couvrent au minimum le cas nominal, un `typeId` dupliqué, un index de champ réutilisé, une migration absente et une rupture de séquence ;
+  - la documentation de migration explique comment mettre à jour le registre et exécuter le contrôle.
+- **Priorité** : Should · **Estimation** : S · **Statut** : À FAIRE.
+- **Notes** : cette vérification complète NT-072 ; elle ne remplace ni les tests de migration avec données historiques ni la revue des sauvegardes JSON.
 
 ---
 
@@ -923,6 +974,7 @@
 | NT-141 | Réordonner les sections de l'écran Paramètres | app | 2 | Should | S | EN COURS |
 | NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | 2 | Should | S | EN COURS |
 | NT-143 | Remplacer « Copier résumé » par la duplication de session | app | 3 | Should | M | EN COURS |
+| NT-144 | Assainir et réorganiser la documentation du backlog | app | 1 | Could | S | À FAIRE |
 
 ### NT-140 — Supprimer le second écran de chargement Flutter
 - **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-040, NT-075
@@ -984,6 +1036,21 @@
   - tests unitaires pour les deux sous-types, le clonage profond, la photo et les rollbacks ; widget tests du préremplissage, de la date vide, de l'annulation et de la création ; cahier de recette mis à jour.
 - **Priorité** : Should · **VM** : 3 · **Estimation** : M · **Statut** : EN COURS.
 - **Notes** : une session libre exige aujourd'hui une date à la persistance ; le passage par le formulaire rend la règle « ne pas reprendre la date » cohérente pour les deux sous-types sans introduire d'état local invalide ni migration Hive. Le partage d'un résumé texte est retiré du périmètre ; s'il redevient utile, il devra être exposé par une action explicitement nommée « Partager » ou « Copier le résumé ».
+
+### NT-144 — Assainir et réorganiser la documentation du backlog
+- **Thème** : Finitions UX · **Portée** : app · **Dépendances** : —
+- **Description** : Rendre les documents de pilotage plus fiables et plus faciles à maintenir en supprimant les contradictions, doublons et repères obsolètes, sans perdre l'historique utile des décisions.
+- **Critères d'acceptation** :
+  - `backlog-unifie.md` reste la source de vérité produit ; `vue-app.md`, `vue-serveur.md` et `plan-sprints.md` sont alignés sur ses statuts, priorités, estimations et dépendances ;
+  - `docs/backlog/README.md` décrit tous les thèmes actifs, dont le thème 14, et clarifie le rôle de chaque vue ;
+  - NT-020 ne laisse plus entendre que la suppression UI est livrée alors qu'elle relève de NT-026 ; les items historiques NT-023 et NT-033 restent traçables mais sont explicitement indiqués comme précisés ou remplacés par NT-122/NT-123 et NT-120/NT-121 ;
+  - l'ancien bloc « Backlog priorisé » du backlog unifié n'entre plus en concurrence avec `plan-sprints.md` : il est retiré ou déplacé dans une archive clairement historique après conservation des décisions durables dans les items actifs ;
+  - les liens internes, ancres, références de version, dates de projection et renvois entre documents sont vérifiés et corrigés ;
+  - aucun identifiant de backlog n'est renuméroté ou supprimé et aucune décision métier durable n'est effacée ;
+  - un contrôle par recherche et inspection du diff confirme l'absence de statut contradictoire pour les items actifs et de lien interne cassé ;
+  - cette tâche ne modifie aucun code applicatif, comportement produit, schéma de persistance ni contrat serveur.
+- **Priorité** : Could · **VM** : 1 · **Estimation** : S · **Statut** : À FAIRE.
+- **Notes** : le périmètre est volontairement documentaire et borné à l'assainissement du backlog et de ses vues ; une refonte générale de toute la documentation technique ou métier serait une tâche distincte.
 
 ---
 

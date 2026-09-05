@@ -45,6 +45,14 @@
 > par la PR #31. NT-134 réserve les graphiques
 > score/groupement intra-session comme évolution facultative ultérieure.
 
+> **Planification du 2026-09-05** : le prochain lot app regroupe **NT-059,
+> NT-077, NT-056, NT-057, NT-025 et NT-144**, dans cet ordre recommandé. Il
+> stabilise d'abord la qualité et la persistance, harmonise ensuite les erreurs
+> réseau et la dette UI, puis livre l'évolution mineure des exercices et clôt
+> la synchronisation documentaire. Les six items peuvent être développés sur
+> une branche unique avec des commits séparés ; aucun changement serveur n'est
+> attendu.
+
 ## Hypothèses
 
 - Sprints de 2 semaines.
@@ -79,23 +87,51 @@
 | 0 | NT-049 (FAIT) | Diagnostic immédiat et sécurisé de la base utilisateurs et du comportement OAuth ; lot serveur autonome livré. | NT-040, NT-042 | server |
 | 0 | NT-014, NT-048, NT-061, NT-073, NT-133 (FAIT) | Lot de finalisation livré sur `dev`. | NT-001, NT-003, NT-005, NT-010, NT-017, NT-022, NT-040 | both |
 | 0 | NT-131 (FAIT) | Session guidée directement au stand sur le socle livré par NT-133 ; fusionnée sur `dev` par la PR #31. | NT-001, NT-002, NT-003, NT-004, NT-009, NT-022, NT-073, NT-133 | app |
-| 1 | NT-100, NT-101 | Socle métier TAR : rend les sessions comparables et exploitables par stats/coach. | NT-001, NT-002 | app |
-| 2 | NT-130 | Réduit fortement la friction de saisie au stand et prépare les templates par épreuve après stabilisation de NT-073/NT-133. | NT-001, NT-073, NT-101 optionnel, NT-133 | app |
-| 3 | NT-005 (FAIT), NT-110 | Photo cible exploitable : mémoire visuelle puis contexte fiable pour le coach. | NT-001, NT-100 | app |
-| 4 | NT-104 | Restitution immédiate de la progression par discipline. | NT-100, NT-010 | app |
-| 5 | NT-120, NT-121 | Donne un vrai écran Coach transverse, à forte valeur métier. | NT-101, NT-010, NT-030 | both |
-| 6 | NT-122 | Socle serveur pour que le coach produise des entités validables. | NT-031 | server |
-| 7 | NT-123, NT-124 | Le coach devient actionnable : exercices et objectifs proposés, validés par le tireur. | NT-122, NT-020, NT-012 | both |
-| 8 | NT-102, NT-074 | Usage terrain avancé restant après livraison prioritaire de NT-131 : match blanc et optimisations génériques de saisie. | NT-101, NT-002 | app |
-| 9 | NT-134 | Lecture graphique score/groupement au fil d'une séance, après validation du récapitulatif NT-131. | NT-131, NT-011 | app |
-| 10 | NT-111 | Analyse qualitative photo par IA, utile mais seulement après photos taguées et référentiel. | NT-005, NT-110, NT-100, NT-030 | both |
-| 11 | NT-125, NT-126 | Boucle longue : suivi des recommandations puis plan d'entraînement. | NT-121, NT-123, NT-124 | both |
-| 12 | NT-024, NT-015, NT-016 | Raffinement stats/objectifs/exercices après les axes TAR et coach. | NT-022, NT-021, NT-010, NT-012 | app |
-| 13 | NT-056, NT-057, NT-076 | Dette qualité/performance app, à caler dans un sprint de stabilisation. | — | app |
-| 14 | NT-034, NT-025, NT-026, NT-007 (FAIT) | Améliorations utiles mais non structurantes ; NT-026 est de faible priorité mais reste planifié. | NT-032, NT-020, NT-022 | app/server |
-| 15 | NT-044, NT-103, NT-132 | Opportunistes ou à instruire : Facebook, grilles FFTir, spike vocal. | sourcing/config terrain | both/app |
+| 1 | NT-059, NT-077, NT-056, NT-057, NT-025, NT-144 | Lot immédiat de stabilisation, qualité, évolution mineure des exercices et hygiène documentaire. | NT-020, NT-027, NT-040, NT-048, NT-051, NT-061, NT-072 | app |
+| 2 | NT-100, NT-101 | Socle métier TAR : rend les sessions comparables et exploitables par stats/coach. | NT-001, NT-002 | app |
+| 3 | NT-130 | Réduit fortement la friction de saisie au stand et prépare les templates par épreuve après stabilisation de NT-073/NT-133. | NT-001, NT-073, NT-101 optionnel, NT-133 | app |
+| 4 | NT-005 (FAIT), NT-110 | Photo cible exploitable : mémoire visuelle puis contexte fiable pour le coach. | NT-001, NT-100 | app |
+| 5 | NT-104 | Restitution immédiate de la progression par discipline. | NT-100, NT-010 | app |
+| 6 | NT-120, NT-121 | Donne un vrai écran Coach transverse, à forte valeur métier. | NT-101, NT-010, NT-030 | both |
+| 7 | NT-122 | Socle serveur pour que le coach produise des entités validables. | NT-031 | server |
+| 8 | NT-123, NT-124 | Le coach devient actionnable : exercices et objectifs proposés, validés par le tireur. | NT-122, NT-020, NT-012 | both |
+| 9 | NT-102, NT-074 | Usage terrain avancé restant après livraison prioritaire de NT-131 : match blanc et optimisations génériques de saisie. | NT-101, NT-002 | app |
+| 10 | NT-134 | Lecture graphique score/groupement au fil d'une séance, après validation du récapitulatif NT-131. | NT-131, NT-011 | app |
+| 11 | NT-111 | Analyse qualitative photo par IA, utile mais seulement après photos taguées et référentiel. | NT-005, NT-110, NT-100, NT-030 | both |
+| 12 | NT-125, NT-126 | Boucle longue : suivi des recommandations puis plan d'entraînement. | NT-121, NT-123, NT-124 | both |
+| 13 | NT-024, NT-015, NT-016 | Raffinement stats/objectifs/exercices après les axes TAR et coach. | NT-022, NT-021, NT-010, NT-012 | app |
+| 14 | NT-076 | Dette de performance app restant à caler après le lot immédiat. | NT-010 | app |
+| 15 | NT-034, NT-026, NT-007 (FAIT) | Améliorations utiles mais non structurantes ; NT-026 est de faible priorité mais reste planifié. | NT-032, NT-020, NT-022 | app/server |
+| 16 | NT-044, NT-103, NT-132 | Opportunistes ou à instruire : Facebook, grilles FFTir, spike vocal. | sourcing/config terrain | both/app |
 
 ## Plan par sprint
+
+### Lot immédiat — Stabilisation technique et évolutions mineures
+
+**Objectif livrable** : repartir d'une base analysable sans tests masqués,
+sécuriser les futures évolutions Hive, homogénéiser la reprise après erreur
+réseau, réduire une dette UI démontrée, enrichir le catalogue d'exercices et
+terminer avec des documents de pilotage cohérents. Le lot concerne uniquement
+l'application Flutter et sa documentation.
+
+| Ordre | Item | Livrable principal | Dépendances ou garde-fous |
+|---|---|---|---|
+| 1 | NT-059 | Résorber les 53 issues SonarCloud de référence et rendre déterministes les trois tests d'export actuellement ignorés ou auto-ignorés. | Conserver les comportements de NT-014, NT-048, NT-131 et NT-133. |
+| 2 | NT-077 | Ajouter le registre et le contrôle automatique des migrations, `typeId` et index Hive, exécuté avant commit et en CI. | Complète NT-072 ; contrôle en lecture seule et tests avec cas invalides. |
+| 3 | NT-056 | Unifier les erreurs Auth, Profil et Coach avec « Réessayer » ou « Se reconnecter » selon leur nature. | Sauvegardes locales exclues ; préserver jetons et mode local lors des erreurs transitoires. |
+| 4 | NT-057 | Supprimer le code UI mort et factoriser uniquement les duplications actives dont le bénéfice est démontré. | Inventaire des usages avant suppression ; aucun changement fonctionnel. |
+| 5 | NT-025 | Ajouter la difficulté facultative des exercices, son filtre et sa persistance rétrocompatible. | Migration additive ; reprise par NT-027 ; import/export couverts. |
+| 6 | NT-144 | Synchroniser et alléger les documents de backlog après les cinq évolutions précédentes. | Conserver les identifiants et décisions durables ; aucun code produit modifié. |
+
+**Organisation recommandée** : une branche app unique pour le lot, avec un
+commit cohérent par item lorsque possible. Les validations ciblées sont jouées
+à chaque incrément ; l'analyse, la suite complète et les contrôles documentaires
+sont rejoués avant livraison.
+
+**Version stable attendue** : aucune issue Sonar de la référence ni test ignoré,
+schéma Hive contrôlé automatiquement, erreurs réseau actionnables sans
+déconnexion abusive, aucun changement UX issu du nettoyage, difficulté des
+exercices rétrocompatible et documents de pilotage synchronisés.
 
 ### Lot prioritaire — Finalisation du socle utilisateur
 
@@ -257,10 +293,11 @@ sans prétendre remplacer la saisie manuelle.
 | Ordre | Item | Feature | App | Serveur |
 |---|---|---|---|---|
 | 1 | NT-111 | Analyse qualitative photo par coach multimodal | envoi photo taguée, rendu analyse, cas photo inexploitable | endpoint multimodal JWT, rate limit, prompt cible |
-| 2 | NT-056 | Harmonisation erreurs réseau | messages homogènes auth/profil/coach/photo | contrats d'erreur stables |
 
 **Version stable attendue** : analyse qualitative seulement ; NT-006 reste en
-Icebox tant que l'extraction métrique n'a pas prouvé sa valeur.
+Icebox tant que l'extraction métrique n'a pas prouvé sa valeur. Les erreurs de
+ce parcours réutilisent le vocabulaire app livré par NT-056 sans replanifier
+l'item.
 
 ### Sprint 7 — Boucle de progression
 
@@ -294,11 +331,12 @@ réversible par suppression des entités créées.
 
 | Déclencheur | Items | Recommandation |
 |---|---|---|
-| Dette UI ou baisse de maintenabilité | NT-057, NT-076 | Planifier un sprint court de nettoyage/performance sans nouvelle feature métier. |
+| Lot immédiat décidé le 2026-09-05 | NT-059, NT-077, NT-056, NT-057, NT-025, NT-144 | Livrer dans cet ordre sur une branche app unique ; ne plus traiter ces items comme opportunistes. |
+| Baisse de performance avec la volumétrie | NT-076 | Mesurer avant de planifier le cache et le compactage Hive. |
 | Besoin login social autre que Google | NT-044 | Valider le flow Facebook contre une vraie app Facebook puis câbler le bouton app. |
 | Besoin classement officiel fédéral | NT-103 | Sourcer les grilles RGS FFTir avant estimation définitive. |
 | Hypothèse de saisie mains libres au stand | NT-132 | Spike timeboxé uniquement, avec go/no-go en conditions réelles. |
-| Besoin de confort catalogue exercices | NT-025, NT-026, NT-007 (FAIT) | NT-007 livré (PR #12) ; NT-026 est planifié à faible priorité en Sprint 7, avec recette des références de sessions orphelines. |
+| Besoin de confort catalogue exercices | NT-026, NT-007 (FAIT) | NT-025 rejoint le lot immédiat ; NT-007 est livré (PR #12) et NT-026 reste planifié à faible priorité en Sprint 7, avec recette des références de sessions orphelines. |
 
 ## Icebox
 
@@ -313,7 +351,10 @@ réversible par suppression des entités créées.
 
 ## Points de cohérence à corriger
 
-*(Aucun point ouvert actuellement.)*
+- **Ouvert — NT-144** : retirer la concurrence résiduelle entre le bloc
+  historique « Backlog priorisé » et ce plan, compléter l'index des thèmes,
+  clarifier les items précisés ou remplacés et synchroniser les métadonnées des
+  vues app et serveur.
 
 - **Résolu (2026-09-02)** : le bloc "Backlog priorisé" du backlog unifié
   mélangeait items livrés, anciens sprints et nouveaux thèmes. Un bandeau
