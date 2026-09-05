@@ -6,7 +6,10 @@ import '../services/logger.dart';
 
 /// Hive-backed implementation of [SessionRepository].
 class HiveSessionRepository
-    implements SessionRepository, AtomicSessionRepository {
+    implements
+        SessionRepository,
+        StrictSessionRepository,
+        AtomicSessionRepository {
   final LocalDatabaseHive _hive = LocalDatabaseHive();
 
   @override
@@ -20,8 +23,15 @@ class HiveSessionRepository
   }
 
   @override
-  Future<List<ShootingSession>> getAll() async {
-    final raw = await _hive.getSessionsWithSeries();
+  Future<List<ShootingSession>> getAll() => _getAll(rethrowOnError: false);
+
+  @override
+  Future<List<ShootingSession>> getAllStrict() => _getAll(rethrowOnError: true);
+
+  Future<List<ShootingSession>> _getAll({required bool rethrowOnError}) async {
+    final raw = await _hive.getSessionsWithSeries(
+      rethrowOnError: rethrowOnError,
+    );
     return raw.map((e) {
       final sessionMap = e['session'];
       final seriesList = e['series'] as List<dynamic>? ?? [];

@@ -17,13 +17,14 @@ Ce document décrit les règles fonctionnelles actuellement implémentées dans 
 - Sessions du mois : sessions détaillées et libres réalisées du mois civil courant.
 - Courbes points et groupement : au plus les 30 dernières séries, affichées de l'ancienne vers la récente. La tendance points est une moyenne mobile sur trois séries, avec une fenêtre réduite au début.
 - Répartitions catégories et calibres : une occurrence par session réalisée. Les alias `9mm`, `9x19`, `9mm para` et `9mm (9x19)` sont regroupés sous `9 mm`. Un calibre inconnu reste dans la session mais est exclu de cette seule répartition.
+- Tirs par arme : dernière carte de Synthèse, après la répartition par calibre. Son calcul reste celui décrit ci-dessous.
 
 ## Statistiques avancées
 
 - Régularité : `(1 - écart-type population / moyenne) × 100`, bornée entre 0 et 100 ; elle vaut 0 avec moins de trois séries ou une moyenne non positive.
 - Meilleur groupement : minimum strictement positif de tout l'historique.
 - Record de la dernière série : comparaison stricte avec toutes les séries précédentes, séparément pour les points et le groupement.
-- Compteur par arme : somme des tirs des sessions réalisées dont le nom d'arme correspond au râtelier après normalisation de casse et d'espaces. Les séries détaillées et le nombre direct des sessions libres sont additionnés ; les sessions prévues sont exclues. Ce compteur est un cumul non temporel : une session réalisée sans date, notamment issue de données historiques, reste comptabilisée.
+- Compteur par arme : somme des tirs des sessions réalisées dont le nom d'arme correspond au râtelier après normalisation de casse et d'espaces. Les séries détaillées et le nombre direct des sessions libres sont additionnés ; les sessions prévues sont exclues. Ce compteur est un cumul non temporel : une session réalisée sans date, notamment issue de données historiques, reste comptabilisée. Il est affiché dans Synthèse, pas dans Avancé.
 
 ## Comparatif 30 jours / 90 jours
 

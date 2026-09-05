@@ -2,16 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../models/shooting_session.dart';
 import '../services/session_service.dart';
+import '../interfaces/session_photo_service_interface.dart';
 import '../widgets/simple_session_form.dart';
 
 class CreateSimpleSessionScreen extends StatelessWidget {
   final SimpleShootingSession? initialSession;
   final SessionService? sessionService;
+  final ISessionPhotoService? photoService;
+  final SessionDuplicationDraft? duplicationDraft;
 
   const CreateSimpleSessionScreen({
     super.key,
     this.initialSession,
     this.sessionService,
+    this.photoService,
+    this.duplicationDraft,
   });
 
   bool get isEdit => initialSession != null;
@@ -34,9 +39,15 @@ class CreateSimpleSessionScreen extends StatelessWidget {
               try {
                 if (isEdit) {
                   await service.updateSession(pendingSession!);
+                } else if (duplicationDraft != null) {
+                  await service.saveDuplication(
+                    draft: duplicationDraft!,
+                    editedCopy: pendingSession!,
+                  );
                 } else {
                   await service.addSession(pendingSession!);
                 }
+                formKey.currentState?.markSaved();
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Session libre enregistrée')),
@@ -55,6 +66,9 @@ class CreateSimpleSessionScreen extends StatelessWidget {
       body: SimpleSessionForm(
         key: formKey,
         initialSession: initialSession,
+        initialSessionData: duplicationDraft?.initialSessionData['session']
+            as Map<String, dynamic>?,
+        photoService: photoService,
         onSave: (session) => pendingSession = session,
       ),
     );

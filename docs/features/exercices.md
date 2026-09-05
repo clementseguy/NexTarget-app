@@ -15,5 +15,6 @@ Les anciennes catégories textuelles reconnues sont converties vers ces valeurs 
 - Les consignes vides sont retirées lors de l'enregistrement.
 - Seul un exercice de type Stand peut être transformé en session prévue.
 - Une session peut référencer plusieurs exercices et l'historique peut être filtré par exercice.
-- Le service sait supprimer un exercice sans supprimer les sessions associées, mais cette action n'est pas encore exposée dans l'interface ; elle reste suivie par NT-026.
+- L'action « Supprimer » contrôle dans le service toutes les sessions, y compris les sessions libres, prévues, réalisées et les brouillons guidés. Toute référence bloque la suppression et le message indique le nombre de sessions à dissocier. Sans référence, une confirmation nommant l'exercice est exigée ; aucune session n'est modifiée en cascade.
+- L'action « Dupliquer » ouvre un formulaire de création prérempli. Le nom reçoit le suffixe « (copie) » ; l'identifiant, la date de création et l'ordre sont ceux d'un nouvel exercice, avec des listes de consignes et d'objectifs indépendantes.
 - Si un filtre d'historique pointe vers un exercice supprimé, l'écran revient à Tous les exercices.

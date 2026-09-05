@@ -11,7 +11,8 @@ class LocalDatabaseHive {
       await _box.clear();
       return true;
     } catch (e) {
-      AppLogger.I.error('Erreur lors de la suppression de toutes les sessions', e);
+      AppLogger.I
+          .error('Erreur lors de la suppression de toutes les sessions', e);
       return false;
     }
   }
@@ -20,13 +21,15 @@ class LocalDatabaseHive {
   /// - Séries: entre 3 et 15
   /// - shot_count: <=5 (rarement 6 ou 7 comme exception ~10%)
   /// - points: borné à shot_count * 10
-  Future<void> insertRandomSessions({int count = 5, String status = 'réalisée'}) async {
+  Future<void> insertRandomSessions(
+      {int count = 5, String status = 'réalisée'}) async {
     final random = Random();
     final now = DateTime.now();
     for (int i = 0; i < count; i++) {
       final date = now.subtract(Duration(days: random.nextInt(60)));
       final weapon = ['GLOCK 17', 'DES', 'S&W Trophy'][random.nextInt(3)];
-      final caliber = AppConfig.I.calibers[random.nextInt(AppConfig.I.calibers.length)];
+      final caliber =
+          AppConfig.I.calibers[random.nextInt(AppConfig.I.calibers.length)];
       final session = {
         'date': date.toIso8601String(),
         'weapon': weapon,
@@ -36,8 +39,11 @@ class LocalDatabaseHive {
 
       final baseCount = 10;
       // 10% chance d'avoir une variation
-      final seriesCount =
-          random.nextDouble() < 0.1 ? (random.nextDouble() < 0.5 ? baseCount - random.nextInt(3) : baseCount + random.nextInt(3)) : baseCount;
+      final seriesCount = random.nextDouble() < 0.1
+          ? (random.nextDouble() < 0.5
+              ? baseCount - random.nextInt(3)
+              : baseCount + random.nextInt(3))
+          : baseCount;
       final List<Map<String, dynamic>> seriesList = [];
       for (int j = 0; j < seriesCount; j++) {
         // Base shot count 4-5
@@ -56,12 +62,15 @@ class LocalDatabaseHive {
           'points': points,
           'group_size': (5 + random.nextInt(21)).toDouble(),
           'comment': random.nextBool() ? 'RAS' : '',
-          'hand_method': random.nextDouble() < 0.3 ? 'one' : 'two', // 30% une main, 70% deux mains
+          'hand_method': random.nextDouble() < 0.3
+              ? 'one'
+              : 'two', // 30% une main, 70% deux mains
         });
       }
       await insertSession(session, seriesList);
     }
   }
+
   static final LocalDatabaseHive _instance = LocalDatabaseHive._internal();
   factory LocalDatabaseHive() => _instance;
   LocalDatabaseHive._internal();
@@ -72,25 +81,38 @@ class LocalDatabaseHive {
 
   /// Insère une nouvelle session dans la base de données.
   /// Retourne la clé générée par Hive après insertion.
-  Future<dynamic> insertSession(Map<String, dynamic> session, List<Map<String, dynamic>> seriesList) async {
+  Future<dynamic> insertSession(Map<String, dynamic> session,
+      List<Map<String, dynamic>> seriesList) async {
+    dynamic reservedKey;
     try {
       // Clone la session pour éviter de modifier l'original directement
       final sessionWithId = Map<String, dynamic>.from(session);
-      
+
       // Utilise put() avec add() si l'ID n'existe pas déjà
       final key = await _box.add('placeholder');
-      
+      reservedKey = key;
+
       // Stocke la clé Hive dans la session
       sessionWithId['id'] = key;
-      
+
       // Met à jour avec une seule opération d'écriture
       await _box.put(key, {
         'session': sessionWithId,
         'series': seriesList,
       });
-      
+
       return key;
     } catch (e) {
+      if (reservedKey != null) {
+        try {
+          await _box.delete(reservedKey);
+        } catch (rollbackError) {
+          AppLogger.I.error(
+            'Erreur de rollback après un échec d\'insertion de session',
+            rollbackError,
+          );
+        }
+      }
       AppLogger.I.error('Erreur lors de l\'insertion d\'une session', e);
       return null; // Valeur de retour en cas d'erreur
     }
@@ -98,7 +120,8 @@ class LocalDatabaseHive {
 
   /// Insère plusieurs sessions dans une unique écriture Hive.
   Future<List<int>> insertSessions(
-    List<({Map<String, dynamic> session, List<Map<String, dynamic>> series})> entries,
+    List<({Map<String, dynamic> session, List<Map<String, dynamic>> series})>
+        entries,
   ) async {
     if (entries.isEmpty) return const [];
     final intKeyValues = _box.keys.whereType<int>();
@@ -119,19 +142,20 @@ class LocalDatabaseHive {
 
   /// Met à jour une session existante dans la base de données.
   /// Retourne true si la mise à jour a réussi, false sinon.
-  Future<bool> updateSession(Map<String, dynamic> session, List<Map<String, dynamic>> seriesList) async {
+  Future<bool> updateSession(Map<String, dynamic> session,
+      List<Map<String, dynamic>> seriesList) async {
     try {
       final id = session['id'];
       if (id == null) {
         AppLogger.I.warn('Tentative de mise à jour d\'une session sans ID');
         return false;
       }
-      
+
       await _box.put(id, {
         'session': session,
         'series': seriesList,
       });
-      
+
       return true;
     } catch (e) {
       AppLogger.I.error('Erreur lors de la mise à jour de la session', e);
@@ -141,14 +165,16 @@ class LocalDatabaseHive {
 
   /// Récupère toutes les sessions avec leurs séries depuis la base de données.
   /// Optimisé pour la performance en faisant une seule lecture de la base.
-  Future<List<Map<String, dynamic>>> getSessionsWithSeries() async {
+  Future<List<Map<String, dynamic>>> getSessionsWithSeries({
+    bool rethrowOnError = false,
+  }) async {
     try {
       if (_box.isEmpty) {
         return [];
       }
-      
+
       final List<Map<String, dynamic>> result = [];
-      
+
       for (final item in _box.values) {
         if (item is Map) {
           // Conversion sûre de Map<dynamic, dynamic> en Map<String, dynamic>
@@ -158,16 +184,17 @@ class LocalDatabaseHive {
               typedMap[key] = value;
             }
           });
-          
+
           if (typedMap.isNotEmpty) {
             result.add(typedMap);
           }
         }
       }
-      
+
       return result;
     } catch (e) {
       AppLogger.I.error('Erreur lors de la récupération des sessions', e);
+      if (rethrowOnError) rethrow;
       return [];
     }
   }
@@ -179,7 +206,8 @@ class LocalDatabaseHive {
       await _box.delete(sessionId);
       return true;
     } catch (e) {
-      AppLogger.I.error('Erreur lors de la suppression de la session $sessionId', e);
+      AppLogger.I
+          .error('Erreur lors de la suppression de la session $sessionId', e);
       return false;
     }
   }

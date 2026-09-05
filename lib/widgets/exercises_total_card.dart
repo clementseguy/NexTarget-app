@@ -6,13 +6,14 @@ import '../models/exercise.dart';
 /// Rafraîchissable via un FutureBuilder interne.
 class ExercisesTotalCard extends StatefulWidget {
   final EdgeInsetsGeometry? padding;
-  const ExercisesTotalCard({super.key, this.padding});
+  final ExerciseService? service;
+  const ExercisesTotalCard({super.key, this.padding, this.service});
   @override
   State<ExercisesTotalCard> createState() => _ExercisesTotalCardState();
 }
 
 class _ExercisesTotalCardState extends State<ExercisesTotalCard> {
-  final ExerciseService _service = ExerciseService();
+  late final ExerciseService _service = widget.service ?? ExerciseService();
   late Future<List<Exercise>> _future;
 
   @override
@@ -22,7 +23,9 @@ class _ExercisesTotalCardState extends State<ExercisesTotalCard> {
   }
 
   Future<void> refresh() async {
-    setState(() { _future = _service.listAll(); });
+    setState(() {
+      _future = _service.listAll();
+    });
   }
 
   @override
@@ -38,37 +41,43 @@ class _ExercisesTotalCardState extends State<ExercisesTotalCard> {
           child: FutureBuilder<List<Exercise>>(
             future: _future,
             builder: (context, snap) {
-                if (snap.connectionState == ConnectionState.waiting) {
-                  return const SizedBox(
-                    height: 64,
-                    child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                  );
-                }
-                final total = snap.data?.length ?? 0;
-                return Row(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blueAccent.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      padding: const EdgeInsets.all(14),
-                      child: const Icon(Icons.fitness_center, color: Colors.lightBlueAccent, size: 28),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('Exercices', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 6),
-                          Text('$total au total', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                  ],
+              if (snap.connectionState == ConnectionState.waiting) {
+                return const SizedBox(
+                  height: 64,
+                  child:
+                      Center(child: CircularProgressIndicator(strokeWidth: 2)),
                 );
+              }
+              final total = snap.data?.length ?? 0;
+              return Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    padding: const EdgeInsets.all(14),
+                    child: const Icon(Icons.fitness_center,
+                        color: Colors.lightBlueAccent, size: 28),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Exercices',
+                            style: TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 6),
+                        Text('$total au total',
+                            style: const TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ],
+              );
             },
           ),
         ),

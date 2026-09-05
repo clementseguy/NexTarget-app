@@ -34,6 +34,8 @@ L'utilisateur peut corriger une série précédente, ajouter une série, quitter
 - Toute nouvelle distance, détaillée ou libre, doit être un entier strictement positif. Les anciennes distances décimales restent lisibles mais doivent être corrigées avant une nouvelle sauvegarde.
 - L'historique sépare les sessions réalisées des sessions prévues. Il trie les réalisées de la plus récente à la plus ancienne et les prévues datées de la plus proche à la plus lointaine, suivies des prévues affichées explicitement `Sans date`. Les filtres catégorie et exercice sont disponibles côte à côte dans les deux onglets.
 - Supprimer une session supprime aussi sa photo locale. Remplacer ou retirer une photo nettoie l'ancien fichier après sauvegarde.
+- Le détail d'une session réalisée ou prévue propose « Dupliquer la session ». Le formulaire de création reprend son sous-type et ses champs, mais jamais son identifiant ni sa date. Une session réalisée exige une nouvelle date avant enregistrement ; un brouillon guidé ne peut pas être dupliqué.
+- Les séries, exercices et autres listes d'une duplication sont indépendants. La photo source n'est copiée physiquement qu'à la validation ; une annulation ou un échec ne laisse ni session ni fichier orphelin.
 
 ## Effets sur les statistiques
 

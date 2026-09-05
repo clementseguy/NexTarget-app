@@ -6,32 +6,42 @@ import '../models/goal.dart';
 
 /// Formulaire de création/édition d'un exercice
 /// Séparé de ExercisesListScreen pour réduire la taille du fichier et clarifier les responsabilités
-/// 
+///
 /// Architecture:
 /// - État formulaire isolé
 /// - Validation inline
 /// - Sauvegarde asynchrone avec feedback
 class ExerciseFormScreen extends StatefulWidget {
   final Exercise? editing;
-  
-  const ExerciseFormScreen({super.key, this.editing});
+  final Exercise? initialExercise;
+  final ExerciseService? exerciseService;
+  final GoalService? goalService;
+
+  const ExerciseFormScreen({
+    super.key,
+    this.editing,
+    this.initialExercise,
+    this.exerciseService,
+    this.goalService,
+  }) : assert(editing == null || initialExercise == null);
 
   @override
   State<ExerciseFormScreen> createState() => _ExerciseFormScreenState();
 }
 
 class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
-  final ExerciseService _service = ExerciseService();
-  final GoalService _goalService = GoalService();
+  late final ExerciseService _service =
+      widget.exerciseService ?? ExerciseService();
+  late final GoalService _goalService = widget.goalService ?? GoalService();
   final _formKey = GlobalKey<FormState>();
-  
+
   // Controllers
   final _nameCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _durationCtrl = TextEditingController();
   final _equipmentCtrl = TextEditingController();
   final List<TextEditingController> _consigneCtrls = [];
-  
+
   // State
   ExerciseCategory _category = ExerciseCategory.technique;
   ExerciseType _type = ExerciseType.stand;
@@ -45,22 +55,26 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
     _descCtrl.dispose();
     _durationCtrl.dispose();
     _equipmentCtrl.dispose();
-    for (final c in _consigneCtrls) { c.dispose(); }
+    for (final c in _consigneCtrls) {
+      c.dispose();
+    }
     super.dispose();
   }
 
-  void _addConsigneField([String initial='']) {
+  void _addConsigneField([String initial = '']) {
     final c = TextEditingController(text: initial);
-    setState(()=> _consigneCtrls.add(c));
+    setState(() => _consigneCtrls.add(c));
   }
 
   void _removeConsigneField(int index) {
-    if (index <0 || index>=_consigneCtrls.length) return;
-    setState(()=> _consigneCtrls.removeAt(index));
+    if (index < 0 || index >= _consigneCtrls.length) return;
+    setState(() => _consigneCtrls.removeAt(index));
   }
 
   Future<void> _initGoals() async {
-    try { await _goalService.init(); } catch (_) {}
+    try {
+      await _goalService.init();
+    } catch (_) {}
     final goals = await _goalService.listAll();
     if (mounted) setState(() => _allGoals = goals);
   }
@@ -68,17 +82,18 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.editing != null) {
-      _nameCtrl.text = widget.editing!.name;
-      _category = widget.editing!.categoryEnum;
-      _type = widget.editing!.type;
-      _selectedGoals.addAll(widget.editing!.goalIds);
-      _descCtrl.text = widget.editing!.description ?? '';
-      if (widget.editing!.durationMinutes != null) {
-        _durationCtrl.text = widget.editing!.durationMinutes.toString();
+    final initial = widget.editing ?? widget.initialExercise;
+    if (initial != null) {
+      _nameCtrl.text = initial.name;
+      _category = initial.categoryEnum;
+      _type = initial.type;
+      _selectedGoals.addAll(List<String>.from(initial.goalIds));
+      _descCtrl.text = initial.description ?? '';
+      if (initial.durationMinutes != null) {
+        _durationCtrl.text = initial.durationMinutes.toString();
       }
-      _equipmentCtrl.text = widget.editing!.equipment ?? '';
-      for (final step in widget.editing!.consignes) {
+      _equipmentCtrl.text = initial.equipment ?? '';
+      for (final step in List<String>.from(initial.consignes)) {
         _consigneCtrls.add(TextEditingController(text: step));
       }
     }
@@ -90,29 +105,58 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(()=> _saving = true);
+    setState(() => _saving = true);
     try {
       if (widget.editing == null) {
-        await _service.addExercise(
-          name: _nameCtrl.text,
-          category: _category,
-          type: _type,
-          description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
-          goalIds: _selectedGoals.toList(),
-          durationMinutes: int.tryParse(_durationCtrl.text.trim()),
-          equipment: _equipmentCtrl.text.trim().isEmpty ? null : _equipmentCtrl.text.trim(),
-          consignes: _consigneCtrls.map((c)=>c.text).toList(),
-        );
+        final duplicateDraft = widget.initialExercise;
+        if (duplicateDraft == null) {
+          await _service.addExercise(
+            name: _nameCtrl.text,
+            category: _category,
+            type: _type,
+            description:
+                _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+            goalIds: _selectedGoals.toList(),
+            durationMinutes: int.tryParse(_durationCtrl.text.trim()),
+            equipment: _equipmentCtrl.text.trim().isEmpty
+                ? null
+                : _equipmentCtrl.text.trim(),
+            consignes: _consigneCtrls.map((c) => c.text).toList(),
+          );
+        } else {
+          await _service.createExercise(Exercise(
+            id: duplicateDraft.id,
+            name: _nameCtrl.text.trim(),
+            categoryEnum: _category,
+            type: _type,
+            description:
+                _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+            durationMinutes: int.tryParse(_durationCtrl.text.trim()),
+            equipment: _equipmentCtrl.text.trim().isEmpty
+                ? null
+                : _equipmentCtrl.text.trim(),
+            createdAt: duplicateDraft.createdAt,
+            priority: duplicateDraft.priority,
+            goalIds: List<String>.from(_selectedGoals),
+            consignes: _consigneCtrls
+                .map((controller) => controller.text.trim())
+                .where((step) => step.isNotEmpty)
+                .toList(),
+          ));
+        }
       } else {
         final updated = widget.editing!.copyWith(
           name: _nameCtrl.text,
           category: _category,
           type: _type,
-          description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+          description:
+              _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
           goalIds: _selectedGoals.toList(),
           durationMinutes: int.tryParse(_durationCtrl.text.trim()),
-          equipment: _equipmentCtrl.text.trim().isEmpty ? null : _equipmentCtrl.text.trim(),
-          consignes: _consigneCtrls.map((c)=>c.text).toList(),
+          equipment: _equipmentCtrl.text.trim().isEmpty
+              ? null
+              : _equipmentCtrl.text.trim(),
+          consignes: _consigneCtrls.map((c) => c.text).toList(),
         );
         await _service.updateExercise(updated);
       }
@@ -124,7 +168,7 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
         );
       }
     } finally {
-      if (mounted) setState(()=> _saving = false);
+      if (mounted) setState(() => _saving = false);
     }
   }
 
@@ -132,10 +176,16 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.editing == null ? 'Nouvel exercice' : 'Modifier exercice'),
+        title: Text(
+            widget.editing == null ? 'Nouvel exercice' : 'Modifier exercice'),
         actions: [
           IconButton(
-            icon: _saving ? const SizedBox(width:18,height:18,child:CircularProgressIndicator(strokeWidth:2)) : const Icon(Icons.save),
+            icon: _saving
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.save),
             tooltip: 'Enregistrer',
             onPressed: _saving ? null : _save,
           ),
@@ -148,8 +198,10 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
           children: [
             TextFormField(
               controller: _nameCtrl,
-              decoration: const InputDecoration(labelText: 'Nom de l\'exercice'),
-              validator: (v) => (v==null||v.trim().isEmpty) ? 'Requis' : null,
+              decoration:
+                  const InputDecoration(labelText: 'Nom de l\'exercice'),
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Requis' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -191,33 +243,38 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
             const SizedBox(height: 16),
             DropdownButtonFormField<ExerciseCategory>(
               initialValue: _category,
-              items: ExerciseCategory.values.map((c) => DropdownMenuItem(
-                value: c,
-                child: Text(Exercise(
-                  id: '_tmp',
-                  name: '',
-                  categoryEnum: c,
-                  type: ExerciseType.stand,
-                  createdAt: DateTime.now(),
-                ).categoryLabelFr),
-              )).toList(),
-              onChanged: (v) => setState(()=> _category = v ?? ExerciseCategory.technique),
+              items: ExerciseCategory.values
+                  .map((c) => DropdownMenuItem(
+                        value: c,
+                        child: Text(Exercise(
+                          id: '_tmp',
+                          name: '',
+                          categoryEnum: c,
+                          type: ExerciseType.stand,
+                          createdAt: DateTime.now(),
+                        ).categoryLabelFr),
+                      ))
+                  .toList(),
+              onChanged: (v) =>
+                  setState(() => _category = v ?? ExerciseCategory.technique),
               decoration: const InputDecoration(labelText: 'Catégorie'),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<ExerciseType>(
               initialValue: _type,
-              items: ExerciseType.values.map((t) => DropdownMenuItem(
-                value: t,
-                child: Text(Exercise(
-                  id: '_tmp',
-                  name: '',
-                  categoryEnum: ExerciseCategory.technique,
-                  type: t,
-                  createdAt: DateTime.now(),
-                ).typeLabelFr),
-              )).toList(),
-              onChanged: (v) => setState(()=> _type = v ?? ExerciseType.stand),
+              items: ExerciseType.values
+                  .map((t) => DropdownMenuItem(
+                        value: t,
+                        child: Text(Exercise(
+                          id: '_tmp',
+                          name: '',
+                          categoryEnum: ExerciseCategory.technique,
+                          type: t,
+                          createdAt: DateTime.now(),
+                        ).typeLabelFr),
+                      ))
+                  .toList(),
+              onChanged: (v) => setState(() => _type = v ?? ExerciseType.stand),
               decoration: const InputDecoration(labelText: 'Type'),
             ),
             const SizedBox(height: 20),
@@ -227,12 +284,14 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
               children: [
                 const Icon(Icons.list_alt, size: 20, color: Colors.amberAccent),
                 const SizedBox(width: 8),
-                const Text('Consignes / Étapes', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Consignes / Étapes',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 const Spacer(),
                 IconButton(
-                  onPressed: ()=> _addConsigneField(),
+                  onPressed: () => _addConsigneField(),
                   tooltip: 'Ajouter une étape',
-                  icon: const Icon(Icons.add_circle_outline, color: Colors.amberAccent),
+                  icon: const Icon(Icons.add_circle_outline,
+                      color: Colors.amberAccent),
                 ),
               ],
             ),
@@ -242,20 +301,22 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Row(
                   children: [
-                    Text('${e.key+1}.', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text('${e.key + 1}.',
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextFormField(
                         controller: e.value,
                         decoration: InputDecoration(
-                          hintText: 'Consigne étape ${e.key+1}',
+                          hintText: 'Consigne étape ${e.key + 1}',
                           isDense: true,
                         ),
                       ),
                     ),
                     if (_consigneCtrls.length > 1)
                       IconButton(
-                        icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent),
+                        icon: const Icon(Icons.remove_circle_outline,
+                            color: Colors.redAccent),
                         onPressed: () => _removeConsigneField(e.key),
                       ),
                   ],
@@ -269,12 +330,14 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
               children: [
                 const Icon(Icons.flag, size: 20, color: Colors.amberAccent),
                 const SizedBox(width: 8),
-                const Text('Objectifs liés', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Objectifs liés',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 8),
             if (_allGoals.isEmpty)
-              const Text('Aucun objectif disponible', style: TextStyle(color: Colors.white54))
+              const Text('Aucun objectif disponible',
+                  style: TextStyle(color: Colors.white54))
             else
               Wrap(
                 spacing: 8,

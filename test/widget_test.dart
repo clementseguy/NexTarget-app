@@ -7,12 +7,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'dart:async';
 import 'dart:io';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:tir_sportif/app/my_app.dart';
+import 'package:tir_sportif/navigation/app_router.dart';
 import 'package:tir_sportif/providers/navigation_provider.dart';
 import 'package:tir_sportif/providers/settings_provider.dart';
 import 'package:tir_sportif/providers/auth_provider.dart';
@@ -21,7 +23,6 @@ import 'package:tir_sportif/services/auth_service.dart';
 import 'widget_test.mocks.dart';
 
 @GenerateMocks([AuthService])
-
 import 'package:tir_sportif/config/app_config.dart';
 import 'package:tir_sportif/constants/session_constants.dart';
 import 'package:tir_sportif/migrations/migration.dart';
@@ -61,7 +62,9 @@ class _StubSessionRepo implements SessionRepository {
   @override
   Future<int> insert(ShootingSession session) async => 1;
   @override
-  Future<bool> update(ShootingSession session, {bool preserveExistingSeriesIfEmpty = true}) async => true;
+  Future<bool> update(ShootingSession session,
+          {bool preserveExistingSeriesIfEmpty = true}) async =>
+      true;
 }
 
 class _StubExerciseRepo implements ExerciseRepository {
@@ -97,11 +100,21 @@ void main() {
     await runner.run();
 
     // Goal adapters (idempotent)
-    if (!Hive.isAdapterRegistered(40)) Hive.registerAdapter(GoalMetricAdapter());
-    if (!Hive.isAdapterRegistered(41)) Hive.registerAdapter(GoalComparatorAdapter());
-    if (!Hive.isAdapterRegistered(42)) Hive.registerAdapter(GoalStatusAdapter());
-    if (!Hive.isAdapterRegistered(43)) Hive.registerAdapter(GoalPeriodAdapter());
-    if (!Hive.isAdapterRegistered(44)) Hive.registerAdapter(GoalAdapter());
+    if (!Hive.isAdapterRegistered(40)) {
+      Hive.registerAdapter(GoalMetricAdapter());
+    }
+    if (!Hive.isAdapterRegistered(41)) {
+      Hive.registerAdapter(GoalComparatorAdapter());
+    }
+    if (!Hive.isAdapterRegistered(42)) {
+      Hive.registerAdapter(GoalStatusAdapter());
+    }
+    if (!Hive.isAdapterRegistered(43)) {
+      Hive.registerAdapter(GoalPeriodAdapter());
+    }
+    if (!Hive.isAdapterRegistered(44)) {
+      Hive.registerAdapter(GoalAdapter());
+    }
 
     // Open required boxes
     await Hive.openBox(SessionConstants.hiveBoxSessions);
@@ -118,56 +131,117 @@ void main() {
     await Hive.box('app_preferences').put('onboarding_seen', true);
   });
 
-  testWidgets('App boots and shows bottom navigation items', (WidgetTester tester) async {
+  testWidgets('App boots and shows bottom navigation items',
+      (WidgetTester tester) async {
     final navigatorKey = GlobalKey<NavigatorState>();
     // Mock AuthService pour le test
     final mockAuthService = MockAuthService();
     when(mockAuthService.hasToken()).thenAnswer((_) async => false);
     when(mockAuthService.isAuthenticated()).thenAnswer((_) async => false);
-    
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => NavigationProvider()),
-          ChangeNotifierProvider(create: (_) => SettingsProvider()),
-          ChangeNotifierProvider(create: (_) => AuthProvider(mockAuthService)),
-        ],
-        child: MyApp(navigatorKey: navigatorKey),
-      )
-    );
+
+    await tester.pumpWidget(MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => NavigationProvider()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider(mockAuthService)),
+      ],
+      child: MyApp(navigatorKey: navigatorKey),
+    ));
     // Attendre quelques frames pour que checkAuthStatus se termine
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
     // Vérifie la présence des items de navigation (labels)
-  // BottomNavigationBar may create multiple instances (e.g. semantics / offstage),
-  // we assert at least one occurrence.
-  expect(find.text('Coach'), findsWidgets);
-  expect(find.text('Exercices'), findsWidgets);
-  expect(find.text('Synthèse'), findsWidgets);
-  expect(find.text('Sessions'), findsWidgets);
-  expect(find.text('Paramètres'), findsWidgets);
+    // BottomNavigationBar may create multiple instances (e.g. semantics / offstage),
+    // we assert at least one occurrence.
+    expect(find.text('Coach'), findsWidgets);
+    expect(find.text('Exercices'), findsWidgets);
+    expect(find.text('Synthèse'), findsWidgets);
+    expect(find.text('Sessions'), findsWidgets);
+    expect(find.text('Paramètres'), findsWidgets);
+  });
+
+  testWidgets(
+      'la vérification auth ne remplace pas la navigation par un écran de chargement',
+      (WidgetTester tester) async {
+    final pendingTokenRead = Completer<bool>();
+    final mockAuthService = MockAuthService();
+    when(mockAuthService.hasToken()).thenAnswer((_) => pendingTokenRead.future);
+    final authProvider = AuthProvider(mockAuthService);
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => NavigationProvider()),
+          ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ChangeNotifierProvider.value(value: authProvider),
+        ],
+        child: MyApp(navigatorKey: GlobalKey<NavigatorState>()),
+      ),
+    );
+    await tester.pump();
+
+    expect(authProvider.isLoading, isTrue);
+    expect(find.byType(AppNavigator), findsOneWidget);
+
+    pendingTokenRead.complete(false);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(authProvider.isLoading, isFalse);
+    expect(find.byType(AppNavigator), findsOneWidget);
   });
 
   // Test stable: compose the two glance cards with injected stub services (no Hive/IO).
-  testWidgets('Exercices & Objectifs glance cards render without roadmap', (WidgetTester tester) async {
+  testWidgets('Exercices & Objectifs glance cards render without roadmap',
+      (WidgetTester tester) async {
     // Minimal adapters for Goal (idempotent) only, no Hive boxes opened.
-    if (!Hive.isAdapterRegistered(40)) Hive.registerAdapter(GoalMetricAdapter());
-    if (!Hive.isAdapterRegistered(41)) Hive.registerAdapter(GoalComparatorAdapter());
-    if (!Hive.isAdapterRegistered(42)) Hive.registerAdapter(GoalStatusAdapter());
-    if (!Hive.isAdapterRegistered(43)) Hive.registerAdapter(GoalPeriodAdapter());
-    if (!Hive.isAdapterRegistered(44)) Hive.registerAdapter(GoalAdapter());
+    if (!Hive.isAdapterRegistered(40)) {
+      Hive.registerAdapter(GoalMetricAdapter());
+    }
+    if (!Hive.isAdapterRegistered(41)) {
+      Hive.registerAdapter(GoalComparatorAdapter());
+    }
+    if (!Hive.isAdapterRegistered(42)) {
+      Hive.registerAdapter(GoalStatusAdapter());
+    }
+    if (!Hive.isAdapterRegistered(43)) {
+      Hive.registerAdapter(GoalPeriodAdapter());
+    }
+    if (!Hive.isAdapterRegistered(44)) {
+      Hive.registerAdapter(GoalAdapter());
+    }
 
     final goalService = GoalService(
       goalRepository: _StubGoalRepo([
-        Goal(title: '10 sessions', metric: GoalMetric.sessionCount, comparator: GoalComparator.greaterOrEqual, targetValue: 10, status: GoalStatus.active),
-        Goal(title: '100 points', metric: GoalMetric.totalPoints, comparator: GoalComparator.greaterOrEqual, targetValue: 100, status: GoalStatus.achieved),
+        Goal(
+            title: '10 sessions',
+            metric: GoalMetric.sessionCount,
+            comparator: GoalComparator.greaterOrEqual,
+            targetValue: 10,
+            status: GoalStatus.active),
+        Goal(
+            title: '100 points',
+            metric: GoalMetric.totalPoints,
+            comparator: GoalComparator.greaterOrEqual,
+            targetValue: 100,
+            status: GoalStatus.achieved),
       ]),
       sessionRepository: _StubSessionRepo(),
     );
-    final exerciseService = ExerciseService(repository: _StubExerciseRepo([
-      Exercise(id: 'e1', name: 'Dry fire', categoryEnum: ExerciseCategory.technique, type: ExerciseType.home, createdAt: DateTime.now()),
-      Exercise(id: 'e2', name: 'Groupement 5 balles', categoryEnum: ExerciseCategory.group, type: ExerciseType.stand, createdAt: DateTime.now()),
+    final exerciseService = ExerciseService(
+        repository: _StubExerciseRepo([
+      Exercise(
+          id: 'e1',
+          name: 'Dry fire',
+          categoryEnum: ExerciseCategory.technique,
+          type: ExerciseType.home,
+          createdAt: DateTime.now()),
+      Exercise(
+          id: 'e2',
+          name: 'Groupement 5 balles',
+          categoryEnum: ExerciseCategory.group,
+          type: ExerciseType.stand,
+          createdAt: DateTime.now()),
     ]));
 
     await tester.pumpWidget(MaterialApp(

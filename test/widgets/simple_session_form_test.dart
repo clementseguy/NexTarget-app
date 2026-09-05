@@ -17,6 +17,10 @@ class _PhotoService implements ISessionPhotoService {
   final deleted = <String>[];
 
   @override
+  Future<String> duplicateStoredPhoto(String sourcePath) async =>
+      '$sourcePath.copy';
+
+  @override
   Future<void> deleteIfExists(String? path) async {
     if (path != null) deleted.add(path);
   }

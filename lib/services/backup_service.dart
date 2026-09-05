@@ -1,12 +1,12 @@
 import 'dart:convert';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
+import '../interfaces/backup_location_provider.dart';
 import '../models/shooting_session.dart';
 import '../services/session_service.dart';
 import '../models/goal.dart';
 import '../services/goal_service.dart';
 import '../services/weapon_service.dart';
+import 'platform_backup_location_provider.dart';
 
 /// Service pour exporter / importer toutes les sessions sous forme JSON plat
 /// Structure de fichier:
@@ -21,17 +21,21 @@ class BackupService {
   final SessionService _sessionService;
   final GoalService _goalService;
   final WeaponService _weaponService;
+  final BackupLocationProvider _locationProvider;
 
   BackupService({
     SessionService? sessionService,
     GoalService? goalService,
     WeaponService? weaponService,
+    BackupLocationProvider? locationProvider,
   })  : _sessionService = sessionService ?? SessionService(),
         _goalService = goalService ?? GoalService(),
-        _weaponService = weaponService ?? WeaponService();
-  
+        _weaponService = weaponService ?? WeaponService(),
+        _locationProvider =
+            locationProvider ?? PlatformBackupLocationProvider();
+
   /// Lire un fichier JSON.
-  /// 
+  ///
   /// Retourne: Le contenu du fichier sous forme de chaîne.
   Future<String> readJsonFile(String path) async {
     final file = File(path);
@@ -39,6 +43,16 @@ class BackupService {
   }
 
   Future<File> exportAllSessionsToJsonFile() async {
+    final jsonString = await _buildExportJson();
+    final dir = await _locationProvider.getTemporaryDirectory();
+    final file = File(
+      '${dir.path}/sessions_export_${DateTime.now().millisecondsSinceEpoch}.json',
+    );
+    await file.writeAsString(jsonString);
+    return file;
+  }
+
+  Future<String> _buildExportJson() async {
     final sessions = await _sessionService.getAllSessions();
     await _goalService.init();
     final goals = await _goalService.listAll();
@@ -51,29 +65,27 @@ class BackupService {
       'goals_count': goals.length,
       'weapons_count': weapons.length,
       'sessions': sessions.map((s) => s.toMap()).toList(),
-      'goals': goals.map((g) => {
-        'id': g.id,
-        'title': g.title,
-        'description': g.description,
-        'metric': g.metric.index,
-        'comparator': g.comparator.index,
-        'targetValue': g.targetValue,
-        'status': g.status.index,
-        'period': g.period.index,
-        'createdAt': g.createdAt.toIso8601String(),
-        'updatedAt': g.updatedAt.toIso8601String(),
-        'lastProgress': g.lastProgress,
-        'lastMeasuredValue': g.lastMeasuredValue,
-        'priority': g.priority,
-      }).toList(),
+      'goals': goals
+          .map((g) => {
+                'id': g.id,
+                'title': g.title,
+                'description': g.description,
+                'metric': g.metric.index,
+                'comparator': g.comparator.index,
+                'targetValue': g.targetValue,
+                'status': g.status.index,
+                'period': g.period.index,
+                'createdAt': g.createdAt.toIso8601String(),
+                'updatedAt': g.updatedAt.toIso8601String(),
+                'lastProgress': g.lastProgress,
+                'lastMeasuredValue': g.lastMeasuredValue,
+                'priority': g.priority,
+              })
+          .toList(),
       // NT-008 : râtelier d'armes personnel (simple nom, cf. Weapon.toMap).
       'weapons': weapons.map((w) => w.toMap()).toList(),
     };
-    final jsonString = const JsonEncoder.withIndent('  ').convert(data);
-    final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/sessions_export_${DateTime.now().millisecondsSinceEpoch}.json');
-    await file.writeAsString(jsonString);
-    return file;
+    return const JsonEncoder.withIndent('  ').convert(data);
   }
 
   /// Importe les sessions depuis une chaîne JSON.
@@ -101,7 +113,9 @@ class BackupService {
       map['id'] = null;
       // Normaliser séries si besoin
       if (map['series'] is List) {
-        map['series'] = (map['series'] as List).map((e) => e is Map ? Map<String,dynamic>.from(e) : e).toList();
+        map['series'] = (map['series'] as List)
+            .map((e) => e is Map ? Map<String, dynamic>.from(e) : e)
+            .toList();
       }
       sessions.add(ShootingSession.fromMap(map));
     }
@@ -121,12 +135,15 @@ class BackupService {
               title: g['title']?.toString() ?? 'Sans titre',
               description: g['description']?.toString(),
               metric: GoalMetric.values[(g['metric'] as num?)?.toInt() ?? 0],
-              comparator: GoalComparator.values[(g['comparator'] as num?)?.toInt() ?? 0],
+              comparator: GoalComparator
+                  .values[(g['comparator'] as num?)?.toInt() ?? 0],
               targetValue: (g['targetValue'] as num?)?.toDouble() ?? 0,
               status: GoalStatus.values[(g['status'] as num?)?.toInt() ?? 0],
               period: GoalPeriod.values[(g['period'] as num?)?.toInt() ?? 0],
-              createdAt: DateTime.tryParse(g['createdAt'] ?? '') ?? DateTime.now(),
-              updatedAt: DateTime.tryParse(g['updatedAt'] ?? '') ?? DateTime.now(),
+              createdAt:
+                  DateTime.tryParse(g['createdAt'] ?? '') ?? DateTime.now(),
+              updatedAt:
+                  DateTime.tryParse(g['updatedAt'] ?? '') ?? DateTime.now(),
               lastProgress: (g['lastProgress'] as num?)?.toDouble(),
               lastMeasuredValue: (g['lastMeasuredValue'] as num?)?.toDouble(),
               priority: (g['priority'] as num?)?.toInt(),
@@ -164,43 +181,14 @@ class BackupService {
   /// Exporte toutes les données (sessions + objectifs) dans un fichier JSON
   /// à l'emplacement choisi par l'utilisateur (si la plateforme le permet).
   /// Retourne le fichier écrit ou lève une exception si annulé.
-  Future<File?> exportAllSessionsToUserFolder({String? suggestedFileName}) async {
-    final sessions = await _sessionService.getAllSessions();
-    await _goalService.init();
-    final goals = await _goalService.listAll();
-    final weapons = await _weaponService.listAll();
-    final data = {
-      'format': 'mycoach-data',
-      'version': 3,
-      'exported_at': DateTime.now().toUtc().toIso8601String(),
-      'sessions_count': sessions.length,
-      'goals_count': goals.length,
-      'weapons_count': weapons.length,
-      'sessions': sessions.map((s) => s.toMap()).toList(),
-      'goals': goals.map((g) => {
-        'id': g.id,
-        'title': g.title,
-        'description': g.description,
-        'metric': g.metric.index,
-        'comparator': g.comparator.index,
-        'targetValue': g.targetValue,
-        'status': g.status.index,
-        'period': g.period.index,
-        'createdAt': g.createdAt.toIso8601String(),
-        'updatedAt': g.updatedAt.toIso8601String(),
-        'lastProgress': g.lastProgress,
-        'lastMeasuredValue': g.lastMeasuredValue,
-        'priority': g.priority,
-      }).toList(),
-      // NT-008 : râtelier d'armes personnel (simple nom, cf. Weapon.toMap).
-      'weapons': weapons.map((w) => w.toMap()).toList(),
-    };
-    final jsonString = const JsonEncoder.withIndent('  ').convert(data);
+  Future<File?> exportAllSessionsToUserFolder(
+      {String? suggestedFileName}) async {
+    final jsonString = await _buildExportJson();
 
     // Sélection d'un dossier (sur Android utiliser FilePicker.directory)
     String? directoryPath;
     try {
-      directoryPath = await FilePicker.platform.getDirectoryPath();
+      directoryPath = await _locationProvider.selectExportDirectory();
     } catch (e) {
       // Certaines plateformes peuvent ne pas supporter (web). On renvoie null.
       return null;
@@ -209,7 +197,8 @@ class BackupService {
       // Annulation utilisateur.
       return null;
     }
-    final safeName = suggestedFileName ?? 'mycoach_export_${DateTime.now().millisecondsSinceEpoch}.json';
+    final safeName = suggestedFileName ??
+        'mycoach_export_${DateTime.now().millisecondsSinceEpoch}.json';
     final file = File('$directoryPath/$safeName');
     await file.writeAsString(jsonString);
     return file;

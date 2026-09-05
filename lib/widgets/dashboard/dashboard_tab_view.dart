@@ -247,6 +247,14 @@ class _DashboardTabViewState extends State<DashboardTabView>
                 const DistributionData.empty('Répartition Calibres'),
             isLoading: _isLoading,
           ),
+
+          const SizedBox(height: 16),
+
+          WeaponShotCountsCard(
+            weapons: _weapons,
+            shotCountsByWeaponId: _weaponShotCounts,
+            isLoading: _isLoading,
+          ),
         ],
       ),
     );
@@ -331,15 +339,6 @@ class _DashboardTabViewState extends State<DashboardTabView>
                 useRightAxis: true, // Axe Y à droite pour le groupement
               ),
             ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Compteurs de tirs par arme du râtelier (NT-017) — dernière section, sans graphe
-          WeaponShotCountsCard(
-            weapons: _weapons,
-            shotCountsByWeaponId: _weaponShotCounts,
-            isLoading: _isLoading,
           ),
         ],
       ),

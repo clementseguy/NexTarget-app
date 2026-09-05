@@ -46,10 +46,10 @@ flutter_icons:
   adaptive_icon_background: "#000000"
   adaptive_icon_foreground: assets/app_logo.png
 
-## Ancien bloc flutter_native_splash supprimé (splash géré par overlay Flutter)
+## Le splash natif est configuré dans les ressources Android et iOS générées.
 
 flutter:
   uses-material-design: true
   assets:
-    - assets/app_logo.png # conservé temporairement (legacy)
+    - assets/app_logo.png # logo de l'application et du splash natif
     - assets/config.yaml

@@ -14,16 +14,12 @@ class AppConfig {
   );
 
   static AppConfig? _instance;
-  final int splashMinDisplayMs;
-  final int splashFadeDurationMs;
   final List<String> calibers;
   final bool authEnabled;
   final String authBaseUrl;
   final String authCallbackScheme;
 
   AppConfig._({
-    required this.splashMinDisplayMs,
-    required this.splashFadeDurationMs,
     required this.calibers,
     required this.authEnabled,
     required this.authBaseUrl,
@@ -52,14 +48,6 @@ class AppConfig {
         local = loadYaml(localRaw) as Map;
       } catch (_) {}
 
-      int readInt(dynamic value, int fallback) {
-        if (value == null) return fallback;
-        if (value is int) return value;
-        if (value is String) return int.tryParse(value) ?? fallback;
-        return fallback;
-      }
-
-      final splash = yaml['splash'];
       final calibersYaml = (local['calibers'] ?? yaml['calibers']) as dynamic;
       final defaultCalibers = <String>[
         '.22 LR',
@@ -80,8 +68,6 @@ class AppConfig {
       }
 
       final cfg = AppConfig._(
-        splashMinDisplayMs: readInt(splash?['min_display_ms'], 1500),
-        splashFadeDurationMs: readInt(splash?['fade_duration_ms'], 450),
         calibers: readCalibers(calibersYaml),
         authEnabled: (yaml['auth']?['enabled'] ?? false) as bool,
         authBaseUrl: _resolveServerUrl(
@@ -95,8 +81,6 @@ class AppConfig {
     } catch (e) {
       // En cas d'erreur, on installe une config par défaut.
       _instance = AppConfig._(
-        splashMinDisplayMs: 1500,
-        splashFadeDurationMs: 450,
         calibers: const [
           '.22 LR',
           '.32 S&W Long',

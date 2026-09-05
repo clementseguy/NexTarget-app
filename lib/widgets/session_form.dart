@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../forms/series_form_controllers.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,12 +22,14 @@ class SessionForm extends StatefulWidget {
   final Map<String, dynamic>? initialSessionData;
   final void Function(ShootingSession session) onSave;
   final bool isEdit;
+  final bool preserveInitialCaliber;
   final ISessionPhotoService? photoService;
   const SessionForm({
     super.key,
     this.initialSessionData,
     required this.onSave,
     this.isEdit = false,
+    this.preserveInitialCaliber = false,
     this.photoService,
   });
 
@@ -58,6 +62,8 @@ class SessionFormState extends State<SessionForm> {
   String? _photoPath;
   String? _initialPhotoPath;
   bool _photoBusy = false;
+  bool _saved = false;
+  String? _analyse;
 
   @override
   void initState() {
@@ -72,7 +78,9 @@ class SessionFormState extends State<SessionForm> {
           ? DateTime.tryParse(session['date'])
           : null;
       _weaponController.text = session['weapon'] ?? '';
-      final existingCal = widget.isEdit ? session['caliber'] as String? : null;
+      final existingCal = widget.isEdit || widget.preserveInitialCaliber
+          ? session['caliber'] as String?
+          : null;
       _caliberController.text = pickInitialCaliber(
           existing: existingCal,
           defaultCaliber: PreferencesService().getDefaultCaliber());
@@ -82,6 +90,7 @@ class SessionFormState extends State<SessionForm> {
       _status = session['status'] ?? SessionConstants.statusRealisee;
       _photoPath = session['photoPath'] as String?;
       _initialPhotoPath = _photoPath;
+      _analyse = session['analyse'] as String?;
       // Preload existing exercises list from session map if any
       final existingEx = session['exercises'];
       if (existingEx is List) {
@@ -190,6 +199,9 @@ class SessionFormState extends State<SessionForm> {
 
   @override
   void dispose() {
+    if (!_saved && _photoPath != null && _photoPath != _initialPhotoPath) {
+      unawaited(_photoService.deleteIfExists(_photoPath));
+    }
     for (final c in _seriesControllers) {
       c.dispose();
     }
@@ -198,6 +210,8 @@ class SessionFormState extends State<SessionForm> {
     _syntheseController.dispose();
     super.dispose();
   }
+
+  void markSaved() => _saved = true;
 
   void _addSeries() {
     setState(() {
@@ -274,7 +288,7 @@ class SessionFormState extends State<SessionForm> {
     }
     // Conserver l'id session si édition
     int? existingId;
-    if (widget.initialSessionData != null) {
+    if (widget.isEdit && widget.initialSessionData != null) {
       final sess = widget.initialSessionData!['session'];
       if (sess is Map && sess['id'] != null) {
         existingId = sess['id'] as int?;
@@ -286,26 +300,34 @@ class SessionFormState extends State<SessionForm> {
       weapon: _weaponController.text,
       caliber: _caliberController.text,
       status: _status,
-      series: List.generate(
-          _series.length,
-          (i) => Series(
-                shotCount: int.tryParse(
-                        _seriesControllers[i].shotCountController.text) ??
-                    0,
-                distance: double.tryParse(
-                        _seriesControllers[i].distanceController.text) ??
-                    0,
-                points:
-                    int.tryParse(_seriesControllers[i].pointsController.text) ??
-                        0,
-                groupSize: double.tryParse(
-                        _seriesControllers[i].groupSizeController.text) ??
-                    0,
-                comment: _seriesControllers[i].commentController.text.trim(),
-                handMethod: _seriesControllers[i].handMethod == 'one'
-                    ? HandMethod.oneHand
-                    : HandMethod.twoHands,
-              )),
+      series: List.generate(_series.length, (i) {
+        final initialSeries = widget.initialSessionData?['series'];
+        final raw = initialSeries is List && i < initialSeries.length
+            ? initialSeries[i]
+            : null;
+        final metadata = raw is Map ? raw : const <String, dynamic>{};
+        return Series(
+          id: widget.isEdit ? metadata['id'] as int? : null,
+          shotCount:
+              int.tryParse(_seriesControllers[i].shotCountController.text) ?? 0,
+          distance:
+              double.tryParse(_seriesControllers[i].distanceController.text) ??
+                  0,
+          points:
+              int.tryParse(_seriesControllers[i].pointsController.text) ?? 0,
+          groupSize:
+              double.tryParse(_seriesControllers[i].groupSizeController.text) ??
+                  0,
+          comment: _seriesControllers[i].commentController.text.trim(),
+          handMethod: _seriesControllers[i].handMethod == 'one'
+              ? HandMethod.oneHand
+              : HandMethod.twoHands,
+          isCompleted: metadata['completed'] as bool? ?? true,
+          isDraftStarted: metadata['draft_started'] as bool? ?? true,
+          isScoreEntered: metadata['score_entered'] as bool? ?? true,
+        );
+      }),
+      analyse: _analyse,
       synthese: _syntheseController.text,
       category: _category,
       exercises: _selectedExerciseIds.toList(),
