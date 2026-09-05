@@ -3,6 +3,7 @@ import 'package:tir_sportif/models/exercise.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/repositories/exercise_repository.dart';
+import 'package:tir_sportif/repositories/session_repository.dart';
 import 'package:tir_sportif/services/exercise_service.dart';
 import 'package:tir_sportif/constants/session_constants.dart';
 import '../support/fake_session_repository.dart';
@@ -40,6 +41,16 @@ class _FailingReadSessionRepository extends FakeSessionRepository {
   @override
   Future<List<ShootingSession>> getAll() async =>
       throw StateError('Échec de lecture');
+}
+
+class _FailingStrictReadSessionRepository extends FakeSessionRepository
+    implements StrictSessionRepository {
+  @override
+  Future<List<ShootingSession>> getAll() async => const [];
+
+  @override
+  Future<List<ShootingSession>> getAllStrict() async =>
+      throw StateError('Échec de lecture Hive strict');
 }
 
 void main() {
@@ -229,6 +240,18 @@ void main() {
         throwsStateError,
       );
       expect((await repo.getAll()).single.id, 'ex');
+    });
+
+    test('utilise la lecture stricte quand le repository la fournit', () async {
+      final strictService = ExerciseService(
+        repository: repo,
+        sessionRepository: _FailingStrictReadSessionRepository(),
+      );
+
+      await expectLater(
+        strictService.checkDeletionEligibility('exercise-id'),
+        throwsStateError,
+      );
     });
 
     test('une erreur de suppression laisse l’exercice présent', () async {

@@ -65,17 +65,8 @@ class _AuthGateState extends State<_AuthGate> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, _) {
-        if (authProvider.isLoading) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        // Onboarding au premier lancement (NT-075), puis navigation normale.
-        return OnboardingGate(child: AppNavigator());
-      },
-    );
+    // La vérification d'authentification est facultative pour le carnet local :
+    // elle ne remplace jamais l'interface hors ligne par un second chargement.
+    return OnboardingGate(child: AppNavigator());
   }
 }

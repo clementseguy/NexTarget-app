@@ -90,9 +90,6 @@ class SessionService implements ISessionService {
     } catch (_) {
       if (createdPhotoPath != null) {
         await _photoService.deleteIfExists(createdPhotoPath);
-      } else if (submittedPhotoPath != null &&
-          submittedPhotoPath != sourcePhotoPath) {
-        await _photoService.deleteIfExists(submittedPhotoPath);
       }
       editedCopy.id = null;
       editedCopy.photoPath = submittedPhotoPath;

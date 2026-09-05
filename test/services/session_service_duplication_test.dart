@@ -248,6 +248,36 @@ void main() {
       expect(source.photoPath, '/photos/source.jpg');
     });
 
+    test('conserve une photo de remplacement pour permettre un nouvel essai',
+        () async {
+      repository.failInsert = true;
+      final source = _detailed(photoPath: '/photos/source.jpg');
+      final draft = service.prepareDuplication(source);
+      final edited = DetailedShootingSession(
+        date: DateTime(2026, 9, 4),
+        weapon: source.weapon,
+        caliber: source.caliber,
+        series: [Series(distance: 25, points: 45, groupSize: 5)],
+        photoPath: '/photos/replacement.jpg',
+      );
+
+      await expectLater(
+        service.saveDuplication(draft: draft, editedCopy: edited),
+        throwsStateError,
+      );
+
+      expect(photoService.deleted, isEmpty);
+      expect(edited.photoPath, '/photos/replacement.jpg');
+
+      repository.failInsert = false;
+      final saved = await service.saveDuplication(
+        draft: draft,
+        editedCopy: edited,
+      );
+      expect(saved.photoPath, '/photos/replacement.jpg');
+      expect(photoService.duplicated, isEmpty);
+    });
+
     test('un échec de copie photo n’insère aucune session', () async {
       photoService.failCopy = true;
       final source = _detailed(photoPath: '/photos/source.jpg');

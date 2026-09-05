@@ -103,7 +103,10 @@ class ExerciseService {
 
   Future<ExerciseDeletionEligibility> checkDeletionEligibility(
       String id) async {
-    final sessions = await _sessionRepository.getAll();
+    final repository = _sessionRepository;
+    final sessions = repository is StrictSessionRepository
+        ? await (repository as StrictSessionRepository).getAllStrict()
+        : await repository.getAll();
     final linkedCount =
         sessions.where((session) => session.exercises.contains(id)).length;
     return ExerciseDeletionEligibility(linkedSessionCount: linkedCount);

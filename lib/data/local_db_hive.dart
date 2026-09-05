@@ -165,7 +165,9 @@ class LocalDatabaseHive {
 
   /// Récupère toutes les sessions avec leurs séries depuis la base de données.
   /// Optimisé pour la performance en faisant une seule lecture de la base.
-  Future<List<Map<String, dynamic>>> getSessionsWithSeries() async {
+  Future<List<Map<String, dynamic>>> getSessionsWithSeries({
+    bool rethrowOnError = false,
+  }) async {
     try {
       if (_box.isEmpty) {
         return [];
@@ -192,6 +194,7 @@ class LocalDatabaseHive {
       return result;
     } catch (e) {
       AppLogger.I.error('Erreur lors de la récupération des sessions', e);
+      if (rethrowOnError) rethrow;
       return [];
     }
   }

@@ -9,7 +9,7 @@ void main() {
     final dir = await Directory.systemTemp.createTemp('nt_local_hive_');
     Hive.init(dir.path);
     await Hive.openBox('sessions');
-    
+
     // Charger AppConfig avant d'utiliser LocalDatabaseHive
     await AppConfig.load();
   });
@@ -26,5 +26,15 @@ void main() {
     await db.clearAllSessions();
     final after = await db.getSessionsWithSeries();
     expect(after, isEmpty);
+  });
+
+  test('la lecture stricte propage une indisponibilité Hive', () async {
+    final db = LocalDatabaseHive();
+    await Hive.box('sessions').close();
+
+    await expectLater(
+      db.getSessionsWithSeries(rethrowOnError: true),
+      throwsA(isA<HiveError>()),
+    );
   });
 }
