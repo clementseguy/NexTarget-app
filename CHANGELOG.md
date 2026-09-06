@@ -5,16 +5,31 @@ Toutes les modifications notables de ce projet seront listées ici.
 ## [Non publié]
 
 ### Added
+- NT-025 : difficulté facultative des exercices, filtre combinable, migration Hive additive et cycle de sauvegarde rétrocompatible.
+- NT-077 : registre historique et vérification déterministe en lecture seule des migrations, `typeId` et index `HiveField`, intégrée au contrôle avant commit et à la CI.
 - NT-026/NT-027 : actions de suppression sécurisée et de duplication depuis la liste des exercices, avec formulaire prérempli, clonage profond et rafraîchissement des compteurs.
 - NT-143 : duplication des sessions détaillées et libres depuis leur détail, sans reprise de date, avec photo physique indépendante et rollback des fichiers en cas d'échec.
 
 ### Changed
+- NT-056 : traduction commune et actionnable des erreurs réseau Auth, Profil et Coach, sans fuite technique ni suppression des jetons lors d'une panne transitoire.
+- NT-057 : suppression de quatre widgets sans appelant confirmé, sans modification des routes ni des écrans actifs.
+- NT-144 : gouvernance, vues et plan du backlog resynchronisés ; ancien plan concurrent archivé explicitement.
 - NT-141 : Paramètres réordonné en Préférences Tir, Sauvegardes & Portabilité, Coach IA, Thème et Aide ; ordre interne prise, râtelier, calibre et avertissement non chiffré rattaché aux sauvegardes.
 - NT-142 : carte « Tirs par arme » déplacée en dernière position de Statistiques > Synthèse, sans modification de calcul.
 
 ### Fixed
+- Retours de recette NT-025 : Catégorie et Type alignés, difficulté présentée comme un sélecteur à quatre choix et textes des cartes lisibles dans le thème France.
+- Retours de recette UI : libellé de difficulté vide raccourci en « N/A » dans le formulaire et contraste des objectifs atteints corrigé dans le thème France.
+- Sauvegardes mobiles : « Enregistrer le fichier » transmet désormais le JSON au sélecteur natif Android/iOS, comme l'exige `file_picker`, tout en conservant l'écriture par chemin sur ordinateur.
+- Revue MR #35 : le contrôle Hive couvre les classes avec héritage et les suppressions de champs actifs ; la réinitialisation des filtres resynchronise le sélecteur de difficulté.
+- Retours de recette NT-056 : le login depuis Paramètres utilise désormais les messages sûrs et l'action « Réessayer » communs.
+- Sauvegardes : le sélecteur fournit désormais un chemin de fichier complet, sans concaténation erronée, et l'import privilégie les octets fournis par le plugin lorsque le chemin système n'est pas lisible.
+- NT-059 : résorption locale des 53 constats SonarCloud de référence par corrections ciblées et remplacement des trois tests d'export masqués par des scénarios déterministes.
 - NT-140 : suppression du second splash Flutter `FadeInWrapper`, de son délai artificiel et de sa configuration morte ; le splash natif et son logo sont conservés.
 - Sauvegardes : remplacement des tests d’export ignorés par des scénarios déterministes couvrant le dossier choisi, l’annulation, le répertoire temporaire, le format JSON version 3 et les erreurs d’écriture.
+
+### Documentation
+- NT-151 : ajout d'une US dédiée à l'harmonisation et à la densification des cartes Exercices, explicitement hors périmètre du retour de recette courant.
 
 ## [0.7.0] - 2026-09-04
 

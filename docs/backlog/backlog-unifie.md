@@ -65,6 +65,10 @@
 > cohérence Hive resté en note de NT-072 ; NT-144 porte l'hygiène documentaire
 > et la réorganisation du backlog.
 >
+> Mise en œuvre du **2026-09-06** : les six items sont `EN COURS` sur une
+> branche app non fusionnée. Ce statut ne préjuge pas de la recette, de
+> l'analyse SonarCloud distante ni de la fusion exigées par la Definition of Done.
+>
 > Cadrage correctif du **2026-09-04** : le lot de finitions UX NT-140 à
 > NT-143 formalise la suppression du second écran de démarrage (issue #30),
 > l'ordre des paramètres, le déplacement de « Tirs par arme » et la vraie
@@ -104,7 +108,7 @@
 | 11. Analyse de cible (photo) | NT-110 → NT-111 |
 | 12. Coach : progression & génération | NT-120 → NT-126 |
 | 13. Saisie au stand | NT-130 → NT-134 |
-| 14. Finitions UX | NT-140 → NT-150 |
+| 14. Finitions UX | NT-140 → NT-151 |
 
 ---
 
@@ -276,7 +280,7 @@
 | NT-022 | Lier exercices ↔ sessions | app | Should | S | FAIT |
 | NT-023 | Création d'exercice par le coach | both | Could | L | À FAIRE |
 | NT-024 | Stats d'exécution (fenêtres glissantes) | app | Could | M | À FAIRE |
-| NT-025 | Niveau de difficulté d'exercice | app | Could | M | À FAIRE |
+| NT-025 | Niveau de difficulté d'exercice | app | Could | M | EN COURS |
 | NT-026 | Supprimer un exercice depuis l'interface | app | Could | S | EN COURS |
 | NT-027 | Dupliquer un exercice | app | Could | S | EN COURS |
 
@@ -284,7 +288,9 @@
 - **Thème** : Exercices · **Portée** : app · **Dépendances** : —
 - **Description** : Créer/éditer des exercices typés avec consignes détaillées.
 - **Critères d'acceptation** : catégorie (`precision/group/speed/technique/mental/physical`), type (`stand/home`), description, durée, matériel, consignes ordonnées, priorité.
-- **Statut** : FAIT — `Exercise`, `exercise_service`, écrans list/form.
+- **Statut** : FAIT — `Exercise`, `exercise_service`, écrans list/form. Ce CRUD
+  couvre création, lecture et modification ; sa suppression depuis l'interface
+  est suivie séparément par NT-026 et n'est pas attribuée à NT-020.
 
 ### NT-021 — Lier exercices ↔ objectifs
 - **Thème** : Exercices · **Portée** : app · **Dépendances** : NT-012, NT-020
@@ -322,7 +328,8 @@
   - l'évolution du modèle et de Hive est additive et versionnée conformément à NT-072 ; aucun `typeId` ni index de champ existant n'est réutilisé ;
   - les anciennes sauvegardes sans difficulté restent importables ; les nouveaux exports/imports conservent la valeur ; une valeur inconnue est traitée comme non renseignée sans faire échouer toute la sauvegarde ;
   - les tests couvrent la sérialisation actuelle et historique, la migration, la création/édition, les filtres combinés, la duplication et le cycle export/import.
-- **Priorité** : Could · **Estimation** : M · **Statut** : À FAIRE.
+- **Priorité** : Could · **Estimation** : M · **Statut** : EN COURS — implémenté
+  sur une branche app non fusionnée ; validation distante et recette restantes.
 - **Notes** : aucune difficulté n'est déduite de la catégorie, du type, de la durée ou des performances du tireur.
 
 ### NT-026 — Supprimer un exercice depuis l'interface
@@ -528,10 +535,10 @@
 | NT-053 | Logging structuré + tracing (serveur) | server | Should | M | FAIT |
 | NT-054 | Tests OAuth mockés (providers externes) | server | Should | M | FAIT |
 | NT-055 | CI serveur (tests + couverture) | server | Should | S | FAIT |
-| NT-056 | Harmonisation des erreurs réseau (app) | app | Could | M | À FAIRE |
-| NT-057 | Nettoyage des widgets dupliqués (app) | app | Could | S | À FAIRE |
+| NT-056 | Harmonisation des erreurs réseau (app) | app | Could | M | EN COURS |
+| NT-057 | Nettoyage des widgets dupliqués (app) | app | Could | S | EN COURS |
 | NT-058 | Fakes de repository partagés pour les tests (app) | app | Should | S | FAIT |
-| NT-059 | Résorber les issues SonarCloud de la PR #32 et les tests ignorés | app | Should | M | À FAIRE |
+| NT-059 | Résorber les issues SonarCloud de la PR #32 et les tests ignorés | app | Should | M | EN COURS |
 
 ### NT-050 — SonarCloud + Quality Gate + couverture (app)
 - **Portée** : app · **Dépendances** : — · **Description** : Qualité continue mesurée sur l'app.
@@ -576,7 +583,8 @@
   - les erreurs de saisie ou requêtes invalides conservent une correction locale explicite et ne proposent pas un nouvel essai trompeur ;
   - Auth, Profil et Coach partagent le même vocabulaire et les mêmes décisions d'action tout en conservant leur contexte métier ; aucun contrat serveur n'est modifié ;
   - les tests couvrent chaque famille, l'absence de fuite technique, la conservation de l'état authentifié lors d'une panne transitoire, la reconnexion après invalidation confirmée et l'exécution réelle des actions proposées sur chaque parcours concerné.
-- **Priorité** : Could · **Estimation** : M · **Statut** : À FAIRE.
+- **Priorité** : Could · **Estimation** : M · **Statut** : EN COURS — implémenté
+  sur une branche non fusionnée ; recette manuelle restante.
 - **Notes** : repris de l'issue #5. Le Coach fournit déjà une base de messages orientés utilisateur, à aligner avec la traduction commune plutôt qu'à réécrire sans nécessité. Hors périmètre : file d'attente hors ligne, retries multiples automatiques et modification des API serveur.
 
 ### NT-057 — Nettoyage des widgets dupliqués (app)
@@ -589,7 +597,8 @@
   - aucun comportement, libellé, mise en page, navigation ou contrat public n'est modifié intentionnellement ; les changements fonctionnels découverts sont sortis du lot et tracés séparément ;
   - aucune abstraction spéculative, refonte générale d'architecture ou réorganisation globale du dépôt n'est introduite ;
   - les tests des parcours touchés sont conservés ou adaptés sans perte de couverture ; `flutter analyze --fatal-infos` et la suite Flutter complète passent.
-- **Priorité** : Could · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Could · **Estimation** : S · **Statut** : EN COURS — inventaire
+  résolu sur une branche non fusionnée ; recette des écrans actifs restante.
 - **Notes** : repris de l'issue #5 ; `MainNavigation`, doublon d'`AppNavigator`, a déjà été supprimé en v0.5.0 et ne fait donc pas partie du livrable restant.
 
 ### NT-058 — Fakes de repository partagés pour les tests (app)
@@ -621,7 +630,8 @@
   - aucun test du dépôt n'utilise `skip:` ou `markTestSkipped` sans justification explicite et décision documentée ; les trois mécanismes identifiés ci-dessus ont disparu ;
   - les scénarios export vers dossier, annulation, export temporaire et erreur d'écriture s'exécutent réellement et passent en local comme en CI ;
   - `flutter analyze --fatal-infos` et `flutter test` passent sans test ignoré ; l'analyse SonarCloud de la PR de correction est verte.
-- **Priorité** : Should · **Estimation** : M · **Statut** : À FAIRE.
+- **Priorité** : Should · **Estimation** : M · **Statut** : EN COURS — corrections
+  locales et tests déterministes présents ; nouvelle analyse SonarCloud de PR restante.
 - **Notes** : inventaire obtenu via l'API SonarCloud le 2026-09-04. Les numéros de ligne peuvent évoluer après formatage ou refactoring ; les règles, fichiers et volumes ci-dessus constituent la référence. La séparation des frontières plugins améliore la testabilité sans changer le comportement utilisateur de l'export.
 
 ---
@@ -687,7 +697,7 @@
 | NT-074 | Saisie séries plein écran + navigation rapide | app | Could | M | À FAIRE |
 | NT-075 | Onboarding + aide contextuelle | app | Could | M | FAIT |
 | NT-076 | Cache stats + compactage Hive | app | Could | M | À FAIRE |
-| NT-077 | Vérifier automatiquement la cohérence du schéma Hive | app | Should | S | À FAIRE |
+| NT-077 | Vérifier automatiquement la cohérence du schéma Hive | app | Should | S | EN COURS |
 
 ### NT-070 — Déploiement serveur (Render)
 - **Portée** : server · **Dépendances** : — · **Critères d'acceptation** : déploiement via `render.yaml` ; variables d'env (JWT, OAuth, `MISTRAL_API_KEY`) documentées.
@@ -759,7 +769,8 @@
   - le contrôle est exécuté par `scripts/verify_before_commit.sh` et par la CI existante, sans dépendance à un état local particulier ;
   - des tests de la vérification couvrent au minimum le cas nominal, un `typeId` dupliqué, un index de champ réutilisé, une migration absente et une rupture de séquence ;
   - la documentation de migration explique comment mettre à jour le registre et exécuter le contrôle.
-- **Priorité** : Should · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Should · **Estimation** : S · **Statut** : EN COURS — contrôle,
+  registre, tests et intégrations présents sur une branche non fusionnée.
 - **Notes** : cette vérification complète NT-072 ; elle ne remplace ni les tests de migration avec données historiques ni la revue des sauvegardes JSON.
 
 ---
@@ -980,13 +991,14 @@
 | NT-141 | Réordonner les sections de l'écran Paramètres | app | 2 | Should | S | EN COURS |
 | NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | 2 | Should | S | EN COURS |
 | NT-143 | Remplacer « Copier résumé » par la duplication de session | app | 3 | Should | M | EN COURS |
-| NT-144 | Assainir et réorganiser la documentation du backlog | app | 1 | Could | S | À FAIRE |
+| NT-144 | Assainir et réorganiser la documentation du backlog | app | 1 | Could | S | EN COURS |
 | NT-145 | Ouvrir la session associée à un record | app | 3 | Should | S | À FAIRE |
 | NT-146 | Aider à estimer la taille d'un groupement | app | 2 | Could | S | À FAIRE |
 | NT-147 | Déplacer « Répartition Catégories » sous les calibres | app | 1 | Should | S | À FAIRE |
 | NT-148 | Séparer les trois préférences de tir | app | 1 | Could | S | À FAIRE |
 | NT-149 | Renommer les fichiers d'export NexTarget | app | 1 | Should | S | À FAIRE |
 | NT-150 | Garantir un état d'authentification cohérent après mise à jour | app | 3 | Should | M | À FAIRE |
+| NT-151 | Harmoniser et densifier les cartes d'exercice | app | 3 | Could | M | À FAIRE |
 
 ### NT-140 — Supprimer le second écran de chargement Flutter
 - **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-040, NT-075
@@ -1061,7 +1073,8 @@
   - aucun identifiant de backlog n'est renuméroté ou supprimé et aucune décision métier durable n'est effacée ;
   - un contrôle par recherche et inspection du diff confirme l'absence de statut contradictoire pour les items actifs et de lien interne cassé ;
   - cette tâche ne modifie aucun code applicatif, comportement produit, schéma de persistance ni contrat serveur.
-- **Priorité** : Could · **VM** : 1 · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Could · **VM** : 1 · **Estimation** : S · **Statut** : EN COURS —
+  documents synchronisés sur une branche non fusionnée.
 - **Notes** : le périmètre est volontairement documentaire et borné à l'assainissement du backlog et de ses vues ; une refonte générale de toute la documentation technique ou métier serait une tâche distincte.
 
 ### NT-145 — Ouvrir la session associée à un record
@@ -1146,14 +1159,36 @@
 - **Priorité** : Should · **VM** : 3 · **Estimation** : M · **Statut** : À FAIRE.
 - **Notes** : anomalie reproduite en v0.7.0 après mise à jour depuis v0.6.0 sans déconnexion/reconnexion. Ce correctif complète NT-056 : NT-056 harmonise la présentation des erreurs, NT-150 garantit la cohérence et les transitions de l'état global d'authentification.
 
+### NT-151 — Harmoniser et densifier les cartes d'exercice
+- **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-003, NT-020, NT-025, NT-027
+- **Description** : Repenser la hiérarchie visuelle des cartes d'exercice pour
+  les rapprocher des cartes Sessions et Séries, donner davantage de place aux
+  informations utiles et réduire l'emprise des actions sans en supprimer.
+- **Critères d'acceptation** :
+  - un inventaire compare explicitement les cartes Exercices, Sessions et Séries et identifie les conventions actives à réutiliser plutôt que de créer un nouveau langage visuel ;
+  - la zone d'information devient prioritaire sur la zone d'actions sur une largeur mobile, sans tronquer les informations essentielles ;
+  - planification, modification, duplication et suppression restent accessibles, avec regroupement éventuel des actions secondaires dans un menu clairement identifié ;
+  - nom, catégorie, type, difficulté, nombre d'objectifs, consignes, durée et matériel restent présentés selon leur disponibilité avec une hiérarchie compacte et compréhensible ;
+  - les états liés à une session prévue restent identifiables sans dépendre uniquement de la couleur ;
+  - textes, contrastes, zones tactiles et débordements sont vérifiés sur les deux thèmes et sur les largeurs mobiles prises en charge ;
+  - navigation, routes et comportements métier existants restent inchangés ; les tests couvrent les variantes Stand/Maison, données minimales/complètes et session prévue.
+- **Priorité** : Could · **VM** : 3 · **Estimation** : M · **Statut** : À FAIRE.
+- **Notes** : créé à la recette du 2026-09-06 sous l'identifiant provisoire
+  NT-145, puis déplacé vers NT-151 lors de la synchronisation avec `dev` afin
+  de préserver les nouveaux items NT-145 à NT-150 sans collision. Hors
+  périmètre du correctif de contraste NT-025 : ce dernier rend immédiatement
+  les textes lisibles mais ne préjuge pas de la future composition des cartes.
+
 ---
 
-## Backlog priorisé
+## Archive historique — ancien plan S1-S6
 
-> **Plan historique.** Ce bloc reflète la planification établie avant
-> l'enrichissement des thèmes 10–13 et contient plusieurs items désormais
-> `FAIT`. Le plan courant de priorisation métier, dépendances et sprints
-> livrables est maintenu dans [`plan-sprints.md`](plan-sprints.md).
+> **Archive non normative.** Ce bloc reflète la planification établie avant
+> l'enrichissement des thèmes 10–14 et contient plusieurs items désormais
+> `FAIT`. Il n'est plus un backlog actif et ne doit jamais servir à choisir ou
+> synchroniser un prochain lot. La priorisation courante, les dépendances et les
+> sprints livrables sont maintenus exclusivement dans
+> [`plan-sprints.md`](plan-sprints.md).
 
 > **Dernière mise à jour** : 2026-07-07.
 > Découpage en sprints de 2 semaines. Chaque sprint livre un produit (app +

@@ -10,6 +10,7 @@ import 'package:tir_sportif/screens/exercises_list_screen.dart';
 import 'package:tir_sportif/services/exercise_service.dart';
 import 'package:tir_sportif/services/goal_service.dart';
 import 'package:tir_sportif/services/session_service.dart';
+import 'package:tir_sportif/theme/app_theme.dart';
 
 import '../support/fake_session_repository.dart';
 
@@ -58,6 +59,7 @@ Exercise _exercise() => Exercise(
       name: 'Exercice source',
       categoryEnum: ExerciseCategory.speed,
       type: ExerciseType.stand,
+      difficulty: ExerciseDifficulty.advanced,
       description: 'Description complète',
       durationMinutes: 15,
       equipment: 'Timer',
@@ -74,6 +76,7 @@ void main() {
       })> pumpList(
     WidgetTester tester, {
     List<ShootingSession> sessions = const [],
+    ThemeData? theme,
   }) async {
     await tester.binding.setSurfaceSize(const Size(1100, 1000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -93,6 +96,7 @@ void main() {
     );
     await tester.pumpWidget(
       MaterialApp(
+        theme: theme,
         home: ExercisesListScreen(
           exerciseService: exerciseService,
           sessionService: sessionService,
@@ -107,71 +111,137 @@ void main() {
     );
   }
 
-  testWidgets('Dupliquer ouvre un formulaire de création entièrement prérempli',
-      (tester) async {
+  testWidgets(
+    'Dupliquer ouvre un formulaire de création entièrement prérempli',
+    (tester) async {
+      await pumpList(tester);
+
+      await tester.tap(find.byTooltip('Actions sur Exercice source'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Dupliquer'));
+      await tester.pumpAndSettle();
+      await tester.binding.setSurfaceSize(const Size(390, 1000));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Nouvel exercice'), findsOneWidget);
+      final name = tester.widget<TextFormField>(
+        find.widgetWithText(TextFormField, 'Nom de l\'exercice'),
+      );
+      final description = tester.widget<TextFormField>(
+        find.widgetWithText(TextFormField, 'Description'),
+      );
+      final duration = tester.widget<TextFormField>(
+        find.widgetWithText(TextFormField, 'Durée'),
+      );
+      final equipment = tester.widget<TextFormField>(
+        find.widgetWithText(TextFormField, 'Matériel requis'),
+      );
+      expect(name.controller!.text, 'Exercice source (copie)');
+      expect(description.controller!.text, 'Description complète');
+      expect(duration.controller!.text, '15');
+      expect(equipment.controller!.text, 'Timer');
+      final difficulty = tester.widget<SegmentedButton<String>>(
+        find.byKey(const Key('exercise_difficulty')),
+      );
+      expect(difficulty.selected, {'advanced'});
+      expect(
+        tester.getTopLeft(find.byKey(const Key('exercise_category'))).dy,
+        tester.getTopLeft(find.byKey(const Key('exercise_type'))).dy,
+      );
+      expect(find.text('N/A'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      expect(find.text('Première consigne'), findsOneWidget);
+      expect(find.text('Deuxième consigne'), findsOneWidget);
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('Exercice source'), findsOneWidget);
+      expect(find.text('Exercice source (copie)'), findsNothing);
+    },
+  );
+
+  testWidgets('la carte reste lisible dans le thème France', (tester) async {
+    await pumpList(tester, theme: AppTheme.bleuBlancRougeTheme);
+
+    final details = tester.widget<Text>(
+      find.text('Type: Stand · Difficulté: Avancé'),
+    );
+    final duration = tester.widget<Text>(find.text('15 min'));
+
+    expect(details.style?.color?.computeLuminance(), lessThan(0.5));
+    expect(duration.style?.color?.computeLuminance(), lessThan(0.5));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Réinitialiser resynchronise le filtre de difficulté affiché', (
+    tester,
+  ) async {
     await pumpList(tester);
 
-    await tester.tap(find.byTooltip('Actions sur Exercice source'));
+    await tester.tap(find.byTooltip('Déplier'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Dupliquer'));
+    await tester.tap(
+      find.byKey(
+        const ValueKey('exercise_difficulty_filter_all'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Expert').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Nouvel exercice'), findsOneWidget);
-    final name = tester.widget<TextFormField>(
-      find.widgetWithText(TextFormField, 'Nom de l\'exercice'),
+    expect(
+      find.byKey(const ValueKey('exercise_difficulty_filter_expert')),
+      findsOneWidget,
     );
-    final description = tester.widget<TextFormField>(
-      find.widgetWithText(TextFormField, 'Description'),
-    );
-    final duration = tester.widget<TextFormField>(
-      find.widgetWithText(TextFormField, 'Durée'),
-    );
-    final equipment = tester.widget<TextFormField>(
-      find.widgetWithText(TextFormField, 'Matériel requis'),
-    );
-    expect(name.controller!.text, 'Exercice source (copie)');
-    expect(description.controller!.text, 'Description complète');
-    expect(duration.controller!.text, '15');
-    expect(equipment.controller!.text, 'Timer');
-    expect(find.text('Première consigne'), findsOneWidget);
-    expect(find.text('Deuxième consigne'), findsOneWidget);
 
-    await tester.pageBack();
+    await tester.tap(find.text('Réinitialiser'));
     await tester.pumpAndSettle();
-    expect(find.text('Exercice source'), findsOneWidget);
-    expect(find.text('Exercice source (copie)'), findsNothing);
+
+    expect(
+      find.byKey(const ValueKey('exercise_difficulty_filter_all')),
+      findsOneWidget,
+    );
+    expect(find.text('Tous'), findsOneWidget);
   });
 
-  testWidgets('modifie puis crée la copie et rafraîchit sans changer la source',
-      (tester) async {
-    final repositories = await pumpList(tester);
+  testWidgets(
+    'modifie puis crée la copie et rafraîchit sans changer la source',
+    (tester) async {
+      final repositories = await pumpList(tester);
 
-    await tester.tap(find.byTooltip('Actions sur Exercice source'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Dupliquer'));
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Nom de l\'exercice'),
-      'Exercice personnalisé',
-    );
-    await tester.tap(find.byTooltip('Enregistrer'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Actions sur Exercice source'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Dupliquer'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Nom de l\'exercice'),
+        'Exercice personnalisé',
+      );
+      await tester.tap(find.text('Débutant'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Enregistrer'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Exercice source'), findsOneWidget);
-    expect(find.text('Exercice personnalisé'), findsOneWidget);
-    expect(repositories.exerciseRepository.store.length, 2);
-    final source = repositories.exerciseRepository.store['ex-1']!;
-    final copy = repositories.exerciseRepository.store.values
-        .singleWhere((exercise) => exercise.id != 'ex-1');
-    expect(source.name, 'Exercice source');
-    expect(source.consignes, ['Première consigne', 'Deuxième consigne']);
-    expect(copy.name, 'Exercice personnalisé');
-    expect(copy.id, isNot(source.id));
-    expect(copy.createdAt, isNot(source.createdAt));
-  });
+      expect(find.text('Exercice source'), findsOneWidget);
+      expect(find.text('Exercice personnalisé'), findsOneWidget);
+      expect(repositories.exerciseRepository.store.length, 2);
+      final source = repositories.exerciseRepository.store['ex-1']!;
+      final copy = repositories.exerciseRepository.store.values.singleWhere(
+        (exercise) => exercise.id != 'ex-1',
+      );
+      expect(source.name, 'Exercice source');
+      expect(source.consignes, ['Première consigne', 'Deuxième consigne']);
+      expect(copy.name, 'Exercice personnalisé');
+      expect(copy.id, isNot(source.id));
+      expect(copy.createdAt, isNot(source.createdAt));
+      expect(source.difficulty, ExerciseDifficulty.advanced);
+      expect(copy.difficulty, ExerciseDifficulty.beginner);
+    },
+  );
 
-  testWidgets('refuse la suppression liée avec le nombre de sessions',
-      (tester) async {
+  testWidgets('refuse la suppression liée avec le nombre de sessions', (
+    tester,
+  ) async {
     final linked = DetailedShootingSession(
       date: DateTime(2026, 9, 1),
       weapon: 'Pistolet',
@@ -192,8 +262,9 @@ void main() {
     expect((await repositories.sessionRepository.getAll()).length, 2);
   });
 
-  testWidgets('annule puis confirme la suppression et rafraîchit la liste',
-      (tester) async {
+  testWidgets('annule puis confirme la suppression et rafraîchit la liste', (
+    tester,
+  ) async {
     final repositories = await pumpList(tester);
 
     Future<void> openDelete() async {
@@ -204,8 +275,10 @@ void main() {
     }
 
     await openDelete();
-    expect(find.text('Supprimer définitivement « Exercice source » ?'),
-        findsOneWidget);
+    expect(
+      find.text('Supprimer définitivement « Exercice source » ?'),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Annuler'));
     await tester.pumpAndSettle();
     expect(repositories.exerciseRepository.store, contains('ex-1'));
@@ -217,8 +290,9 @@ void main() {
     expect(find.text('Créer le premier exercice'), findsOneWidget);
   });
 
-  testWidgets('affiche l’erreur d’écriture sans état mensonger',
-      (tester) async {
+  testWidgets('affiche l’erreur d’écriture sans état mensonger', (
+    tester,
+  ) async {
     final repositories = await pumpList(tester);
     repositories.exerciseRepository.failDelete = true;
 

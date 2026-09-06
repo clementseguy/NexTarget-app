@@ -85,39 +85,13 @@ class HiveSessionRepository
         : <Map<String, dynamic>>[];
 
     // Si on doit préserver les séries existantes et que la session n'a pas de séries
-    if (session is DetailedShootingSession &&
-        preserveExistingSeriesIfEmpty &&
-        session.id != null &&
-        seriesMaps.isEmpty) {
-      try {
-        final existing = await _hive.getSessionsWithSeries();
-        final match = existing.firstWhere(
-          (e) => (e['session']?['id'] == session.id),
-          orElse: () => {},
-        );
-
-        if (match.isNotEmpty) {
-          final existingSeries = (match['series'] as List<dynamic>? ?? [])
-              .map((s) => (s is Map<String, dynamic>)
-                  ? s
-                  : Map<String, dynamic>.from(s))
-              .toList();
-
-          if (existingSeries.isNotEmpty) {
-            final success =
-                await _hive.updateSession(session.toMap(), existingSeries);
-            if (!success) {
-              throw StateError(
-                  'Échec d\'écriture Hive (fallback séries) pour la session ${session.id}');
-            }
-            return true; // Si la mise à jour a réussi, c'est un fallback
-          }
-        }
-      } catch (e) {
-        AppLogger.I
-            .error('Erreur lors de la récupération des séries existantes', e);
-        // En cas d'erreur, on continue avec l'update normal
-      }
+    if (_shouldPreserveSeries(
+      session,
+      preserveExistingSeriesIfEmpty,
+      seriesMaps,
+    )) {
+      final usedFallback = await _updateWithExistingSeries(session);
+      if (usedFallback) return true;
     }
 
     final success = await _hive.updateSession(session.toMap(), seriesMaps);
@@ -125,5 +99,46 @@ class HiveSessionRepository
       throw StateError('Échec d\'écriture Hive pour la session ${session.id}');
     }
     return false; // pas de fallback
+  }
+
+  bool _shouldPreserveSeries(
+    ShootingSession session,
+    bool preserveExistingSeriesIfEmpty,
+    List<Map<String, dynamic>> seriesMaps,
+  ) =>
+      session is DetailedShootingSession &&
+      preserveExistingSeriesIfEmpty &&
+      session.id != null &&
+      seriesMaps.isEmpty;
+
+  Future<bool> _updateWithExistingSeries(ShootingSession session) async {
+    try {
+      final existing = await _hive.getSessionsWithSeries();
+      final match = existing.firstWhere(
+        (entry) => entry['session']?['id'] == session.id,
+        orElse: () => {},
+      );
+      if (match.isEmpty) return false;
+      final existingSeries = (match['series'] as List<dynamic>? ?? [])
+          .map((item) => item is Map<String, dynamic>
+              ? item
+              : Map<String, dynamic>.from(item as Map))
+          .toList();
+      if (existingSeries.isEmpty) return false;
+      final success =
+          await _hive.updateSession(session.toMap(), existingSeries);
+      if (!success) {
+        throw StateError(
+          'Échec d\'écriture Hive (fallback séries) pour la session ${session.id}',
+        );
+      }
+      return true;
+    } catch (error) {
+      AppLogger.I.error(
+        'Erreur lors de la récupération des séries existantes',
+        error,
+      );
+      return false;
+    }
   }
 }

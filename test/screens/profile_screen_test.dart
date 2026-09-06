@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:tir_sportif/providers/auth_provider.dart';
 import 'package:tir_sportif/services/auth_service.dart';
+import 'package:tir_sportif/services/network_error.dart';
 import 'package:tir_sportif/screens/profile_screen.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -45,7 +46,8 @@ void main() {
   }
 
   group('ProfileScreen', () {
-    testWidgets('affiche "Non connecté" si utilisateur non authentifié', (tester) async {
+    testWidgets('affiche "Non connecté" si utilisateur non authentifié',
+        (tester) async {
       final authProvider = AuthProvider(mockAuthService);
       await tester.pumpWidget(buildProfileScreen(authProvider));
 
@@ -83,7 +85,8 @@ void main() {
       expect(find.text('AD'), findsOneWidget);
     });
 
-    testWidgets('affiche le SegmentedButton avec le niveau actuel sélectionné', (tester) async {
+    testWidgets('affiche le SegmentedButton avec le niveau actuel sélectionné',
+        (tester) async {
       when(mockAuthService.hasToken()).thenAnswer((_) async => true);
       when(mockAuthService.isAuthenticated()).thenAnswer((_) async => true);
       when(mockAuthService.getUserInfo()).thenAnswer((_) async => testUser);
@@ -128,7 +131,8 @@ void main() {
       expect(find.text('Connexion via'), findsOneWidget);
     });
 
-    testWidgets('affiche la date created_at formatée en français', (tester) async {
+    testWidgets('affiche la date created_at formatée en français',
+        (tester) async {
       when(mockAuthService.hasToken()).thenAnswer((_) async => true);
       when(mockAuthService.isAuthenticated()).thenAnswer((_) async => true);
       when(mockAuthService.getUserInfo()).thenAnswer((_) async => testUser);
@@ -173,7 +177,8 @@ void main() {
       expect(find.text('Se déconnecter'), findsOneWidget);
     });
 
-    testWidgets('changement de niveau appelle updateExperienceLevel', (tester) async {
+    testWidgets('changement de niveau appelle updateExperienceLevel',
+        (tester) async {
       when(mockAuthService.hasToken()).thenAnswer((_) async => true);
       when(mockAuthService.isAuthenticated()).thenAnswer((_) async => true);
       when(mockAuthService.getUserInfo()).thenAnswer((_) async => testUser);
@@ -190,15 +195,24 @@ void main() {
       await tester.tap(find.text('Expert'));
       await tester.pump();
 
-      verify(mockAuthService.updateProfile(experienceLevel: 'expert')).called(1);
+      verify(mockAuthService.updateProfile(experienceLevel: 'expert'))
+          .called(1);
     });
 
-    testWidgets('affiche SnackBar en cas d\'erreur de mise à jour', (tester) async {
+    testWidgets('affiche SnackBar en cas d\'erreur de mise à jour',
+        (tester) async {
       when(mockAuthService.hasToken()).thenAnswer((_) async => true);
       when(mockAuthService.isAuthenticated()).thenAnswer((_) async => true);
       when(mockAuthService.getUserInfo()).thenAnswer((_) async => testUser);
+      var calls = 0;
       when(mockAuthService.updateProfile(experienceLevel: 'expert'))
-          .thenThrow(Exception('Erreur réseau'));
+          .thenAnswer((_) async {
+        calls++;
+        throw NetworkOperationException(
+          NetworkErrorFamily.offline,
+          'Erreur DNS interne',
+        );
+      });
 
       final authProvider = AuthProvider(mockAuthService);
       await authProvider.checkAuthStatus();
@@ -209,10 +223,20 @@ void main() {
       await tester.tap(find.text('Expert'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Erreur : impossible de mettre à jour le niveau'), findsOneWidget);
+      expect(
+        find.text('Aucune connexion disponible. Vérifiez votre réseau.'),
+        findsOneWidget,
+      );
+      expect(find.text('Réessayer'), findsOneWidget);
+      expect(find.textContaining('DNS'), findsNothing);
+
+      await tester.tap(find.text('Réessayer'));
+      await tester.pump();
+      expect(calls, 2);
     });
 
-    testWidgets('affiche initiale de l\'email si display_name est null', (tester) async {
+    testWidgets('affiche initiale de l\'email si display_name est null',
+        (tester) async {
       final userNoName = {...testUser, 'display_name': null};
       when(mockAuthService.hasToken()).thenAnswer((_) async => true);
       when(mockAuthService.isAuthenticated()).thenAnswer((_) async => true);

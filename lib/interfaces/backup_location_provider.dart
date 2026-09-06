@@ -4,5 +4,10 @@ import 'dart:io';
 abstract class BackupLocationProvider {
   Future<Directory> getTemporaryDirectory();
 
-  Future<String?> selectExportDirectory();
+  /// Sélectionne la destination et écrit le contenu de l'export.
+  ///
+  /// Retourne `null` en cas d'annulation. La frontière prend en charge les
+  /// écritures natives Android/iOS qui ne fournissent pas un chemin Dart IO
+  /// directement exploitable.
+  Future<File?> saveExportFile(String suggestedFileName, List<int> bytes);
 }

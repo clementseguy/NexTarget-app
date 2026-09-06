@@ -10,6 +10,8 @@ import 'package:tir_sportif/providers/auth_provider.dart';
 import 'package:tir_sportif/providers/settings_provider.dart';
 import 'package:tir_sportif/screens/session_detail/session_detail_components.dart';
 import 'package:tir_sportif/services/auth_service.dart';
+import 'package:tir_sportif/services/auth_session_exceptions.dart';
+import 'package:tir_sportif/services/network_error.dart';
 
 /// NT-061 — coach « connecté uniquement » : la section Analyse Coach doit
 /// exiger un utilisateur authentifié (message clair + CTA login sinon).
@@ -128,5 +130,65 @@ void main() {
     expect(find.text('Lancer analyse'), findsOneWidget);
     expect(find.text('Neutre'), findsNothing);
     expect(find.text('Cool'), findsNothing);
+  });
+
+  testWidgets('erreur transitoire : Réessayer relance uniquement l’analyse',
+      (tester) async {
+    var calls = 0;
+    await tester.pumpWidget(_wrap(
+      SessionCoachAnalysisSection(
+        session: _session(),
+        analyse: null,
+        onAnalyseUpdated: () {},
+        analysisLoader: () async {
+          calls++;
+          throw NetworkOperationException(
+            NetworkErrorFamily.serviceUnavailable,
+            'HTTP 503 interne',
+          );
+        },
+      ),
+      authenticated: true,
+    ));
+
+    await tester.tap(find.text('Analyse Coach'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lancer analyse'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('Le service est temporairement indisponible.'),
+        findsOneWidget);
+    expect(find.text('Réessayer'), findsOneWidget);
+    expect(find.textContaining('503'), findsNothing);
+
+    await tester.tap(find.text('Réessayer'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(calls, 2);
+  });
+
+  testWidgets('session invalidée : propose uniquement Se reconnecter',
+      (tester) async {
+    await tester.pumpWidget(_wrap(
+      SessionCoachAnalysisSection(
+        session: _session(),
+        analyse: null,
+        onAnalyseUpdated: () {},
+        analysisLoader: () async =>
+            throw SessionExpiredException('refresh révoqué'),
+      ),
+      authenticated: true,
+    ));
+
+    await tester.tap(find.text('Analyse Coach'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lancer analyse'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('Se reconnecter'), findsOneWidget);
+    expect(find.text('Réessayer'), findsNothing);
+    expect(find.textContaining('refresh'), findsNothing);
   });
 }

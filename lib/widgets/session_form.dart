@@ -397,7 +397,7 @@ class SessionFormState extends State<SessionForm> {
                   },
                 ),
               ),
-              SizedBox(width: 14),
+              const SizedBox(width: 14),
               Expanded(
                 child: CaliberAutocompleteField(
                   controller: _caliberController,
@@ -405,10 +405,10 @@ class SessionFormState extends State<SessionForm> {
               ),
             ],
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: _category,
-            decoration: InputDecoration(labelText: 'Catégorie'),
+            decoration: const InputDecoration(labelText: 'Catégorie'),
             items: SessionConstants.categories
                 .map((c) => DropdownMenuItem(
                       value: c,
@@ -418,11 +418,11 @@ class SessionFormState extends State<SessionForm> {
             onChanged: (v) => setState(
                 () => _category = v ?? SessionConstants.categoryEntrainement),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: _status,
-            decoration: InputDecoration(labelText: 'Statut'),
-            items: [
+            decoration: const InputDecoration(labelText: 'Statut'),
+            items: const [
               DropdownMenuItem(
                   value: SessionConstants.statusRealisee,
                   child: Text('Réalisée')),
@@ -433,7 +433,7 @@ class SessionFormState extends State<SessionForm> {
                 setState(() => _status = v ?? SessionConstants.statusRealisee),
           ),
           // No direct goal link; exercises link goals indirectly.
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           // ---- Exercises selection ----
           ExercisesSelector(
             isLoading: _loadingExercises,

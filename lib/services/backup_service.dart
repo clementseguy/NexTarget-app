@@ -4,8 +4,10 @@ import '../interfaces/backup_location_provider.dart';
 import '../models/shooting_session.dart';
 import '../services/session_service.dart';
 import '../models/goal.dart';
+import '../models/exercise.dart';
 import '../services/goal_service.dart';
 import '../services/weapon_service.dart';
+import '../services/exercise_service.dart';
 import 'platform_backup_location_provider.dart';
 
 /// Service pour exporter / importer toutes les sessions sous forme JSON plat
@@ -21,16 +23,19 @@ class BackupService {
   final SessionService _sessionService;
   final GoalService _goalService;
   final WeaponService _weaponService;
+  final ExerciseService _exerciseService;
   final BackupLocationProvider _locationProvider;
 
   BackupService({
     SessionService? sessionService,
     GoalService? goalService,
     WeaponService? weaponService,
+    ExerciseService? exerciseService,
     BackupLocationProvider? locationProvider,
   })  : _sessionService = sessionService ?? SessionService(),
         _goalService = goalService ?? GoalService(),
         _weaponService = weaponService ?? WeaponService(),
+        _exerciseService = exerciseService ?? ExerciseService(),
         _locationProvider =
             locationProvider ?? PlatformBackupLocationProvider();
 
@@ -40,6 +45,18 @@ class BackupService {
   Future<String> readJsonFile(String path) async {
     final file = File(path);
     return await file.readAsString();
+  }
+
+  /// Lit le résultat d'un sélecteur de fichier sans imposer un chemin local.
+  ///
+  /// Sur certaines plateformes, le sélecteur fournit des octets valides mais
+  /// un chemin temporaire inutilisable par [File].
+  Future<String> readSelectedJson({List<int>? bytes, String? path}) async {
+    if (bytes != null) return utf8.decode(bytes);
+    if (path == null || path.isEmpty) {
+      throw const FileSystemException('Fichier sélectionné inaccessible.');
+    }
+    return readJsonFile(path);
   }
 
   Future<File> exportAllSessionsToJsonFile() async {
@@ -57,6 +74,7 @@ class BackupService {
     await _goalService.init();
     final goals = await _goalService.listAll();
     final weapons = await _weaponService.listAll();
+    final exercises = await _exerciseService.listAll();
     final data = {
       'format': 'mycoach-data',
       'version': 3,
@@ -64,26 +82,30 @@ class BackupService {
       'sessions_count': sessions.length,
       'goals_count': goals.length,
       'weapons_count': weapons.length,
+      'exercises_count': exercises.length,
       'sessions': sessions.map((s) => s.toMap()).toList(),
       'goals': goals
-          .map((g) => {
-                'id': g.id,
-                'title': g.title,
-                'description': g.description,
-                'metric': g.metric.index,
-                'comparator': g.comparator.index,
-                'targetValue': g.targetValue,
-                'status': g.status.index,
-                'period': g.period.index,
-                'createdAt': g.createdAt.toIso8601String(),
-                'updatedAt': g.updatedAt.toIso8601String(),
-                'lastProgress': g.lastProgress,
-                'lastMeasuredValue': g.lastMeasuredValue,
-                'priority': g.priority,
-              })
+          .map(
+            (g) => {
+              'id': g.id,
+              'title': g.title,
+              'description': g.description,
+              'metric': g.metric.index,
+              'comparator': g.comparator.index,
+              'targetValue': g.targetValue,
+              'status': g.status.index,
+              'period': g.period.index,
+              'createdAt': g.createdAt.toIso8601String(),
+              'updatedAt': g.updatedAt.toIso8601String(),
+              'lastProgress': g.lastProgress,
+              'lastMeasuredValue': g.lastMeasuredValue,
+              'priority': g.priority,
+            },
+          )
           .toList(),
       // NT-008 : râtelier d'armes personnel (simple nom, cf. Weapon.toMap).
       'weapons': weapons.map((w) => w.toMap()).toList(),
+      'exercises': exercises.map((exercise) => exercise.toMap()).toList(),
     };
     return const JsonEncoder.withIndent('  ').convert(data);
   }
@@ -175,32 +197,40 @@ class BackupService {
         }
       }
     }
+    final exercisesRaw = decoded['exercises'];
+    if (exercisesRaw is List) {
+      for (final item in exercisesRaw) {
+        if (item is! Map) continue;
+        try {
+          await _exerciseService.createExercise(
+            Exercise.fromMap(Map<String, dynamic>.from(item)),
+          );
+        } on FormatException {
+          // Une entrée d'exercice invalide n'empêche pas la restauration des
+          // autres données. Les valeurs de difficulté inconnues sont, elles,
+          // normalisées à « non renseignée » par Exercise.fromMap.
+        } on TypeError {
+          // Même règle pour une ancienne entrée structurellement invalide.
+        }
+      }
+    }
     return sessions.length;
   }
 
   /// Exporte toutes les données (sessions + objectifs) dans un fichier JSON
   /// à l'emplacement choisi par l'utilisateur (si la plateforme le permet).
-  /// Retourne le fichier écrit ou lève une exception si annulé.
-  Future<File?> exportAllSessionsToUserFolder(
-      {String? suggestedFileName}) async {
+  /// Retourne le fichier écrit, `null` si l'utilisateur annule, ou propage
+  /// l'erreur technique de sélection ou d'écriture.
+  Future<File?> exportAllSessionsToUserFolder({
+    String? suggestedFileName,
+  }) async {
     final jsonString = await _buildExportJson();
 
-    // Sélection d'un dossier (sur Android utiliser FilePicker.directory)
-    String? directoryPath;
-    try {
-      directoryPath = await _locationProvider.selectExportDirectory();
-    } catch (e) {
-      // Certaines plateformes peuvent ne pas supporter (web). On renvoie null.
-      return null;
-    }
-    if (directoryPath == null) {
-      // Annulation utilisateur.
-      return null;
-    }
     final safeName = suggestedFileName ??
         'mycoach_export_${DateTime.now().millisecondsSinceEpoch}.json';
-    final file = File('$directoryPath/$safeName');
-    await file.writeAsString(jsonString);
-    return file;
+    return _locationProvider.saveExportFile(
+      safeName,
+      utf8.encode(jsonString),
+    );
   }
 }

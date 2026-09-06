@@ -27,6 +27,7 @@ class ExerciseService {
     required String name,
     required dynamic category, // accepts ExerciseCategory or legacy String
     ExerciseType type = ExerciseType.stand,
+    ExerciseDifficulty? difficulty,
     String? description,
     int priority = 9999,
     List<String>? goalIds,
@@ -42,6 +43,7 @@ class ExerciseService {
       name: name.trim(),
       categoryEnum: catEnum,
       type: type,
+      difficulty: difficulty,
       description:
           (description?.trim().isEmpty ?? true) ? null : description!.trim(),
       createdAt: DateTime.now(),
@@ -65,6 +67,7 @@ class ExerciseService {
         name: '${source.name} (copie)',
         categoryEnum: source.categoryEnum,
         type: source.type,
+        difficulty: source.difficulty,
         description: source.description,
         durationMinutes: source.durationMinutes,
         equipment: source.equipment,

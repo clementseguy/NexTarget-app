@@ -1,7 +1,91 @@
 # Cahier de Recette
 
-- Dernière mise à jour: 2026-09-04
+- Dernière mise à jour: 2026-09-06
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
+
+## NT-059 — Qualité SonarCloud et exports déterministes
+Objectif: Vérifier les exports sans canal de plateforme et l'absence de tests masqués.
+Étapes:
+1. Lancer les tests d'export vers dossier choisi et répertoire temporaire
+2. Simuler l'annulation du choix de dossier
+3. Choisir explicitement le nom et le dossier du fichier, puis le sélectionner pour un import
+4. Sur Android ou iOS, utiliser Enregistrer le fichier et confirmer la destination dans le sélecteur natif
+5. Simuler une erreur réelle d'écriture
+6. Contrôler l'absence de mécanisme d'exclusion nouveau dans les tests et l'analyse
+Résultats attendus:
+- Le nom, l'emplacement, l'existence et le JSON version 3 sont vérifiés
+- Le chemin choisi n'est pas traité comme un dossier et l'import relit le fichier sans erreur OS I/O
+- Sur mobile, le fichier JSON est réellement écrit par le sélecteur natif et peut être ouvert ou réimporté
+- L'annulation ne crée aucun fichier et l'erreur d'écriture est propagée
+- Aucun test n'est ignoré et aucune règle Sonar n'est neutralisée
+
+## NT-077 — Cohérence déterministe du schéma Hive
+Objectif: Détecter toute dérive de migration, typeId ou index sans ouvrir les données utilisateur.
+Étapes:
+1. Exécuter dart run tool/verify_hive_schema.dart sur le schéma courant
+2. Lancer les tests du vérificateur avec typeId dupliqué et champ réutilisé
+3. Vérifier une classe Hive avec héritage et la suppression d'un champ encore actif dans le registre
+4. Lancer les cas de migration absente, version dupliquée et rupture de séquence
+Résultats attendus:
+- Le schéma nominal termine avec un code nul et un diagnostic de cohérence
+- Chaque incohérence termine avec un code non nul et un message actionnable
+- Un champ retiré doit être déplacé explicitement de fields vers retiredFields sans libérer son index
+- Aucune box utilisateur n'est ouverte ou modifiée
+
+## NT-056 — Erreurs réseau Auth, Profil et Coach
+Objectif: Vérifier les messages sûrs, les actions ciblées et la conservation de la session.
+Étapes:
+1. Simuler hors connexion, erreur DNS et timeout sur Auth, Profil et Coach
+2. Lancer aussi la connexion depuis l'icône de Paramètres
+3. Utiliser Réessayer et vérifier que seule l'opération concernée est relancée une fois
+4. Simuler une limitation de débit et une erreur serveur
+5. Simuler une session expirée ou révoquée puis utiliser Se reconnecter
+6. Simuler une requête invalide et une erreur inattendue
+Résultats attendus:
+- Aucun code HTTP, détail DNS, message serveur interne ou exception brute n'est affiché
+- Les erreurs transitoires proposent Réessayer sans effacer les jetons ni bloquer les fonctions locales
+- Seule l'invalidation confirmée propose Se reconnecter
+- Les détails techniques restent disponibles dans les journaux
+
+## NT-057 — Nettoyage UI borné
+Objectif: Confirmer le comportement nominal après suppression des widgets sans appelant.
+Étapes:
+1. Parcourir Sessions, Statistiques, Exercices et Objectifs sur une largeur mobile
+2. Ouvrir les routes Coach, Paramètres et les détails de session
+3. Recommencer dans les thèmes Classique et France
+Résultats attendus:
+- Les routes, textes, mises en page et actions actives restent inchangés
+- Aucun écran ne référence EvolutionChartExamples, DistributionBar, PointsLineChart ou GoalsSummaryCard
+- Aucun débordement ou erreur de navigation n'apparaît
+
+## NT-025 — Difficulté facultative des exercices
+Objectif: Vérifier création, édition, filtres, duplication et sauvegarde rétrocompatibles.
+Étapes:
+1. Créer successivement un exercice sans difficulté puis un exercice de chaque niveau
+2. Vérifier sur largeur mobile que Catégorie et Type partagent une ligne et que la difficulté utilise quatre segments
+3. Modifier puis effacer la difficulté d'un exercice
+4. Combiner chaque filtre de difficulté avec catégorie, type et tri
+5. Dupliquer un exercice Expert, modifier la copie et contrôler la source
+6. Exporter puis importer les exercices avec et sans difficulté
+7. Importer une sauvegarde historique sans difficulté puis une valeur inconnue
+Résultats attendus:
+- Le sélecteur affiche Débutant, Avancé, Expert et N/A ; les valeurs historiques restent affichées Non renseignée dans les cartes et filtres
+- Les détails et badges des cartes restent lisibles dans les thèmes Classique et France
+- Les textes barrés des objectifs atteints et l'aide de priorité restent lisibles dans les thèmes Classique et France
+- Aucun niveau n'est déduit automatiquement et les filtres se combinent correctement
+- La copie reprend la valeur sans partager d'état mutable avec la source
+- Le cycle courant conserve la difficulté et les données historiques restent valides
+
+## NT-144 — Cohérence du backlog et de ses vues
+Objectif: Vérifier que la gouvernance ne présente qu'une source et un plan actifs.
+Étapes:
+1. Comparer les métadonnées des six items dans le backlog, la vue app et le plan
+2. Vérifier la projection serveur et les renvois NT-023, NT-033, NT-020 et NT-026
+3. Vérifier les liens, ancres, dates et l'archive de l'ancien plan S1-S6
+Résultats attendus:
+- Les six items restent EN COURS tant que la branche n'est pas fusionnée
+- Aucun identifiant ni décision durable n'est supprimé
+- backlog-unifie.md est l'unique source produit et plan-sprints.md l'unique plan actif
 
 ## NT-140 — Démarrage sans second splash Flutter
 Objectif: Vérifier que le splash natif conduit directement à la destination attendue.

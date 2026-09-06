@@ -115,6 +115,7 @@ void main() {
         name: 'Précision',
         categoryEnum: ExerciseCategory.precision,
         type: ExerciseType.stand,
+        difficulty: ExerciseDifficulty.expert,
         description: 'Description',
         durationMinutes: 20,
         equipment: 'Pistolet',
@@ -131,6 +132,7 @@ void main() {
       expect(duplicate.name, 'Précision (copie)');
       expect(duplicate.categoryEnum, source.categoryEnum);
       expect(duplicate.type, source.type);
+      expect(duplicate.difficulty, ExerciseDifficulty.expert);
       expect(duplicate.description, source.description);
       expect(duplicate.durationMinutes, source.durationMinutes);
       expect(duplicate.equipment, source.equipment);

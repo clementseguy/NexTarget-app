@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -10,6 +11,18 @@ import 'package:tir_sportif/providers/auth_provider.dart';
 import 'package:tir_sportif/providers/settings_provider.dart';
 import 'package:tir_sportif/screens/settings_screen.dart';
 import 'package:tir_sportif/services/auth_service.dart';
+
+class _FailingSettingsAuthService extends AuthService {
+  _FailingSettingsAuthService() : super(authBaseUrl: 'http://unused');
+
+  int calls = 0;
+
+  @override
+  Future<void> signInWithGoogle() async {
+    calls++;
+    throw TimeoutException('détail technique interne');
+  }
+}
 
 void main() {
   setUpAll(() async {
@@ -34,6 +47,7 @@ void main() {
   Future<void> pumpSettings(
     WidgetTester tester, {
     required String theme,
+    AuthService? authService,
   }) async {
     await Hive.box('app_preferences').put('app_theme', theme);
     await tester.binding.setSurfaceSize(const Size(390, 3000));
@@ -43,7 +57,8 @@ void main() {
         providers: [
           ChangeNotifierProvider(
             create: (_) => AuthProvider(
-              AuthService(authBaseUrl: 'https://example.invalid'),
+              authService ??
+                  AuthService(authBaseUrl: 'https://example.invalid'),
             ),
           ),
           ChangeNotifierProvider(create: (_) => SettingsProvider()),
@@ -61,7 +76,9 @@ void main() {
       double top(String text) => tester.getTopLeft(find.text(text).first).dy;
 
       expect(
-          top('Préférences Tir'), lessThan(top('Sauvegardes & Portabilité')));
+        top('Préférences Tir'),
+        lessThan(top('Sauvegardes & Portabilité')),
+      );
       expect(top('Sauvegardes & Portabilité'), lessThan(top('Coach IA')));
       expect(top('Coach IA'), lessThan(top('Thème')));
       expect(top('Thème'), lessThan(top('Aide')));
@@ -78,9 +95,11 @@ void main() {
       );
       expect(
         top('Importer des sessions'),
-        lessThan(top(
-          'Les exports ne chiffrent pas les données. Ne partage pas le fichier si tu ne fais pas confiance au destinataire.',
-        )),
+        lessThan(
+          top(
+            'Les exports ne chiffrent pas les données. Ne partage pas le fichier si tu ne fais pas confiance au destinataire.',
+          ),
+        ),
       );
       expect(
         top(
@@ -91,4 +110,25 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('le login Paramètres masque le détail et propose Réessayer', (
+    tester,
+  ) async {
+    final service = _FailingSettingsAuthService();
+    await pumpSettings(tester, theme: 'classique', authService: service);
+
+    await tester.tap(find.byTooltip('Se connecter'));
+    await tester.pump();
+
+    expect(
+      find.text('Le service met trop de temps à répondre.'),
+      findsOneWidget,
+    );
+    expect(find.text('Réessayer'), findsOneWidget);
+    expect(find.textContaining('technique'), findsNothing);
+
+    tester.widget<SnackBarAction>(find.byType(SnackBarAction)).onPressed();
+    await tester.pump();
+    expect(service.calls, 2);
+  });
 }

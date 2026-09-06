@@ -14,7 +14,7 @@ Le râtelier contient des noms uniques après suppression des espaces de bord et
 
 ## Sauvegarde JSON
 
-Le format courant `mycoach-data`, version 3, exporte les sessions, objectifs et armes. Les sessions sont validées avant une insertion groupée ; leurs identifiants importés sont remplacés pour éviter les collisions. Les anciens exports sans objectifs, armes ou discriminant de session restent acceptés.
+Le format courant `mycoach-data`, version 3, exporte les sessions, objectifs, armes et exercices. Les sessions sont validées avant une insertion groupée ; leurs identifiants importés sont remplacés pour éviter les collisions. Les anciens exports sans objectifs, armes, exercices ou discriminant de session restent acceptés. Une difficulté d'exercice absente ou inconnue est importée comme non renseignée.
 
 Dans Paramètres, l'export puis l'import sont regroupés sous « Sauvegardes & Portabilité ». L'avertissement sur l'absence de chiffrement clôt cette section.
 

@@ -90,6 +90,9 @@ jobs:
       - name: Flutter analyze
         run: flutter analyze --fatal-infos
 
+      - name: Verify Hive schema
+        run: dart run tool/verify_hive_schema.dart
+
       - name: Run tests with coverage
         run: flutter test --coverage
 

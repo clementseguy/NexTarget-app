@@ -10,7 +10,13 @@ import '../models/series.dart';
 import 'preferences_service.dart';
 import 'session_photo_service.dart';
 
+export '../interfaces/session_service_interface.dart' show GuidedDraftRequest;
+
 class SessionService implements ISessionService {
+  static const _invalidShotCountMessage =
+      'Le nombre de coups doit être strictement positif.';
+  static const _notPersistentDraftMessage =
+      'La séance n’est pas un brouillon persistant.';
   final SessionRepository _repo;
   final ISessionPhotoService _photoService;
   final PreferencesService _preferencesService;
@@ -157,98 +163,84 @@ class SessionService implements ISessionService {
       return;
     }
     final detailed = session as DetailedShootingSession;
-    if (!SessionConstants.detailedStatuses.contains(detailed.status)) {
-      throw ArgumentError('État de session détaillée inconnu.');
-    }
-    if (detailed.status == SessionConstants.statusDraft &&
-        (detailed.date == null ||
-            detailed.weapon.trim().isEmpty ||
-            detailed.caliber.trim().isEmpty ||
-            !SessionConstants.categories.contains(detailed.category) ||
-            detailed.series.isEmpty)) {
-      throw ArgumentError('Brouillon de séance guidée invalide.');
-    }
+    _validateDetailedSession(detailed);
     for (final series in detailed.series) {
-      if (detailed.status == SessionConstants.statusDraft &&
-          !series.isCompleted) {
-        continue;
-      }
-      if (series.distance <= 0 ||
-          series.distance != series.distance.truncateToDouble()) {
-        throw ArgumentError(
-          'La distance doit être un entier strictement positif.',
-        );
-      }
-      if (detailed.status == SessionConstants.statusDraft) {
-        if (series.shotCount <= 0) {
-          throw ArgumentError(
-            'Le nombre de coups doit être strictement positif.',
-          );
-        }
-        if (series.points < 0) {
-          throw ArgumentError('Le score ne peut pas être négatif.');
-        }
-        if (!series.isScoreEntered) {
-          throw ArgumentError('Le score est obligatoire.');
-        }
-        if (series.groupSize <= 0) {
-          throw ArgumentError('Le groupement doit être strictement positif.');
-        }
-      }
+      _validateDetailedSeries(detailed, series);
     }
   }
 
+  void _validateDetailedSession(DetailedShootingSession session) {
+    if (!SessionConstants.detailedStatuses.contains(session.status)) {
+      throw ArgumentError('État de session détaillée inconnu.');
+    }
+    if (session.status == SessionConstants.statusDraft &&
+        (session.date == null ||
+            session.weapon.trim().isEmpty ||
+            session.caliber.trim().isEmpty ||
+            !SessionConstants.categories.contains(session.category) ||
+            session.series.isEmpty)) {
+      throw ArgumentError('Brouillon de séance guidée invalide.');
+    }
+  }
+
+  void _validateDetailedSeries(
+    DetailedShootingSession session,
+    Series series,
+  ) {
+    final isDraft = session.status == SessionConstants.statusDraft;
+    if (isDraft && !series.isCompleted) return;
+    if (series.distance <= 0 ||
+        series.distance != series.distance.truncateToDouble()) {
+      throw ArgumentError(
+        'La distance doit être un entier strictement positif.',
+      );
+    }
+    if (isDraft) _validateCompletedGuidedSeries(series);
+  }
+
   @override
-  Future<DetailedShootingSession> createGuidedDraft({
-    required DateTime date,
-    required String weapon,
-    required String caliber,
-    required String category,
-    required List<String> exercises,
-    required int seriesCount,
-    required int shotsPerSeries,
-    required int initialDistance,
-    required HandMethod initialHandMethod,
-  }) async {
+  Future<DetailedShootingSession> createGuidedDraft(
+    GuidedDraftRequest request,
+  ) async {
     if ((await getGuidedDrafts()).isNotEmpty) {
       throw StateError(
         'Une séance est déjà en cours. Reprenez-la ou abandonnez-la avant '
         'd’en commencer une nouvelle.',
       );
     }
-    if (weapon.trim().isEmpty) {
+    if (request.weapon.trim().isEmpty) {
       throw ArgumentError('L’arme est obligatoire.');
     }
-    if (caliber.trim().isEmpty) {
+    if (request.caliber.trim().isEmpty) {
       throw ArgumentError('Le calibre est obligatoire.');
     }
-    if (!SessionConstants.categories.contains(category)) {
+    if (!SessionConstants.categories.contains(request.category)) {
       throw ArgumentError('Catégorie de session inconnue.');
     }
-    if (seriesCount <= 0) {
+    if (request.seriesCount <= 0) {
       throw ArgumentError('Le nombre de séries doit être strictement positif.');
     }
-    if (shotsPerSeries <= 0) {
-      throw ArgumentError('Le nombre de coups doit être strictement positif.');
+    if (request.shotsPerSeries <= 0) {
+      throw ArgumentError(_invalidShotCountMessage);
     }
-    if (initialDistance <= 0) {
+    if (request.initialDistance <= 0) {
       throw ArgumentError('La distance doit être strictement positive.');
     }
     final draft = DetailedShootingSession(
-      date: date,
-      weapon: weapon.trim(),
-      caliber: caliber.trim(),
+      date: request.date,
+      weapon: request.weapon.trim(),
+      caliber: request.caliber.trim(),
       status: SessionConstants.statusDraft,
-      category: category,
-      exercises: List<String>.from(exercises),
+      category: request.category,
+      exercises: List<String>.from(request.exercises),
       series: List.generate(
-        seriesCount,
+        request.seriesCount,
         (_) => Series(
-          shotCount: shotsPerSeries,
-          distance: initialDistance.toDouble(),
+          shotCount: request.shotsPerSeries,
+          distance: request.initialDistance.toDouble(),
           points: 0,
           groupSize: 0,
-          handMethod: initialHandMethod,
+          handMethod: request.initialHandMethod,
           isCompleted: false,
           isDraftStarted: false,
           isScoreEntered: false,
@@ -278,7 +270,7 @@ class SessionService implements ISessionService {
     DetailedShootingSession draft,
   ) async {
     if (draft.id == null || draft.status != SessionConstants.statusDraft) {
-      throw StateError('La séance n’est pas un brouillon persistant.');
+      throw StateError(_notPersistentDraftMessage);
     }
     final snapshot = DetailedShootingSession.fromMap(draft.toMap());
     await updateSession(
@@ -294,7 +286,7 @@ class SessionService implements ISessionService {
     DetailedShootingSession draft,
   ) async {
     if (draft.id == null || draft.status != SessionConstants.statusDraft) {
-      throw StateError('La séance n’est pas un brouillon persistant.');
+      throw StateError(_notPersistentDraftMessage);
     }
     final completedSeries = draft.series
         .where((series) => series.isCompleted)
@@ -319,7 +311,7 @@ class SessionService implements ISessionService {
 
   void _validateCompletedGuidedSeries(Series series) {
     if (series.shotCount <= 0) {
-      throw ArgumentError('Le nombre de coups doit être strictement positif.');
+      throw ArgumentError(_invalidShotCountMessage);
     }
     if (series.distance <= 0 ||
         series.distance != series.distance.truncateToDouble()) {
@@ -340,7 +332,7 @@ class SessionService implements ISessionService {
   @override
   Future<void> abandonGuidedDraft(DetailedShootingSession draft) async {
     if (draft.id == null || draft.status != SessionConstants.statusDraft) {
-      throw StateError('La séance n’est pas un brouillon persistant.');
+      throw StateError(_notPersistentDraftMessage);
     }
     await deleteSession(draft.id!);
   }

@@ -7,7 +7,7 @@
 > uniquement dans cette vue (règle de sync : [README.md](README.md)).
 
 **Repo** : NexTarget-app (Flutter/Dart, Hive, SonarCloud, dart_code_metrics)
-**Dernière projection** : 2026-09-06 (ajout du prochain lot de retours v0.7.0 NT-145 à NT-150, entièrement côté app)
+**Dernière projection** : 2026-09-06 (lot NT-025, NT-056, NT-057, NT-059, NT-077 et NT-144 en cours ; prochain lot NT-145 à NT-150 et US NT-151 entièrement côté app)
 
 ## Items app
 
@@ -30,17 +30,17 @@
 | NT-015 | Recommandations Objectifs ⇄ Exercices | app | Could | M | À FAIRE | dépend NT-012, NT-021 |
 | NT-016 | Objectifs enrichis : statuts étendus, journal, vue détail | app | Could | M | À FAIRE | issue #5 |
 | NT-017 | Compteur de tirs par arme du râtelier | app | Should | S | FAIT | livré en v0.6.0 ; compteurs simples en bas de Statistiques > Avancé ; étendu par NT-133 aux tirs des sessions libres réalisées |
-| NT-020 | Gérer des exercices (CRUD) | app | Must | M | FAIT | `Exercise`, écrans list/form |
+| NT-020 | Gérer des exercices (CRUD) | app | Must | M | FAIT | création, lecture et modification ; la suppression UI relève de NT-026 |
 | NT-021 | Lier exercices ↔ objectifs | app | Should | S | FAIT | `Exercise.goalIds` |
 | NT-022 | Lier exercices ↔ sessions | app | Should | S | FAIT | `ShootingSession.exercises` |
-| NT-023 | Création d'exercice par le coach | both | Could | L | À FAIRE | consomme sortie coach (NT-030) |
+| NT-023 | Création d'exercice par le coach | both | Could | L | À FAIRE | item historique précisé par NT-122/NT-123, qui font référence |
 | NT-024 | Stats d'exécution (fenêtres glissantes) | app | Could | M | À FAIRE | `usageCount` / `lastPerformedAt` |
-| NT-025 | Niveau de difficulté d'exercice | app | Could | M | À FAIRE | valeur facultative ; filtre incluant « Non renseignée » ; migration et import/export rétrocompatibles |
+| NT-025 | Niveau de difficulté d'exercice | app | Could | M | EN COURS | valeur facultative ; filtre incluant « Non renseignée » ; migration et import/export rétrocompatibles |
 | NT-026 | Supprimer un exercice depuis l'interface | app | Could | S | EN COURS | autorisé uniquement sans session liée ; contrôle dans le service, confirmation et aucune suppression en cascade |
 | NT-027 | Dupliquer un exercice | app | Could | S | EN COURS | formulaire prérempli ; nouvel ID/date ; copie profonde des consignes et objectifs |
 | NT-030 | Analyse d'une session par le coach IA | both | Must | M | FAIT | `ServerCoachAnalysisService` (si connecté) |
 | NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | FAIT | préférence `coach_persona` (Paramètres uniquement), envoi `prompt_variant` |
-| NT-033 | Écran "Coach" transverse | both | Should | L | À FAIRE | `coach_screen.dart` = placeholder |
+| NT-033 | Écran "Coach" transverse | both | Should | L | À FAIRE | item historique remplacé par NT-120/NT-121, qui font référence |
 | NT-040 | Authentification OAuth Google | both | Must | M | FAIT | `auth_service.dart`, `auth_provider` |
 | NT-041 | Authentification optionnelle | app | Must | S | FAIT | mode déconnecté préservé |
 | NT-042 | Profil utilisateur (nom/avatar/niveau) | both | Should | M | FAIT | affichage du profil et édition du niveau ; édition du pseudo explicitement hors périmètre |
@@ -52,17 +52,17 @@
 | NT-050 | SonarCloud + Quality Gate | app | Must | M | FAIT | `sonar-project.properties`, CI |
 | NT-051 | Analyse statique & lint (durcir) | app | Should | S | FAIT | `flutter_lints` actif, zéro issue, step CI `analyze --fatal-infos` |
 | NT-052 | Cahier de recette généré | app | Should | S | FAIT | `scripts/generate_cahier_recette.dart` |
-| NT-056 | Harmonisation des erreurs réseau | app | Could | M | À FAIRE | Auth/Profil/Coach uniquement ; « Réessayer » si transitoire, « Se reconnecter » si session invalidée ; sauvegardes locales exclues |
-| NT-057 | Nettoyage des widgets dupliqués | app | Could | S | À FAIRE | inventaire borné aux écrans/widgets/navigation ; suppression ou factorisation seulement avec usages vérifiés |
+| NT-056 | Harmonisation des erreurs réseau | app | Could | M | EN COURS | Auth/Profil/Coach uniquement ; « Réessayer » si transitoire, « Se reconnecter » si session invalidée ; sauvegardes locales exclues |
+| NT-057 | Nettoyage des widgets dupliqués | app | Could | S | EN COURS | quatre widgets sans appelant supprimés ; routes et écrans actifs conservés |
 | NT-058 | Fakes de repository partagés pour les tests | app | Should | S | FAIT | `test/support/` (`FakeSessionRepository`, `captureError`) ; déclenché par NT-008 |
-| NT-059 | Résorber les issues SonarCloud de la PR #32 et les tests ignorés | app | Should | M | À FAIRE | 53 issues ; remplacer 2 `skip:` et 1 `markTestSkipped` par des tests déterministes via frontières plugins injectables |
+| NT-059 | Résorber les issues SonarCloud de la PR #32 et les tests ignorés | app | Should | M | EN COURS | 53 issues corrigées localement ; trois tests d'export déterministes ; analyse SonarCloud de PR restante |
 | NT-061 | Coach connecté uniquement (retrait clé client) | both | Must | M | FAIT | audit de clôture validé : chemin serveur unique, aucun fallback client, clé historique rotée et docs actives clarifiées |
 | NT-072 | Framework de migrations Hive | app | Should | M | FAIT | `lib/migrations/` ; contrôle de cohérence extrait dans NT-077 |
 | NT-073 | Calibre par défaut + normalisation statistique | app | Could | S | FAIT | préférence facultative parmi les calibres connus ; saisie libre sans autoremplacement ; alias connus regroupés sans réécriture |
 | NT-074 | Saisie séries plein écran + navigation | app | Could | M | À FAIRE | — |
 | NT-075 | Onboarding + aide contextuelle | app | Could | M | FAIT | `OnboardingGate` (3 écrans) + `HelpButton` ; ajustements recette 2026-07-09 |
 | NT-076 | Cache stats + compactage Hive | app | Could | M | À FAIRE | — |
-| NT-077 | Vérifier automatiquement la cohérence du schéma Hive | app | Should | S | À FAIRE | migrations, `typeId` et index de champs contrôlés contre un registre historique en CI |
+| NT-077 | Vérifier automatiquement la cohérence du schéma Hive | app | Should | S | EN COURS | migrations, `typeId` et index de champs contrôlés contre un registre historique en CI |
 | NT-090 | Thème ASCII Art | app | Won't-now | M | À FAIRE | idée conservée uniquement dans le backlog |
 | NT-091 | Règles de sécurité FFTir | app | Won't-now | S | À FAIRE | — |
 | NT-092 | Thèmes visuels (thème clair « France ») | app | Could | S | FAIT | — |
@@ -88,17 +88,18 @@
 | NT-141 | Réordonner les sections de l'écran Paramètres | app | Should | S | EN COURS | Préférences Tir, Sauvegardes & Portabilité, Coach IA, Thème, Aide |
 | NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | Should | S | EN COURS | déplacement UI de la carte NT-017, sans doublon ni changement de calcul |
 | NT-143 | Remplacer « Copier résumé » par la duplication de session | app | Should | M | EN COURS | formulaire prérempli, nouvel ID, date non reprise, copie profonde et photo indépendante |
-| NT-144 | Assainir et réorganiser la documentation du backlog | app | Could | S | À FAIRE | synchroniser les vues, clarifier les items remplacés et retirer le plan historique concurrent |
+| NT-144 | Assainir et réorganiser la documentation du backlog | app | Could | S | EN COURS | vues synchronisées, items remplacés clarifiés et plan historique archivé |
 | NT-145 | Ouvrir la session associée à un record | app | Should | S | À FAIRE | cartes inchangées visuellement ; session source portée par les données statistiques ; ex æquo vers la plus récente |
 | NT-146 | Aider à estimer la taille d'un groupement | app | Could | S | À FAIRE | aide gestuelle partagée entre séance guidée et wizard, sans repère C50 ni modification automatique du champ |
 | NT-147 | Déplacer « Répartition Catégories » sous les calibres | app | Should | S | À FAIRE | ordre final : calibres, catégories, tirs par arme |
 | NT-148 | Séparer les trois préférences de tir | app | Could | S | À FAIRE | même séparateur entre prise, râtelier et calibre ; aucun comportement modifié |
 | NT-149 | Renommer les fichiers d'export NexTarget | app | Should | S | À FAIRE | `nextarget_export_<timestamp>.json` dans les deux parcours ; JSON inchangé |
 | NT-150 | Garantir un état d'authentification cohérent après mise à jour | app | Should | M | À FAIRE | migration des jetons v0.6.0, état global cohérent et « Connexion à vérifier » hors ligne sans profil en cache |
+| NT-151 | Harmoniser et densifier les cartes d'exercice | app | Could | M | À FAIRE | cohérence Sessions/Séries ; zone d'information prioritaire et actions compactées |
 
 ## Prochaines actions app (hors FAIT), par priorité
 
 - **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session).
 - **Should** — NT-059, NT-077, NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-140, NT-141, NT-142, NT-143, NT-145, NT-147, NT-149, NT-150. NT-033 : voir NT-120/NT-121.
-- **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-027, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132, NT-134, NT-144, NT-146, NT-148. NT-023 : voir NT-122/NT-123.
+- **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-027, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132, NT-134, NT-144, NT-146, NT-148, NT-151. NT-023 : voir NT-122/NT-123.
 - **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.

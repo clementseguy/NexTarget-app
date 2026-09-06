@@ -1,7 +1,7 @@
 # NexTarget — Plan de priorisation & sprints
 
 > Vue de pilotage dérivée du [`backlog-unifie.md`](backlog-unifie.md), établie le
-> 2026-07-13. Le backlog unifié reste la source de vérité produit ; ce document
+> 2026-07-13 et resynchronisée le 2026-09-06. Le backlog unifié reste la source de vérité produit ; ce document
 > ordonne les items non livrés par valeur métier, dépendances et capacité à
 > produire une version stable en fin de sprint.
 
@@ -52,6 +52,10 @@
 > la synchronisation documentaire. Les six items peuvent être développés sur
 > une branche unique avec des commits séparés ; aucun changement serveur n'est
 > attendu.
+
+> **Avancement du 2026-09-06** : NT-059, NT-077, NT-056, NT-057, NT-025 et
+> NT-144 sont `EN COURS` sur une branche app unique non fusionnée. Ils ne
+> passeront `FAIT` qu'après satisfaction complète de la Definition of Done.
 
 > **Planification du 2026-09-06** : le lot suivant regroupe **NT-150 puis
 > NT-145 à NT-149**. Il traite d'abord l'état d'authentification incohérent
@@ -371,6 +375,7 @@ réversible par suppression des entités créées.
 | Besoin classement officiel fédéral | NT-103 | Sourcer les grilles RGS FFTir avant estimation définitive. |
 | Hypothèse de saisie mains libres au stand | NT-132 | Spike timeboxé uniquement, avec go/no-go en conditions réelles. |
 | Besoin de confort catalogue exercices | NT-026, NT-007 (FAIT) | NT-025 rejoint le lot immédiat ; NT-007 est livré (PR #12) et NT-026 reste planifié à faible priorité en Sprint 7, avec recette des références de sessions orphelines. |
+| Besoin de densifier les cartes Exercices | NT-151 | Cadrer la cohérence avec Sessions et Séries avant de réduire et regrouper la zone d'actions ; ne pas inclure dans le retour de recette NT-025. |
 
 ## Icebox
 
@@ -383,15 +388,14 @@ réversible par suppression des entités créées.
 | NT-090 | Cosmétique. |
 | NT-091 | À réouvrir seulement avec besoin réglementaire clair. |
 
-## Points de cohérence à corriger
+## Suivi de cohérence documentaire
 
-- **Ouvert — NT-144** : retirer la concurrence résiduelle entre le bloc
-  historique « Backlog priorisé » et ce plan, compléter l'index des thèmes,
-  clarifier les items précisés ou remplacés et synchroniser les métadonnées des
-  vues app et serveur.
+- **Traité sur branche non fusionnée — NT-144 (2026-09-06)** : l'ancien bloc
+  concurrent est renommé « Archive historique — ancien plan S1-S6 », l'index
+  inclut le thème 14, NT-020/NT-026 sont distingués, NT-023 et NT-033 renvoient
+  explicitement à leurs items de remplacement, et les projections sont datées
+  et synchronisées. La fusion reste requise avant le statut `FAIT`.
 
-- **Résolu (2026-09-02)** : le bloc "Backlog priorisé" du backlog unifié
-  mélangeait items livrés, anciens sprints et nouveaux thèmes. Un bandeau
-  « Plan historique » a été ajouté en tête de ce bloc dans
-  `backlog-unifie.md`, indiquant que ce plan (`plan-sprints.md`) est la
-  source courante de priorisation métier, dépendances et sprints livrables.
+- **Historique (2026-09-02)** : un premier bandeau avait signalé le caractère
+  historique de l'ancien bloc. NT-144 achève cette clarification en l'archivant
+  explicitement et en réservant à ce document la planification active.

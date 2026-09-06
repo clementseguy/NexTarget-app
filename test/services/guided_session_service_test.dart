@@ -39,15 +39,17 @@ void main() {
       List<String> exercises = const [],
     }) =>
         service.createGuidedDraft(
-          date: DateTime(2026, 9, 4, 14, 30),
-          weapon: 'CZ 75',
-          caliber: '9 mm libre',
-          category: SessionConstants.categoryEntrainement,
-          exercises: exercises,
-          seriesCount: seriesCount,
-          shotsPerSeries: shots,
-          initialDistance: 25,
-          initialHandMethod: HandMethod.oneHand,
+          GuidedDraftRequest(
+            date: DateTime(2026, 9, 4, 14, 30),
+            weapon: 'CZ 75',
+            caliber: '9 mm libre',
+            category: SessionConstants.categoryEntrainement,
+            exercises: exercises,
+            seriesCount: seriesCount,
+            shotsPerSeries: shots,
+            initialDistance: 25,
+            initialHandMethod: HandMethod.oneHand,
+          ),
         );
 
     test('crée immédiatement un brouillon détaillé persistant', () async {

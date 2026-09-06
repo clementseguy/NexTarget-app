@@ -3,9 +3,10 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
 import '../services/backup_service.dart';
 import '../services/session_service.dart';
+import '../services/logger.dart';
+import '../services/network_error.dart';
 import '../widgets/series_cards.dart'; // Pour TwoFistsIcon
 import '../widgets/app_bar_title.dart';
 import '../widgets/settings/weapon_rack_section.dart';
@@ -32,6 +33,28 @@ class SettingsScreen extends StatelessWidget {
   // SettingsScreen un StatefulWidget.
   static final _weaponRackKey = GlobalKey<WeaponRackSectionState>();
 
+  Future<void> _signIn(BuildContext context, AuthProvider authProvider) async {
+    try {
+      await authProvider.signInWithGoogle();
+    } catch (error) {
+      AppLogger.I.error('SETTINGS AUTH UI: connexion impossible', error);
+      if (!context.mounted) return;
+      final presentation = presentNetworkError(error);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(presentation.message),
+          backgroundColor: Colors.red,
+          action: presentation.action == NetworkErrorAction.none
+              ? null
+              : SnackBarAction(
+                  label: presentation.actionLabel!,
+                  onPressed: () => _signIn(context, authProvider),
+                ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final backup = BackupService();
@@ -45,10 +68,7 @@ class SettingsScreen extends StatelessWidget {
           appBar: AppBar(
             automaticallyImplyLeading: false,
             centerTitle: false,
-            title: const AppBarTitle(
-              icon: Icons.settings,
-              label: 'Paramètres',
-            ),
+            title: const AppBarTitle(icon: Icons.settings, label: 'Paramètres'),
             actions: [
               if (authProvider.isLoading)
                 const Padding(
@@ -63,20 +83,7 @@ class SettingsScreen extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.login),
                   tooltip: 'Se connecter',
-                  onPressed: () async {
-                    try {
-                      await authProvider.signInWithGoogle();
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Erreur d\'authentification: $e'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  },
+                  onPressed: () => _signIn(context, authProvider),
                 ),
               if (authProvider.isAuthenticated)
                 Padding(
@@ -92,12 +99,13 @@ class SettingsScreen extends StatelessWidget {
                     },
                     child: CircleAvatar(
                       radius: 16,
-                      backgroundImage: authProvider
-                                  .currentUser?['avatar_url'] !=
-                              null
-                          ? NetworkImage(
-                              authProvider.currentUser!['avatar_url'] as String)
-                          : null,
+                      backgroundImage:
+                          authProvider.currentUser?['avatar_url'] != null
+                              ? NetworkImage(
+                                  authProvider.currentUser!['avatar_url']
+                                      as String,
+                                )
+                              : null,
                       child: authProvider.currentUser?['avatar_url'] == null
                           ? Text(
                               _avatarInitial(authProvider.currentUser),
@@ -112,8 +120,10 @@ class SettingsScreen extends StatelessWidget {
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
-              Text('Préférences Tir',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text(
+                'Préférences Tir',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 12),
               Card(
                 child: Padding(
@@ -121,25 +131,32 @@ class SettingsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Prise par défaut (pistolet)',
-                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      Text(
+                        'Prise par défaut (pistolet)',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
                       const SizedBox(height: 8),
                       ValueListenableBuilder(
-                        valueListenable:
-                            prefBox.listenable(keys: ['default_hand_method']),
+                        valueListenable: prefBox.listenable(
+                          keys: ['default_hand_method'],
+                        ),
                         builder: (context, box, _) {
-                          final val = box.get('default_hand_method',
-                              defaultValue: current);
+                          final val = box.get(
+                            'default_hand_method',
+                            defaultValue: current,
+                          );
                           return SegmentedButton<String>(
                             segments: [
                               const ButtonSegment(
-                                  value: 'one',
-                                  label: Text('1 main'),
-                                  icon: Icon(Icons.front_hand)),
+                                value: 'one',
+                                label: Text('1 main'),
+                                icon: Icon(Icons.front_hand),
+                              ),
                               ButtonSegment(
-                                  value: 'two',
-                                  label: const Text('2 mains'),
-                                  icon: const TwoFistsIcon(size: 18)),
+                                value: 'two',
+                                label: const Text('2 mains'),
+                                icon: const TwoFistsIcon(size: 18),
+                              ),
                             ],
                             selected: {val},
                             onSelectionChanged: (s) async {
@@ -147,8 +164,10 @@ class SettingsScreen extends StatelessWidget {
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                    content: Text(
-                                        'Prise par défaut: ${s.first == 'one' ? '1 main' : '2 mains'}')),
+                                  content: Text(
+                                    'Prise par défaut: ${s.first == 'one' ? '1 main' : '2 mains'}',
+                                  ),
+                                ),
                               );
                             },
                           );
@@ -165,8 +184,10 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 28),
-              Text('Sauvegardes & Portabilité',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text(
+                'Sauvegardes & Portabilité',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
               SizedBox(height: 12),
               Card(
                 child: Padding(
@@ -174,11 +195,14 @@ class SettingsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Exporter toutes les sessions',
-                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      Text(
+                        'Exporter toutes les sessions',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
                       SizedBox(height: 6),
                       Text(
-                          'Génère un JSON: sessions (séries, synthèse, analyse) + objectifs.'),
+                        'Génère un JSON: sessions (séries, synthèse, analyse) + objectifs.',
+                      ),
                       SizedBox(height: 12),
                       ElevatedButton.icon(
                         icon: Icon(Icons.file_download),
@@ -187,12 +211,22 @@ class SettingsScreen extends StatelessWidget {
                           try {
                             final file =
                                 await backup.exportAllSessionsToJsonFile();
-                            await Share.shareXFiles([XFile(file.path)],
-                                text: 'Export sessions MyCoach');
-                          } catch (e) {
+                            await Share.shareXFiles([
+                              XFile(file.path),
+                            ], text: 'Export sessions MyCoach');
+                          } catch (error) {
+                            AppLogger.I.error(
+                              'SETTINGS EXPORT: partage impossible',
+                              error,
+                            );
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Erreur export: $e')));
+                                const SnackBar(
+                                  content: Text(
+                                    'Export impossible. Vérifiez l’accès au stockage puis réessayez.',
+                                  ),
+                                ),
+                              );
                             }
                           }
                         },
@@ -200,7 +234,7 @@ class SettingsScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.save_alt),
-                        label: const Text('Enregistrer dans un dossier'),
+                        label: const Text('Enregistrer le fichier'),
                         onPressed: () async {
                           try {
                             final file =
@@ -215,14 +249,23 @@ class SettingsScreen extends StatelessWidget {
                             if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                  content: Text(
-                                      'Fichier enregistré: ${file.path.split('/').last}')),
+                                content: Text(
+                                  'Fichier enregistré: ${file.path.split('/').last}',
+                                ),
+                              ),
                             );
-                          } catch (e) {
+                          } catch (error) {
+                            AppLogger.I.error(
+                              'SETTINGS EXPORT: enregistrement impossible',
+                              error,
+                            );
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text('Erreur sauvegarde: $e')),
+                                const SnackBar(
+                                  content: Text(
+                                    'Enregistrement impossible. Vérifiez l’accès au stockage puis réessayez.',
+                                  ),
+                                ),
                               );
                             }
                           }
@@ -231,14 +274,14 @@ class SettingsScreen extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         '"Exporter (.json)" permet de partager directement (mail, messagerie).\n'
-                        '"Enregistrer dans un dossier" crée le fichier dans le dossier que tu sélectionnes. '
+                        '"Enregistrer le fichier" permet de choisir son nom et son emplacement. '
                         'Conseil: crée un dossier "MyCoachExports" sur ton téléphone.',
                         style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.6)),
+                          fontSize: 12,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
                       ),
                     ],
                   ),
@@ -251,11 +294,14 @@ class SettingsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Importer des sessions',
-                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      Text(
+                        'Importer des sessions',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
                       SizedBox(height: 6),
                       Text(
-                          'Sélectionne un fichier JSON exporté précédemment pour réintégrer les sessions.'),
+                        'Sélectionne un fichier JSON exporté précédemment pour réintégrer les sessions.',
+                      ),
                       SizedBox(height: 12),
                       ElevatedButton.icon(
                         icon: Icon(Icons.file_upload),
@@ -265,11 +311,14 @@ class SettingsScreen extends StatelessWidget {
                             final result = await FilePicker.platform.pickFiles(
                               type: FileType.custom,
                               allowedExtensions: ['json'],
+                              withData: true,
                             );
                             if (result == null || result.files.isEmpty) return;
-                            final path = result.files.single.path;
-                            if (path == null) return;
-                            final content = await File(path).readAsString();
+                            final selectedFile = result.files.single;
+                            final content = await backup.readSelectedJson(
+                              bytes: selectedFile.bytes,
+                              path: selectedFile.path,
+                            );
                             final imported =
                                 await backup.importSessionsFromJson(content);
                             final total =
@@ -278,14 +327,24 @@ class SettingsScreen extends StatelessWidget {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                    content: Text(
-                                        '$imported sessions importées. Total: $total')),
+                                  content: Text(
+                                    '$imported sessions importées. Total: $total',
+                                  ),
+                                ),
                               );
                             }
                           } catch (e) {
+                            AppLogger.I.error(
+                              'BACKUP UI: import impossible',
+                              e,
+                            );
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Erreur import: $e')),
+                                const SnackBar(
+                                  content: Text(
+                                    'Import impossible. Vérifiez que le fichier JSON est accessible et valide.',
+                                  ),
+                                ),
                               );
                             }
                           }
@@ -300,15 +359,16 @@ class SettingsScreen extends StatelessWidget {
                 'Les exports ne chiffrent pas les données. Ne partage pas le fichier si tu ne fais pas confiance au destinataire.',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
               const SizedBox(height: 28),
-              Text('Coach IA',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text(
+                'Coach IA',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 12),
               Card(
                 child: Padding(
@@ -318,8 +378,10 @@ class SettingsScreen extends StatelessWidget {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Ton du coach',
-                              style: TextStyle(fontWeight: FontWeight.w600)),
+                          Text(
+                            'Ton du coach',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             'Choisissez le style des analyses de vos sessions.',
@@ -351,8 +413,10 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 28),
-              Text('Thème',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text(
+                'Thème',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 12),
               Card(
                 child: Padding(
@@ -362,8 +426,10 @@ class SettingsScreen extends StatelessWidget {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Apparence de l\'application',
-                              style: TextStyle(fontWeight: FontWeight.w600)),
+                          Text(
+                            'Apparence de l\'application',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
                           const SizedBox(height: 12),
                           SegmentedButton<AppThemeType>(
                             segments: const [
@@ -390,15 +456,18 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 28),
-              Text('Aide',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text(
+                'Aide',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 12),
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.slideshow),
                   title: const Text('Revoir l\'introduction'),
                   subtitle: const Text(
-                      'Les 3 écrans de présentation du premier lancement.'),
+                    'Les 3 écrans de présentation du premier lancement.',
+                  ),
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(

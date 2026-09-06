@@ -102,13 +102,22 @@ class AuthProvider extends ChangeNotifier {
       _isLoading = false;
 
       notifyListeners();
-    } catch (e) {
+    } on SessionExpiredException catch (e) {
       AppLogger.I.error('AUTH: erreur lors du traitement du callback OAuth', e);
 
       _isAuthenticated = false;
       _currentUser = null;
       _isLoading = false;
 
+      notifyListeners();
+
+      rethrow;
+    } catch (e) {
+      AppLogger.I.error('AUTH: erreur lors du traitement du callback OAuth', e);
+
+      // Une panne transitoire pendant un nouveau flow OAuth ne doit pas
+      // déconnecter une éventuelle session locale déjà valide.
+      _isLoading = false;
       notifyListeners();
 
       rethrow;

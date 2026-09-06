@@ -4,12 +4,15 @@ enum ExerciseCategory { precision, group, speed, technique, mental, physical }
 
 enum ExerciseType { stand, home }
 
+enum ExerciseDifficulty { beginner, advanced, expert }
+
 class Exercise {
   final String id;
   final String name;
   // Legacy field (string) kept for backward compatibility of older maps; we store canonically the enum.
   final ExerciseCategory categoryEnum;
   final ExerciseType type;
+  final ExerciseDifficulty? difficulty;
   final String? description;
   final int? durationMinutes; // estimated duration in minutes
   final String? equipment; // required equipment list / free text
@@ -23,6 +26,7 @@ class Exercise {
     required this.name,
     required this.categoryEnum,
     required this.type,
+    this.difficulty,
     this.description,
     this.durationMinutes,
     this.equipment,
@@ -38,6 +42,8 @@ class Exercise {
     String? name,
     ExerciseCategory? category,
     ExerciseType? type,
+    ExerciseDifficulty? difficulty,
+    bool clearDifficulty = false,
     String? description,
     DateTime? createdAt,
     int? priority,
@@ -51,6 +57,7 @@ class Exercise {
         name: name ?? this.name,
         categoryEnum: category ?? categoryEnum,
         type: type ?? this.type,
+        difficulty: clearDifficulty ? null : difficulty ?? this.difficulty,
         description: description ?? this.description,
         durationMinutes: durationMinutes ?? this.durationMinutes,
         equipment: equipment ?? this.equipment,
@@ -66,6 +73,7 @@ class Exercise {
         // Persist enum as string key (stable) for forward compatibility
         'category': categoryEnum.name,
         'type': type.name,
+        'difficulty': difficulty?.name,
         'description': description,
         'durationMinutes': durationMinutes,
         'equipment': equipment,
@@ -115,11 +123,17 @@ class Exercise {
         orElse: () => ExerciseType.stand,
       );
     }
+    final rawDifficulty = (map['difficulty'] as String?)?.toLowerCase().trim();
+    ExerciseDifficulty? difficulty;
+    for (final value in ExerciseDifficulty.values) {
+      if (value.name == rawDifficulty) difficulty = value;
+    }
     return Exercise(
       id: map['id'] as String,
       name: map['name'] as String,
       categoryEnum: cat,
       type: type,
+      difficulty: difficulty,
       description: map['description'] as String?,
       durationMinutes: map['durationMinutes'] as int?,
       equipment: map['equipment'] as String?,
@@ -162,6 +176,13 @@ class Exercise {
         return 'Maison';
     }
   }
+
+  String get difficultyLabelFr => switch (difficulty) {
+        ExerciseDifficulty.beginner => 'Débutant',
+        ExerciseDifficulty.advanced => 'Avancé',
+        ExerciseDifficulty.expert => 'Expert',
+        null => 'Non renseignée',
+      };
 
   /// Legacy string getter for backward compatibility (old code/tests referencing ex.category).
   String get category => categoryLabelFr.toLowerCase();

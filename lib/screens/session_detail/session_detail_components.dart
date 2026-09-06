@@ -12,6 +12,8 @@ import '../../providers/auth_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../services/coach_analysis_exception.dart';
 import '../../services/server_coach_analysis_service.dart';
+import '../../services/network_error.dart';
+import '../../services/logger.dart';
 import '../../services/session_service.dart';
 import '../../utils/markdown_sanitizer.dart';
 import '../../widgets/coach_analysis_card.dart';
@@ -207,12 +209,14 @@ class SessionCoachAnalysisSection extends StatefulWidget {
   final DetailedShootingSession session;
   final String? analyse;
   final VoidCallback onAnalyseUpdated;
+  final Future<String> Function()? analysisLoader;
 
   const SessionCoachAnalysisSection({
     super.key,
     required this.session,
     required this.analyse,
     required this.onAnalyseUpdated,
+    this.analysisLoader,
   });
 
   @override
@@ -234,6 +238,7 @@ class _SessionCoachAnalysisSectionState
   /// `coachPersona` (Paramètres > Coach IA — retour de recette S2 : pas de
   /// sélecteur dans la session) et part au serveur en `prompt_variant`.
   Future<String> _fetchAnalysisText() async {
+    if (widget.analysisLoader != null) return widget.analysisLoader!();
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final persona =
         Provider.of<SettingsProvider>(context, listen: false).coachPersona;
@@ -295,16 +300,37 @@ class _SessionCoachAnalysisSectionState
         );
       }
     } catch (e) {
-      final msg = (e is CoachAnalysisException)
-          ? e.message
-          : 'Une erreur est survenue lors de l\'analyse, veuillez réessayer ultérieurement.';
+      AppLogger.I.error('COACH UI: analyse impossible', e);
+      final presentation = e is CoachAnalysisException
+          ? const NetworkErrorPresentation(
+              family: NetworkErrorFamily.invalidRequest,
+              message: 'Cette session ne peut pas être analysée.',
+              action: NetworkErrorAction.none,
+            )
+          : presentNetworkError(e);
       if (mounted) {
         await showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('Erreur'),
-            content: Text(msg),
+            content: Text(presentation.message),
             actions: [
+              if (presentation.action == NetworkErrorAction.retry)
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    _launchAnalysis();
+                  },
+                  child: const Text('Réessayer'),
+                ),
+              if (presentation.action == NetworkErrorAction.reconnect)
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    Navigator.of(context).pushNamed(AppRouter.login);
+                  },
+                  child: const Text('Se reconnecter'),
+                ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
                 child: const Text('Fermer'),
@@ -328,13 +354,13 @@ class _SessionCoachAnalysisSectionState
             widget.analyse != null && widget.analyse!.trim().isNotEmpty,
         leading: Icon(Icons.analytics,
             color: Theme.of(context).colorScheme.secondary),
-        title: Text('Analyse Coach',
+        title: const Text('Analyse Coach',
             style: TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(
           (widget.analyse != null && widget.analyse!.trim().isNotEmpty)
               ? 'Analyse disponible'
               : 'Aucune analyse générée',
-          style: TextStyle(fontSize: 12),
+          style: const TextStyle(fontSize: 12),
         ),
         children: [
           if (_isAnalysing) ...[
@@ -460,19 +486,20 @@ class SessionExercisesSection extends StatelessWidget {
               children: [
                 Icon(Icons.fitness_center,
                     size: 18, color: Theme.of(context).colorScheme.secondary),
-                SizedBox(width: 8),
-                Text('Exercices travaillés',
+                const SizedBox(width: 8),
+                const Text('Exercices travaillés',
                     style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 6,
               children: [
                 for (final n in names)
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: Theme.of(context)
                           .colorScheme
@@ -647,9 +674,10 @@ class StatBlock extends StatelessWidget {
                       .colorScheme
                       .onSurface
                       .withValues(alpha: 0.7))),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(value,
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+              style:
+                  const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
         ],
       ),
     );

@@ -11,13 +11,14 @@
 > de copie ; aucune synchronisation inverse n'est attendue (voir gouvernance).
 
 **Repo** : NexTarget-server (FastAPI + SQLModel + PostgreSQL en production, SQLite en développement/tests, OAuth + proxy IA)
-**Dernière projection** : 2026-09-06 (NT-145 à NT-150 sont de portée `app` et n'ajoutent aucun développement serveur)
+**Dernière projection** : 2026-09-06 (NT-145 à NT-151 sont de portée `app` et n'ajoutent aucun développement serveur)
 
 > Le correctif d'authentification NT-150 réutilise les contrats OAuth, profil,
 > refresh et révocation livrés par NT-040, NT-043 et NT-048. Il corrige
 > uniquement la migration locale et la cohérence de l'état Flutter ; aucune
 > route, réponse ou règle serveur ne change. Les items NT-145 à NT-149 sont
-> également entièrement locaux à l'application.
+> également entièrement locaux à l'application, comme NT-151. L'audit NT-144
+> et le lot en cours ne modifient eux non plus aucun contrat ni code serveur.
 
 > Important : **le serveur n'est plus « OAuth-only ».** Il expose aussi le **proxy Coach IA**
 > (`/coach/analyze-session`). Les anciens statuts « M1/M2 supprimés/décalés » sont
@@ -27,10 +28,11 @@
 
 | ID | Titre | Portée | Prio | Est | Statut | Note serveur |
 |---|---|---|---|---|---|---|
+| NT-023 | Création d'exercice par le coach | both | Could | L | À FAIRE | item historique précisé par NT-122/NT-123, qui font référence |
 | NT-030 | Analyse d'une session par le coach IA | both | Must | M | FAIT | `POST /coach/analyze-session` (`api/coach.py`) |
 | NT-031 | Prompt d'analyse centralisé | server | Must | S | FAIT | `services/prompt_builder.py`, `prompts/coach_neutre.yaml` |
 | NT-032 | Multi-personas coach (neutre / cool) | both | Should | M | FAIT | `coach_neutre.yaml` + `coach_cool.yaml`, sélection via `prompt_variant` |
-| NT-033 | Écran "Coach" transverse (endpoint agrégé) | both | Should | L | À FAIRE | nécessitera un endpoint d'analyse multi-sessions |
+| NT-033 | Écran "Coach" transverse (endpoint agrégé) | both | Should | L | À FAIRE | item historique remplacé par NT-120/NT-121, qui font référence |
 | NT-034 | Affiner les prompts des personas coach | server | Could | S | À FAIRE | itération contenu `coach_neutre`/`coach_cool` (recette S2) |
 | NT-111 | Analyse qualitative photo par le coach | both | Should | M | À FAIRE | endpoint proxy multimodal (ex. Pixtral), JWT + rate limit, specs cible dans le prompt |
 | NT-121 | Écran Coach : analyse de progression | both | Should | L | À FAIRE | endpoint d'analyse multi-sessions (payload agrégé NT-120) — remplace NT-033 |
@@ -65,8 +67,8 @@
 ## Prochaines actions serveur (hors FAIT), par priorité
 
 - **Must** — NT-122 (sortie coach structurée).
-- **Should** — NT-033 (voir NT-120/NT-121), NT-111, NT-121, NT-123, NT-124.
-- **Could** — NT-034, NT-044, NT-125, NT-126.
+- **Should** — NT-033 (remplacé par NT-120/NT-121), NT-111, NT-121, NT-123, NT-124.
+- **Could** — NT-023 (précisé par NT-122/NT-123), NT-034, NT-044, NT-125, NT-126.
 - **Won't-now** — NT-045, NT-046, NT-047, NT-006.
 
 NT-048 est désormais `FAIT` des deux côtés : le contrat serveur n'a pas eu
@@ -74,7 +76,7 @@ besoin d'évoluer pour l'adoption app (vérifié le 2026-09-02).
 
 ## Note de cohérence documentaire
 
-L'`AGENTS.md` du serveur décrit désormais correctement le proxy Coach, le rate
-limiting, le profil enrichi et PostgreSQL. Les anciennes specs conservées sous
-Les anciens backlogs serveur ont été supprimés : ce document est l'unique vue
-serveur locale et reste une projection du backlog unifié.
+L'`AGENTS.md` du serveur décrit correctement le proxy Coach, le rate limiting,
+le profil enrichi et PostgreSQL. Les anciens backlogs serveur ont été supprimés :
+ce document est l'unique vue serveur locale et reste une projection du backlog
+unifié. L'audit NT-144 n'entraîne aucun changement dans `NexTarget-server`.

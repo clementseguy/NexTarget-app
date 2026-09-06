@@ -76,13 +76,17 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
     _draft = DetailedShootingSession.fromMap(widget.draft.toMap());
     final firstIncomplete =
         _draft.series.indexWhere((item) => !item.isCompleted);
-    _currentIndex = firstIncomplete == -1
-        ? (_draft.series.isEmpty ? 0 : _draft.series.length - 1)
-        : firstIncomplete;
+    _currentIndex = _initialSeriesIndex(firstIncomplete);
     _summaryController = TextEditingController(text: _draft.synthese ?? '');
     _createSeriesControllers();
     _bindCurrentSeries();
     _loadExercises();
+  }
+
+  int _initialSeriesIndex(int firstIncomplete) {
+    if (firstIncomplete != -1) return firstIncomplete;
+    if (_draft.series.isEmpty) return 0;
+    return _draft.series.length - 1;
   }
 
   Future<void> _loadExercises() async {
@@ -314,14 +318,26 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
       setState(() => _showSummary = true);
       return;
     }
-    final confirmed = await showDialog<bool>(
+    final confirmed = await _confirmFinishEarly(removed);
+    if (confirmed != true) return;
+    _draft.series =
+        _draft.series.where((item) => item.isCompleted).toList(growable: true);
+    try {
+      await _enqueueSave(DetailedShootingSession.fromMap(_draft.toMap()));
+      if (mounted) setState(() => _showSummary = true);
+    } catch (_) {}
+  }
+
+  Future<bool?> _confirmFinishEarly(int removed) {
+    final plural = removed > 1;
+    final message = '$removed série${plural ? 's' : ''} '
+        'non renseignée${plural ? 's' : ''} '
+        '${plural ? 'seront retirées' : 'sera retirée'}.';
+    return showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Terminer plus tôt ?'),
-        content: Text(
-          '$removed série${removed > 1 ? 's' : ''} non renseignée${removed > 1 ? 's' : ''} '
-          '${removed > 1 ? 'seront retirées' : 'sera retirée'}.',
-        ),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -334,13 +350,6 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
         ],
       ),
     );
-    if (confirmed != true) return;
-    _draft.series =
-        _draft.series.where((item) => item.isCompleted).toList(growable: true);
-    try {
-      await _enqueueSave(DetailedShootingSession.fromMap(_draft.toMap()));
-      if (mounted) setState(() => _showSummary = true);
-    } catch (_) {}
   }
 
   Future<void> _leave() async {
