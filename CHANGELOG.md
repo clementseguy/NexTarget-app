@@ -5,14 +5,20 @@ Toutes les modifications notables de ce projet seront listées ici.
 ## [Non publié]
 
 ### Added
+- NT-025 : difficulté facultative des exercices, filtre combinable, migration Hive additive et cycle de sauvegarde rétrocompatible.
+- NT-077 : registre historique et vérification déterministe en lecture seule des migrations, `typeId` et index `HiveField`, intégrée au contrôle avant commit et à la CI.
 - NT-026/NT-027 : actions de suppression sécurisée et de duplication depuis la liste des exercices, avec formulaire prérempli, clonage profond et rafraîchissement des compteurs.
 - NT-143 : duplication des sessions détaillées et libres depuis leur détail, sans reprise de date, avec photo physique indépendante et rollback des fichiers en cas d'échec.
 
 ### Changed
+- NT-056 : traduction commune et actionnable des erreurs réseau Auth, Profil et Coach, sans fuite technique ni suppression des jetons lors d'une panne transitoire.
+- NT-057 : suppression de quatre widgets sans appelant confirmé, sans modification des routes ni des écrans actifs.
+- NT-144 : gouvernance, vues et plan du backlog resynchronisés ; ancien plan concurrent archivé explicitement.
 - NT-141 : Paramètres réordonné en Préférences Tir, Sauvegardes & Portabilité, Coach IA, Thème et Aide ; ordre interne prise, râtelier, calibre et avertissement non chiffré rattaché aux sauvegardes.
 - NT-142 : carte « Tirs par arme » déplacée en dernière position de Statistiques > Synthèse, sans modification de calcul.
 
 ### Fixed
+- NT-059 : résorption locale des 53 constats SonarCloud de référence par corrections ciblées et remplacement des trois tests d'export masqués par des scénarios déterministes.
 - NT-140 : suppression du second splash Flutter `FadeInWrapper`, de son délai artificiel et de sa configuration morte ; le splash natif et son logo sont conservés.
 - Sauvegardes : remplacement des tests d’export ignorés par des scénarios déterministes couvrant le dossier choisi, l’annulation, le répertoire temporaire, le format JSON version 3 et les erreurs d’écriture.
 

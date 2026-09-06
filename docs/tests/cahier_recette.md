@@ -1,7 +1,81 @@
 # Cahier de Recette
 
-- Dernière mise à jour: 2026-09-04
+- Dernière mise à jour: 2026-09-06
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
+
+## NT-059 — Qualité SonarCloud et exports déterministes
+Objectif: Vérifier les exports sans canal de plateforme et l'absence de tests masqués.
+Étapes:
+1. Lancer les tests d'export vers dossier choisi et répertoire temporaire
+2. Simuler l'annulation du choix de dossier
+3. Simuler une erreur réelle d'écriture
+4. Contrôler l'absence de mécanisme d'exclusion nouveau dans les tests et l'analyse
+Résultats attendus:
+- Le nom, l'emplacement, l'existence et le JSON version 3 sont vérifiés
+- L'annulation ne crée aucun fichier et l'erreur d'écriture est propagée
+- Aucun test n'est ignoré et aucune règle Sonar n'est neutralisée
+
+## NT-077 — Cohérence déterministe du schéma Hive
+Objectif: Détecter toute dérive de migration, typeId ou index sans ouvrir les données utilisateur.
+Étapes:
+1. Exécuter dart run tool/verify_hive_schema.dart sur le schéma courant
+2. Lancer les tests du vérificateur avec typeId dupliqué et champ réutilisé
+3. Lancer les cas de migration absente, version dupliquée et rupture de séquence
+Résultats attendus:
+- Le schéma nominal termine avec un code nul et un diagnostic de cohérence
+- Chaque incohérence termine avec un code non nul et un message actionnable
+- Aucune box utilisateur n'est ouverte ou modifiée
+
+## NT-056 — Erreurs réseau Auth, Profil et Coach
+Objectif: Vérifier les messages sûrs, les actions ciblées et la conservation de la session.
+Étapes:
+1. Simuler hors connexion, erreur DNS et timeout sur Auth, Profil et Coach
+2. Utiliser Réessayer et vérifier que seule l'opération concernée est relancée une fois
+3. Simuler une limitation de débit et une erreur serveur
+4. Simuler une session expirée ou révoquée puis utiliser Se reconnecter
+5. Simuler une requête invalide et une erreur inattendue
+Résultats attendus:
+- Aucun code HTTP, détail DNS, message serveur interne ou exception brute n'est affiché
+- Les erreurs transitoires proposent Réessayer sans effacer les jetons ni bloquer les fonctions locales
+- Seule l'invalidation confirmée propose Se reconnecter
+- Les détails techniques restent disponibles dans les journaux
+
+## NT-057 — Nettoyage UI borné
+Objectif: Confirmer le comportement nominal après suppression des widgets sans appelant.
+Étapes:
+1. Parcourir Sessions, Statistiques, Exercices et Objectifs sur une largeur mobile
+2. Ouvrir les routes Coach, Paramètres et les détails de session
+3. Recommencer dans les thèmes Classique et France
+Résultats attendus:
+- Les routes, textes, mises en page et actions actives restent inchangés
+- Aucun écran ne référence EvolutionChartExamples, DistributionBar, PointsLineChart ou GoalsSummaryCard
+- Aucun débordement ou erreur de navigation n'apparaît
+
+## NT-025 — Difficulté facultative des exercices
+Objectif: Vérifier création, édition, filtres, duplication et sauvegarde rétrocompatibles.
+Étapes:
+1. Créer successivement un exercice sans difficulté puis un exercice de chaque niveau
+2. Modifier puis effacer la difficulté d'un exercice
+3. Combiner chaque filtre de difficulté avec catégorie, type et tri
+4. Dupliquer un exercice Expert, modifier la copie et contrôler la source
+5. Exporter puis importer les exercices avec et sans difficulté
+6. Importer une sauvegarde historique sans difficulté puis une valeur inconnue
+Résultats attendus:
+- Les libellés sont Non renseignée, Débutant, Avancé et Expert
+- Aucun niveau n'est déduit automatiquement et les filtres se combinent correctement
+- La copie reprend la valeur sans partager d'état mutable avec la source
+- Le cycle courant conserve la difficulté et les données historiques restent valides
+
+## NT-144 — Cohérence du backlog et de ses vues
+Objectif: Vérifier que la gouvernance ne présente qu'une source et un plan actifs.
+Étapes:
+1. Comparer les métadonnées des six items dans le backlog, la vue app et le plan
+2. Vérifier la projection serveur et les renvois NT-023, NT-033, NT-020 et NT-026
+3. Vérifier les liens, ancres, dates et l'archive de l'ancien plan S1-S6
+Résultats attendus:
+- Les six items restent EN COURS tant que la branche n'est pas fusionnée
+- Aucun identifiant ni décision durable n'est supprimé
+- backlog-unifie.md est l'unique source produit et plan-sprints.md l'unique plan actif
 
 ## NT-140 — Démarrage sans second splash Flutter
 Objectif: Vérifier que le splash natif conduit directement à la destination attendue.

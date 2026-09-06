@@ -72,7 +72,8 @@ En cas d'ambiguïté → `À VÉRIFIER` (ne pas inventer un statut).
 5. Auth & Compte · 6. Qualité & Observabilité · 7. Sécurité & Secrets ·
 8. Plateforme & Déploiement · 9. Idées / hors-scope ·
 10. Disciplines officielles & TAR · 11. Analyse de cible (photo) ·
-12. Coach : progression & génération · 13. Saisie au stand.
+12. Coach : progression & génération · 13. Saisie au stand ·
+14. Finitions UX.
 
 ## Convention d'usage dans Claude Code
 
@@ -125,4 +126,4 @@ supprimés afin d'éviter qu'un agent les interprète comme des sources actives.
 Les décisions durables ont été intégrées directement aux items concernés. Le
 repo serveur pointe vers ce dossier sans en maintenir de copie.
 
-*Dernier audit du code : 2026-09-03.*
+*Dernier audit du code et des projections : 2026-09-06.*
