@@ -7,10 +7,12 @@ features:
     steps:
       - Lancer les tests d'export vers dossier choisi et répertoire temporaire
       - Simuler l'annulation du choix de dossier
+      - Choisir explicitement le nom et le dossier du fichier, puis le sélectionner pour un import
       - Simuler une erreur réelle d'écriture
       - Contrôler l'absence de mécanisme d'exclusion nouveau dans les tests et l'analyse
     expected:
       - Le nom, l'emplacement, l'existence et le JSON version 3 sont vérifiés
+      - Le chemin choisi n'est pas traité comme un dossier et l'import relit le fichier sans erreur OS I/O
       - L'annulation ne crée aucun fichier et l'erreur d'écriture est propagée
       - Aucun test n'est ignoré et aucune règle Sonar n'est neutralisée
 
@@ -31,6 +33,7 @@ features:
     objectif: Vérifier les messages sûrs, les actions ciblées et la conservation de la session.
     steps:
       - Simuler hors connexion, erreur DNS et timeout sur Auth, Profil et Coach
+      - Lancer aussi la connexion depuis l'icône de Paramètres
       - Utiliser Réessayer et vérifier que seule l'opération concernée est relancée une fois
       - Simuler une limitation de débit et une erreur serveur
       - Simuler une session expirée ou révoquée puis utiliser Se reconnecter
@@ -58,13 +61,15 @@ features:
     objectif: Vérifier création, édition, filtres, duplication et sauvegarde rétrocompatibles.
     steps:
       - Créer successivement un exercice sans difficulté puis un exercice de chaque niveau
+      - Vérifier sur largeur mobile que Catégorie et Type partagent une ligne et que la difficulté utilise quatre segments
       - Modifier puis effacer la difficulté d'un exercice
       - Combiner chaque filtre de difficulté avec catégorie, type et tri
       - Dupliquer un exercice Expert, modifier la copie et contrôler la source
       - Exporter puis importer les exercices avec et sans difficulté
       - Importer une sauvegarde historique sans difficulté puis une valeur inconnue
     expected:
-      - Les libellés sont Non renseignée, Débutant, Avancé et Expert
+      - Le sélecteur affiche Débutant, Avancé, Expert et Non renseigné ; les valeurs historiques restent affichées Non renseignée dans les cartes et filtres
+      - Les détails et badges des cartes restent lisibles dans les thèmes Classique et France
       - Aucun niveau n'est déduit automatiquement et les filtres se combinent correctement
       - La copie reprend la valeur sans partager d'état mutable avec la source
       - Le cycle courant conserve la difficulté et les données historiques restent valides

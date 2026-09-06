@@ -8,10 +8,12 @@ Objectif: Vérifier les exports sans canal de plateforme et l'absence de tests m
 Étapes:
 1. Lancer les tests d'export vers dossier choisi et répertoire temporaire
 2. Simuler l'annulation du choix de dossier
-3. Simuler une erreur réelle d'écriture
-4. Contrôler l'absence de mécanisme d'exclusion nouveau dans les tests et l'analyse
+3. Choisir explicitement le nom et le dossier du fichier, puis le sélectionner pour un import
+4. Simuler une erreur réelle d'écriture
+5. Contrôler l'absence de mécanisme d'exclusion nouveau dans les tests et l'analyse
 Résultats attendus:
 - Le nom, l'emplacement, l'existence et le JSON version 3 sont vérifiés
+- Le chemin choisi n'est pas traité comme un dossier et l'import relit le fichier sans erreur OS I/O
 - L'annulation ne crée aucun fichier et l'erreur d'écriture est propagée
 - Aucun test n'est ignoré et aucune règle Sonar n'est neutralisée
 
@@ -30,10 +32,11 @@ Résultats attendus:
 Objectif: Vérifier les messages sûrs, les actions ciblées et la conservation de la session.
 Étapes:
 1. Simuler hors connexion, erreur DNS et timeout sur Auth, Profil et Coach
-2. Utiliser Réessayer et vérifier que seule l'opération concernée est relancée une fois
-3. Simuler une limitation de débit et une erreur serveur
-4. Simuler une session expirée ou révoquée puis utiliser Se reconnecter
-5. Simuler une requête invalide et une erreur inattendue
+2. Lancer aussi la connexion depuis l'icône de Paramètres
+3. Utiliser Réessayer et vérifier que seule l'opération concernée est relancée une fois
+4. Simuler une limitation de débit et une erreur serveur
+5. Simuler une session expirée ou révoquée puis utiliser Se reconnecter
+6. Simuler une requête invalide et une erreur inattendue
 Résultats attendus:
 - Aucun code HTTP, détail DNS, message serveur interne ou exception brute n'est affiché
 - Les erreurs transitoires proposent Réessayer sans effacer les jetons ni bloquer les fonctions locales
@@ -55,13 +58,15 @@ Résultats attendus:
 Objectif: Vérifier création, édition, filtres, duplication et sauvegarde rétrocompatibles.
 Étapes:
 1. Créer successivement un exercice sans difficulté puis un exercice de chaque niveau
-2. Modifier puis effacer la difficulté d'un exercice
-3. Combiner chaque filtre de difficulté avec catégorie, type et tri
-4. Dupliquer un exercice Expert, modifier la copie et contrôler la source
-5. Exporter puis importer les exercices avec et sans difficulté
-6. Importer une sauvegarde historique sans difficulté puis une valeur inconnue
+2. Vérifier sur largeur mobile que Catégorie et Type partagent une ligne et que la difficulté utilise quatre segments
+3. Modifier puis effacer la difficulté d'un exercice
+4. Combiner chaque filtre de difficulté avec catégorie, type et tri
+5. Dupliquer un exercice Expert, modifier la copie et contrôler la source
+6. Exporter puis importer les exercices avec et sans difficulté
+7. Importer une sauvegarde historique sans difficulté puis une valeur inconnue
 Résultats attendus:
-- Les libellés sont Non renseignée, Débutant, Avancé et Expert
+- Le sélecteur affiche Débutant, Avancé, Expert et Non renseigné ; les valeurs historiques restent affichées Non renseignée dans les cartes et filtres
+- Les détails et badges des cartes restent lisibles dans les thèmes Classique et France
 - Aucun niveau n'est déduit automatiquement et les filtres se combinent correctement
 - La copie reprend la valeur sans partager d'état mutable avec la source
 - Le cycle courant conserve la difficulté et les données historiques restent valides

@@ -4,5 +4,6 @@ import 'dart:io';
 abstract class BackupLocationProvider {
   Future<Directory> getTemporaryDirectory();
 
-  Future<String?> selectExportDirectory();
+  /// Retourne le chemin complet choisi pour le fichier d'export.
+  Future<String?> selectExportFilePath(String suggestedFileName);
 }

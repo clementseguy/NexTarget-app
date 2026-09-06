@@ -31,10 +31,13 @@ class FakeBackupLocationProvider implements BackupLocationProvider {
   Future<Directory> getTemporaryDirectory() async => temporaryDirectory;
 
   @override
-  Future<String?> selectExportDirectory() async {
+  Future<String?> selectExportFilePath(String suggestedFileName) async {
     final error = selectionError;
     if (error != null) throw error;
-    return selectedDirectory;
+    final destination = selectedDirectory;
+    if (destination == null) return null;
+    if (destination.toLowerCase().endsWith('.json')) return destination;
+    return '${Directory(destination).path}/$suggestedFileName';
   }
 }
 
@@ -63,14 +66,7 @@ class BackupServiceTestFixture {
         status: 'réalisée',
         category: 'entraînement',
         synthese: 'Export déterministe',
-        series: [
-          Series(
-            distance: 25,
-            points: 45,
-            shotCount: 5,
-            groupSize: 8,
-          ),
-        ],
+        series: [Series(distance: 25, points: 45, shotCount: 5, groupSize: 8)],
       ),
     );
 

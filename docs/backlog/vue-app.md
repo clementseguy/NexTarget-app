@@ -89,10 +89,11 @@
 | NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | Should | S | EN COURS | déplacement UI de la carte NT-017, sans doublon ni changement de calcul |
 | NT-143 | Remplacer « Copier résumé » par la duplication de session | app | Should | M | EN COURS | formulaire prérempli, nouvel ID, date non reprise, copie profonde et photo indépendante |
 | NT-144 | Assainir et réorganiser la documentation du backlog | app | Could | S | EN COURS | vues synchronisées, items remplacés clarifiés et plan historique archivé |
+| NT-145 | Harmoniser et densifier les cartes d'exercice | app | Could | M | À FAIRE | cohérence Sessions/Séries ; zone d'information prioritaire et actions compactées |
 
 ## Prochaines actions app (hors FAIT), par priorité
 
 - **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session).
 - **Should** — NT-059, NT-077, NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-140, NT-141, NT-142, NT-143. NT-033 : voir NT-120/NT-121.
-- **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-027, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132, NT-134, NT-144. NT-023 : voir NT-122/NT-123.
+- **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-027, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132, NT-134, NT-144, NT-145. NT-023 : voir NT-122/NT-123.
 - **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.

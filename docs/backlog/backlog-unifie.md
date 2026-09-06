@@ -102,7 +102,7 @@
 | 11. Analyse de cible (photo) | NT-110 → NT-111 |
 | 12. Coach : progression & génération | NT-120 → NT-126 |
 | 13. Saisie au stand | NT-130 → NT-134 |
-| 14. Finitions UX | NT-140 → NT-144 |
+| 14. Finitions UX | NT-140 → NT-145 |
 
 ---
 
@@ -986,6 +986,7 @@
 | NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | 2 | Should | S | EN COURS |
 | NT-143 | Remplacer « Copier résumé » par la duplication de session | app | 3 | Should | M | EN COURS |
 | NT-144 | Assainir et réorganiser la documentation du backlog | app | 1 | Could | S | EN COURS |
+| NT-145 | Harmoniser et densifier les cartes d'exercice | app | 3 | Could | M | À FAIRE |
 
 ### NT-140 — Supprimer le second écran de chargement Flutter
 - **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-040, NT-075
@@ -1063,6 +1064,24 @@
 - **Priorité** : Could · **VM** : 1 · **Estimation** : S · **Statut** : EN COURS —
   documents synchronisés sur une branche non fusionnée.
 - **Notes** : le périmètre est volontairement documentaire et borné à l'assainissement du backlog et de ses vues ; une refonte générale de toute la documentation technique ou métier serait une tâche distincte.
+
+### NT-145 — Harmoniser et densifier les cartes d'exercice
+- **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-003, NT-020, NT-025, NT-027
+- **Description** : Repenser la hiérarchie visuelle des cartes d'exercice pour
+  les rapprocher des cartes Sessions et Séries, donner davantage de place aux
+  informations utiles et réduire l'emprise des actions sans en supprimer.
+- **Critères d'acceptation** :
+  - un inventaire compare explicitement les cartes Exercices, Sessions et Séries et identifie les conventions actives à réutiliser plutôt que de créer un nouveau langage visuel ;
+  - la zone d'information devient prioritaire sur la zone d'actions sur une largeur mobile, sans tronquer les informations essentielles ;
+  - planification, modification, duplication et suppression restent accessibles, avec regroupement éventuel des actions secondaires dans un menu clairement identifié ;
+  - nom, catégorie, type, difficulté, nombre d'objectifs, consignes, durée et matériel restent présentés selon leur disponibilité avec une hiérarchie compacte et compréhensible ;
+  - les états liés à une session prévue restent identifiables sans dépendre uniquement de la couleur ;
+  - textes, contrastes, zones tactiles et débordements sont vérifiés sur les deux thèmes et sur les largeurs mobiles prises en charge ;
+  - navigation, routes et comportements métier existants restent inchangés ; les tests couvrent les variantes Stand/Maison, données minimales/complètes et session prévue.
+- **Priorité** : Could · **VM** : 3 · **Estimation** : M · **Statut** : À FAIRE.
+- **Notes** : créé à la recette du 2026-09-06. Hors périmètre du correctif de
+  contraste NT-025 : ce dernier rend immédiatement les textes lisibles mais ne
+  préjuge pas de la future composition des cartes.
 
 ---
 

@@ -111,9 +111,9 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
   }
 
   Future<void> _openCreate() async {
-    final created = await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ExerciseFormScreen()),
-    );
+    final created = await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ExerciseFormScreen()));
     if (created == true) _reload();
   }
 
@@ -179,9 +179,9 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
       );
     } on ExerciseLinkedSessionsException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -280,13 +280,14 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                          '${ex.categoryLabelFr} • ${ex.goalIds.length} objectif(s)'),
+                        '${ex.categoryLabelFr} • ${ex.goalIds.length} objectif(s)',
+                      ),
                       Padding(
                         padding: const EdgeInsets.only(top: 2.0),
                         child: Text(
-                            'Type: ${ex.typeLabelFr} · Difficulté: ${ex.difficultyLabelFr}',
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.white70)),
+                          'Type: ${ex.typeLabelFr} · Difficulté: ${ex.difficultyLabelFr}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                       ),
                       if (ex.consignes.isNotEmpty)
                         Padding(
@@ -296,8 +297,9 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                             runSpacing: 4,
                             children: [
                               _Badge(
-                                  icon: Icons.list_alt,
-                                  text: '${ex.consignes.length} consigne(s)'),
+                                icon: Icons.list_alt,
+                                text: '${ex.consignes.length} consigne(s)',
+                              ),
                             ],
                           ),
                         ),
@@ -307,10 +309,11 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                           padding: const EdgeInsets.only(top: 4.0),
                           child: Text(
                             ex.description!.split('\n').first.trim(),
-                            style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.white70,
-                                fontStyle: FontStyle.italic),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic,
+                                    ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -326,14 +329,16 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                             children: [
                               if (ex.durationMinutes != null)
                                 _Badge(
-                                    icon: Icons.timer,
-                                    text: '${ex.durationMinutes} min'),
+                                  icon: Icons.timer,
+                                  text: '${ex.durationMinutes} min',
+                                ),
                               if (ex.equipment != null &&
                                   ex.equipment!.trim().isNotEmpty)
                                 _Badge(
-                                    icon: Icons.build,
-                                    text: ex.equipment!.trim(),
-                                    maxWidth: 140),
+                                  icon: Icons.build,
+                                  text: ex.equipment!.trim(),
+                                  maxWidth: 140,
+                                ),
                             ],
                           ),
                         ),
@@ -360,8 +365,11 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                                 40, // proche de la hauteur d'un IconButton standard
                             width: 32,
                             child: Center(
-                              child: Icon(Icons.schedule,
-                                  size: 20, color: Colors.lightBlueAccent),
+                              child: Icon(
+                                Icons.schedule,
+                                size: 20,
+                                color: Colors.lightBlueAccent,
+                              ),
                             ),
                           ),
                         ),
@@ -376,19 +384,22 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                    content: Text(
-                                        'Session prévue créée (${sess.series.length} série(s))')),
+                                  content: Text(
+                                    'Session prévue créée (${sess.series.length} série(s))',
+                                  ),
+                                ),
                               );
                               await Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      SessionDetailScreen(sessionData: {
-                                    'session': sess.toMap(),
-                                    'series': sess.series
-                                        .map((s) => s.toMap())
-                                        .toList(),
-                                  }),
+                                  builder: (_) => SessionDetailScreen(
+                                    sessionData: {
+                                      'session': sess.toMap(),
+                                      'series': sess.series
+                                          .map((s) => s.toMap())
+                                          .toList(),
+                                    },
+                                  ),
                                 ),
                               );
                               // Actualiser le mapping (au cas où l'utilisateur revienne en arrière sans convertir)
@@ -397,8 +408,8 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                    content:
-                                        Text('Impossible de planifier: $e')),
+                                  content: Text('Impossible de planifier: $e'),
+                                ),
                               );
                             }
                           },
@@ -487,11 +498,16 @@ class _FiltersBar extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.filter_list,
-                    size: 18, color: Colors.amberAccent),
+                const Icon(
+                  Icons.filter_list,
+                  size: 18,
+                  color: Colors.amberAccent,
+                ),
                 const SizedBox(width: 8),
-                const Text('Filtres',
-                    style: TextStyle(fontWeight: FontWeight.w600)),
+                const Text(
+                  'Filtres',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
                 if (hasActive) ...[
                   const SizedBox(width: 8),
                   _ActiveCountBadge(
@@ -505,8 +521,10 @@ class _FiltersBar extends StatelessWidget {
                 const Spacer(),
                 IconButton(
                   tooltip: expanded ? 'Replier' : 'Déplier',
-                  icon: Icon(expanded ? Icons.expand_less : Icons.expand_more,
-                      size: 22),
+                  icon: Icon(
+                    expanded ? Icons.expand_less : Icons.expand_more,
+                    size: 22,
+                  ),
                   onPressed: onToggleExpanded,
                 ),
               ],
@@ -529,11 +547,16 @@ class _FiltersBar extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Catégories',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white70,
-                                  fontWeight: FontWeight.w600)),
+                          Text(
+                            'Catégories',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           Wrap(
                             spacing: 6,
@@ -548,11 +571,16 @@ class _FiltersBar extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 14),
-                          Text('Difficulté',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white70,
-                                  fontWeight: FontWeight.w600)),
+                          Text(
+                            'Difficulté',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<ExerciseDifficultyFilter>(
                             key: const Key('exercise_difficulty_filter'),
@@ -585,20 +613,27 @@ class _FiltersBar extends StatelessWidget {
                             },
                           ),
                           const SizedBox(height: 14),
-                          Text('Type',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white70,
-                                  fontWeight: FontWeight.w600)),
+                          Text(
+                            'Type',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           Wrap(
                             spacing: 8,
                             children: [
                               for (final t in types)
                                 FilterChip(
-                                  label: Text(t == ExerciseType.stand
-                                      ? 'Stand'
-                                      : 'Maison'),
+                                  label: Text(
+                                    t == ExerciseType.stand
+                                        ? 'Stand'
+                                        : 'Maison',
+                                  ),
                                   selected: selectedTypes.contains(t),
                                   onSelected: (_) => onToggleType(t),
                                 ),
@@ -613,7 +648,10 @@ class _FiltersBar extends StatelessWidget {
                                 icon: const Icon(Icons.clear, size: 16),
                                 label: const Text('Réinitialiser'),
                                 style: TextButton.styleFrom(
-                                    foregroundColor: Colors.white70),
+                                  foregroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
                               ),
                             ),
                         ],
@@ -671,11 +709,14 @@ class _ActiveCountBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.amberAccent.withValues(alpha: 0.4)),
       ),
-      child: Text('$count',
-          style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.amberAccent)),
+      child: Text(
+        '$count',
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: Colors.amberAccent,
+        ),
+      ),
     );
   }
 }
@@ -686,23 +727,20 @@ class _Badge extends StatelessWidget {
   final String text;
   final double? maxWidth;
 
-  const _Badge({
-    required this.icon,
-    required this.text,
-    this.maxWidth,
-  });
+  const _Badge({required this.icon, required this.text, this.maxWidth});
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final content = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 12, color: Colors.amberAccent),
+        Icon(icon, size: 12, color: colors.secondary),
         const SizedBox(width: 4),
         Flexible(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 11),
+            style: TextStyle(fontSize: 11, color: colors.onSurface),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -719,9 +757,9 @@ class _Badge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.07),
+        color: colors.secondary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white12),
+        border: Border.all(color: colors.secondary.withValues(alpha: 0.25)),
       ),
       child: child,
     );

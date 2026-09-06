@@ -25,34 +25,39 @@ void main() {
       }
     });
 
-    test('écrit le fichier nommé dans le dossier choisi au format version 3',
-        () async {
-      final fixture = await BackupServiceTestFixture.create(
-        tempDirectory,
-        selectedDirectory: exportDirectory.path,
-      );
+    test(
+      'écrit le fichier nommé dans le dossier choisi au format version 3',
+      () async {
+        final fixture = await BackupServiceTestFixture.create(
+          tempDirectory,
+          selectedDirectory: exportDirectory.path,
+        );
 
-      final file = await fixture.service.exportAllSessionsToUserFolder(
-        suggestedFileName: 'sauvegarde_nex_target.json',
-      );
+        final file = await fixture.service.exportAllSessionsToUserFolder(
+          suggestedFileName: 'sauvegarde_nex_target.json',
+        );
 
-      expect(file, isNotNull);
-      expect(file!.path, '${exportDirectory.path}/sauvegarde_nex_target.json');
-      expect(await file.exists(), isTrue);
-      final data =
-          jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-      expect(data['format'], 'mycoach-data');
-      expect(data['version'], 3);
-      expect(data['sessions_count'], 1);
-      expect(data['goals_count'], 1);
-      expect(data['weapons_count'], 1);
-      expect(data['exercises_count'], 1);
-      expect((data['exercises'] as List).single['difficulty'], 'expert');
-      expect((data['sessions'] as List).single['weapon'], 'Pistolet de test');
-      expect((data['goals'] as List).single['id'], 'goal-export');
-      expect((data['weapons'] as List).single['id'], 'weapon-export');
-      expect(DateTime.tryParse(data['exported_at'] as String), isNotNull);
-    });
+        expect(file, isNotNull);
+        expect(
+          file!.path,
+          '${exportDirectory.path}/sauvegarde_nex_target.json',
+        );
+        expect(await file.exists(), isTrue);
+        final data =
+            jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+        expect(data['format'], 'mycoach-data');
+        expect(data['version'], 3);
+        expect(data['sessions_count'], 1);
+        expect(data['goals_count'], 1);
+        expect(data['weapons_count'], 1);
+        expect(data['exercises_count'], 1);
+        expect((data['exercises'] as List).single['difficulty'], 'expert');
+        expect((data['sessions'] as List).single['weapon'], 'Pistolet de test');
+        expect((data['goals'] as List).single['id'], 'goal-export');
+        expect((data['weapons'] as List).single['id'], 'weapon-export');
+        expect(DateTime.tryParse(data['exported_at'] as String), isNotNull);
+      },
+    );
 
     test('une annulation retourne null et ne crée aucun fichier', () async {
       final fixture = await BackupServiceTestFixture.create(tempDirectory);
@@ -61,6 +66,36 @@ void main() {
 
       expect(file, isNull);
       expect(await exportDirectory.list().toList(), isEmpty);
+    });
+
+    test('une erreur du sélecteur de fichier est propagée', () async {
+      final fixture = await BackupServiceTestFixture.create(tempDirectory);
+      fixture.locationProvider.selectionError = StateError(
+        'sélecteur indisponible',
+      );
+
+      await expectLater(
+        fixture.service.exportAllSessionsToUserFolder(),
+        throwsA(isA<StateError>()),
+      );
+      expect(await exportDirectory.list().toList(), isEmpty);
+    });
+
+    test('écrit directement dans le chemin de fichier choisi', () async {
+      final selectedFile = '${exportDirectory.path}/export_choisi.json';
+      final fixture = await BackupServiceTestFixture.create(
+        tempDirectory,
+        selectedDirectory: selectedFile,
+      );
+
+      final file = await fixture.service.exportAllSessionsToUserFolder();
+
+      expect(file?.path, selectedFile);
+      expect(await File(selectedFile).exists(), isTrue);
+      expect(
+        jsonDecode(await File(selectedFile).readAsString())['format'],
+        'mycoach-data',
+      );
     });
 
     test('une erreur d’écriture est propagée sans fichier partiel', () async {

@@ -18,9 +18,15 @@ Toutes les modifications notables de ce projet seront listées ici.
 - NT-142 : carte « Tirs par arme » déplacée en dernière position de Statistiques > Synthèse, sans modification de calcul.
 
 ### Fixed
+- Retours de recette NT-025 : Catégorie et Type alignés, difficulté présentée comme un sélecteur à quatre choix et textes des cartes lisibles dans le thème France.
+- Retours de recette NT-056 : le login depuis Paramètres utilise désormais les messages sûrs et l'action « Réessayer » communs.
+- Sauvegardes : le sélecteur fournit désormais un chemin de fichier complet, sans concaténation erronée, et l'import privilégie les octets fournis par le plugin lorsque le chemin système n'est pas lisible.
 - NT-059 : résorption locale des 53 constats SonarCloud de référence par corrections ciblées et remplacement des trois tests d'export masqués par des scénarios déterministes.
 - NT-140 : suppression du second splash Flutter `FadeInWrapper`, de son délai artificiel et de sa configuration morte ; le splash natif et son logo sont conservés.
 - Sauvegardes : remplacement des tests d’export ignorés par des scénarios déterministes couvrant le dossier choisi, l’annulation, le répertoire temporaire, le format JSON version 3 et les erreurs d’écriture.
+
+### Documentation
+- NT-145 : ajout d'une US dédiée à l'harmonisation et à la densification des cartes Exercices, explicitement hors périmètre du retour de recette courant.
 
 ## [0.7.0] - 2026-09-04
 

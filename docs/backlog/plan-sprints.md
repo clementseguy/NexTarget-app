@@ -341,6 +341,7 @@ réversible par suppression des entités créées.
 | Besoin classement officiel fédéral | NT-103 | Sourcer les grilles RGS FFTir avant estimation définitive. |
 | Hypothèse de saisie mains libres au stand | NT-132 | Spike timeboxé uniquement, avec go/no-go en conditions réelles. |
 | Besoin de confort catalogue exercices | NT-026, NT-007 (FAIT) | NT-025 rejoint le lot immédiat ; NT-007 est livré (PR #12) et NT-026 reste planifié à faible priorité en Sprint 7, avec recette des références de sessions orphelines. |
+| Besoin de densifier les cartes Exercices | NT-145 | Cadrer la cohérence avec Sessions et Séries avant de réduire et regrouper la zone d'actions ; ne pas inclure dans le retour de recette NT-025. |
 
 ## Icebox
 

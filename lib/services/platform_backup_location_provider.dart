@@ -12,6 +12,11 @@ class PlatformBackupLocationProvider implements BackupLocationProvider {
       path_provider.getTemporaryDirectory();
 
   @override
-  Future<String?> selectExportDirectory() =>
-      FilePicker.platform.getDirectoryPath();
+  Future<String?> selectExportFilePath(String suggestedFileName) =>
+      FilePicker.platform.saveFile(
+        dialogTitle: 'Enregistrer la sauvegarde',
+        fileName: suggestedFileName,
+        type: FileType.custom,
+        allowedExtensions: const ['json'],
+      );
 }
