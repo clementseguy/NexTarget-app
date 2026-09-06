@@ -7,7 +7,7 @@
 > uniquement dans cette vue (règle de sync : [README.md](README.md)).
 
 **Repo** : NexTarget-app (Flutter/Dart, Hive, SonarCloud, dart_code_metrics)
-**Dernière projection** : 2026-09-05 (prochain lot : NT-025, NT-056, NT-057, NT-059, NT-077 et NT-144 ; NT-056 exclut les sauvegardes locales)
+**Dernière projection** : 2026-09-06 (ajout du prochain lot de retours v0.7.0 NT-145 à NT-150, entièrement côté app)
 
 ## Items app
 
@@ -89,10 +89,16 @@
 | NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | Should | S | EN COURS | déplacement UI de la carte NT-017, sans doublon ni changement de calcul |
 | NT-143 | Remplacer « Copier résumé » par la duplication de session | app | Should | M | EN COURS | formulaire prérempli, nouvel ID, date non reprise, copie profonde et photo indépendante |
 | NT-144 | Assainir et réorganiser la documentation du backlog | app | Could | S | À FAIRE | synchroniser les vues, clarifier les items remplacés et retirer le plan historique concurrent |
+| NT-145 | Ouvrir la session associée à un record | app | Should | S | À FAIRE | cartes inchangées visuellement ; session source portée par les données statistiques ; ex æquo vers la plus récente |
+| NT-146 | Aider à estimer la taille d'un groupement | app | Could | S | À FAIRE | aide gestuelle partagée entre séance guidée et wizard, sans repère C50 ni modification automatique du champ |
+| NT-147 | Déplacer « Répartition Catégories » sous les calibres | app | Should | S | À FAIRE | ordre final : calibres, catégories, tirs par arme |
+| NT-148 | Séparer les trois préférences de tir | app | Could | S | À FAIRE | même séparateur entre prise, râtelier et calibre ; aucun comportement modifié |
+| NT-149 | Renommer les fichiers d'export NexTarget | app | Should | S | À FAIRE | `nextarget_export_<timestamp>.json` dans les deux parcours ; JSON inchangé |
+| NT-150 | Garantir un état d'authentification cohérent après mise à jour | app | Should | M | À FAIRE | migration des jetons v0.6.0, état global cohérent et « Connexion à vérifier » hors ligne sans profil en cache |
 
 ## Prochaines actions app (hors FAIT), par priorité
 
 - **Must** — NT-100/NT-101 (socle disciplines TAR), NT-120 (socle coach), NT-130 (templates de session).
-- **Should** — NT-059, NT-077, NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-140, NT-141, NT-142, NT-143. NT-033 : voir NT-120/NT-121.
-- **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-027, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132, NT-134, NT-144. NT-023 : voir NT-122/NT-123.
+- **Should** — NT-059, NT-077, NT-102, NT-104, NT-110, NT-111, NT-121, NT-123, NT-124, NT-140, NT-141, NT-142, NT-143, NT-145, NT-147, NT-149, NT-150. NT-033 : voir NT-120/NT-121.
+- **Could** — NT-015, NT-016, NT-024, NT-025, NT-026, NT-027, NT-044, NT-056, NT-057, NT-074, NT-076, NT-103, NT-125, NT-126, NT-132, NT-134, NT-144, NT-146, NT-148. NT-023 : voir NT-122/NT-123.
 - **Won't-now** — NT-006, NT-045, NT-046, NT-047, NT-090, NT-091.
