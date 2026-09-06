@@ -71,6 +71,12 @@
 > duplication d'une session. NT-026 est précisé pour interdire la suppression
 > d'un exercice encore référencé par une session ; NT-027 ajoute la duplication
 > d'un exercice au backlog.
+>
+> Cadrage produit du **2026-09-06** : NT-145 à NT-149 regroupent cinq retours
+> ciblés sur la navigation depuis les records, l'aide à l'estimation d'un
+> groupement, l'ordre de Synthèse, les séparateurs des préférences et le nom des
+> exports. NT-150 corrige l'état d'authentification incohérent observé après une
+> mise à jour v0.6.0 vers v0.7.0, sans évolution du contrat serveur.
 
 ## Légende des statuts
 
@@ -98,7 +104,7 @@
 | 11. Analyse de cible (photo) | NT-110 → NT-111 |
 | 12. Coach : progression & génération | NT-120 → NT-126 |
 | 13. Saisie au stand | NT-130 → NT-134 |
-| 14. Finitions UX | NT-140 → NT-144 |
+| 14. Finitions UX | NT-140 → NT-150 |
 
 ---
 
@@ -975,6 +981,12 @@
 | NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | 2 | Should | S | EN COURS |
 | NT-143 | Remplacer « Copier résumé » par la duplication de session | app | 3 | Should | M | EN COURS |
 | NT-144 | Assainir et réorganiser la documentation du backlog | app | 1 | Could | S | À FAIRE |
+| NT-145 | Ouvrir la session associée à un record | app | 3 | Should | S | À FAIRE |
+| NT-146 | Aider à estimer la taille d'un groupement | app | 2 | Could | S | À FAIRE |
+| NT-147 | Déplacer « Répartition Catégories » sous les calibres | app | 1 | Should | S | À FAIRE |
+| NT-148 | Séparer les trois préférences de tir | app | 1 | Could | S | À FAIRE |
+| NT-149 | Renommer les fichiers d'export NexTarget | app | 1 | Should | S | À FAIRE |
+| NT-150 | Garantir un état d'authentification cohérent après mise à jour | app | 3 | Should | M | À FAIRE |
 
 ### NT-140 — Supprimer le second écran de chargement Flutter
 - **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-040, NT-075
@@ -1051,6 +1063,88 @@
   - cette tâche ne modifie aucun code applicatif, comportement produit, schéma de persistance ni contrat serveur.
 - **Priorité** : Could · **VM** : 1 · **Estimation** : S · **Statut** : À FAIRE.
 - **Notes** : le périmètre est volontairement documentaire et borné à l'assainissement du backlog et de ses vues ; une refonte générale de toute la documentation technique ou métier serait une tâche distincte.
+
+### NT-145 — Ouvrir la session associée à un record
+- **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-003, NT-010, NT-013
+- **Description** : Depuis `Synthèse > Général`, ouvrir la session dans laquelle le meilleur score ou le meilleur groupement a été réalisé, sans modifier l'apparence des cartes de record.
+- **Critères d'acceptation** :
+  - les cartes « Meilleur Score » et « Meilleur Groupement » sont actionnables uniquement lorsqu'un record existe ;
+  - « Meilleur Score » reste le meilleur score d'une série et « Meilleur Groupement » le plus petit groupement strictement positif ; leurs populations et calculs actuels restent inchangés ;
+  - toucher une carte ouvre directement le détail de la session contenant la série record ;
+  - en cas d'ex æquo, la session à la date de séance la plus récente est retenue puis, à date égale, celle dont l'identifiant persistant est le plus élevé ;
+  - le service statistique retourne explicitement la référence de la session source ; l'UI ne la recherche pas par comparaison de valeur ou de date ;
+  - dimensions, couleurs, icônes, textes et disposition des cartes restent inchangés ; un retour tactile et des sémantiques accessibles signalent néanmoins l'action ;
+  - une carte sans record reste inactive ; au retour du détail, les statistiques sont recalculées si la session a été modifiée ou supprimée ;
+  - les tests couvrent les deux navigations, l'absence de record, les ex æquo, le départage à date égale, les exclusions statistiques existantes et le rafraîchissement au retour.
+- **Priorité** : Should · **VM** : 3 · **Estimation** : S · **Statut** : À FAIRE.
+
+### NT-146 — Aider à estimer la taille d'un groupement
+- **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-002, NT-131
+- **Description** : Ajouter près du champ « Groupement » une aide rapide fondée uniquement sur des gestes de la main, commune à la séance guidée « Au stand » et au wizard de conversion d'une session prévue.
+- **Critères d'acceptation** :
+  - une action d'aide, placée dans ou immédiatement à côté du champ, ouvre une présentation compacte sans perdre les données saisies ;
+  - le même composant et le même contenu sont utilisés dans les deux parcours ;
+  - l'aide présente : poing fermé, moins de 10 cm ; poing fermé avec pouce déployé en forme « like », environ 15 cm ; pouce et petit doigt déployés en forme « téléphone », environ 20 cm ;
+  - le texte précise que ces valeurs sont approximatives, dépendent de la taille de la main et doivent être comparées au groupement au niveau de la cible, pas depuis le pas de tir ;
+  - les pictogrammes sont privilégiés lorsqu'ils sont suffisamment explicites, sans émoji ni nouvelle dépendance ; chaque repère reste compréhensible par son texte et possède une sémantique accessible ;
+  - consulter ou fermer l'aide ne préremplit et ne modifie jamais le groupement ; la saisie et ses validations actuelles restent inchangées ;
+  - aucun repère lié à la cible C50 n'est introduit dans cet item ;
+  - les widget tests couvrent la présence dans les deux parcours, les trois repères, l'accessibilité et la conservation de la saisie.
+- **Priorité** : Could · **VM** : 2 · **Estimation** : S · **Statut** : À FAIRE.
+
+### NT-147 — Déplacer « Répartition Catégories » sous les calibres
+- **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-010, NT-142
+- **Description** : Dans `Synthèse > Général`, rapprocher les répartitions par calibre et par catégorie tout en conservant les volumes par arme en dernière position.
+- **Critères d'acceptation** :
+  - l'ordre final est « Répartition Calibres », puis « Répartition Catégories », puis « Tirs par arme » ;
+  - « Répartition Catégories » se trouve immédiatement sous les calibres et immédiatement au-dessus des tirs par arme ;
+  - « Tirs par arme » reste la dernière carte de Synthèse ; aucune carte n'est supprimée ou rendue deux fois ;
+  - les calculs, populations de sessions, couleurs, états de chargement et états vides restent inchangés ;
+  - un widget test vérifie l'ordre vertical exact et l'absence de doublon.
+- **Priorité** : Should · **VM** : 1 · **Estimation** : S · **Statut** : À FAIRE.
+
+### NT-148 — Séparer les trois préférences de tir
+- **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-008, NT-073, NT-141
+- **Description** : Distinguer visuellement les trois réglages de « Préférences Tir » sans modifier leur ordre ou leur comportement.
+- **Critères d'acceptation** :
+  - l'ordre reste prise par défaut, râtelier d'armes, calibre par défaut ;
+  - le même séparateur et les mêmes espacements sont utilisés entre prise et râtelier, puis entre râtelier et calibre ;
+  - aucun nouveau style de séparation n'est créé et aucun libellé, contrôle ou réglage persistant n'est modifié ;
+  - le rendu reste lisible dans les deux thèmes ; un widget test vérifie l'ordre et les deux séparateurs.
+- **Priorité** : Could · **VM** : 1 · **Estimation** : S · **Statut** : À FAIRE.
+
+### NT-149 — Renommer les fichiers d'export NexTarget
+- **Thème** : Finitions UX · **Portée** : app · **Dépendances** : —
+- **Description** : Utiliser le nom du produit dans le nom des fichiers générés par les deux parcours d'export, sans modifier leur contenu.
+- **Critères d'acceptation** :
+  - l'export temporaire destiné au partage et l'export vers un dossier utilisent par défaut `nextarget_export_<timestamp>.json` ;
+  - seul le préfixe change : le timestamp et l'extension `.json` restent inchangés ;
+  - un `suggestedFileName` fourni explicitement reste prioritaire et n'est pas réécrit ;
+  - le contenu, la structure, la version et la valeur `format` du JSON restent strictement inchangés ; les anciens exports restent importables ;
+  - les tests couvrent les deux parcours, le nom suggéré, l'absence de changement du JSON et l'import d'un ancien export.
+- **Priorité** : Should · **VM** : 1 · **Estimation** : S · **Statut** : À FAIRE.
+- **Notes** : aucune migration de données ; les anciens préfixes `sessions_export_` et `mycoach_export_` ne sont conservés que dans les tests de rétrocompatibilité éventuellement nécessaires.
+
+### NT-150 — Garantir un état d'authentification cohérent après mise à jour
+- **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-040, NT-048, NT-056, NT-061
+- **Description** : Éliminer les états contradictoires entre jetons, profil et Coach, notamment après une mise à jour v0.6.0 vers v0.7.0 sans déconnexion préalable. L'application ne doit jamais afficher simultanément un utilisateur apparemment connecté, un profil « Non connecté » et une action Coach vouée à échouer.
+- **États attendus** :
+  - **vérification** : état transitoire explicite pendant l'initialisation ou lorsque des jetons modernes existent sans profil en cache et que le réseau est indisponible ;
+  - **connecté** : session renouvelable et profil exploitable, récupéré ou issu du cache ;
+  - **non connecté** : aucune session exploitable, avec une action de connexion accessible.
+- **Critères d'acceptation** :
+  - une source de vérité unique porte l'état ; la combinaison « connecté avec profil nul » est impossible et Paramètres, Mon profil et Analyse Coach consomment le même état ;
+  - une ancienne installation ne contenant que `jwt_token` sans paire access/refresh renouvelable est invalidée localement au premier démarrage, sans appel serveur obligatoire ; seules les anciennes données d'authentification sont supprimées et l'utilisateur est invité à se reconnecter ;
+  - l'état connecté affiche la photo ou les initiales dans Paramètres, les informations dans Mon profil et l'action d'analyse dans une session détaillée éligible ; le caractère « ? » ne représente jamais un utilisateur connecté ;
+  - l'état non connecté affiche une action « Se connecter » dans Paramètres, Mon profil et la section Analyse Coach et ne permet pas de lancer une analyse ;
+  - toute expiration, révocation ou invalidation définitive détectée par Auth, Profil ou Coach bascule immédiatement et globalement vers non connecté, efface les jetons invalides une seule fois et propose « Se reconnecter » conformément à NT-056 ; fermer le message conserve cet état cohérent ;
+  - une panne transitoire ne supprime ni les jetons ni une session renouvelable ; le dernier profil valide est conservé localement et reste affichable ;
+  - si des jetons modernes existent mais qu'aucun profil n'est en cache et que le premier chargement est hors ligne, l'interface affiche « Connexion à vérifier » avec « Réessayer » : elle n'affiche ni avatar « ? », ni « Non connecté », ni bouton Coach actif, et les fonctions locales restent accessibles ; aucun retry automatique en boucle n'est lancé ;
+  - après « Réessayer », une vérification réussie conduit à connecté et met le profil en cache ; une invalidation confirmée conduit à non connecté avec l'action de connexion ;
+  - une reconnexion OAuth réussie recharge le profil et rétablit tous les écrans sans redémarrage ; aucun contrat serveur ou mécanisme OAuth n'est modifié ;
+  - les tests couvrent la migration v0.6.0, la conservation des données métier, l'invariant d'état, les trois écrans, l'expiration pendant une analyse, la panne transitoire avec cache, le premier démarrage hors ligne sans cache et les deux transitions depuis « Connexion à vérifier ».
+- **Priorité** : Should · **VM** : 3 · **Estimation** : M · **Statut** : À FAIRE.
+- **Notes** : anomalie reproduite en v0.7.0 après mise à jour depuis v0.6.0 sans déconnexion/reconnexion. Ce correctif complète NT-056 : NT-056 harmonise la présentation des erreurs, NT-150 garantit la cohérence et les transitions de l'état global d'authentification.
 
 ---
 
