@@ -10,6 +10,8 @@ L'access token est renouvelé avant expiration. Les appels concurrents partagent
 
 La déconnexion tente de révoquer le refresh token côté serveur puis efface toujours les jetons locaux, même si le réseau est indisponible.
 
+Les écrans Auth, Profil et Coach partagent une traduction des erreurs réseau en sept familles : hors connexion/DNS, délai dépassé, service indisponible, limitation de débit, session invalide, requête invalide et erreur inattendue. Les détails techniques restent dans les journaux. Une erreur transitoire propose « Réessayer » pour la seule opération concernée et ne supprime jamais les jetons ; seule une invalidation confirmée propose « Se reconnecter ».
+
 Le profil affiche les informations fournies par le serveur. L'app permet actuellement de modifier le niveau d'expérience ; l'édition du nom n'est pas exposée.
 
 ## Coach connecté uniquement

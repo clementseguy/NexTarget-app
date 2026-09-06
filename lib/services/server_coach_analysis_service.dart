@@ -8,6 +8,8 @@ import 'auth_service.dart';
 import 'auth_session_exceptions.dart';
 import 'authenticated_http_client.dart';
 import 'coach_analysis_exception.dart';
+import 'logger.dart';
+import 'network_error.dart';
 
 /// Service coach IA : appelle NexTarget-server
 /// (POST /coach/analyze-session), unique chemin d'analyse depuis NT-061
@@ -72,34 +74,45 @@ class ServerCoachAnalysisService {
           )
           .timeout(const Duration(seconds: 45));
     } on SessionExpiredException {
-      throw CoachAnalysisException('Session expirée, reconnectez-vous.');
-    } on NetworkUnavailableException catch (e) {
-      throw CoachAnalysisException(
-          'Coach indisponible (réseau) : ${e.message}');
-    } on TimeoutException {
-      throw CoachAnalysisException('Le serveur ne répond pas (timeout).');
+      rethrow;
+    } on NetworkUnavailableException catch (error, stackTrace) {
+      AppLogger.I.error('COACH: réseau indisponible', error, stackTrace);
+      if (error is NetworkOperationException) rethrow;
+      throw NetworkOperationException(
+          NetworkErrorFamily.offline, error.message);
+    } on TimeoutException catch (error, stackTrace) {
+      AppLogger.I.error('COACH: délai dépassé', error, stackTrace);
+      throw NetworkOperationException(NetworkErrorFamily.timeout, '$error');
     } on SocketException catch (e) {
-      throw CoachAnalysisException(
-          'Connexion impossible (réseau ou DNS): ${e.message}');
-    } catch (e) {
-      throw CoachAnalysisException('Erreur réseau inattendue: $e');
+      AppLogger.I.error('COACH: connexion impossible', e);
+      throw NetworkOperationException(NetworkErrorFamily.offline, e.message);
+    } catch (error, stackTrace) {
+      AppLogger.I.error('COACH: erreur inattendue', error, stackTrace);
+      rethrow;
     }
 
     if (response.statusCode == 401) {
-      throw CoachAnalysisException('Session expirée, reconnectez-vous.');
+      throw SessionExpiredException('Réponse HTTP 401 du Coach.');
     }
     if (response.statusCode == 422) {
-      throw CoachAnalysisException('Données de session invalides.');
+      throw InvalidNetworkRequestException('Réponse HTTP 422 du Coach.');
     }
     if (response.statusCode == 429) {
-      throw CoachAnalysisException(
-          'Trop de requêtes (429), réessayez plus tard.');
+      throw NetworkOperationException(
+        NetworkErrorFamily.rateLimited,
+        'Réponse HTTP 429 du Coach.',
+      );
     }
     if (response.statusCode >= 500) {
-      throw CoachAnalysisException('Erreur serveur (${response.statusCode}).');
+      throw NetworkOperationException(
+        NetworkErrorFamily.serviceUnavailable,
+        'Réponse HTTP ${response.statusCode} du Coach.',
+      );
     }
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw CoachAnalysisException('Erreur HTTP ${response.statusCode}.');
+      throw InvalidNetworkRequestException(
+        'Réponse HTTP ${response.statusCode} du Coach.',
+      );
     }
 
     final data = jsonDecode(response.body) as Map<String, dynamic>;

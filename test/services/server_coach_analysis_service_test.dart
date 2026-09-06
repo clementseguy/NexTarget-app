@@ -7,6 +7,8 @@ import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/services/auth_service.dart';
 import 'package:tir_sportif/services/server_coach_analysis_service.dart';
+import 'package:tir_sportif/services/auth_session_exceptions.dart';
+import 'package:tir_sportif/services/network_error.dart';
 import 'package:tir_sportif/constants/session_constants.dart';
 
 DetailedShootingSession _session() => DetailedShootingSession(
@@ -81,24 +83,38 @@ void main() {
     final client = MockClient((req) async => http.Response('{}', 401));
     final svc = ServerCoachAnalysisService(
         baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    expect(() => svc.analyzeSession(_session()),
-        throwsA(predicate((e) => e.toString().contains('Session expirée'))));
+    await expectLater(
+      svc.analyzeSession(_session()),
+      throwsA(isA<SessionExpiredException>()),
+    );
   });
 
   test('analyzeSession 429 throws trop de requêtes', () async {
     final client = MockClient((req) async => http.Response('{}', 429));
     final svc = ServerCoachAnalysisService(
         baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    expect(() => svc.analyzeSession(_session()),
-        throwsA(predicate((e) => e.toString().contains('Trop de requêtes'))));
+    await expectLater(
+      svc.analyzeSession(_session()),
+      throwsA(isA<NetworkOperationException>().having(
+        (error) => error.family,
+        'family',
+        NetworkErrorFamily.rateLimited,
+      )),
+    );
   });
 
   test('analyzeSession 5xx throws erreur serveur', () async {
     final client = MockClient((req) async => http.Response('{}', 503));
     final svc = ServerCoachAnalysisService(
         baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    expect(() => svc.analyzeSession(_session()),
-        throwsA(predicate((e) => e.toString().contains('Erreur serveur'))));
+    await expectLater(
+      svc.analyzeSession(_session()),
+      throwsA(isA<NetworkOperationException>().having(
+        (error) => error.family,
+        'family',
+        NetworkErrorFamily.serviceUnavailable,
+      )),
+    );
   });
 
   test('analyzeSession malformed content throws réponse vide', () async {
@@ -116,9 +132,13 @@ void main() {
         MockClient((req) async => throw SocketException('Failed host lookup'));
     final svc = ServerCoachAnalysisService(
         baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    expect(
-        () => svc.analyzeSession(_session()),
-        throwsA(
-            predicate((e) => e.toString().contains('Connexion impossible'))));
+    await expectLater(
+      svc.analyzeSession(_session()),
+      throwsA(isA<NetworkOperationException>().having(
+        (error) => error.family,
+        'family',
+        NetworkErrorFamily.offline,
+      )),
+    );
   });
 }

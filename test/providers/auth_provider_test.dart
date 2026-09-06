@@ -29,6 +29,26 @@ class _SessionExpiredAuthService extends AuthService {
   }
 }
 
+class _CallbackNetworkDownAuthService extends AuthService {
+  _CallbackNetworkDownAuthService() : super(authBaseUrl: 'http://unused');
+
+  @override
+  Future<bool> hasToken() async => true;
+
+  @override
+  Future<bool> isAuthenticated() async => true;
+
+  @override
+  Future<Map<String, dynamic>> getUserInfo() async => const {
+        'email': 'tireur@example.com',
+      };
+
+  @override
+  Future<Map<String, dynamic>> handleCallback(Uri callbackUri) async {
+    throw NetworkUnavailableException('DNS interne');
+  }
+}
+
 void main() {
   group('AuthProvider.checkAuthStatus', () {
     test(
@@ -51,5 +71,20 @@ void main() {
       expect(provider.isAuthenticated, isFalse);
       expect(provider.currentUser, isNull);
     });
+  });
+
+  test('une panne transitoire du callback préserve la session existante',
+      () async {
+    final provider = AuthProvider(_CallbackNetworkDownAuthService());
+    await provider.checkAuthStatus();
+
+    await expectLater(
+      provider.handleAuthCallback(Uri.parse('nextarget://callback?token=test')),
+      throwsA(isA<NetworkUnavailableException>()),
+    );
+
+    expect(provider.isAuthenticated, isTrue);
+    expect(provider.currentUser?['email'], 'tireur@example.com');
+    expect(provider.isLoading, isFalse);
   });
 }

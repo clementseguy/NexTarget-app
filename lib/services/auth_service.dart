@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'auth_session_exceptions.dart';
 import 'authenticated_http_client.dart';
 import 'logger.dart';
+import 'network_error.dart';
 
 /// Paire de tokens persistée (NT-048).
 ///
@@ -67,6 +68,11 @@ class AuthService {
   // installations sans refresh token ; jamais réécrites après migration.
   static const String _legacyTokenKey = 'jwt_token';
   static const String _legacyEmailKey = 'user_email';
+  static const Map<String, String> _jsonHeaders = {
+    'Content-Type': 'application/json',
+  };
+  static const String _sessionExpiredMessage =
+      'Session expirée, reconnectez-vous.';
 
   static const Duration _proactiveRefreshMargin = Duration(minutes: 2);
 
@@ -111,18 +117,12 @@ class AuthService {
       AppLogger.I.debug('AUTH: appel GET $loginUrl');
 
       // Étape 1 : Récupérer auth_url depuis le backend (timeout 15 s)
-      final response = await _httpClient.get(Uri.parse(loginUrl)).timeout(
-            const Duration(seconds: 15),
-            onTimeout: () => throw Exception(
-              'Le serveur ne répond pas (timeout 15 s). Vérifiez votre connexion.',
-            ),
-          );
+      final response = await _httpClient
+          .get(Uri.parse(loginUrl))
+          .timeout(const Duration(seconds: 15));
       AppLogger.I.debug('AUTH: réponse ${response.statusCode}');
 
-      if (response.statusCode != 200) {
-        throw Exception(
-            'Échec de récupération de l\'URL OAuth (${response.statusCode})');
-      }
+      _throwForAuthResponse(response.statusCode, 'initialisation OAuth');
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       final authUrl = data['auth_url'] as String?;
@@ -141,8 +141,23 @@ class AuthService {
       }
 
       // Note : Le token sera récupéré via le deep link handler dans main.dart
-    } catch (e) {
-      AppLogger.I.error('AUTH: erreur lors de l\'authentification Google', e);
+    } on TimeoutException catch (error, stackTrace) {
+      AppLogger.I.error(
+          'AUTH: délai d\'initialisation OAuth dépassé', error, stackTrace);
+      throw NetworkOperationException(NetworkErrorFamily.timeout, '$error');
+    } on SocketException catch (error, stackTrace) {
+      AppLogger.I.error(
+          'AUTH: réseau indisponible au lancement OAuth', error, stackTrace);
+      throw NetworkOperationException(
+          NetworkErrorFamily.offline, error.message);
+    } on http.ClientException catch (error, stackTrace) {
+      AppLogger.I.error('AUTH: client HTTP indisponible au lancement OAuth',
+          error, stackTrace);
+      throw NetworkOperationException(
+          NetworkErrorFamily.offline, error.message);
+    } catch (error, stackTrace) {
+      AppLogger.I.error(
+          'AUTH: erreur lors de l\'authentification Google', error, stackTrace);
       rethrow;
     }
   }
@@ -168,15 +183,12 @@ class AuthService {
       final exchangeResponse = await _httpClient
           .post(
             Uri.parse('$_authBaseUrl/auth/token/exchange'),
-            headers: {'Content-Type': 'application/json'},
+            headers: _jsonHeaders,
             body: jsonEncode({'callback_token': token}),
           )
           .timeout(const Duration(seconds: 15));
 
-      if (exchangeResponse.statusCode != 200) {
-        throw Exception(
-            'Échec de l\'échange du token (${exchangeResponse.statusCode})');
-      }
+      _throwForAuthResponse(exchangeResponse.statusCode, 'échange OAuth');
 
       final exchangeData =
           jsonDecode(exchangeResponse.body) as Map<String, dynamic>;
@@ -348,27 +360,26 @@ class AuthService {
       response = await _httpClient
           .post(
             Uri.parse('$_authBaseUrl/auth/token/refresh'),
-            headers: {'Content-Type': 'application/json'},
+            headers: _jsonHeaders,
             body: jsonEncode({'refresh_token': set.refreshToken}),
           )
           .timeout(const Duration(seconds: 15));
-    } on TimeoutException {
-      throw NetworkUnavailableException('Le serveur ne répond pas (timeout).');
+    } on TimeoutException catch (error, stackTrace) {
+      AppLogger.I
+          .error('AUTH: délai de renouvellement dépassé', error, stackTrace);
+      throw NetworkOperationException(NetworkErrorFamily.timeout, '$error');
     } on SocketException catch (e) {
-      throw NetworkUnavailableException(
-          'Connexion impossible (réseau ou DNS): ${e.message}');
+      AppLogger.I
+          .error('AUTH: réseau indisponible pendant le renouvellement', e);
+      throw NetworkOperationException(NetworkErrorFamily.offline, e.message);
     }
 
     if (response.statusCode == 401) {
       // Refresh invalide, expiré, révoqué ou rejoué : fin de session.
       await _clearAll();
-      throw SessionExpiredException('Session expirée, reconnectez-vous.');
+      throw SessionExpiredException(_sessionExpiredMessage);
     }
-    if (response.statusCode != 200) {
-      // Erreur serveur inattendue : transitoire, on ne touche pas aux tokens.
-      throw NetworkUnavailableException(
-          'Erreur serveur (${response.statusCode}).');
-    }
+    _throwForAuthResponse(response.statusCode, 'renouvellement de session');
 
     if (generation != _sessionGeneration) {
       // Un logout() a eu lieu pendant cette rotation : ne pas ressusciter
@@ -431,8 +442,10 @@ class AuthService {
       }
       // Seul un 401 confirme une session invalide. Tout autre statut est une
       // vérification indisponible ou inattendue et ne doit pas déconnecter.
-      throw NetworkUnavailableException(
-          'Vérification indisponible (${response.statusCode}).');
+      throw NetworkOperationException(
+        NetworkErrorFamily.serviceUnavailable,
+        'Vérification indisponible (${response.statusCode}).',
+      );
     } on SessionExpiredException {
       return false;
     } on NetworkUnavailableException {
@@ -440,13 +453,12 @@ class AuthService {
       // Propagée pour que l'appelant distingue ce cas d'une session invalide
       // (ne doit pas déconnecter l'utilisateur).
       rethrow;
-    } on TimeoutException {
-      throw NetworkUnavailableException('Le serveur ne répond pas (timeout).');
+    } on TimeoutException catch (error) {
+      throw NetworkOperationException(NetworkErrorFamily.timeout, '$error');
     } on SocketException catch (e) {
-      throw NetworkUnavailableException(
-          'Connexion impossible (réseau ou DNS): ${e.message}');
+      throw NetworkOperationException(NetworkErrorFamily.offline, e.message);
     } on http.ClientException catch (e) {
-      throw NetworkUnavailableException('Connexion impossible: ${e.message}');
+      throw NetworkOperationException(NetworkErrorFamily.offline, e.message);
     } catch (e) {
       AppLogger.I.error('AUTH: erreur lors de la vérification du token', e);
       return false;
@@ -471,18 +483,16 @@ class AuthService {
         return userInfo;
       } else if (response.statusCode == 401) {
         await logout();
-        throw SessionExpiredException('Session expirée, reconnectez-vous.');
-      } else {
-        throw NetworkUnavailableException(
-            'Profil temporairement indisponible (${response.statusCode}).');
+        throw SessionExpiredException(_sessionExpiredMessage);
       }
-    } on TimeoutException {
-      throw NetworkUnavailableException('Le serveur ne répond pas (timeout).');
+      _throwForAuthResponse(response.statusCode, 'lecture du profil');
+      throw StateError('Réponse profil non traitée.');
+    } on TimeoutException catch (error) {
+      throw NetworkOperationException(NetworkErrorFamily.timeout, '$error');
     } on SocketException catch (e) {
-      throw NetworkUnavailableException(
-          'Connexion impossible (réseau ou DNS): ${e.message}');
+      throw NetworkOperationException(NetworkErrorFamily.offline, e.message);
     } on http.ClientException catch (e) {
-      throw NetworkUnavailableException('Connexion impossible: ${e.message}');
+      throw NetworkOperationException(NetworkErrorFamily.offline, e.message);
     } catch (e) {
       if (e is SessionExpiredException || e is NetworkUnavailableException) {
         rethrow;
@@ -510,7 +520,7 @@ class AuthService {
       final response = await _authedClient
           .patch(
             Uri.parse('$_authBaseUrl/users/me/profile'),
-            headers: {'Content-Type': 'application/json'},
+            headers: _jsonHeaders,
             body: jsonEncode(body),
           )
           .timeout(const Duration(seconds: 30));
@@ -519,13 +529,18 @@ class AuthService {
         return jsonDecode(response.body) as Map<String, dynamic>;
       } else if (response.statusCode == 401) {
         await logout();
-        throw SessionExpiredException('Session expirée, reconnectez-vous.');
-      } else if (response.statusCode == 422) {
-        throw Exception('Valeur invalide');
-      } else {
-        throw Exception(
-            'Erreur lors de la mise à jour du profil (${response.statusCode})');
+        throw SessionExpiredException(_sessionExpiredMessage);
       }
+      _throwForAuthResponse(response.statusCode, 'mise à jour du profil');
+      throw StateError('Réponse profil non traitée.');
+    } on TimeoutException catch (error) {
+      throw NetworkOperationException(NetworkErrorFamily.timeout, '$error');
+    } on SocketException catch (error) {
+      throw NetworkOperationException(
+          NetworkErrorFamily.offline, error.message);
+    } on http.ClientException catch (error) {
+      throw NetworkOperationException(
+          NetworkErrorFamily.offline, error.message);
     } catch (e) {
       if (e is SessionExpiredException || e is NetworkUnavailableException) {
         rethrow;
@@ -533,6 +548,25 @@ class AuthService {
       AppLogger.I.error('AUTH: erreur lors de la mise à jour du profil', e);
       rethrow;
     }
+  }
+
+  void _throwForAuthResponse(int statusCode, String operation) {
+    if (statusCode >= 200 && statusCode < 300) return;
+    if (statusCode == 422 ||
+        (statusCode >= 400 && statusCode < 500 && statusCode != 429)) {
+      throw InvalidNetworkRequestException(
+          '$operation : réponse HTTP $statusCode.');
+    }
+    if (statusCode == 429) {
+      throw NetworkOperationException(
+        NetworkErrorFamily.rateLimited,
+        '$operation : réponse HTTP 429.',
+      );
+    }
+    throw NetworkOperationException(
+      NetworkErrorFamily.serviceUnavailable,
+      '$operation : réponse HTTP $statusCode.',
+    );
   }
 
   /// Déconnexion : invalide immédiatement la génération courante, attend la
@@ -567,7 +601,7 @@ class AuthService {
       await _httpClient
           .post(
             Uri.parse('$_authBaseUrl/auth/token/revoke'),
-            headers: {'Content-Type': 'application/json'},
+            headers: _jsonHeaders,
             body: jsonEncode({'refresh_token': refreshToken}),
           )
           .timeout(const Duration(seconds: 15));

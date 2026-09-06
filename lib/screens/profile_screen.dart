@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/logger.dart';
+import '../services/network_error.dart';
+import '../navigation/app_router.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -36,11 +38,13 @@ class ProfileScreen extends StatelessWidget {
           Center(
             child: CircleAvatar(
               radius: 40,
-              backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+              backgroundImage:
+                  avatarUrl != null ? NetworkImage(avatarUrl) : null,
               child: avatarUrl == null
                   ? Text(
                       _initials(displayName, email),
-                      style: TextStyle(fontSize: 28, color: colorScheme.onPrimary),
+                      style:
+                          TextStyle(fontSize: 28, color: colorScheme.onPrimary),
                     )
                   : null,
             ),
@@ -85,19 +89,9 @@ class ProfileScreen extends StatelessWidget {
             ],
             selected: experienceLevel != null ? {experienceLevel} : {},
             emptySelectionAllowed: true,
-            onSelectionChanged: (selected) async {
-              if (selected.isEmpty) return;
-              try {
-                await authProvider.updateExperienceLevel(selected.first);
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Erreur : impossible de mettre à jour le niveau'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
+            onSelectionChanged: (selected) {
+              if (selected.isNotEmpty) {
+                _updateExperienceLevel(context, authProvider, selected.first);
               }
             },
           ),
@@ -148,7 +142,8 @@ class ProfileScreen extends StatelessWidget {
                 context: context,
                 builder: (context) => AlertDialog(
                   title: const Text('Déconnexion'),
-                  content: const Text('Voulez-vous vraiment vous déconnecter ?'),
+                  content:
+                      const Text('Voulez-vous vraiment vous déconnecter ?'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
@@ -173,6 +168,51 @@ class ProfileScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  SnackBarAction? _profileErrorAction(
+    BuildContext context,
+    AuthProvider authProvider,
+    String level,
+    NetworkErrorPresentation presentation,
+  ) {
+    return switch (presentation.action) {
+      NetworkErrorAction.retry => SnackBarAction(
+          label: presentation.actionLabel!,
+          onPressed: () => _updateExperienceLevel(context, authProvider, level),
+        ),
+      NetworkErrorAction.reconnect => SnackBarAction(
+          label: presentation.actionLabel!,
+          onPressed: () => Navigator.of(context).pushNamed(AppRouter.login),
+        ),
+      NetworkErrorAction.none => null,
+    };
+  }
+
+  Future<void> _updateExperienceLevel(
+    BuildContext context,
+    AuthProvider authProvider,
+    String level,
+  ) async {
+    try {
+      await authProvider.updateExperienceLevel(level);
+    } catch (e) {
+      AppLogger.I.error('PROFILE UI: mise à jour impossible', e);
+      if (!context.mounted) return;
+      final presentation = presentNetworkError(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(presentation.message),
+          backgroundColor: Colors.red,
+          action: _profileErrorAction(
+            context,
+            authProvider,
+            level,
+            presentation,
+          ),
+        ),
+      );
+    }
   }
 
   String _initials(String? displayName, String email) {
