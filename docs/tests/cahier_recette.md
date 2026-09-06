@@ -9,11 +9,13 @@ Objectif: Vérifier les exports sans canal de plateforme et l'absence de tests m
 1. Lancer les tests d'export vers dossier choisi et répertoire temporaire
 2. Simuler l'annulation du choix de dossier
 3. Choisir explicitement le nom et le dossier du fichier, puis le sélectionner pour un import
-4. Simuler une erreur réelle d'écriture
-5. Contrôler l'absence de mécanisme d'exclusion nouveau dans les tests et l'analyse
+4. Sur Android ou iOS, utiliser Enregistrer le fichier et confirmer la destination dans le sélecteur natif
+5. Simuler une erreur réelle d'écriture
+6. Contrôler l'absence de mécanisme d'exclusion nouveau dans les tests et l'analyse
 Résultats attendus:
 - Le nom, l'emplacement, l'existence et le JSON version 3 sont vérifiés
 - Le chemin choisi n'est pas traité comme un dossier et l'import relit le fichier sans erreur OS I/O
+- Sur mobile, le fichier JSON est réellement écrit par le sélecteur natif et peut être ouvert ou réimporté
 - L'annulation ne crée aucun fichier et l'erreur d'écriture est propagée
 - Aucun test n'est ignoré et aucune règle Sonar n'est neutralisée
 

@@ -26,18 +26,29 @@ class FakeBackupLocationProvider implements BackupLocationProvider {
   Directory temporaryDirectory;
   String? selectedDirectory;
   Object? selectionError;
+  String? savedFileName;
+  List<int>? savedBytes;
 
   @override
   Future<Directory> getTemporaryDirectory() async => temporaryDirectory;
 
   @override
-  Future<String?> selectExportFilePath(String suggestedFileName) async {
+  Future<File?> saveExportFile(
+    String suggestedFileName,
+    List<int> bytes,
+  ) async {
     final error = selectionError;
     if (error != null) throw error;
     final destination = selectedDirectory;
     if (destination == null) return null;
-    if (destination.toLowerCase().endsWith('.json')) return destination;
-    return '${Directory(destination).path}/$suggestedFileName';
+    savedFileName = suggestedFileName;
+    savedBytes = List<int>.unmodifiable(bytes);
+    final path = destination.toLowerCase().endsWith('.json')
+        ? destination
+        : '${Directory(destination).path}/$suggestedFileName';
+    final file = File(path);
+    await file.writeAsBytes(bytes);
+    return file;
   }
 }
 

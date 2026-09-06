@@ -56,6 +56,14 @@ void main() {
         expect((data['goals'] as List).single['id'], 'goal-export');
         expect((data['weapons'] as List).single['id'], 'weapon-export');
         expect(DateTime.tryParse(data['exported_at'] as String), isNotNull);
+        expect(
+          fixture.locationProvider.savedFileName,
+          'sauvegarde_nex_target.json',
+        );
+        expect(
+          utf8.decode(fixture.locationProvider.savedBytes!),
+          await file.readAsString(),
+        );
       },
     );
 

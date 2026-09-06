@@ -228,15 +228,9 @@ class BackupService {
 
     final safeName = suggestedFileName ??
         'mycoach_export_${DateTime.now().millisecondsSinceEpoch}.json';
-    final destinationPath = await _locationProvider.selectExportFilePath(
+    return _locationProvider.saveExportFile(
       safeName,
+      utf8.encode(jsonString),
     );
-    if (destinationPath == null) {
-      // Annulation utilisateur.
-      return null;
-    }
-    final file = File(destinationPath);
-    await file.writeAsString(jsonString);
-    return file;
   }
 }

@@ -8,11 +8,13 @@ features:
       - Lancer les tests d'export vers dossier choisi et répertoire temporaire
       - Simuler l'annulation du choix de dossier
       - Choisir explicitement le nom et le dossier du fichier, puis le sélectionner pour un import
+      - Sur Android ou iOS, utiliser Enregistrer le fichier et confirmer la destination dans le sélecteur natif
       - Simuler une erreur réelle d'écriture
       - Contrôler l'absence de mécanisme d'exclusion nouveau dans les tests et l'analyse
     expected:
       - Le nom, l'emplacement, l'existence et le JSON version 3 sont vérifiés
       - Le chemin choisi n'est pas traité comme un dossier et l'import relit le fichier sans erreur OS I/O
+      - Sur mobile, le fichier JSON est réellement écrit par le sélecteur natif et peut être ouvert ou réimporté
       - L'annulation ne crée aucun fichier et l'erreur d'écriture est propagée
       - Aucun test n'est ignoré et aucune règle Sonar n'est neutralisée
 
