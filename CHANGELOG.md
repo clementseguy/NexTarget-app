@@ -28,7 +28,7 @@ Toutes les modifications notables de ce projet seront listées ici.
 - Sauvegardes : remplacement des tests d’export ignorés par des scénarios déterministes couvrant le dossier choisi, l’annulation, le répertoire temporaire, le format JSON version 3 et les erreurs d’écriture.
 
 ### Documentation
-- NT-145 : ajout d'une US dédiée à l'harmonisation et à la densification des cartes Exercices, explicitement hors périmètre du retour de recette courant.
+- NT-151 : ajout d'une US dédiée à l'harmonisation et à la densification des cartes Exercices, explicitement hors périmètre du retour de recette courant.
 
 ## [0.7.0] - 2026-09-04
 

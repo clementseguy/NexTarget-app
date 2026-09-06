@@ -11,7 +11,14 @@
 > de copie ; aucune synchronisation inverse n'est attendue (voir gouvernance).
 
 **Repo** : NexTarget-server (FastAPI + SQLModel + PostgreSQL en production, SQLite en développement/tests, OAuth + proxy IA)
-**Dernière projection** : 2026-09-06 (audit NT-144 ; le lot app en cours ne modifie aucun contrat ni code serveur)
+**Dernière projection** : 2026-09-06 (NT-145 à NT-151 sont de portée `app` et n'ajoutent aucun développement serveur)
+
+> Le correctif d'authentification NT-150 réutilise les contrats OAuth, profil,
+> refresh et révocation livrés par NT-040, NT-043 et NT-048. Il corrige
+> uniquement la migration locale et la cohérence de l'état Flutter ; aucune
+> route, réponse ou règle serveur ne change. Les items NT-145 à NT-149 sont
+> également entièrement locaux à l'application, comme NT-151. L'audit NT-144
+> et le lot en cours ne modifient eux non plus aucun contrat ni code serveur.
 
 > Important : **le serveur n'est plus « OAuth-only ».** Il expose aussi le **proxy Coach IA**
 > (`/coach/analyze-session`). Les anciens statuts « M1/M2 supprimés/décalés » sont
