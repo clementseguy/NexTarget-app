@@ -19,6 +19,13 @@ if ! flutter analyze; then
 fi
 ok "Analyze passed"
 
+log "Hive schema consistency..."
+if ! dart run tool/verify_hive_schema.dart; then
+  err "Hive schema verification failed"
+  exit 1
+fi
+ok "Hive schema passed"
+
 log "Running tests ($MODE mode)..."
 if [[ "$MODE" == "fast" ]]; then
   # Fast mode: run only service + widget smoke tests (adjust pattern if more granularity needed)
