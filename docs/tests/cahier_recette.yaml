@@ -24,10 +24,12 @@ features:
     steps:
       - Exécuter dart run tool/verify_hive_schema.dart sur le schéma courant
       - Lancer les tests du vérificateur avec typeId dupliqué et champ réutilisé
+      - Vérifier une classe Hive avec héritage et la suppression d'un champ encore actif dans le registre
       - Lancer les cas de migration absente, version dupliquée et rupture de séquence
     expected:
       - Le schéma nominal termine avec un code nul et un diagnostic de cohérence
       - Chaque incohérence termine avec un code non nul et un message actionnable
+      - Un champ retiré doit être déplacé explicitement de fields vers retiredFields sans libérer son index
       - Aucune box utilisateur n'est ouverte ou modifiée
 
   - id: NT-056

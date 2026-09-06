@@ -24,10 +24,12 @@ Objectif: Détecter toute dérive de migration, typeId ou index sans ouvrir les 
 Étapes:
 1. Exécuter dart run tool/verify_hive_schema.dart sur le schéma courant
 2. Lancer les tests du vérificateur avec typeId dupliqué et champ réutilisé
-3. Lancer les cas de migration absente, version dupliquée et rupture de séquence
+3. Vérifier une classe Hive avec héritage et la suppression d'un champ encore actif dans le registre
+4. Lancer les cas de migration absente, version dupliquée et rupture de séquence
 Résultats attendus:
 - Le schéma nominal termine avec un code nul et un diagnostic de cohérence
 - Chaque incohérence termine avec un code non nul et un message actionnable
+- Un champ retiré doit être déplacé explicitement de fields vers retiredFields sans libérer son index
 - Aucune box utilisateur n'est ouverte ou modifiée
 
 ## NT-056 — Erreurs réseau Auth, Profil et Coach

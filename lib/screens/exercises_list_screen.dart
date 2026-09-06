@@ -583,7 +583,9 @@ class _FiltersBar extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<ExerciseDifficultyFilter>(
-                            key: const Key('exercise_difficulty_filter'),
+                            key: ValueKey(
+                              'exercise_difficulty_filter_${difficultyFilter.name}',
+                            ),
                             initialValue: difficultyFilter,
                             decoration: const InputDecoration(isDense: true),
                             items: const [

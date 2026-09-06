@@ -17,6 +17,8 @@ class HiveSchemaSnapshot {
   final List<DeclaredHiveType> declaredTypes;
   final Map<int, Map<int, String>> reservedFieldsByTypeId;
   final Map<int, String> reservedTypeIds;
+  final Set<int> activeTypeIds;
+  final Map<int, Set<int>> activeFieldIdsByTypeId;
 
   const HiveSchemaSnapshot({
     required this.currentVersion,
@@ -25,6 +27,8 @@ class HiveSchemaSnapshot {
     required this.declaredTypes,
     required this.reservedFieldsByTypeId,
     required this.reservedTypeIds,
+    required this.activeTypeIds,
+    required this.activeFieldIdsByTypeId,
   });
 }
 
@@ -78,14 +82,23 @@ void _verifyTypes(HiveSchemaSnapshot schema, List<String> errors) {
       errors.add(
         'typeId ${type.typeId} de ${type.name} absent du registre historique.',
       );
-    } else if (reservedName != type.name) {
-      errors.add(
-        'typeId ${type.typeId} réservé à $reservedName, réutilisé par '
-        '${type.name}. Choisir un identifiant inédit.',
-      );
+    } else {
+      if (!schema.activeTypeIds.contains(type.typeId)) {
+        errors.add(
+          'typeId ${type.typeId} de ${type.name} est déclaré dans le code mais '
+          'marqué retiré dans le registre.',
+        );
+      }
+      if (reservedName != type.name) {
+        errors.add(
+          'typeId ${type.typeId} réservé à $reservedName, réutilisé par '
+          '${type.name}. Choisir un identifiant inédit.',
+        );
+      }
     }
     final reservedFields =
         schema.reservedFieldsByTypeId[type.typeId] ?? const {};
+    final activeFields = schema.activeFieldIdsByTypeId[type.typeId] ?? const {};
     for (final entry in type.fields.entries) {
       final reservedField = reservedFields[entry.key];
       if (reservedField == null) {
@@ -98,7 +111,30 @@ void _verifyTypes(HiveSchemaSnapshot schema, List<String> errors) {
           'HiveField ${entry.key} de ${type.name} réservé à $reservedField, '
           'réutilisé par ${entry.value}. Choisir un index inédit.',
         );
+      } else if (!activeFields.contains(entry.key)) {
+        errors.add(
+          'HiveField ${entry.key} de ${type.name}.${entry.value} est déclaré '
+          'dans le code mais marqué retiré dans le registre.',
+        );
       }
+    }
+    for (final fieldId in activeFields) {
+      if (!type.fields.containsKey(fieldId)) {
+        errors.add(
+          'HiveField $fieldId de ${type.name} est actif dans le registre mais '
+          'absent du code. Restaurer le champ ou le déplacer explicitement '
+          'dans retiredFields après migration compatible.',
+        );
+      }
+    }
+  }
+  for (final typeId in schema.activeTypeIds) {
+    if (!seenTypeIds.containsKey(typeId)) {
+      errors.add(
+        'typeId $typeId (${schema.reservedTypeIds[typeId]}) est actif dans le '
+        'registre mais absent du code. Restaurer le type ou le marquer '
+        'explicitement retiré.',
+      );
     }
   }
 }

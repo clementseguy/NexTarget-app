@@ -16,6 +16,10 @@ void main() {
               DeclaredHiveType(name: 'Goal', typeId: 44, fields: {0: 'id'}),
             ],
         reservedTypeIds: const {44: 'Goal'},
+        activeTypeIds: const {44},
+        activeFieldIdsByTypeId: const {
+          44: {0},
+        },
         reservedFieldsByTypeId: const {
           44: {0: 'id', 1: 'retiredField'}
         },
@@ -38,6 +42,50 @@ void main() {
       DeclaredHiveType(name: 'Goal', typeId: 44, fields: {1: 'newField'}),
     ]));
     expect(errors.join('\n'), contains('réservé à retiredField'));
+  });
+
+  test('détecte la suppression d’un champ encore actif', () {
+    final schema = HiveSchemaSnapshot(
+      currentVersion: 3,
+      availableMigrations: const [2, 3],
+      registeredMigrations: const [2, 3],
+      declaredTypes: const [
+        DeclaredHiveType(name: 'Goal', typeId: 44, fields: {0: 'id'}),
+      ],
+      reservedTypeIds: const {44: 'Goal'},
+      activeTypeIds: const {44},
+      activeFieldIdsByTypeId: const {
+        44: {0, 15},
+      },
+      reservedFieldsByTypeId: const {
+        44: {0: 'id', 15: 'improvementDelta'},
+      },
+    );
+
+    final errors = verifyHiveSchema(schema);
+
+    expect(errors.join('\n'), contains('HiveField 15 de Goal est actif'));
+  });
+
+  test('accepte un champ explicitement retiré et toujours réservé', () {
+    final schema = HiveSchemaSnapshot(
+      currentVersion: 3,
+      availableMigrations: const [2, 3],
+      registeredMigrations: const [2, 3],
+      declaredTypes: const [
+        DeclaredHiveType(name: 'Goal', typeId: 44, fields: {0: 'id'}),
+      ],
+      reservedTypeIds: const {44: 'Goal'},
+      activeTypeIds: const {44},
+      activeFieldIdsByTypeId: const {
+        44: {0},
+      },
+      reservedFieldsByTypeId: const {
+        44: {0: 'id', 1: 'retiredField'},
+      },
+    );
+
+    expect(verifyHiveSchema(schema), isEmpty);
   });
 
   test('détecte une migration absente', () {

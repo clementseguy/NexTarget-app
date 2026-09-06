@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:tir_sportif/migrations/schema_source_scanner.dart';
 import 'package:tir_sportif/migrations/schema_verifier.dart';
 
 void main() {
@@ -21,10 +22,19 @@ void main() {
     reservedFieldsByTypeId: {
       for (final entry in reservedTypes.entries)
         int.parse(entry.key): {
-          for (final field in ((entry.value as Map<String, dynamic>)['fields']
-                  as Map<String, dynamic>)
-              .entries)
+          for (final field in _reservedFields(entry.value).entries)
             int.parse(field.key): field.value as String,
+        },
+    },
+    activeTypeIds: {
+      for (final entry in reservedTypes.entries)
+        if ((entry.value as Map<String, dynamic>)['status'] == 'active')
+          int.parse(entry.key),
+    },
+    activeFieldIdsByTypeId: {
+      for (final entry in reservedTypes.entries)
+        int.parse(entry.key): {
+          for (final field in _activeFields(entry.value).keys) int.parse(field),
         },
     },
   );
@@ -68,31 +78,21 @@ List<int> _registeredMigrationVersions() {
 }
 
 List<DeclaredHiveType> _declaredHiveTypes() {
-  final types = <DeclaredHiveType>[];
-  final typePattern = RegExp(
-    r'@HiveType\(typeId: (\d+)\)\s+(?:enum|class)\s+(\w+)\s*\{(.*?)(?=@HiveType|\z)',
-    dotAll: true,
+  return parseDeclaredHiveTypes(
+    Directory('lib/models')
+        .listSync()
+        .whereType<File>()
+        .map((file) => file.readAsStringSync()),
   );
-  final fieldPattern =
-      RegExp(r'@HiveField\((\d+)\)\s+(?:final\s+)?[\w<>?, ]+\s+(\w+)[;,(]');
-  for (final file in Directory('lib/models').listSync().whereType<File>()) {
-    final source = file.readAsStringSync();
-    for (final match in typePattern.allMatches(source)) {
-      final fields = <int, String>{};
-      for (final field in fieldPattern.allMatches(match.group(3)!)) {
-        final index = int.parse(field.group(1)!);
-        if (fields.containsKey(index)) {
-          fields[index] = '${fields[index]}|${field.group(2)!}';
-        } else {
-          fields[index] = field.group(2)!;
-        }
-      }
-      types.add(DeclaredHiveType(
-        name: match.group(2)!,
-        typeId: int.parse(match.group(1)!),
-        fields: fields,
-      ));
-    }
-  }
-  return types;
+}
+
+Map<String, dynamic> _activeFields(Object? value) =>
+    ((value as Map<String, dynamic>)['fields'] as Map<String, dynamic>);
+
+Map<String, dynamic> _reservedFields(Object? value) {
+  final type = value as Map<String, dynamic>;
+  return {
+    ...type['fields'] as Map<String, dynamic>,
+    ...type['retiredFields'] as Map<String, dynamic>,
+  };
 }

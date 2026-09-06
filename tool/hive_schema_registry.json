@@ -1,11 +1,11 @@
 {
-  "registryVersion": 1,
+  "registryVersion": 2,
   "currentSchemaVersion": 9,
   "reservedTypes": {
-    "40": {"name": "GoalMetric", "fields": {"0": "averagePoints", "1": "sessionCount", "2": "totalPoints", "3": "groupSize", "4": "averageSessionPoints", "5": "bestSeriesPoints", "6": "bestSessionPoints", "7": "bestGroupSize"}},
-    "41": {"name": "GoalComparator", "fields": {"0": "greaterOrEqual", "1": "lessOrEqual"}},
-    "42": {"name": "GoalStatus", "fields": {"0": "active", "1": "achieved", "2": "failed", "3": "archived"}},
-    "43": {"name": "GoalPeriod", "fields": {"0": "none", "1": "rollingWeek", "2": "rollingMonth"}},
-    "44": {"name": "Goal", "fields": {"0": "id", "1": "title", "2": "description", "3": "metric", "4": "comparator", "5": "targetValue", "6": "status", "7": "period", "8": "createdAt", "9": "updatedAt", "10": "lastProgress", "11": "lastMeasuredValue", "12": "priority", "13": "achievementDate", "14": "previousMeasuredValue", "15": "improvementDelta"}}
+    "40": {"name": "GoalMetric", "status": "active", "fields": {"0": "averagePoints", "1": "sessionCount", "2": "totalPoints", "3": "groupSize", "4": "averageSessionPoints", "5": "bestSeriesPoints", "6": "bestSessionPoints", "7": "bestGroupSize"}, "retiredFields": {}},
+    "41": {"name": "GoalComparator", "status": "active", "fields": {"0": "greaterOrEqual", "1": "lessOrEqual"}, "retiredFields": {}},
+    "42": {"name": "GoalStatus", "status": "active", "fields": {"0": "active", "1": "achieved", "2": "failed", "3": "archived"}, "retiredFields": {}},
+    "43": {"name": "GoalPeriod", "status": "active", "fields": {"0": "none", "1": "rollingWeek", "2": "rollingMonth"}, "retiredFields": {}},
+    "44": {"name": "Goal", "status": "active", "fields": {"0": "id", "1": "title", "2": "description", "3": "metric", "4": "comparator", "5": "targetValue", "6": "status", "7": "period", "8": "createdAt", "9": "updatedAt", "10": "lastProgress", "11": "lastMeasuredValue", "12": "priority", "13": "achievementDate", "14": "previousMeasuredValue", "15": "improvementDelta"}, "retiredFields": {}}
   }
 }

@@ -173,6 +173,37 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Réinitialiser resynchronise le filtre de difficulté affiché', (
+    tester,
+  ) async {
+    await pumpList(tester);
+
+    await tester.tap(find.byTooltip('Déplier'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(
+        const ValueKey('exercise_difficulty_filter_all'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Expert').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('exercise_difficulty_filter_expert')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Réinitialiser'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('exercise_difficulty_filter_all')),
+      findsOneWidget,
+    );
+    expect(find.text('Tous'), findsOneWidget);
+  });
+
   testWidgets(
     'modifie puis crée la copie et rafraîchit sans changer la source',
     (tester) async {
