@@ -65,8 +65,9 @@ Objectif: Vérifier création, édition, filtres, duplication et sauvegarde rét
 6. Exporter puis importer les exercices avec et sans difficulté
 7. Importer une sauvegarde historique sans difficulté puis une valeur inconnue
 Résultats attendus:
-- Le sélecteur affiche Débutant, Avancé, Expert et Non renseigné ; les valeurs historiques restent affichées Non renseignée dans les cartes et filtres
+- Le sélecteur affiche Débutant, Avancé, Expert et N/A ; les valeurs historiques restent affichées Non renseignée dans les cartes et filtres
 - Les détails et badges des cartes restent lisibles dans les thèmes Classique et France
+- Les textes barrés des objectifs atteints et l'aide de priorité restent lisibles dans les thèmes Classique et France
 - Aucun niveau n'est déduit automatiquement et les filtres se combinent correctement
 - La copie reprend la valeur sans partager d'état mutable avec la source
 - Le cycle courant conserve la difficulté et les données historiques restent valides

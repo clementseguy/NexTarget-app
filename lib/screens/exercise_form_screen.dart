@@ -313,7 +313,7 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
                 ButtonSegment(value: 'expert', label: Text('Expert')),
                 ButtonSegment(
                   value: 'unspecified',
-                  label: Text('Non renseigné'),
+                  label: Text('N/A'),
                 ),
               ],
               selected: {_difficulty?.name ?? 'unspecified'},

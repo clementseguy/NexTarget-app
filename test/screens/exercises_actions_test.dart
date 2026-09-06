@@ -148,7 +148,7 @@ void main() {
         tester.getTopLeft(find.byKey(const Key('exercise_category'))).dy,
         tester.getTopLeft(find.byKey(const Key('exercise_type'))).dy,
       );
-      expect(find.text('Non renseigné'), findsOneWidget);
+      expect(find.text('N/A'), findsOneWidget);
       expect(tester.takeException(), isNull);
       expect(find.text('Première consigne'), findsOneWidget);
       expect(find.text('Deuxième consigne'), findsOneWidget);

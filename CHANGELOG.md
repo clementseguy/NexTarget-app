@@ -19,6 +19,7 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ### Fixed
 - Retours de recette NT-025 : Catégorie et Type alignés, difficulté présentée comme un sélecteur à quatre choix et textes des cartes lisibles dans le thème France.
+- Retours de recette UI : libellé de difficulté vide raccourci en « N/A » dans le formulaire et contraste des objectifs atteints corrigé dans le thème France.
 - Retours de recette NT-056 : le login depuis Paramètres utilise désormais les messages sûrs et l'action « Réessayer » communs.
 - Sauvegardes : le sélecteur fournit désormais un chemin de fichier complet, sans concaténation erronée, et l'import privilégie les octets fournis par le plugin lorsque le chemin système n'est pas lisible.
 - NT-059 : résorption locale des 53 constats SonarCloud de référence par corrections ciblées et remplacement des trois tests d'export masqués par des scénarios déterministes.
