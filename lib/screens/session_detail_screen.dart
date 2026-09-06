@@ -130,21 +130,21 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
             },
           ),
           IconButton(
-            icon: Icon(Icons.delete_outline),
+            icon: const Icon(Icons.delete_outline),
             tooltip: 'Supprimer',
             onPressed: () async {
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: Text('Supprimer la session ?'),
-                  content: Text('Cette action est irréversible.'),
+                  title: const Text('Supprimer la session ?'),
+                  content: const Text('Cette action est irréversible.'),
                   actions: [
                     TextButton(
                         onPressed: () => Navigator.pop(ctx, false),
-                        child: Text('Annuler')),
+                        child: const Text('Annuler')),
                     TextButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: Text('Supprimer',
+                        child: const Text('Supprimer',
                             style: TextStyle(color: Colors.red))),
                   ],
                 ),
@@ -160,23 +160,23 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
         ],
       ),
       body: ListView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         children: [
           SessionHeaderCard(
               session: session, series: series, planned: isPlanned),
           if (session.hasPhoto) ...[
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             SessionPhotoSection(photoPath: session.photoPath!),
           ],
           if (session.exercises.isNotEmpty) ...[
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             SessionExercisesSection(
               exerciseIds: session.exercises,
               allExercises: _allExercises,
             ),
           ],
           if (isRealisee && session is DetailedShootingSession) ...[
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             SessionCoachAnalysisSection(
               session: session,
               analyse: analyse,
@@ -193,20 +193,20 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
             ),
           ],
           if (session is DetailedShootingSession) ...[
-            SizedBox(height: 28),
+            const SizedBox(height: 28),
             Row(
               children: [
-                Icon(Icons.list_alt, size: 18, color: Colors.amberAccent),
-                SizedBox(width: 8),
-                Text('Séries',
+                const Icon(Icons.list_alt, size: 18, color: Colors.amberAccent),
+                const SizedBox(width: 8),
+                const Text('Séries',
                     style:
                         TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Spacer(),
+                const Spacer(),
                 Text('${series.length} au total',
                     style: TextStyle(fontSize: 12, color: Colors.white70)),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             SeriesList(series: series),
           ],
           if (session.synthese != null && session.synthese!.trim().isNotEmpty)

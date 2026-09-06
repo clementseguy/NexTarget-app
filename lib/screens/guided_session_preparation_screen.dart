@@ -130,15 +130,17 @@ class _GuidedSessionPreparationScreenState
     setState(() => _saving = true);
     try {
       final draft = await _sessionService.createGuidedDraft(
-        date: _date,
-        weapon: _weaponController.text,
-        caliber: _caliberController.text,
-        category: _category,
-        exercises: _selectedExerciseIds.toList(),
-        seriesCount: _positiveInt(_seriesCountController.text)!,
-        shotsPerSeries: _positiveInt(_shotsController.text)!,
-        initialDistance: _positiveInt(_distanceController.text)!,
-        initialHandMethod: _handMethod,
+        GuidedDraftRequest(
+          date: _date,
+          weapon: _weaponController.text,
+          caliber: _caliberController.text,
+          category: _category,
+          exercises: _selectedExerciseIds.toList(),
+          seriesCount: _positiveInt(_seriesCountController.text)!,
+          shotsPerSeries: _positiveInt(_shotsController.text)!,
+          initialDistance: _positiveInt(_distanceController.text)!,
+          initialHandMethod: _handMethod,
+        ),
       );
       if (!mounted) return;
       await Navigator.of(context).pushReplacement(

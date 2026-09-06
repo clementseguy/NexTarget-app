@@ -180,15 +180,17 @@ void main() {
       (tester) async {
     await setLargeSurface(tester);
     final draft = await service.createGuidedDraft(
-      date: DateTime(2026, 9, 4),
-      weapon: 'Pistolet',
-      caliber: '9 mm',
-      category: 'entraînement',
-      exercises: const [],
-      seriesCount: 2,
-      shotsPerSeries: 7,
-      initialDistance: 25,
-      initialHandMethod: HandMethod.oneHand,
+      GuidedDraftRequest(
+        date: DateTime(2026, 9, 4),
+        weapon: 'Pistolet',
+        caliber: '9 mm',
+        category: 'entraînement',
+        exercises: const [],
+        seriesCount: 2,
+        shotsPerSeries: 7,
+        initialDistance: 25,
+        initialHandMethod: HandMethod.oneHand,
+      ),
     );
 
     await tester.pumpWidget(
@@ -241,15 +243,17 @@ void main() {
       (tester) async {
     await setLargeSurface(tester);
     final draft = await service.createGuidedDraft(
-      date: DateTime(2026, 9, 4),
-      weapon: 'Pistolet',
-      caliber: '9 mm',
-      category: 'entraînement',
-      exercises: const [],
-      seriesCount: 1,
-      shotsPerSeries: 5,
-      initialDistance: 25,
-      initialHandMethod: HandMethod.twoHands,
+      GuidedDraftRequest(
+        date: DateTime(2026, 9, 4),
+        weapon: 'Pistolet',
+        caliber: '9 mm',
+        category: 'entraînement',
+        exercises: const [],
+        seriesCount: 1,
+        shotsPerSeries: 5,
+        initialDistance: 25,
+        initialHandMethod: HandMethod.twoHands,
+      ),
     );
     await tester.pumpWidget(
       MaterialApp(
@@ -289,15 +293,17 @@ void main() {
       (tester) async {
     await setLargeSurface(tester);
     final draft = await service.createGuidedDraft(
-      date: DateTime(2026, 9, 4),
-      weapon: 'Pistolet',
-      caliber: '9 mm',
-      category: 'entraînement',
-      exercises: const [],
-      seriesCount: 2,
-      shotsPerSeries: 5,
-      initialDistance: 25,
-      initialHandMethod: HandMethod.twoHands,
+      GuidedDraftRequest(
+        date: DateTime(2026, 9, 4),
+        weapon: 'Pistolet',
+        caliber: '9 mm',
+        category: 'entraînement',
+        exercises: const [],
+        seriesCount: 2,
+        shotsPerSeries: 5,
+        initialDistance: 25,
+        initialHandMethod: HandMethod.twoHands,
+      ),
     );
     await tester.pumpWidget(
       MaterialApp(
@@ -329,15 +335,17 @@ void main() {
       (tester) async {
     await setLargeSurface(tester);
     final draft = await service.createGuidedDraft(
-      date: DateTime(2026, 9, 4),
-      weapon: 'Pistolet',
-      caliber: '9 mm',
-      category: 'entraînement',
-      exercises: const [],
-      seriesCount: 1,
-      shotsPerSeries: 5,
-      initialDistance: 25,
-      initialHandMethod: HandMethod.twoHands,
+      GuidedDraftRequest(
+        date: DateTime(2026, 9, 4),
+        weapon: 'Pistolet',
+        caliber: '9 mm',
+        category: 'entraînement',
+        exercises: const [],
+        seriesCount: 1,
+        shotsPerSeries: 5,
+        initialDistance: 25,
+        initialHandMethod: HandMethod.twoHands,
+      ),
     );
     await tester.pumpWidget(
       MaterialApp(
@@ -369,15 +377,17 @@ void main() {
       (tester) async {
     await setLargeSurface(tester);
     await service.createGuidedDraft(
-      date: DateTime(2026, 9, 4),
-      weapon: 'Pistolet',
-      caliber: '9 mm',
-      category: 'entraînement',
-      exercises: const [],
-      seriesCount: 2,
-      shotsPerSeries: 5,
-      initialDistance: 25,
-      initialHandMethod: HandMethod.twoHands,
+      GuidedDraftRequest(
+        date: DateTime(2026, 9, 4),
+        weapon: 'Pistolet',
+        caliber: '9 mm',
+        category: 'entraînement',
+        exercises: const [],
+        seriesCount: 2,
+        shotsPerSeries: 5,
+        initialDistance: 25,
+        initialHandMethod: HandMethod.twoHands,
+      ),
     );
     await tester.pumpWidget(
       MaterialApp(
@@ -409,15 +419,17 @@ void main() {
       (tester) async {
     await setLargeSurface(tester);
     final draft = await service.createGuidedDraft(
-      date: DateTime(2026, 9, 4),
-      weapon: 'Pistolet',
-      caliber: '9 mm',
-      category: 'entraînement',
-      exercises: const [],
-      seriesCount: 3,
-      shotsPerSeries: 5,
-      initialDistance: 25,
-      initialHandMethod: HandMethod.twoHands,
+      GuidedDraftRequest(
+        date: DateTime(2026, 9, 4),
+        weapon: 'Pistolet',
+        caliber: '9 mm',
+        category: 'entraînement',
+        exercises: const [],
+        seriesCount: 3,
+        shotsPerSeries: 5,
+        initialDistance: 25,
+        initialHandMethod: HandMethod.twoHands,
+      ),
     );
     var synchronized = false;
     await tester.pumpWidget(
@@ -453,15 +465,17 @@ void main() {
       (tester) async {
     await setLargeSurface(tester);
     final draft = await service.createGuidedDraft(
-      date: DateTime(2026, 9, 4),
-      weapon: 'Pistolet',
-      caliber: '9 mm',
-      category: 'match',
-      exercises: const [],
-      seriesCount: 1,
-      shotsPerSeries: 6,
-      initialDistance: 25,
-      initialHandMethod: HandMethod.twoHands,
+      GuidedDraftRequest(
+        date: DateTime(2026, 9, 4),
+        weapon: 'Pistolet',
+        caliber: '9 mm',
+        category: 'match',
+        exercises: const [],
+        seriesCount: 1,
+        shotsPerSeries: 6,
+        initialDistance: 25,
+        initialHandMethod: HandMethod.twoHands,
+      ),
     );
     await tester.pumpWidget(
       MaterialApp(
@@ -492,15 +506,17 @@ void main() {
       }
     });
     final draft = await delayedService.createGuidedDraft(
-      date: DateTime(2026, 9, 4),
-      weapon: 'Pistolet',
-      caliber: '9 mm',
-      category: 'match',
-      exercises: const [],
-      seriesCount: 1,
-      shotsPerSeries: 5,
-      initialDistance: 25,
-      initialHandMethod: HandMethod.twoHands,
+      GuidedDraftRequest(
+        date: DateTime(2026, 9, 4),
+        weapon: 'Pistolet',
+        caliber: '9 mm',
+        category: 'match',
+        exercises: const [],
+        seriesCount: 1,
+        shotsPerSeries: 5,
+        initialDistance: 25,
+        initialHandMethod: HandMethod.twoHands,
+      ),
     );
     await tester.pumpWidget(
       MaterialApp(
@@ -546,15 +562,17 @@ void main() {
       (tester) async {
     await setLargeSurface(tester);
     final draft = await service.createGuidedDraft(
-      date: DateTime(2026, 9, 4),
-      weapon: 'Pistolet',
-      caliber: '9 mm',
-      category: 'match',
-      exercises: const [],
-      seriesCount: 1,
-      shotsPerSeries: 5,
-      initialDistance: 25,
-      initialHandMethod: HandMethod.twoHands,
+      GuidedDraftRequest(
+        date: DateTime(2026, 9, 4),
+        weapon: 'Pistolet',
+        caliber: '9 mm',
+        category: 'match',
+        exercises: const [],
+        seriesCount: 1,
+        shotsPerSeries: 5,
+        initialDistance: 25,
+        initialHandMethod: HandMethod.twoHands,
+      ),
     );
     await tester.pumpWidget(
       MaterialApp(
@@ -581,15 +599,17 @@ void main() {
       (tester) async {
     await setLargeSurface(tester);
     await service.createGuidedDraft(
-      date: DateTime(2026, 9, 4),
-      weapon: 'Pistolet',
-      caliber: '9 mm',
-      category: 'entraînement',
-      exercises: const [],
-      seriesCount: 3,
-      shotsPerSeries: 5,
-      initialDistance: 25,
-      initialHandMethod: HandMethod.twoHands,
+      GuidedDraftRequest(
+        date: DateTime(2026, 9, 4),
+        weapon: 'Pistolet',
+        caliber: '9 mm',
+        category: 'entraînement',
+        exercises: const [],
+        seriesCount: 3,
+        shotsPerSeries: 5,
+        initialDistance: 25,
+        initialHandMethod: HandMethod.twoHands,
+      ),
     );
 
     await tester.pumpWidget(

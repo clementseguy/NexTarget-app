@@ -206,12 +206,14 @@ class _ComparisonProgressCard extends StatelessWidget {
   String _formatPercent(double? value) {
     if (value == null) return '-';
     final normalized = value == 0 ? 0.0 : value;
-    final sign = normalized > 0
-        ? '+'
-        : normalized == 0
-            ? '±'
-            : '';
+    final sign = _percentSign(normalized);
     return '$sign${normalized.toStringAsFixed(1).replaceAll('.', ',')} %';
+  }
+
+  String _percentSign(double value) {
+    if (value > 0) return '+';
+    if (value == 0) return '±';
+    return '';
   }
 }
 
