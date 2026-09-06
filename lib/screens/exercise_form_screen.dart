@@ -45,6 +45,7 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
   // State
   ExerciseCategory _category = ExerciseCategory.technique;
   ExerciseType _type = ExerciseType.stand;
+  ExerciseDifficulty? _difficulty;
   final Set<String> _selectedGoals = {};
   List<Goal> _allGoals = [];
   bool _saving = false;
@@ -87,6 +88,7 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
       _nameCtrl.text = initial.name;
       _category = initial.categoryEnum;
       _type = initial.type;
+      _difficulty = initial.difficulty;
       _selectedGoals.addAll(List<String>.from(initial.goalIds));
       _descCtrl.text = initial.description ?? '';
       if (initial.durationMinutes != null) {
@@ -114,6 +116,7 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
             name: _nameCtrl.text,
             category: _category,
             type: _type,
+            difficulty: _difficulty,
             description:
                 _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
             goalIds: _selectedGoals.toList(),
@@ -129,6 +132,7 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
             name: _nameCtrl.text.trim(),
             categoryEnum: _category,
             type: _type,
+            difficulty: _difficulty,
             description:
                 _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
             durationMinutes: int.tryParse(_durationCtrl.text.trim()),
@@ -149,6 +153,8 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
           name: _nameCtrl.text,
           category: _category,
           type: _type,
+          difficulty: _difficulty,
+          clearDifficulty: _difficulty == null,
           description:
               _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
           goalIds: _selectedGoals.toList(),
@@ -276,6 +282,31 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
                   .toList(),
               onChanged: (v) => setState(() => _type = v ?? ExerciseType.stand),
               decoration: const InputDecoration(labelText: 'Type'),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<ExerciseDifficulty?>(
+              key: const Key('exercise_difficulty'),
+              initialValue: _difficulty,
+              items: const [
+                DropdownMenuItem<ExerciseDifficulty?>(
+                  value: null,
+                  child: Text('Non renseignée'),
+                ),
+                DropdownMenuItem<ExerciseDifficulty?>(
+                  value: ExerciseDifficulty.beginner,
+                  child: Text('Débutant'),
+                ),
+                DropdownMenuItem<ExerciseDifficulty?>(
+                  value: ExerciseDifficulty.advanced,
+                  child: Text('Avancé'),
+                ),
+                DropdownMenuItem<ExerciseDifficulty?>(
+                  value: ExerciseDifficulty.expert,
+                  child: Text('Expert'),
+                ),
+              ],
+              onChanged: (value) => setState(() => _difficulty = value),
+              decoration: const InputDecoration(labelText: 'Difficulté'),
             ),
             const SizedBox(height: 20),
             const Divider(),

@@ -58,6 +58,7 @@ Exercise _exercise() => Exercise(
       name: 'Exercice source',
       categoryEnum: ExerciseCategory.speed,
       type: ExerciseType.stand,
+      difficulty: ExerciseDifficulty.advanced,
       description: 'Description complète',
       durationMinutes: 15,
       equipment: 'Timer',
@@ -133,6 +134,11 @@ void main() {
     expect(description.controller!.text, 'Description complète');
     expect(duration.controller!.text, '15');
     expect(equipment.controller!.text, 'Timer');
+    final difficulty =
+        tester.widget<DropdownButtonFormField<ExerciseDifficulty?>>(
+      find.byKey(const Key('exercise_difficulty')),
+    );
+    expect(difficulty.initialValue, ExerciseDifficulty.advanced);
     expect(find.text('Première consigne'), findsOneWidget);
     expect(find.text('Deuxième consigne'), findsOneWidget);
 
@@ -154,6 +160,10 @@ void main() {
       find.widgetWithText(TextFormField, 'Nom de l\'exercice'),
       'Exercice personnalisé',
     );
+    await tester.tap(find.byKey(const Key('exercise_difficulty')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Débutant').last);
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Enregistrer'));
     await tester.pumpAndSettle();
 
@@ -168,6 +178,8 @@ void main() {
     expect(copy.name, 'Exercice personnalisé');
     expect(copy.id, isNot(source.id));
     expect(copy.createdAt, isNot(source.createdAt));
+    expect(source.difficulty, ExerciseDifficulty.advanced);
+    expect(copy.difficulty, ExerciseDifficulty.beginner);
   });
 
   testWidgets('refuse la suppression liée avec le nombre de sessions',

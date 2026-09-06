@@ -4,8 +4,10 @@ import '../interfaces/backup_location_provider.dart';
 import '../models/shooting_session.dart';
 import '../services/session_service.dart';
 import '../models/goal.dart';
+import '../models/exercise.dart';
 import '../services/goal_service.dart';
 import '../services/weapon_service.dart';
+import '../services/exercise_service.dart';
 import 'platform_backup_location_provider.dart';
 
 /// Service pour exporter / importer toutes les sessions sous forme JSON plat
@@ -21,16 +23,19 @@ class BackupService {
   final SessionService _sessionService;
   final GoalService _goalService;
   final WeaponService _weaponService;
+  final ExerciseService _exerciseService;
   final BackupLocationProvider _locationProvider;
 
   BackupService({
     SessionService? sessionService,
     GoalService? goalService,
     WeaponService? weaponService,
+    ExerciseService? exerciseService,
     BackupLocationProvider? locationProvider,
   })  : _sessionService = sessionService ?? SessionService(),
         _goalService = goalService ?? GoalService(),
         _weaponService = weaponService ?? WeaponService(),
+        _exerciseService = exerciseService ?? ExerciseService(),
         _locationProvider =
             locationProvider ?? PlatformBackupLocationProvider();
 
@@ -57,6 +62,7 @@ class BackupService {
     await _goalService.init();
     final goals = await _goalService.listAll();
     final weapons = await _weaponService.listAll();
+    final exercises = await _exerciseService.listAll();
     final data = {
       'format': 'mycoach-data',
       'version': 3,
@@ -64,6 +70,7 @@ class BackupService {
       'sessions_count': sessions.length,
       'goals_count': goals.length,
       'weapons_count': weapons.length,
+      'exercises_count': exercises.length,
       'sessions': sessions.map((s) => s.toMap()).toList(),
       'goals': goals
           .map((g) => {
@@ -84,6 +91,7 @@ class BackupService {
           .toList(),
       // NT-008 : râtelier d'armes personnel (simple nom, cf. Weapon.toMap).
       'weapons': weapons.map((w) => w.toMap()).toList(),
+      'exercises': exercises.map((exercise) => exercise.toMap()).toList(),
     };
     return const JsonEncoder.withIndent('  ').convert(data);
   }
@@ -172,6 +180,23 @@ class BackupService {
           // échec d'écriture Hive) n'est PAS avalée ici : elle remonte à
           // l'appelant pour être signalée à l'utilisateur, plutôt que de
           // terminer l'import en silence sur des armes manquantes.
+        }
+      }
+    }
+    final exercisesRaw = decoded['exercises'];
+    if (exercisesRaw is List) {
+      for (final item in exercisesRaw) {
+        if (item is! Map) continue;
+        try {
+          await _exerciseService.createExercise(
+            Exercise.fromMap(Map<String, dynamic>.from(item)),
+          );
+        } on FormatException {
+          // Une entrée d'exercice invalide n'empêche pas la restauration des
+          // autres données. Les valeurs de difficulté inconnues sont, elles,
+          // normalisées à « non renseignée » par Exercise.fromMap.
+        } on TypeError {
+          // Même règle pour une ancienne entrée structurellement invalide.
         }
       }
     }

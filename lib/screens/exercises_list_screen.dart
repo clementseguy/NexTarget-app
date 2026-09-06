@@ -8,6 +8,7 @@ import '../widgets/help_button.dart';
 import 'session_detail_screen.dart';
 import 'exercise_form_screen.dart';
 import '../utils/exercise_sorting.dart';
+import '../utils/exercise_filters.dart';
 
 /// Liste des exercices avec filtrage et tri
 /// Refactorisé pour séparer la logique de listing du formulaire (voir exercise_form_screen.dart)
@@ -42,6 +43,7 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
   // Filtres sélectionnés
   final Set<ExerciseCategory> _selectedCategories = {}; // vide = toutes
   final Set<ExerciseType> _selectedTypes = {}; // vide = tous
+  ExerciseDifficultyFilter _difficultyFilter = ExerciseDifficultyFilter.all;
   bool _filtersExpanded = false; // replié par défaut
   ExerciseSortMode _sortMode = ExerciseSortMode.defaultOrder;
 
@@ -49,16 +51,12 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
       sortExercises(list, _sortMode);
 
   List<Exercise> _applyFilters(List<Exercise> list) {
-    return list.where((e) {
-      if (_selectedCategories.isNotEmpty &&
-          !_selectedCategories.contains(e.categoryEnum)) {
-        return false;
-      }
-      if (_selectedTypes.isNotEmpty && !_selectedTypes.contains(e.type)) {
-        return false;
-      }
-      return true;
-    }).toList();
+    return filterExercises(
+      list,
+      categories: _selectedCategories,
+      types: _selectedTypes,
+      difficulty: _difficultyFilter,
+    );
   }
 
   void _toggleCategory(ExerciseCategory c) {
@@ -269,6 +267,9 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                   onToggleCategory: _toggleCategory,
                   selectedTypes: _selectedTypes,
                   onToggleType: _toggleType,
+                  difficultyFilter: _difficultyFilter,
+                  onDifficultyChanged: (value) =>
+                      setState(() => _difficultyFilter = value),
                 );
               }
               final ex = data[i - 2];
@@ -282,7 +283,8 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                           '${ex.categoryLabelFr} • ${ex.goalIds.length} objectif(s)'),
                       Padding(
                         padding: const EdgeInsets.only(top: 2.0),
-                        child: Text('Type: ${ex.typeLabelFr}',
+                        child: Text(
+                            'Type: ${ex.typeLabelFr} · Difficulté: ${ex.difficultyLabelFr}',
                             style: const TextStyle(
                                 fontSize: 12, color: Colors.white70)),
                       ),
@@ -454,6 +456,8 @@ class _FiltersBar extends StatelessWidget {
   final void Function(ExerciseCategory) onToggleCategory;
   final Set<ExerciseType> selectedTypes;
   final void Function(ExerciseType) onToggleType;
+  final ExerciseDifficultyFilter difficultyFilter;
+  final ValueChanged<ExerciseDifficultyFilter> onDifficultyChanged;
   const _FiltersBar({
     required this.expanded,
     required this.onToggleExpanded,
@@ -461,13 +465,17 @@ class _FiltersBar extends StatelessWidget {
     required this.onToggleCategory,
     required this.selectedTypes,
     required this.onToggleType,
+    required this.difficultyFilter,
+    required this.onDifficultyChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     final cats = ExerciseCategory.values;
     final types = ExerciseType.values;
-    final hasActive = selectedCategories.isNotEmpty || selectedTypes.isNotEmpty;
+    final hasActive = selectedCategories.isNotEmpty ||
+        selectedTypes.isNotEmpty ||
+        difficultyFilter != ExerciseDifficultyFilter.all;
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 1,
@@ -487,7 +495,12 @@ class _FiltersBar extends StatelessWidget {
                 if (hasActive) ...[
                   const SizedBox(width: 8),
                   _ActiveCountBadge(
-                      count: selectedCategories.length + selectedTypes.length),
+                    count: selectedCategories.length +
+                        selectedTypes.length +
+                        (difficultyFilter == ExerciseDifficultyFilter.all
+                            ? 0
+                            : 1),
+                  ),
                 ],
                 const Spacer(),
                 IconButton(
@@ -533,6 +546,43 @@ class _FiltersBar extends StatelessWidget {
                                   onSelected: (_) => onToggleCategory(c),
                                 ),
                             ],
+                          ),
+                          const SizedBox(height: 14),
+                          Text('Difficulté',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 6),
+                          DropdownButtonFormField<ExerciseDifficultyFilter>(
+                            key: const Key('exercise_difficulty_filter'),
+                            initialValue: difficultyFilter,
+                            decoration: const InputDecoration(isDense: true),
+                            items: const [
+                              DropdownMenuItem(
+                                value: ExerciseDifficultyFilter.all,
+                                child: Text('Tous'),
+                              ),
+                              DropdownMenuItem(
+                                value: ExerciseDifficultyFilter.unspecified,
+                                child: Text('Non renseignée'),
+                              ),
+                              DropdownMenuItem(
+                                value: ExerciseDifficultyFilter.beginner,
+                                child: Text('Débutant'),
+                              ),
+                              DropdownMenuItem(
+                                value: ExerciseDifficultyFilter.advanced,
+                                child: Text('Avancé'),
+                              ),
+                              DropdownMenuItem(
+                                value: ExerciseDifficultyFilter.expert,
+                                child: Text('Expert'),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              if (value != null) onDifficultyChanged(value);
+                            },
                           ),
                           const SizedBox(height: 14),
                           Text('Type',
@@ -585,6 +635,9 @@ class _FiltersBar extends StatelessWidget {
     }
     for (final t in typesToClear) {
       onToggleType(t);
+    }
+    if (difficultyFilter != ExerciseDifficultyFilter.all) {
+      onDifficultyChanged(ExerciseDifficultyFilter.all);
     }
   }
 

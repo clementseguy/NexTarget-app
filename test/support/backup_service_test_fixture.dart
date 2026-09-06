@@ -2,13 +2,16 @@ import 'dart:io';
 
 import 'package:tir_sportif/interfaces/backup_location_provider.dart';
 import 'package:tir_sportif/models/goal.dart';
+import 'package:tir_sportif/models/exercise.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/models/weapon.dart';
 import 'package:tir_sportif/repositories/goal_repository.dart';
+import 'package:tir_sportif/repositories/exercise_repository.dart';
 import 'package:tir_sportif/repositories/weapon_repository.dart';
 import 'package:tir_sportif/services/backup_service.dart';
 import 'package:tir_sportif/services/goal_service.dart';
+import 'package:tir_sportif/services/exercise_service.dart';
 import 'package:tir_sportif/services/session_service.dart';
 import 'package:tir_sportif/services/weapon_service.dart';
 
@@ -39,10 +42,12 @@ class BackupServiceTestFixture {
   BackupServiceTestFixture._({
     required this.service,
     required this.locationProvider,
+    required this.exerciseRepository,
   });
 
   final BackupService service;
   final FakeBackupLocationProvider locationProvider;
+  final ExerciseRepository exerciseRepository;
 
   static Future<BackupServiceTestFixture> create(
     Directory temporaryDirectory, {
@@ -92,6 +97,16 @@ class BackupServiceTestFixture {
       temporaryDirectory: temporaryDirectory,
       selectedDirectory: selectedDirectory,
     );
+    final exerciseRepository = _MemoryExerciseRepository([
+      Exercise(
+        id: 'exercise-export',
+        name: 'Exercice exporté',
+        categoryEnum: ExerciseCategory.precision,
+        type: ExerciseType.stand,
+        difficulty: ExerciseDifficulty.expert,
+        createdAt: DateTime(2026, 9, 1),
+      ),
+    ]);
     final service = BackupService(
       sessionService: sessionService,
       goalService: GoalService(
@@ -102,12 +117,40 @@ class BackupServiceTestFixture {
         weaponRepository: weaponRepository,
         sessionRepository: sessionRepository,
       ),
+      exerciseService: ExerciseService(
+        repository: exerciseRepository,
+        sessionRepository: sessionRepository,
+      ),
       locationProvider: locationProvider,
     );
     return BackupServiceTestFixture._(
       service: service,
       locationProvider: locationProvider,
+      exerciseRepository: exerciseRepository,
     );
+  }
+}
+
+class _MemoryExerciseRepository implements ExerciseRepository {
+  _MemoryExerciseRepository(Iterable<Exercise> exercises)
+      : exercises = {for (final exercise in exercises) exercise.id: exercise};
+
+  final Map<String, Exercise> exercises;
+
+  @override
+  Future<void> clear() async => exercises.clear();
+
+  @override
+  Future<void> delete(String id) async => exercises.remove(id);
+
+  @override
+  Future<List<Exercise>> getAll() async => exercises.values
+      .map((exercise) => Exercise.fromMap(exercise.toMap()))
+      .toList();
+
+  @override
+  Future<void> put(Exercise exercise) async {
+    exercises[exercise.id] = Exercise.fromMap(exercise.toMap());
   }
 }
 

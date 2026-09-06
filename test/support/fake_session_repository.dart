@@ -10,7 +10,8 @@ import 'package:tir_sportif/repositories/session_repository.dart';
 /// une mutation en mémoire (ex. `session.weapon = ...`) de « persister »
 /// silencieusement même si l'écriture (`update`) échoue ensuite — bug réel
 /// rencontré lors du développement de NT-008 (rollback du renommage d'arme).
-class FakeSessionRepository implements SessionRepository {
+class FakeSessionRepository
+    implements SessionRepository, AtomicSessionRepository {
   final List<ShootingSession> sessions = [];
   int updateCallCount = 0;
 
@@ -42,10 +43,33 @@ class FakeSessionRepository implements SessionRepository {
   }
 
   @override
-  Future<bool> update(ShootingSession session, {bool preserveExistingSeriesIfEmpty = true}) async {
+  Future<List<int>> insertAll(List<ShootingSession> incoming) async {
+    final snapshot =
+        sessions.map((item) => ShootingSession.fromMap(item.toMap())).toList();
+    final nextId = _nextId;
+    try {
+      final ids = <int>[];
+      for (final session in incoming) {
+        ids.add(await insert(session));
+      }
+      return ids;
+    } catch (_) {
+      sessions
+        ..clear()
+        ..addAll(snapshot);
+      _nextId = nextId;
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> update(ShootingSession session,
+      {bool preserveExistingSeriesIfEmpty = true}) async {
     updateCallCount++;
-    if (failOnUpdateCallNumber != null && updateCallCount == failOnUpdateCallNumber) {
-      throw StateError('Échec simulé de mise à jour de session (FakeSessionRepository)');
+    if (failOnUpdateCallNumber != null &&
+        updateCallCount == failOnUpdateCallNumber) {
+      throw StateError(
+          'Échec simulé de mise à jour de session (FakeSessionRepository)');
     }
     final idx = sessions.indexWhere((s) => s.id == session.id);
     if (idx == -1) return false;
@@ -53,7 +77,9 @@ class FakeSessionRepository implements SessionRepository {
     // Comme HiveSessionRepository : si la session fournie n'a pas de série et
     // qu'on doit préserver l'existant, on conserve les séries déjà stockées
     // et on signale le fallback en retournant true.
-    if (preserveExistingSeriesIfEmpty && session.series.isEmpty && sessions[idx].series.isNotEmpty) {
+    if (preserveExistingSeriesIfEmpty &&
+        session.series.isEmpty &&
+        sessions[idx].series.isNotEmpty) {
       session.series = sessions[idx].series;
       sessions[idx] = ShootingSession.fromMap(session.toMap());
       return true;

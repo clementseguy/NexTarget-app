@@ -46,6 +46,8 @@ void main() {
       expect(data['sessions_count'], 1);
       expect(data['goals_count'], 1);
       expect(data['weapons_count'], 1);
+      expect(data['exercises_count'], 1);
+      expect((data['exercises'] as List).single['difficulty'], 'expert');
       expect((data['sessions'] as List).single['weapon'], 'Pistolet de test');
       expect((data['goals'] as List).single['id'], 'goal-export');
       expect((data['weapons'] as List).single['id'], 'weapon-export');

@@ -9,22 +9,40 @@ void main() {
         name: 'Drill',
         categoryEnum: ExerciseCategory.technique,
         type: ExerciseType.home,
+        difficulty: ExerciseDifficulty.advanced,
         description: 'desc',
         createdAt: DateTime(2025, 10, 7),
         priority: 5,
-        goalIds: ['g1','g2'],
-        consignes: ['a','b'],
+        goalIds: ['g1', 'g2'],
+        consignes: ['a', 'b'],
       );
       final map = ex.toMap();
       expect(map['category'], 'technique');
       expect(map['type'], 'home');
+      expect(map['difficulty'], 'advanced');
       final ex2 = Exercise.fromMap({
         ...map,
       });
       expect(ex2.categoryEnum, ExerciseCategory.technique);
       expect(ex2.type, ExerciseType.home);
+      expect(ex2.difficulty, ExerciseDifficulty.advanced);
+      expect(ex2.difficultyLabelFr, 'Avancé');
       expect(ex2.categoryLabelFr, 'Technique');
       expect(ex2.typeLabelFr, 'Maison');
+    });
+
+    test('une sauvegarde historique ou une valeur inconnue reste valide', () {
+      final base = {
+        'id': 'legacy',
+        'name': 'Historique',
+        'category': 'precision',
+        'type': 'stand',
+        'createdAt': DateTime(2025).toIso8601String(),
+      };
+      expect(Exercise.fromMap(base).difficulty, isNull);
+      expect(Exercise.fromMap({...base, 'difficulty': 'unknown'}).difficulty,
+          isNull);
+      expect(Exercise.fromMap(base).difficultyLabelFr, 'Non renseignée');
     });
 
     test('fromMap parses legacy synonyms and defaults', () {
