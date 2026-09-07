@@ -1,7 +1,7 @@
 # NexTarget — Plan de priorisation & sprints
 
 > Vue de pilotage dérivée du [`backlog-unifie.md`](backlog-unifie.md), établie le
-> 2026-07-13 et resynchronisée le 2026-09-06. Le backlog unifié reste la source de vérité produit ; ce document
+> 2026-07-13 et resynchronisée le 2026-09-07. Le backlog unifié reste la source de vérité produit ; ce document
 > ordonne les items non livrés par valeur métier, dépendances et capacité à
 > produire une version stable en fin de sprint.
 
@@ -45,7 +45,7 @@
 > par la PR #31. NT-134 réserve les graphiques
 > score/groupement intra-session comme évolution facultative ultérieure.
 
-> **Planification du 2026-09-05** : le prochain lot app regroupe **NT-059,
+> **Planification du 2026-09-05** : le lot app regroupe **NT-059,
 > NT-077, NT-056, NT-057, NT-025 et NT-144**, dans cet ordre recommandé. Il
 > stabilise d'abord la qualité et la persistance, harmonise ensuite les erreurs
 > réseau et la dette UI, puis livre l'évolution mineure des exercices et clôt
@@ -53,16 +53,19 @@
 > une branche unique avec des commits séparés ; aucun changement serveur n'est
 > attendu.
 
-> **Avancement du 2026-09-06** : NT-059, NT-077, NT-056, NT-057, NT-025 et
-> NT-144 sont `EN COURS` sur une branche app unique non fusionnée. Ils ne
-> passeront `FAIT` qu'après satisfaction complète de la Definition of Done.
+> **Livraison du 2026-09-06** : NT-059, NT-077, NT-056, NT-057, NT-025 et
+> NT-144 sont fusionnés sur `dev` par la PR #35 et passent à `FAIT`.
 
-> **Planification du 2026-09-06** : le lot suivant regroupe **NT-150 puis
+> **Planification du 2026-09-06** : le lot regroupe **NT-150 puis
 > NT-145 à NT-149**. Il traite d'abord l'état d'authentification incohérent
 > observé après une mise à jour v0.6.0 vers v0.7.0, puis cinq retours ciblés sur
 > Synthèse, la saisie des séries, les préférences et le nom des exports. Ce lot
 > est entièrement côté app et démarre après intégration de NT-056, NT-141 et
 > NT-142 dont il dépend fonctionnellement.
+
+> **Livraisons des 2026-09-05 et 2026-09-07** : NT-026, NT-027 et NT-140 à
+> NT-143 sont fusionnés sur `dev` par la PR #34 ; NT-145 à NT-150 le sont par
+> la PR #36. Tous passent à `FAIT`.
 
 ## Hypothèses
 
@@ -98,8 +101,8 @@
 | 0 | NT-049 (FAIT) | Diagnostic immédiat et sécurisé de la base utilisateurs et du comportement OAuth ; lot serveur autonome livré. | NT-040, NT-042 | server |
 | 0 | NT-014, NT-048, NT-061, NT-073, NT-133 (FAIT) | Lot de finalisation livré sur `dev`. | NT-001, NT-003, NT-005, NT-010, NT-017, NT-022, NT-040 | both |
 | 0 | NT-131 (FAIT) | Session guidée directement au stand sur le socle livré par NT-133 ; fusionnée sur `dev` par la PR #31. | NT-001, NT-002, NT-003, NT-004, NT-009, NT-022, NT-073, NT-133 | app |
-| 1 | NT-059, NT-077, NT-056, NT-057, NT-025, NT-144 | Lot immédiat de stabilisation, qualité, évolution mineure des exercices et hygiène documentaire. | NT-020, NT-027, NT-040, NT-048, NT-051, NT-061, NT-072 | app |
-| 2 | NT-150, NT-145, NT-146, NT-147, NT-148, NT-149 | Retours v0.7.0 : cohérence de connexion prioritaire, navigation depuis les records et finitions ciblées. | NT-002, NT-003, NT-010, NT-013, NT-040, NT-048, NT-056, NT-061, NT-131, NT-141, NT-142 | app |
+| 1 | NT-059, NT-077, NT-056, NT-057, NT-025, NT-144 (FAIT) | Lot de stabilisation, qualité, évolution mineure des exercices et hygiène documentaire livré par la PR #35. | NT-020, NT-027, NT-040, NT-048, NT-051, NT-061, NT-072 | app |
+| 2 | NT-150, NT-145, NT-146, NT-147, NT-148, NT-149 (FAIT) | Retours v0.7.0 livrés par la PR #36 : cohérence de connexion, navigation depuis les records et finitions ciblées. | NT-002, NT-003, NT-010, NT-013, NT-040, NT-048, NT-056, NT-061, NT-131, NT-141, NT-142 | app |
 | 3 | NT-100, NT-101 | Socle métier TAR : rend les sessions comparables et exploitables par stats/coach. | NT-001, NT-002 | app |
 | 4 | NT-130 | Réduit fortement la friction de saisie au stand et prépare les templates par épreuve après stabilisation de NT-073/NT-133. | NT-001, NT-073, NT-101 optionnel, NT-133 | app |
 | 5 | NT-005 (FAIT), NT-110 | Photo cible exploitable : mémoire visuelle puis contexte fiable pour le coach. | NT-001, NT-100 | app |
@@ -113,12 +116,12 @@
 | 13 | NT-125, NT-126 | Boucle longue : suivi des recommandations puis plan d'entraînement. | NT-121, NT-123, NT-124 | both |
 | 14 | NT-024, NT-015, NT-016 | Raffinement stats/objectifs/exercices après les axes TAR et coach. | NT-022, NT-021, NT-010, NT-012 | app |
 | 15 | NT-076 | Dette de performance app restant à caler après le lot immédiat. | NT-010 | app |
-| 16 | NT-034, NT-026, NT-007 (FAIT) | Améliorations utiles mais non structurantes ; NT-026 est de faible priorité mais reste planifié. | NT-032, NT-020, NT-022 | app/server |
+| 16 | NT-034, NT-026 (FAIT), NT-007 (FAIT) | Améliorations utiles mais non structurantes ; NT-026 est livré par la PR #34. | NT-032, NT-020, NT-022 | app/server |
 | 17 | NT-044, NT-103, NT-132 | Opportunistes ou à instruire : Facebook, grilles FFTir, spike vocal. | sourcing/config terrain | both/app |
 
 ## Plan par sprint
 
-### Lot immédiat — Stabilisation technique et évolutions mineures
+### Lot livré — Stabilisation technique et évolutions mineures
 
 **Objectif livrable** : repartir d'une base analysable sans tests masqués,
 sécuriser les futures évolutions Hive, homogénéiser la reprise après erreur
@@ -135,17 +138,14 @@ l'application Flutter et sa documentation.
 | 5 | NT-025 | Ajouter la difficulté facultative des exercices, son filtre et sa persistance rétrocompatible. | Migration additive ; reprise par NT-027 ; import/export couverts. |
 | 6 | NT-144 | Synchroniser et alléger les documents de backlog après les cinq évolutions précédentes. | Conserver les identifiants et décisions durables ; aucun code produit modifié. |
 
-**Organisation recommandée** : une branche app unique pour le lot, avec un
-commit cohérent par item lorsque possible. Les validations ciblées sont jouées
-à chaque incrément ; l'analyse, la suite complète et les contrôles documentaires
-sont rejoués avant livraison.
+**État du lot** : `FAIT`, fusionné sur `dev` par la PR #35 le 2026-09-06.
 
 **Version stable attendue** : aucune issue Sonar de la référence ni test ignoré,
 schéma Hive contrôlé automatiquement, erreurs réseau actionnables sans
 déconnexion abusive, aucun changement UX issu du nettoyage, difficulté des
 exercices rétrocompatible et documents de pilotage synchronisés.
 
-### Lot suivant — Retours v0.7.0 et cohérence de connexion
+### Lot livré — Retours v0.7.0 et cohérence de connexion
 
 **Objectif livrable** : rendre l'état connecté fiable après mise à jour, puis
 traiter cinq irritants courts sans modifier les calculs statistiques, le format
@@ -160,10 +160,7 @@ des sauvegardes ni les parcours métier existants.
 | 5 | NT-148 | Utiliser le même séparateur entre les trois blocs de préférences de tir. | Après NT-141 ; ordre et comportements inchangés. |
 | 6 | NT-149 | Nommer les deux exports `nextarget_export_<timestamp>.json`. | Format JSON historique et noms explicitement suggérés inchangés. |
 
-**Organisation recommandée** : une branche app unique après fusion du lot de
-stabilisation et des dépendances NT-141/NT-142, avec NT-150 isolé dans un commit
-facilement révisable. Les tests ciblés accompagnent chaque item, puis l'analyse,
-la suite complète et le cahier de recette sont rejoués avant livraison.
+**État du lot** : `FAIT`, fusionné sur `dev` par la PR #36 le 2026-09-07.
 
 **Version stable attendue** : aucun état « connecté sans profil », reconnexion
 toujours accessible après expiration, cartes de record navigables, aide au
@@ -346,7 +343,7 @@ mesurables dans le temps.
 | 1 | NT-125 | Suivi des recommandations | statut suivie/non suivie, consultation | réinjection dans contexte coach |
 | 2 | NT-024 | Stats d'exécution exercices | usageCount, lastPerformedAt, fenêtres glissantes | — |
 | 3 | NT-015 | Recos Objectifs ⇄ Exercices | suggestions locales selon objectifs en retard | — |
-| 4 | NT-026 | Suppression d'un exercice | action UI avec confirmation ; sessions conservées ; retour sûr du filtre NT-007 à « Tous les exercices » | — |
+| 4 | NT-026 (FAIT) | Suppression d'un exercice | livré par la PR #34 ; action UI avec confirmation, sessions conservées et retour sûr du filtre NT-007 à « Tous les exercices » | — |
 
 **Version stable attendue** : le coach voit si ses conseils ont été appliqués,
 mais aucun plan multi-semaines automatique.
@@ -368,13 +365,13 @@ réversible par suppression des entités créées.
 
 | Déclencheur | Items | Recommandation |
 |---|---|---|
-| Lot immédiat décidé le 2026-09-05 | NT-059, NT-077, NT-056, NT-057, NT-025, NT-144 | Livrer dans cet ordre sur une branche app unique ; ne plus traiter ces items comme opportunistes. |
-| Retours v0.7.0 cadrés le 2026-09-06 | NT-150, NT-145, NT-146, NT-147, NT-148, NT-149 | Démarrer après le lot immédiat et les corrections NT-141/NT-142 ; traiter NT-150 en premier. |
+| Lot décidé le 2026-09-05 et livré le 2026-09-06 | NT-059, NT-077, NT-056, NT-057, NT-025, NT-144 (FAIT) | Fusionné sur `dev` par la PR #35. |
+| Retours v0.7.0 cadrés le 2026-09-06 et livrés le 2026-09-07 | NT-150, NT-145, NT-146, NT-147, NT-148, NT-149 (FAIT) | Fusionnés sur `dev` par la PR #36. |
 | Baisse de performance avec la volumétrie | NT-076 | Mesurer avant de planifier le cache et le compactage Hive. |
 | Besoin login social autre que Google | NT-044 | Valider le flow Facebook contre une vraie app Facebook puis câbler le bouton app. |
 | Besoin classement officiel fédéral | NT-103 | Sourcer les grilles RGS FFTir avant estimation définitive. |
 | Hypothèse de saisie mains libres au stand | NT-132 | Spike timeboxé uniquement, avec go/no-go en conditions réelles. |
-| Besoin de confort catalogue exercices | NT-026, NT-007 (FAIT) | NT-025 rejoint le lot immédiat ; NT-007 est livré (PR #12) et NT-026 reste planifié à faible priorité en Sprint 7, avec recette des références de sessions orphelines. |
+| Besoin de confort catalogue exercices | NT-026, NT-007 (FAIT) | NT-007 est livré par la PR #12 et NT-026 par la PR #34, avec conservation des sessions référentes. |
 | Besoin de densifier les cartes Exercices | NT-151 | Cadrer la cohérence avec Sessions et Séries avant de réduire et regrouper la zone d'actions ; ne pas inclure dans le retour de recette NT-025. |
 
 ## Icebox
@@ -390,11 +387,11 @@ réversible par suppression des entités créées.
 
 ## Suivi de cohérence documentaire
 
-- **Traité sur branche non fusionnée — NT-144 (2026-09-06)** : l'ancien bloc
+- **Livré — NT-144 (2026-09-06)** : l'ancien bloc
   concurrent est renommé « Archive historique — ancien plan S1-S6 », l'index
   inclut le thème 14, NT-020/NT-026 sont distingués, NT-023 et NT-033 renvoient
   explicitement à leurs items de remplacement, et les projections sont datées
-  et synchronisées. La fusion reste requise avant le statut `FAIT`.
+  et synchronisées. La PR #35 est fusionnée sur `dev` et l'item est `FAIT`.
 
 - **Historique (2026-09-02)** : un premier bandeau avait signalé le caractère
   historique de l'ancien bloc. NT-144 achève cette clarification en l'archivant

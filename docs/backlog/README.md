@@ -126,4 +126,4 @@ supprimés afin d'éviter qu'un agent les interprète comme des sources actives.
 Les décisions durables ont été intégrées directement aux items concernés. Le
 repo serveur pointe vers ce dossier sans en maintenir de copie.
 
-*Dernier audit du code et des projections : 2026-09-06.*
+*Dernier audit du code et des projections : 2026-09-07.*

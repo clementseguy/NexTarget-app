@@ -11,7 +11,7 @@
 > de copie ; aucune synchronisation inverse n'est attendue (voir gouvernance).
 
 **Repo** : NexTarget-server (FastAPI + SQLModel + PostgreSQL en production, SQLite en développement/tests, OAuth + proxy IA)
-**Dernière projection** : 2026-09-06 (NT-145 à NT-151 sont de portée `app` et n'ajoutent aucun développement serveur)
+**Dernière projection** : 2026-09-07 (NT-145 à NT-151 sont de portée `app` et n'ajoutent aucun développement serveur)
 
 > Le correctif d'authentification NT-150 réutilise les contrats OAuth, profil,
 > refresh et révocation livrés par NT-040, NT-043 et NT-048. Il corrige
