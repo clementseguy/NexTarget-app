@@ -5,6 +5,7 @@ Toutes les modifications notables de ce projet seront listées ici.
 ## [Non publié]
 
 ### Added
+- NT-146 : aide gestuelle commune aux champs de groupement de la séance guidée et du wizard, accessible et sans effet sur la saisie.
 - NT-145 : ouverture directe de la session source depuis les records de score et de groupement, avec départage déterministe et rechargement des statistiques au retour.
 - NT-025 : difficulté facultative des exercices, filtre combinable, migration Hive additive et cycle de sauvegarde rétrocompatible.
 - NT-077 : registre historique et vérification déterministe en lecture seule des migrations, `typeId` et index `HiveField`, intégrée au contrôle avant commit et à la CI.

@@ -1,6 +1,18 @@
 version: v0.8
 last_updated: 2026-09-06
 features:
+  - id: NT-146
+    name: Aide gestuelle au groupement
+    objectif: Estimer un groupement dans les deux saisies sans modifier le champ.
+    steps:
+      - Saisir un groupement dans une séance Au stand puis ouvrir et fermer l'aide
+      - Répéter dans le wizard d'une session prévue
+      - Lire les trois repères et leur description avec les fonctions d'accessibilité
+    expected:
+      - Les repères indiquent moins de 10 cm, environ 15 cm et environ 20 cm avec les gestes de la main prévus
+      - Le caractère approximatif, la dépendance à la main et la comparaison au niveau de la cible sont précisés
+      - La valeur saisie et les validations restent strictement inchangées dans les deux parcours
+
   - id: NT-145
     name: Navigation depuis les records statistiques
     objectif: Ouvrir la session source exacte sans modifier les records ni leurs cartes.

@@ -6,6 +6,7 @@ import '../../models/exercise.dart';
 import '../../models/goal.dart';
 import '../../widgets/weapon_autocomplete_field.dart';
 import '../../widgets/caliber_autocomplete_field.dart';
+import '../../widgets/group_size_help.dart';
 
 /// Étape introduction du wizard (exercice, arme, calibre, catégorie)
 class WizardIntroStep extends StatelessWidget {
@@ -207,7 +208,10 @@ class WizardSeriesStep extends StatelessWidget {
                     initialValue: '',
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(labelText: 'Groupement'),
+                    decoration: const InputDecoration(
+                      labelText: 'Groupement',
+                      suffixIcon: GroupSizeHelpButton(),
+                    ),
                     onChanged: (v) {
                       controller.groupSize = double.tryParse(v) ?? 0;
                     },

@@ -3,6 +3,17 @@
 - Dernière mise à jour: 2026-09-06
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
 
+## NT-146 — Aide gestuelle au groupement
+Objectif: Estimer un groupement dans les deux saisies sans modifier le champ.
+Étapes:
+1. Saisir un groupement dans une séance Au stand puis ouvrir et fermer l'aide
+2. Répéter dans le wizard d'une session prévue
+3. Lire les trois repères et leur description avec les fonctions d'accessibilité
+Résultats attendus:
+- Les repères indiquent moins de 10 cm, environ 15 cm et environ 20 cm avec les gestes de la main prévus
+- Le caractère approximatif, la dépendance à la main et la comparaison au niveau de la cible sont précisés
+- La valeur saisie et les validations restent strictement inchangées dans les deux parcours
+
 ## NT-145 — Navigation depuis les records statistiques
 Objectif: Ouvrir la session source exacte sans modifier les records ni leurs cartes.
 Étapes:

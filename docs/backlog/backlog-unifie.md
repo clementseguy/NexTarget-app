@@ -993,7 +993,7 @@
 | NT-143 | Remplacer « Copier résumé » par la duplication de session | app | 3 | Should | M | EN COURS |
 | NT-144 | Assainir et réorganiser la documentation du backlog | app | 1 | Could | S | EN COURS |
 | NT-145 | Ouvrir la session associée à un record | app | 3 | Should | S | EN COURS |
-| NT-146 | Aider à estimer la taille d'un groupement | app | 2 | Could | S | À FAIRE |
+| NT-146 | Aider à estimer la taille d'un groupement | app | 2 | Could | S | EN COURS |
 | NT-147 | Déplacer « Répartition Catégories » sous les calibres | app | 1 | Should | S | À FAIRE |
 | NT-148 | Séparer les trois préférences de tir | app | 1 | Could | S | À FAIRE |
 | NT-149 | Renommer les fichiers d'export NexTarget | app | 1 | Should | S | À FAIRE |
@@ -1103,7 +1103,7 @@
   - consulter ou fermer l'aide ne préremplit et ne modifie jamais le groupement ; la saisie et ses validations actuelles restent inchangées ;
   - aucun repère lié à la cible C50 n'est introduit dans cet item ;
   - les widget tests couvrent la présence dans les deux parcours, les trois repères, l'accessibilité et la conservation de la saisie.
-- **Priorité** : Could · **VM** : 2 · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Could · **VM** : 2 · **Estimation** : S · **Statut** : EN COURS.
 
 ### NT-147 — Déplacer « Répartition Catégories » sous les calibres
 - **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-010, NT-142

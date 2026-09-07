@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:async';
+import 'dart:ui' show SemanticsAction;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,6 +20,7 @@ import 'package:tir_sportif/services/weapon_service.dart';
 import 'package:tir_sportif/theme/app_theme.dart';
 import 'package:tir_sportif/widgets/guided_draft_card.dart';
 import 'package:tir_sportif/widgets/caliber_autocomplete_field.dart';
+import 'package:tir_sportif/widgets/group_size_help.dart';
 
 import '../support/fake_session_repository.dart';
 
@@ -123,6 +125,53 @@ void main() {
     expect(draft.weapon, 'Arme libre');
     expect(draft.series, hasLength(10));
     expect(draft.series.first.handMethod, HandMethod.oneHand);
+  });
+
+  testWidgets('l’aide groupement conserve la saisie de la séance guidée',
+      (tester) async {
+    await setLargeSurface(tester);
+    final draft = await service.createGuidedDraft(
+      GuidedDraftRequest(
+        date: DateTime(2026, 9, 4),
+        weapon: 'Pistolet',
+        caliber: '9 mm',
+        category: 'entraînement',
+        exercises: const [],
+        seriesCount: 1,
+        shotsPerSeries: 5,
+        initialDistance: 25,
+        initialHandMethod: HandMethod.twoHands,
+      ),
+    );
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(MaterialApp(
+      home: GuidedSessionScreen(draft: draft, sessionService: service),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('guided_group')), '8,5');
+    expect(find.byType(GroupSizeHelpButton), findsOneWidget);
+    final helpSemantics = tester.getSemantics(find.byType(GroupSizeHelpButton));
+    expect(helpSemantics.label, contains(GroupSizeHelpButton.semanticsLabel));
+    expect(helpSemantics.getSemanticsData().hasAction(SemanticsAction.tap),
+        isTrue);
+    await tester.tap(find.byType(GroupSizeHelpButton));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('moins de 10 cm'), findsOneWidget);
+    expect(find.textContaining('environ 15 cm'), findsOneWidget);
+    expect(find.textContaining('environ 20 cm'), findsOneWidget);
+    expect(find.textContaining('au niveau de la cible'), findsOneWidget);
+    await tester.tap(find.text('Fermer'));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<TextFormField>(find.byKey(const Key('guided_group')))
+          .controller
+          ?.text,
+      '8,5',
+    );
+    semantics.dispose();
   });
 
   testWidgets('sans préférence garde le calibre libre et suggère le râtelier',

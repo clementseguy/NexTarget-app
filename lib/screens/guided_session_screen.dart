@@ -12,6 +12,7 @@ import '../services/session_photo_service.dart';
 import '../services/session_service.dart';
 import '../interfaces/session_photo_service_interface.dart';
 import '../widgets/session_form/session_form_components.dart';
+import '../widgets/group_size_help.dart';
 import 'session_detail_screen.dart';
 
 class GuidedSessionScreen extends StatefulWidget {
@@ -673,7 +674,10 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
                 key: const Key('guided_group'),
                 controller: _groupController,
                 focusNode: _groupFocus,
-                decoration: const InputDecoration(labelText: 'Groupement (cm)'),
+                decoration: const InputDecoration(
+                  labelText: 'Groupement (cm)',
+                  suffixIcon: GroupSizeHelpButton(),
+                ),
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
