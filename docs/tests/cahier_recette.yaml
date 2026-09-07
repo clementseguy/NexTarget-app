@@ -1,6 +1,18 @@
 version: v0.8
 last_updated: 2026-09-06
 features:
+  - id: NT-149
+    name: Noms des fichiers d'export
+    objectif: Vérifier le nom NexTarget dans les deux exports sans rupture du format.
+    steps:
+      - Partager un export temporaire avec le nom par défaut
+      - Enregistrer un export dans un dossier avec le nom par défaut puis avec un nom choisi explicitement
+      - Comparer la structure JSON et importer un ancien fichier sessions_export ou mycoach_export
+    expected:
+      - Les deux noms par défaut suivent nextarget_export_timestamp.json
+      - Le nom explicitement choisi est conservé sans réécriture
+      - Le format mycoach-data, la version, le contenu JSON et l'import des anciens exports restent inchangés
+
   - id: NT-148
     name: Séparateurs des préférences de tir
     objectif: Distinguer les trois réglages avec deux séparateurs identiques.

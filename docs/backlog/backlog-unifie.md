@@ -996,7 +996,7 @@
 | NT-146 | Aider à estimer la taille d'un groupement | app | 2 | Could | S | EN COURS |
 | NT-147 | Déplacer « Répartition Catégories » sous les calibres | app | 1 | Should | S | EN COURS |
 | NT-148 | Séparer les trois préférences de tir | app | 1 | Could | S | EN COURS |
-| NT-149 | Renommer les fichiers d'export NexTarget | app | 1 | Should | S | À FAIRE |
+| NT-149 | Renommer les fichiers d'export NexTarget | app | 1 | Should | S | EN COURS |
 | NT-150 | Garantir un état d'authentification cohérent après mise à jour | app | 3 | Should | M | EN COURS |
 | NT-151 | Harmoniser et densifier les cartes d'exercice | app | 3 | Could | M | À FAIRE |
 
@@ -1135,7 +1135,7 @@
   - un `suggestedFileName` fourni explicitement reste prioritaire et n'est pas réécrit ;
   - le contenu, la structure, la version et la valeur `format` du JSON restent strictement inchangés ; les anciens exports restent importables ;
   - les tests couvrent les deux parcours, le nom suggéré, l'absence de changement du JSON et l'import d'un ancien export.
-- **Priorité** : Should · **VM** : 1 · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Should · **VM** : 1 · **Estimation** : S · **Statut** : EN COURS.
 - **Notes** : aucune migration de données ; les anciens préfixes `sessions_export_` et `mycoach_export_` ne sont conservés que dans les tests de rétrocompatibilité éventuellement nécessaires.
 
 ### NT-150 — Garantir un état d'authentification cohérent après mise à jour

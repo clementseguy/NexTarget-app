@@ -3,6 +3,17 @@
 - Dernière mise à jour: 2026-09-06
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
 
+## NT-149 — Noms des fichiers d'export
+Objectif: Vérifier le nom NexTarget dans les deux exports sans rupture du format.
+Étapes:
+1. Partager un export temporaire avec le nom par défaut
+2. Enregistrer un export dans un dossier avec le nom par défaut puis avec un nom choisi explicitement
+3. Comparer la structure JSON et importer un ancien fichier sessions_export ou mycoach_export
+Résultats attendus:
+- Les deux noms par défaut suivent nextarget_export_timestamp.json
+- Le nom explicitement choisi est conservé sans réécriture
+- Le format mycoach-data, la version, le contenu JSON et l'import des anciens exports restent inchangés
+
 ## NT-148 — Séparateurs des préférences de tir
 Objectif: Distinguer les trois réglages avec deux séparateurs identiques.
 Étapes:

@@ -30,7 +30,7 @@ void main() {
 
       expect(file.parent.path, tempDirectory.path);
       expect(file.path, endsWith('.json'));
-      expect(file.uri.pathSegments.last, startsWith('sessions_export_'));
+      expect(file.uri.pathSegments.last, startsWith('nextarget_export_'));
       expect(await file.exists(), isTrue);
       final data =
           jsonDecode(await file.readAsString()) as Map<String, dynamic>;

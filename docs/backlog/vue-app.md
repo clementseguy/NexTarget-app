@@ -93,7 +93,7 @@
 | NT-146 | Aider à estimer la taille d'un groupement | app | Could | S | EN COURS | aide gestuelle partagée entre séance guidée et wizard, sans repère C50 ni modification automatique du champ |
 | NT-147 | Déplacer « Répartition Catégories » sous les calibres | app | Should | S | EN COURS | ordre final : calibres, catégories, tirs par arme |
 | NT-148 | Séparer les trois préférences de tir | app | Could | S | EN COURS | même séparateur entre prise, râtelier et calibre ; aucun comportement modifié |
-| NT-149 | Renommer les fichiers d'export NexTarget | app | Should | S | À FAIRE | `nextarget_export_<timestamp>.json` dans les deux parcours ; JSON inchangé |
+| NT-149 | Renommer les fichiers d'export NexTarget | app | Should | S | EN COURS | `nextarget_export_<timestamp>.json` dans les deux parcours ; JSON inchangé |
 | NT-150 | Garantir un état d'authentification cohérent après mise à jour | app | Should | M | EN COURS | migration des jetons v0.6.0, état global cohérent et « Connexion à vérifier » hors ligne sans profil en cache |
 | NT-151 | Harmoniser et densifier les cartes d'exercice | app | Could | M | À FAIRE | cohérence Sessions/Séries ; zone d'information prioritaire et actions compactées |
 
