@@ -53,6 +53,9 @@ abstract class IStatsService {
   /// Meilleure taille de groupe
   double bestGroupSize();
 
+  /// Série et session source du meilleur groupement.
+  SeriesStat? bestSeriesByGroupSize();
+
   /// Dernières N séries triées par date
   List<SeriesStat> lastNSortedSeriesAsc(int n);
 

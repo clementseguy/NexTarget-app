@@ -3,6 +3,17 @@
 - Dernière mise à jour: 2026-09-06
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
 
+## NT-145 — Navigation depuis les records statistiques
+Objectif: Ouvrir la session source exacte sans modifier les records ni leurs cartes.
+Étapes:
+1. Toucher Meilleur Score puis revenir après avoir modifié la session
+2. Toucher Meilleur Groupement puis revenir après avoir supprimé la session
+3. Vérifier les cartes sans record et des records ex æquo
+Résultats attendus:
+- Chaque carte active ouvre directement le détail de sa session source
+- Les statistiques sont rechargées au retour et les cartes sans record restent inactives
+- Les ex æquo retiennent la date la plus récente puis le plus grand identifiant, sans changement visuel permanent
+
 ## NT-150 — Cohérence globale de l'authentification après mise à jour
 Objectif: Vérifier les trois états Auth et leur cohérence dans Paramètres, Mon profil et Analyse Coach.
 Étapes:

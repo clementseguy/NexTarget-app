@@ -1,6 +1,18 @@
 version: v0.8
 last_updated: 2026-09-06
 features:
+  - id: NT-145
+    name: Navigation depuis les records statistiques
+    objectif: Ouvrir la session source exacte sans modifier les records ni leurs cartes.
+    steps:
+      - Toucher Meilleur Score puis revenir après avoir modifié la session
+      - Toucher Meilleur Groupement puis revenir après avoir supprimé la session
+      - Vérifier les cartes sans record et des records ex æquo
+    expected:
+      - Chaque carte active ouvre directement le détail de sa session source
+      - Les statistiques sont rechargées au retour et les cartes sans record restent inactives
+      - Les ex æquo retiennent la date la plus récente puis le plus grand identifiant, sans changement visuel permanent
+
   - id: NT-150
     name: Cohérence globale de l'authentification après mise à jour
     objectif: Vérifier les trois états Auth et leur cohérence dans Paramètres, Mon profil et Analyse Coach.

@@ -5,6 +5,7 @@ import '../../models/series.dart';
 import '../../models/weapon.dart';
 import '../../services/dashboard_service.dart';
 import '../../services/weapon_service.dart';
+import '../../screens/session_detail_screen.dart';
 import '../../models/dashboard_data.dart';
 import 'stats_summary_cards.dart';
 import 'evolution_chart.dart';
@@ -18,10 +19,12 @@ import 'weapon_shot_counts_card.dart';
 /// Widget principal du dashboard avec onglets Synthèse/Avancé
 class DashboardTabView extends StatefulWidget {
   final List<ShootingSession> sessions;
+  final Future<void> Function()? onRecordsChanged;
 
   const DashboardTabView({
     super.key,
     required this.sessions,
+    this.onRecordsChanged,
   });
 
   @override
@@ -72,6 +75,29 @@ class _DashboardTabViewState extends State<DashboardTabView>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant DashboardTabView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.sessions, widget.sessions)) {
+      _dashboardService = DashboardService(widget.sessions);
+      _loadData();
+    }
+  }
+
+  Future<void> _openRecord(ShootingSession session) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SessionDetailScreen(sessionData: {
+          'session': session.toMap(),
+          'series': session is DetailedShootingSession
+              ? session.series.map((series) => series.toMap()).toList()
+              : <Map<String, dynamic>>[],
+        }),
+      ),
+    );
+    await widget.onRecordsChanged?.call();
   }
 
   Future<void> _loadData() async {
@@ -191,6 +217,12 @@ class _DashboardTabViewState extends State<DashboardTabView>
           StatsSummaryCards(
             summary: _summary ?? const DashboardSummary.empty(),
             isLoading: _isLoading,
+            onBestScoreTap: _summary?.bestScoreSession == null
+                ? null
+                : () => _openRecord(_summary!.bestScoreSession!),
+            onBestGroupSizeTap: _summary?.bestGroupSizeSession == null
+                ? null
+                : () => _openRecord(_summary!.bestGroupSizeSession!),
           ),
 
           const SizedBox(height: 24),

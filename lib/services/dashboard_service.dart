@@ -25,7 +25,8 @@ class DashboardService {
     final avgPoints = _statsService.averagePointsLast30Days();
     final avgGroupSize = _statsService.averageGroupSizeLast30Days();
     final bestSerie = _statsService.bestSeriesByPoints();
-    final bestGroupSize = _statsService.bestGroupSize();
+    final bestGroupSerie = _statsService.bestSeriesByGroupSize();
+    final bestGroupSize = bestGroupSerie?.groupSize ?? 0;
     final sessionsMonth = _statsService.sessionsCountCurrentMonth();
 
     return DashboardSummary(
@@ -36,6 +37,8 @@ class DashboardService {
       sessionsThisMonth: sessionsMonth,
       hasBestScore: bestSerie != null,
       hasBestGroupSize: bestGroupSize > 0,
+      bestScoreSession: bestSerie?.session,
+      bestGroupSizeSession: bestGroupSerie?.session,
     );
   }
 

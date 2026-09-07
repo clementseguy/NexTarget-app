@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'shooting_session.dart';
 
 /// Modèle de données pour le récapitulatif dashboard (5 cartes)
 class DashboardSummary {
@@ -10,6 +11,8 @@ class DashboardSummary {
   final int sessionsThisMonth;
   final bool hasBestScore;
   final bool hasBestGroupSize;
+  final ShootingSession? bestScoreSession;
+  final ShootingSession? bestGroupSizeSession;
 
   const DashboardSummary({
     required this.avgPoints30Days,
@@ -19,6 +22,8 @@ class DashboardSummary {
     required this.sessionsThisMonth,
     required this.hasBestScore,
     required this.hasBestGroupSize,
+    this.bestScoreSession,
+    this.bestGroupSizeSession,
   });
 
   /// Constructeur pour état vide
@@ -29,7 +34,9 @@ class DashboardSummary {
         bestGroupSize = 0.0,
         sessionsThisMonth = 0,
         hasBestScore = false,
-        hasBestGroupSize = false;
+        hasBestGroupSize = false,
+        bestScoreSession = null,
+        bestGroupSizeSession = null;
 }
 
 /// Modèle pour les données d'évolution (graphiques score/groupement)

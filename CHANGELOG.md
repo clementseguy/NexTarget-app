@@ -5,6 +5,7 @@ Toutes les modifications notables de ce projet seront listées ici.
 ## [Non publié]
 
 ### Added
+- NT-145 : ouverture directe de la session source depuis les records de score et de groupement, avec départage déterministe et rechargement des statistiques au retour.
 - NT-025 : difficulté facultative des exercices, filtre combinable, migration Hive additive et cycle de sauvegarde rétrocompatible.
 - NT-077 : registre historique et vérification déterministe en lecture seule des migrations, `typeId` et index `HiveField`, intégrée au contrôle avant commit et à la CI.
 - NT-026/NT-027 : actions de suppression sécurisée et de duplication depuis la liste des exercices, avec formulaire prérempli, clonage profond et rafraîchissement des compteurs.
