@@ -22,6 +22,7 @@ Toutes les modifications notables de ce projet seront listées ici.
 - NT-142 : carte « Tirs par arme » déplacée en dernière position de Statistiques > Synthèse, sans modification de calcul.
 
 ### Fixed
+- Android : suppression ciblée des avertissements de compatibilité Java 8 émis par le JDK 21 pour `file_picker` et `flutter_secure_storage`, sans migration fonctionnelle de ces plugins.
 - NT-149 : nom par défaut des exports partagés et enregistrés harmonisé en `nextarget_export_<timestamp>.json`, sans modification du JSON ni de l'import historique.
 - NT-150 : état d'authentification global invariant, cache sécurisé du dernier profil valide, migration immédiate des anciens jetons isolés et état « Connexion à vérifier » sans Coach actif lorsque le premier contrôle est impossible hors ligne.
 - Retours de recette NT-025 : Catégorie et Type alignés, difficulté présentée comme un sélecteur à quatre choix et textes des cartes lisibles dans le thème France.
