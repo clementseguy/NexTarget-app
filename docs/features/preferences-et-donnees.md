@@ -7,6 +7,8 @@
 - Le ton du Coach est Neutre ou Cool.
 - L'onboarding apparaît une seule fois et peut être rejoué depuis Paramètres.
 - Les sections de Paramètres sont ordonnées ainsi : Préférences Tir, Sauvegardes & Portabilité, Coach IA, Thème, Aide. Dans Préférences Tir, la prise précède le râtelier puis le calibre par défaut.
+- Le même séparateur et les mêmes espacements distinguent la prise du râtelier,
+  puis le râtelier du calibre par défaut.
 
 ## Râtelier d'armes
 

@@ -995,7 +995,7 @@
 | NT-145 | Ouvrir la session associée à un record | app | 3 | Should | S | EN COURS |
 | NT-146 | Aider à estimer la taille d'un groupement | app | 2 | Could | S | EN COURS |
 | NT-147 | Déplacer « Répartition Catégories » sous les calibres | app | 1 | Should | S | EN COURS |
-| NT-148 | Séparer les trois préférences de tir | app | 1 | Could | S | À FAIRE |
+| NT-148 | Séparer les trois préférences de tir | app | 1 | Could | S | EN COURS |
 | NT-149 | Renommer les fichiers d'export NexTarget | app | 1 | Should | S | À FAIRE |
 | NT-150 | Garantir un état d'authentification cohérent après mise à jour | app | 3 | Should | M | EN COURS |
 | NT-151 | Harmoniser et densifier les cartes d'exercice | app | 3 | Could | M | À FAIRE |
@@ -1124,7 +1124,7 @@
   - le même séparateur et les mêmes espacements sont utilisés entre prise et râtelier, puis entre râtelier et calibre ;
   - aucun nouveau style de séparation n'est créé et aucun libellé, contrôle ou réglage persistant n'est modifié ;
   - le rendu reste lisible dans les deux thèmes ; un widget test vérifie l'ordre et les deux séparateurs.
-- **Priorité** : Could · **VM** : 1 · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Could · **VM** : 1 · **Estimation** : S · **Statut** : EN COURS.
 
 ### NT-149 — Renommer les fichiers d'export NexTarget
 - **Thème** : Finitions UX · **Portée** : app · **Dépendances** : —

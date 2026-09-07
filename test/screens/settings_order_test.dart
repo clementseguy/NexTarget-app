@@ -18,10 +18,20 @@ class _FailingSettingsAuthService extends AuthService {
   int calls = 0;
 
   @override
+  Future<bool> hasToken() async => false;
+
+  @override
   Future<void> signInWithGoogle() async {
     calls++;
     throw TimeoutException('détail technique interne');
   }
+}
+
+class _NoTokenAuthService extends AuthService {
+  _NoTokenAuthService() : super(authBaseUrl: 'http://unused');
+
+  @override
+  Future<bool> hasToken() async => false;
 }
 
 void main() {
@@ -50,17 +60,14 @@ void main() {
     AuthService? authService,
   }) async {
     await Hive.box('app_preferences').put('app_theme', theme);
+    final authProvider = AuthProvider(authService ?? _NoTokenAuthService());
+    await authProvider.checkAuthStatus();
     await tester.binding.setSurfaceSize(const Size(390, 3000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(
-            create: (_) => AuthProvider(
-              authService ??
-                  AuthService(authBaseUrl: 'https://example.invalid'),
-            ),
-          ),
+          ChangeNotifierProvider.value(value: authProvider),
           ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ],
         child: const MaterialApp(home: SettingsScreen()),
@@ -88,6 +95,18 @@ void main() {
         lessThan(top("Râtelier d'armes")),
       );
       expect(top("Râtelier d'armes"), lessThan(top('Calibre par défaut')));
+      expect(find.byType(Divider), findsNWidgets(2));
+      final dividerTops = [
+        tester.getTopLeft(find.byType(Divider).at(0)).dy,
+        tester.getTopLeft(find.byType(Divider).at(1)).dy,
+      ];
+      expect(
+        top('Prise par défaut (pistolet)'),
+        lessThan(dividerTops.first),
+      );
+      expect(dividerTops.first, lessThan(top("Râtelier d'armes")));
+      expect(top("Râtelier d'armes"), lessThan(dividerTops.last));
+      expect(dividerTops.last, lessThan(top('Calibre par défaut')));
 
       expect(
         top('Exporter toutes les sessions'),

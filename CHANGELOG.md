@@ -13,6 +13,7 @@ Toutes les modifications notables de ce projet seront listées ici.
 - NT-143 : duplication des sessions détaillées et libres depuis leur détail, sans reprise de date, avec photo physique indépendante et rollback des fichiers en cas d'échec.
 
 ### Changed
+- NT-148 : séparateurs et espacements identiques entre les trois blocs de Préférences Tir, dans leur ordre existant.
 - NT-147 : ordre final de Synthèse ajusté en Répartition Calibres, Répartition Catégories puis Tirs par arme, sans changement statistique.
 - NT-056 : traduction commune et actionnable des erreurs réseau Auth, Profil et Coach, sans fuite technique ni suppression des jetons lors d'une panne transitoire.
 - NT-057 : suppression de quatre widgets sans appelant confirmé, sans modification des routes ni des écrans actifs.

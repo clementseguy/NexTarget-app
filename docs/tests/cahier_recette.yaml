@@ -1,6 +1,17 @@
 version: v0.8
 last_updated: 2026-09-06
 features:
+  - id: NT-148
+    name: Séparateurs des préférences de tir
+    objectif: Distinguer les trois réglages avec deux séparateurs identiques.
+    steps:
+      - Ouvrir Paramètres dans le thème Classique puis dans le thème France
+      - Examiner le bloc Préférences Tir sans modifier ses contrôles
+    expected:
+      - L'ordre reste prise par défaut, râtelier d'armes puis calibre par défaut
+      - Un séparateur et des espacements identiques se trouvent entre chaque paire de blocs
+      - Aucun texte, contrôle, préférence ou comportement n'est modifié
+
   - id: NT-147
     name: Ordre des répartitions de Synthèse
     objectif: Vérifier l'ordre final sans doublon ni changement de données.

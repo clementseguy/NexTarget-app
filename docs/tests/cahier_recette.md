@@ -3,6 +3,16 @@
 - Dernière mise à jour: 2026-09-06
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
 
+## NT-148 — Séparateurs des préférences de tir
+Objectif: Distinguer les trois réglages avec deux séparateurs identiques.
+Étapes:
+1. Ouvrir Paramètres dans le thème Classique puis dans le thème France
+2. Examiner le bloc Préférences Tir sans modifier ses contrôles
+Résultats attendus:
+- L'ordre reste prise par défaut, râtelier d'armes puis calibre par défaut
+- Un séparateur et des espacements identiques se trouvent entre chaque paire de blocs
+- Aucun texte, contrôle, préférence ou comportement n'est modifié
+
 ## NT-147 — Ordre des répartitions de Synthèse
 Objectif: Vérifier l'ordre final sans doublon ni changement de données.
 Étapes:
