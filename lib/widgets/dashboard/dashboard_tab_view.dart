@@ -247,15 +247,6 @@ class _DashboardTabViewState extends State<DashboardTabView>
 
           const SizedBox(height: 16),
 
-          // Répartition catégories - flat bar segmentée
-          FlatDistributionBar(
-            data: _categoryDistribution ??
-                const DistributionData.empty('Répartition Catégories'),
-            isLoading: _isLoading,
-          ),
-
-          const SizedBox(height: 16),
-
           // Distribution points
           PointsHistogramChart(
             data: _pointsHistogram ??
@@ -277,6 +268,15 @@ class _DashboardTabViewState extends State<DashboardTabView>
           FlatDistributionBar(
             data: _caliberDistribution ??
                 const DistributionData.empty('Répartition Calibres'),
+            isLoading: _isLoading,
+          ),
+
+          const SizedBox(height: 16),
+
+          // Répartition catégories - flat bar segmentée
+          FlatDistributionBar(
+            data: _categoryDistribution ??
+                const DistributionData.empty('Répartition Catégories'),
             isLoading: _isLoading,
           ),
 

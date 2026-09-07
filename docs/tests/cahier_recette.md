@@ -3,6 +3,16 @@
 - Dernière mise à jour: 2026-09-06
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
 
+## NT-147 — Ordre des répartitions de Synthèse
+Objectif: Vérifier l'ordre final sans doublon ni changement de données.
+Étapes:
+1. Ouvrir Statistiques puis faire défiler l'onglet Synthèse jusqu'aux dernières cartes
+2. Contrôler les répartitions avec des données puis avec une population vide
+Résultats attendus:
+- Répartition Calibres précède immédiatement Répartition Catégories, elle-même immédiatement au-dessus de Tirs par arme
+- Tirs par arme reste la dernière carte et chaque carte apparaît une seule fois
+- Les couleurs, calculs et états de chargement ou vides restent inchangés
+
 ## NT-146 — Aide gestuelle au groupement
 Objectif: Estimer un groupement dans les deux saisies sans modifier le champ.
 Étapes:

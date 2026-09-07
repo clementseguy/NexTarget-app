@@ -994,7 +994,7 @@
 | NT-144 | Assainir et réorganiser la documentation du backlog | app | 1 | Could | S | EN COURS |
 | NT-145 | Ouvrir la session associée à un record | app | 3 | Should | S | EN COURS |
 | NT-146 | Aider à estimer la taille d'un groupement | app | 2 | Could | S | EN COURS |
-| NT-147 | Déplacer « Répartition Catégories » sous les calibres | app | 1 | Should | S | À FAIRE |
+| NT-147 | Déplacer « Répartition Catégories » sous les calibres | app | 1 | Should | S | EN COURS |
 | NT-148 | Séparer les trois préférences de tir | app | 1 | Could | S | À FAIRE |
 | NT-149 | Renommer les fichiers d'export NexTarget | app | 1 | Should | S | À FAIRE |
 | NT-150 | Garantir un état d'authentification cohérent après mise à jour | app | 3 | Should | M | EN COURS |
@@ -1114,7 +1114,7 @@
   - « Tirs par arme » reste la dernière carte de Synthèse ; aucune carte n'est supprimée ou rendue deux fois ;
   - les calculs, populations de sessions, couleurs, états de chargement et états vides restent inchangés ;
   - un widget test vérifie l'ordre vertical exact et l'absence de doublon.
-- **Priorité** : Should · **VM** : 1 · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Should · **VM** : 1 · **Estimation** : S · **Statut** : EN COURS.
 
 ### NT-148 — Séparer les trois préférences de tir
 - **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-008, NT-073, NT-141

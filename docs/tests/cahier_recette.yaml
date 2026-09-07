@@ -1,6 +1,17 @@
 version: v0.8
 last_updated: 2026-09-06
 features:
+  - id: NT-147
+    name: Ordre des répartitions de Synthèse
+    objectif: Vérifier l'ordre final sans doublon ni changement de données.
+    steps:
+      - Ouvrir Statistiques puis faire défiler l'onglet Synthèse jusqu'aux dernières cartes
+      - Contrôler les répartitions avec des données puis avec une population vide
+    expected:
+      - Répartition Calibres précède immédiatement Répartition Catégories, elle-même immédiatement au-dessus de Tirs par arme
+      - Tirs par arme reste la dernière carte et chaque carte apparaît une seule fois
+      - Les couleurs, calculs et états de chargement ou vides restent inchangés
+
   - id: NT-146
     name: Aide gestuelle au groupement
     objectif: Estimer un groupement dans les deux saisies sans modifier le champ.
