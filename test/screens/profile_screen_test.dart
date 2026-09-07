@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -49,12 +51,64 @@ void main() {
   group('ProfileScreen', () {
     testWidgets('affiche "Non connecté" si utilisateur non authentifié',
         (tester) async {
+      when(mockAuthService.hasToken()).thenAnswer((_) async => false);
       final authProvider = AuthProvider(mockAuthService);
+      await authProvider.checkAuthStatus();
       await tester.pumpWidget(buildProfileScreen(authProvider));
 
       expect(find.text('Mon profil'), findsOneWidget);
       expect(find.text('Non connecté'), findsOneWidget);
       expect(find.text('Se connecter'), findsOneWidget);
+    });
+
+    testWidgets('conserve l’état de vérification pendant le contrôle actif',
+        (tester) async {
+      final tokenCheck = Completer<bool>();
+      when(mockAuthService.hasToken()).thenAnswer((_) => tokenCheck.future);
+      final authProvider = AuthProvider(mockAuthService);
+
+      final verification = authProvider.checkAuthStatus();
+      await tester.pumpWidget(buildProfileScreen(authProvider));
+
+      expect(find.text('Connexion à vérifier'), findsOneWidget);
+      expect(find.text('Non connecté'), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      final retryButton = find.ancestor(
+        of: find.text('Réessayer'),
+        matching: find.byWidgetPredicate((widget) => widget is FilledButton),
+      );
+      expect(
+        tester.widget<FilledButton>(retryButton).onPressed,
+        isNull,
+      );
+
+      tokenCheck.complete(false);
+      await verification;
+      await tester.pump();
+    });
+
+    testWidgets('affiche une erreur actionnable si la connexion échoue',
+        (tester) async {
+      when(mockAuthService.hasToken()).thenAnswer((_) async => false);
+      when(mockAuthService.signInWithGoogle()).thenThrow(
+        NetworkOperationException(
+          NetworkErrorFamily.offline,
+          'Erreur DNS interne',
+        ),
+      );
+      final authProvider = AuthProvider(mockAuthService);
+      await authProvider.checkAuthStatus();
+      await tester.pumpWidget(buildProfileScreen(authProvider));
+
+      await tester.tap(find.text('Se connecter'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Aucune connexion disponible. Vérifiez votre réseau.'),
+        findsOneWidget,
+      );
+      expect(find.text('Réessayer'), findsOneWidget);
+      expect(find.textContaining('DNS'), findsNothing);
     });
 
     testWidgets('affiche le nom et l\'email de l\'utilisateur', (tester) async {

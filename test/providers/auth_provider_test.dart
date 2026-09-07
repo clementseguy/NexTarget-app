@@ -153,6 +153,22 @@ void main() {
     expect(service.calls, 2);
   });
 
+  test('l’état de vérification reste exposé pendant un contrôle actif',
+      () async {
+    final service = _RetryAuthService(
+      firstResult: NetworkUnavailableException('offline'),
+    );
+    final provider = AuthProvider(service);
+
+    final verification = provider.checkAuthStatus();
+
+    expect(provider.status, AuthStatus.verifying);
+    expect(provider.isVerificationPending, isTrue);
+    expect(provider.isLoading, isTrue);
+
+    await verification;
+  });
+
   test('hors ligne avec cache conserve un état connecté exploitable', () async {
     final provider = AuthProvider(_RetryAuthService(
       firstResult: NetworkUnavailableException('offline'),

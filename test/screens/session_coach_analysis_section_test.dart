@@ -18,15 +18,47 @@ import 'package:tir_sportif/services/network_error.dart';
 /// NT-032 — le ton du coach se choisit dans Paramètres uniquement (retour
 /// de recette S2) : aucun sélecteur dans la section.
 class _FakeAuthProvider extends AuthProvider {
-  final bool _authenticated;
+  bool _authenticated;
+  AuthStatus _status;
+  bool _loading;
+  var invalidationCalls = 0;
+
   _FakeAuthProvider(this._authenticated)
-      : super(AuthService(authBaseUrl: 'http://unused'));
+      : _status = _authenticated
+            ? AuthStatus.authenticated
+            : AuthStatus.unauthenticated,
+        _loading = false,
+        super(AuthService(authBaseUrl: 'http://unused'));
+
+  _FakeAuthProvider.verifying()
+      : _authenticated = false,
+        _status = AuthStatus.verifying,
+        _loading = true,
+        super(AuthService(authBaseUrl: 'http://unused'));
 
   @override
   bool get isAuthenticated => _authenticated;
 
   @override
-  Future<void> handleConfirmedInvalidation() async {}
+  AuthStatus get status => _status;
+
+  @override
+  bool get isVerificationPending => _status == AuthStatus.verifying;
+
+  @override
+  bool get isLoading => _loading;
+
+  void markUnauthenticated() {
+    _authenticated = false;
+    _status = AuthStatus.unauthenticated;
+    _loading = false;
+  }
+
+  @override
+  Future<void> handleConfirmedInvalidation() async {
+    invalidationCalls++;
+    markUnauthenticated();
+  }
 }
 
 DetailedShootingSession _session() => DetailedShootingSession(
@@ -42,11 +74,15 @@ DetailedShootingSession _session() => DetailedShootingSession(
       ],
     );
 
-Widget _wrap(Widget child, {required bool authenticated}) {
+Widget _wrap(
+  Widget child, {
+  required bool authenticated,
+  _FakeAuthProvider? authProvider,
+}) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<AuthProvider>.value(
-          value: _FakeAuthProvider(authenticated)),
+          value: authProvider ?? _FakeAuthProvider(authenticated)),
       ChangeNotifierProvider<SettingsProvider>(
         create: (_) =>
             SettingsProvider(preferencesBox: Hive.box('app_preferences')),
@@ -113,6 +149,36 @@ void main() {
     expect(find.text('Se connecter'), findsNothing);
   });
 
+  testWidgets('vérification active : aucun bouton de connexion ou d’analyse',
+      (tester) async {
+    final authProvider = _FakeAuthProvider.verifying();
+    await tester.pumpWidget(_wrap(
+      SessionCoachAnalysisSection(
+        session: _session(),
+        analyse: null,
+        onAnalyseUpdated: () {},
+      ),
+      authenticated: false,
+      authProvider: authProvider,
+    ));
+
+    await tester.tap(find.text('Analyse Coach'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.textContaining('Connexion à vérifier'), findsOneWidget);
+    expect(find.text('Se connecter'), findsNothing);
+    expect(find.text('Lancer analyse'), findsNothing);
+    final retryButton = find.ancestor(
+      of: find.text('Réessayer'),
+      matching: find.byWidgetPredicate((widget) => widget is OutlinedButton),
+    );
+    expect(
+      tester.widget<OutlinedButton>(retryButton).onPressed,
+      isNull,
+    );
+  });
+
   testWidgets(
       'pas de sélecteur de persona dans la session (retour recette NT-032)',
       (tester) async {
@@ -173,6 +239,7 @@ void main() {
 
   testWidgets('session invalidée : propose uniquement Se reconnecter',
       (tester) async {
+    final authProvider = _FakeAuthProvider(true);
     await tester.pumpWidget(_wrap(
       SessionCoachAnalysisSection(
         session: _session(),
@@ -182,6 +249,7 @@ void main() {
             throw SessionExpiredException('refresh révoqué'),
       ),
       authenticated: true,
+      authProvider: authProvider,
     ));
 
     await tester.tap(find.text('Analyse Coach'));
@@ -193,5 +261,33 @@ void main() {
     expect(find.text('Se reconnecter'), findsOneWidget);
     expect(find.text('Réessayer'), findsNothing);
     expect(find.textContaining('refresh'), findsNothing);
+    expect(authProvider.invalidationCalls, 1);
+  });
+
+  testWidgets('un 401 déjà propagé globalement n’invalide pas deux fois',
+      (tester) async {
+    final authProvider = _FakeAuthProvider(true);
+    await tester.pumpWidget(_wrap(
+      SessionCoachAnalysisSection(
+        session: _session(),
+        analyse: null,
+        onAnalyseUpdated: () {},
+        analysisLoader: () async {
+          authProvider.markUnauthenticated();
+          throw SessionExpiredException('déjà invalidée');
+        },
+      ),
+      authenticated: true,
+      authProvider: authProvider,
+    ));
+
+    await tester.tap(find.text('Analyse Coach'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lancer analyse'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(authProvider.invalidationCalls, 0);
+    expect(find.text('Se reconnecter'), findsOneWidget);
   });
 }

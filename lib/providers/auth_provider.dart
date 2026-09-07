@@ -27,8 +27,7 @@ class AuthProvider extends ChangeNotifier {
   AuthStatus get status => _status;
   bool get isAuthenticated =>
       _status == AuthStatus.authenticated && _currentUser != null;
-  bool get isVerificationPending =>
-      _status == AuthStatus.verifying && !_isLoading;
+  bool get isVerificationPending => _status == AuthStatus.verifying;
   Map<String, dynamic>? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
 

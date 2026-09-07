@@ -28,11 +28,18 @@ class ProfileScreen extends StatelessWidget {
                   : 'Non connecté'),
               const SizedBox(height: 12),
               FilledButton.icon(
-                icon: Icon(verificationPending ? Icons.refresh : Icons.login),
+                icon: authProvider.isLoading
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(verificationPending ? Icons.refresh : Icons.login),
                 label: Text(verificationPending ? 'Réessayer' : 'Se connecter'),
-                onPressed: verificationPending
-                    ? authProvider.checkAuthStatus
-                    : authProvider.signInWithGoogle,
+                onPressed: authProvider.isLoading
+                    ? null
+                    : verificationPending
+                        ? authProvider.checkAuthStatus
+                        : () => _signIn(context, authProvider),
               ),
             ],
           ),
@@ -205,6 +212,31 @@ class ProfileScreen extends StatelessWidget {
         ),
       NetworkErrorAction.none => null,
     };
+  }
+
+  Future<void> _signIn(
+    BuildContext context,
+    AuthProvider authProvider,
+  ) async {
+    try {
+      await authProvider.signInWithGoogle();
+    } catch (error) {
+      AppLogger.I.error('PROFILE AUTH UI: connexion impossible', error);
+      if (!context.mounted) return;
+      final presentation = presentNetworkError(error);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(presentation.message),
+          backgroundColor: Colors.red,
+          action: presentation.action == NetworkErrorAction.none
+              ? null
+              : SnackBarAction(
+                  label: presentation.actionLabel!,
+                  onPressed: () => _signIn(context, authProvider),
+                ),
+        ),
+      );
+    }
   }
 
   Future<void> _updateExperienceLevel(

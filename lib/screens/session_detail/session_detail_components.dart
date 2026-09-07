@@ -303,8 +303,10 @@ class _SessionCoachAnalysisSectionState
     } catch (e) {
       AppLogger.I.error('COACH UI: analyse impossible', e);
       if (e is SessionExpiredException && mounted) {
-        await Provider.of<AuthProvider>(context, listen: false)
-            .handleConfirmedInvalidation();
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        if (authProvider.status != AuthStatus.unauthenticated) {
+          await authProvider.handleConfirmedInvalidation();
+        }
       }
       final presentation = e is CoachAnalysisException
           ? const NetworkErrorPresentation(
@@ -402,7 +404,9 @@ class _SessionCoachAnalysisSectionState
                         OutlinedButton.icon(
                           icon: const Icon(Icons.refresh),
                           label: const Text('Réessayer'),
-                          onPressed: authProvider.checkAuthStatus,
+                          onPressed: authProvider.isLoading
+                              ? null
+                              : authProvider.checkAuthStatus,
                         ),
                       ],
                     ),
