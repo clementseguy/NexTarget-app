@@ -27,6 +27,12 @@ La préparation propose la date et l'heure courantes, l'arme libre assistée par
 
 L'utilisateur peut corriger une série précédente, ajouter une série, quitter puis reprendre, ou terminer plus tôt après confirmation du nombre de séries vides retirées. La synthèse finale récapitule matériel, exercices, séries, coups, distances et points, puis permet une synthèse et une photo facultatives. `Terminer la séance` remplace atomiquement le brouillon par une session détaillée `réalisée` et ouvre directement son détail. En cas d'échec, le brouillon reste intégralement reprenable.
 
+Le champ Groupement de la séance guidée et du wizard des sessions prévues
+partage une aide gestuelle : poing fermé sous 10 cm, pouce déployé autour de
+15 cm, puis pouce et petit doigt déployés autour de 20 cm. Ces repères dépendent
+de la main et se comparent au niveau de la cible. L'aide ne modifie jamais la
+saisie.
+
 ## Saisie et consultation
 
 - Les champs arme et calibre restent libres. Les suggestions du râtelier et du catalogue de calibres n'écrasent jamais le texte saisi.

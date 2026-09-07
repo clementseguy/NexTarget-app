@@ -76,6 +76,23 @@ void main() {
       expect(await exportDirectory.list().toList(), isEmpty);
     });
 
+    test('propose par défaut le nom d’export NexTarget', () async {
+      final fixture = await BackupServiceTestFixture.create(
+        tempDirectory,
+        selectedDirectory: exportDirectory.path,
+      );
+
+      final file = await fixture.service.exportAllSessionsToUserFolder();
+
+      expect(file, isNotNull);
+      expect(
+        fixture.locationProvider.savedFileName,
+        matches(RegExp(r'^nextarget_export_\d+\.json$')),
+      );
+      expect(
+          file!.uri.pathSegments.last, fixture.locationProvider.savedFileName);
+    });
+
     test('une erreur du sélecteur de fichier est propagée', () async {
       final fixture = await BackupServiceTestFixture.create(tempDirectory);
       fixture.locationProvider.selectionError = StateError(

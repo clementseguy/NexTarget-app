@@ -992,12 +992,12 @@
 | NT-142 | Déplacer « Tirs par arme » en bas de Synthèse | app | 2 | Should | S | EN COURS |
 | NT-143 | Remplacer « Copier résumé » par la duplication de session | app | 3 | Should | M | EN COURS |
 | NT-144 | Assainir et réorganiser la documentation du backlog | app | 1 | Could | S | EN COURS |
-| NT-145 | Ouvrir la session associée à un record | app | 3 | Should | S | À FAIRE |
-| NT-146 | Aider à estimer la taille d'un groupement | app | 2 | Could | S | À FAIRE |
-| NT-147 | Déplacer « Répartition Catégories » sous les calibres | app | 1 | Should | S | À FAIRE |
-| NT-148 | Séparer les trois préférences de tir | app | 1 | Could | S | À FAIRE |
-| NT-149 | Renommer les fichiers d'export NexTarget | app | 1 | Should | S | À FAIRE |
-| NT-150 | Garantir un état d'authentification cohérent après mise à jour | app | 3 | Should | M | À FAIRE |
+| NT-145 | Ouvrir la session associée à un record | app | 3 | Should | S | EN COURS |
+| NT-146 | Aider à estimer la taille d'un groupement | app | 2 | Could | S | EN COURS |
+| NT-147 | Déplacer « Répartition Catégories » sous les calibres | app | 1 | Should | S | EN COURS |
+| NT-148 | Séparer les trois préférences de tir | app | 1 | Could | S | EN COURS |
+| NT-149 | Renommer les fichiers d'export NexTarget | app | 1 | Should | S | EN COURS |
+| NT-150 | Garantir un état d'authentification cohérent après mise à jour | app | 3 | Should | M | EN COURS |
 | NT-151 | Harmoniser et densifier les cartes d'exercice | app | 3 | Could | M | À FAIRE |
 
 ### NT-140 — Supprimer le second écran de chargement Flutter
@@ -1089,7 +1089,7 @@
   - dimensions, couleurs, icônes, textes et disposition des cartes restent inchangés ; un retour tactile et des sémantiques accessibles signalent néanmoins l'action ;
   - une carte sans record reste inactive ; au retour du détail, les statistiques sont recalculées si la session a été modifiée ou supprimée ;
   - les tests couvrent les deux navigations, l'absence de record, les ex æquo, le départage à date égale, les exclusions statistiques existantes et le rafraîchissement au retour.
-- **Priorité** : Should · **VM** : 3 · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Should · **VM** : 3 · **Estimation** : S · **Statut** : EN COURS.
 
 ### NT-146 — Aider à estimer la taille d'un groupement
 - **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-002, NT-131
@@ -1103,7 +1103,7 @@
   - consulter ou fermer l'aide ne préremplit et ne modifie jamais le groupement ; la saisie et ses validations actuelles restent inchangées ;
   - aucun repère lié à la cible C50 n'est introduit dans cet item ;
   - les widget tests couvrent la présence dans les deux parcours, les trois repères, l'accessibilité et la conservation de la saisie.
-- **Priorité** : Could · **VM** : 2 · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Could · **VM** : 2 · **Estimation** : S · **Statut** : EN COURS.
 
 ### NT-147 — Déplacer « Répartition Catégories » sous les calibres
 - **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-010, NT-142
@@ -1114,7 +1114,7 @@
   - « Tirs par arme » reste la dernière carte de Synthèse ; aucune carte n'est supprimée ou rendue deux fois ;
   - les calculs, populations de sessions, couleurs, états de chargement et états vides restent inchangés ;
   - un widget test vérifie l'ordre vertical exact et l'absence de doublon.
-- **Priorité** : Should · **VM** : 1 · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Should · **VM** : 1 · **Estimation** : S · **Statut** : EN COURS.
 
 ### NT-148 — Séparer les trois préférences de tir
 - **Thème** : Finitions UX · **Portée** : app · **Dépendances** : NT-008, NT-073, NT-141
@@ -1124,7 +1124,7 @@
   - le même séparateur et les mêmes espacements sont utilisés entre prise et râtelier, puis entre râtelier et calibre ;
   - aucun nouveau style de séparation n'est créé et aucun libellé, contrôle ou réglage persistant n'est modifié ;
   - le rendu reste lisible dans les deux thèmes ; un widget test vérifie l'ordre et les deux séparateurs.
-- **Priorité** : Could · **VM** : 1 · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Could · **VM** : 1 · **Estimation** : S · **Statut** : EN COURS.
 
 ### NT-149 — Renommer les fichiers d'export NexTarget
 - **Thème** : Finitions UX · **Portée** : app · **Dépendances** : —
@@ -1135,7 +1135,7 @@
   - un `suggestedFileName` fourni explicitement reste prioritaire et n'est pas réécrit ;
   - le contenu, la structure, la version et la valeur `format` du JSON restent strictement inchangés ; les anciens exports restent importables ;
   - les tests couvrent les deux parcours, le nom suggéré, l'absence de changement du JSON et l'import d'un ancien export.
-- **Priorité** : Should · **VM** : 1 · **Estimation** : S · **Statut** : À FAIRE.
+- **Priorité** : Should · **VM** : 1 · **Estimation** : S · **Statut** : EN COURS.
 - **Notes** : aucune migration de données ; les anciens préfixes `sessions_export_` et `mycoach_export_` ne sont conservés que dans les tests de rétrocompatibilité éventuellement nécessaires.
 
 ### NT-150 — Garantir un état d'authentification cohérent après mise à jour
@@ -1156,7 +1156,7 @@
   - après « Réessayer », une vérification réussie conduit à connecté et met le profil en cache ; une invalidation confirmée conduit à non connecté avec l'action de connexion ;
   - une reconnexion OAuth réussie recharge le profil et rétablit tous les écrans sans redémarrage ; aucun contrat serveur ou mécanisme OAuth n'est modifié ;
   - les tests couvrent la migration v0.6.0, la conservation des données métier, l'invariant d'état, les trois écrans, l'expiration pendant une analyse, la panne transitoire avec cache, le premier démarrage hors ligne sans cache et les deux transitions depuis « Connexion à vérifier ».
-- **Priorité** : Should · **VM** : 3 · **Estimation** : M · **Statut** : À FAIRE.
+- **Priorité** : Should · **VM** : 3 · **Estimation** : M · **Statut** : EN COURS.
 - **Notes** : anomalie reproduite en v0.7.0 après mise à jour depuis v0.6.0 sans déconnexion/reconnexion. Ce correctif complète NT-056 : NT-056 harmonise la présentation des erreurs, NT-150 garantit la cohérence et les transitions de l'état global d'authentification.
 
 ### NT-151 — Harmoniser et densifier les cartes d'exercice

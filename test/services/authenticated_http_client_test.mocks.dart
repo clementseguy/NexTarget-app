@@ -57,6 +57,15 @@ class MockAuthService extends _i1.Mock implements _i3.AuthService {
   }
 
   @override
+  set onSessionInvalidated(void Function()? listener) => super.noSuchMethod(
+        Invocation.setter(
+          #onSessionInvalidated,
+          listener,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   _i4.Future<void> signInWithGoogle() => (super.noSuchMethod(
         Invocation.method(
           #signInWithGoogle,
@@ -76,6 +85,25 @@ class MockAuthService extends _i1.Mock implements _i3.AuthService {
         returnValue:
             _i4.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
       ) as _i4.Future<Map<String, dynamic>>);
+
+  @override
+  _i4.Future<Map<String, dynamic>?> readCachedUser() => (super.noSuchMethod(
+        Invocation.method(
+          #readCachedUser,
+          [],
+        ),
+        returnValue: _i4.Future<Map<String, dynamic>?>.value(),
+      ) as _i4.Future<Map<String, dynamic>?>);
+
+  @override
+  _i4.Future<void> invalidateSession() => (super.noSuchMethod(
+        Invocation.method(
+          #invalidateSession,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   _i4.Future<String> getValidAccessToken() => (super.noSuchMethod(

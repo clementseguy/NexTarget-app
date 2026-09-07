@@ -7,11 +7,15 @@ import 'stat_card.dart';
 class StatsSummaryCards extends StatelessWidget {
   final DashboardSummary summary;
   final bool isLoading;
-  
+  final VoidCallback? onBestScoreTap;
+  final VoidCallback? onBestGroupSizeTap;
+
   const StatsSummaryCards({
     super.key,
     required this.summary,
     this.isLoading = false,
+    this.onBestScoreTap,
+    this.onBestGroupSizeTap,
   });
 
   @override
@@ -19,16 +23,17 @@ class StatsSummaryCards extends StatelessWidget {
     if (isLoading) {
       return const _LoadingCards();
     }
-    
+
     // Adaptation responsive pour optimiser l'espace écran
     final spacing = MobileUtils.getSpacing(context);
     final isMobile = MobileUtils.isMobile(context);
-    
+
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: isMobile ? 2.2 : 1.6, // Encore plus compactes pour maximiser l'espace
+      childAspectRatio:
+          isMobile ? 2.2 : 1.6, // Encore plus compactes pour maximiser l'espace
       crossAxisSpacing: spacing,
       mainAxisSpacing: spacing,
       children: [
@@ -38,13 +43,17 @@ class StatsSummaryCards extends StatelessWidget {
           unit: summary.hasBestScore ? 'pts' : '',
           icon: Icons.star,
           color: Colors.orange,
+          onTap: summary.hasBestScore ? onBestScoreTap : null,
         ),
         StatCard(
           title: 'Meilleur Groupement',
-          value: summary.hasBestGroupSize ? summary.bestGroupSize.toStringAsFixed(1) : '-',
+          value: summary.hasBestGroupSize
+              ? summary.bestGroupSize.toStringAsFixed(1)
+              : '-',
           unit: summary.hasBestGroupSize ? 'cm' : '',
           icon: Icons.track_changes,
           color: Colors.green,
+          onTap: summary.hasBestGroupSize ? onBestGroupSizeTap : null,
         ),
         StatCard(
           title: 'Moyenne Points 30j',
@@ -54,7 +63,7 @@ class StatsSummaryCards extends StatelessWidget {
           color: Colors.amber,
         ),
         StatCard(
-          title: 'Groupement Moy. 30j', 
+          title: 'Groupement Moy. 30j',
           value: summary.avgGroupSize30Days.toStringAsFixed(1),
           unit: 'cm',
           icon: Icons.center_focus_strong,

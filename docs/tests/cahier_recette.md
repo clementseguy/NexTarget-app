@@ -3,6 +3,73 @@
 - Dernière mise à jour: 2026-09-06
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
 
+## NT-149 — Noms des fichiers d'export
+Objectif: Vérifier le nom NexTarget dans les deux exports sans rupture du format.
+Étapes:
+1. Partager un export temporaire avec le nom par défaut
+2. Enregistrer un export dans un dossier avec le nom par défaut puis avec un nom choisi explicitement
+3. Comparer la structure JSON et importer un ancien fichier sessions_export ou mycoach_export
+Résultats attendus:
+- Les deux noms par défaut suivent nextarget_export_timestamp.json
+- Le nom explicitement choisi est conservé sans réécriture
+- Le format mycoach-data, la version, le contenu JSON et l'import des anciens exports restent inchangés
+
+## NT-148 — Séparateurs des préférences de tir
+Objectif: Distinguer les trois réglages avec deux séparateurs identiques.
+Étapes:
+1. Ouvrir Paramètres dans le thème Classique puis dans le thème France
+2. Examiner le bloc Préférences Tir sans modifier ses contrôles
+Résultats attendus:
+- L'ordre reste prise par défaut, râtelier d'armes puis calibre par défaut
+- Un séparateur et des espacements identiques se trouvent entre chaque paire de blocs
+- Aucun texte, contrôle, préférence ou comportement n'est modifié
+
+## NT-147 — Ordre des répartitions de Synthèse
+Objectif: Vérifier l'ordre final sans doublon ni changement de données.
+Étapes:
+1. Ouvrir Statistiques puis faire défiler l'onglet Synthèse jusqu'aux dernières cartes
+2. Contrôler les répartitions avec des données puis avec une population vide
+Résultats attendus:
+- Répartition Calibres précède immédiatement Répartition Catégories, elle-même immédiatement au-dessus de Tirs par arme
+- Tirs par arme reste la dernière carte et chaque carte apparaît une seule fois
+- Les couleurs, calculs et états de chargement ou vides restent inchangés
+
+## NT-146 — Aide gestuelle au groupement
+Objectif: Estimer un groupement dans les deux saisies sans modifier le champ.
+Étapes:
+1. Saisir un groupement dans une séance Au stand puis ouvrir et fermer l'aide
+2. Répéter dans le wizard d'une session prévue
+3. Lire les trois repères et leur description avec les fonctions d'accessibilité
+Résultats attendus:
+- Les repères indiquent moins de 10 cm, environ 15 cm et environ 20 cm avec les gestes de la main prévus
+- Le caractère approximatif, la dépendance à la main et la comparaison au niveau de la cible sont précisés
+- La valeur saisie et les validations restent strictement inchangées dans les deux parcours
+
+## NT-145 — Navigation depuis les records statistiques
+Objectif: Ouvrir la session source exacte sans modifier les records ni leurs cartes.
+Étapes:
+1. Toucher Meilleur Score puis revenir après avoir modifié la session
+2. Toucher Meilleur Groupement puis revenir après avoir supprimé la session
+3. Vérifier les cartes sans record et des records ex æquo
+Résultats attendus:
+- Chaque carte active ouvre directement le détail de sa session source
+- Les statistiques sont rechargées au retour et les cartes sans record restent inactives
+- Les ex æquo retiennent la date la plus récente puis le plus grand identifiant, sans changement visuel permanent
+
+## NT-150 — Cohérence globale de l'authentification après mise à jour
+Objectif: Vérifier les trois états Auth et leur cohérence dans Paramètres, Mon profil et Analyse Coach.
+Étapes:
+1. Simuler une mise à jour v0.6 avec seulement jwt_token et des données métier locales
+2. Démarrer connecté avec un profil en cache, puis couper le réseau
+3. Démarrer hors ligne avec une paire moderne mais aucun profil en cache, puis utiliser Réessayer après rétablissement du réseau
+4. Répéter le scénario précédent avec une invalidation confirmée
+5. Provoquer une expiration pendant une analyse, fermer le message puis lancer une reconnexion OAuth complète
+Résultats attendus:
+- Seules les anciennes données Auth sont supprimées et toutes les données métier sont conservées
+- Un profil en cache maintient l'état connecté hors ligne ; sans cache, les trois écrans affichent Connexion à vérifier sans avatar inconnu ni Coach actif
+- Réessayer conduit soit à un profil connecté mis en cache, soit à l'état non connecté après invalidation confirmée, sans boucle automatique
+- L'expiration rend immédiatement les trois écrans non connectés et la reconnexion OAuth les restaure sans redémarrage
+
 ## NT-059 — Qualité SonarCloud et exports déterministes
 Objectif: Vérifier les exports sans canal de plateforme et l'absence de tests masqués.
 Étapes:

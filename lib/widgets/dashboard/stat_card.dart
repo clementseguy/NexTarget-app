@@ -9,7 +9,8 @@ class StatCard extends StatelessWidget {
   final String unit;
   final IconData icon;
   final Color color;
-  
+  final VoidCallback? onTap;
+
   const StatCard({
     super.key,
     required this.title,
@@ -17,6 +18,7 @@ class StatCard extends StatelessWidget {
     required this.unit,
     required this.icon,
     required this.color,
+    this.onTap,
   });
 
   @override
@@ -24,74 +26,87 @@ class StatCard extends StatelessWidget {
     final theme = Theme.of(context);
     // Padding optimisé pour mobile
     final padding = MobileUtils.isMobile(context) ? 8.0 : 12.0;
-    
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        padding: EdgeInsets.all(padding),
-        decoration: BoxDecoration(
+
+    return Semantics(
+      button: onTap != null,
+      enabled: onTap != null,
+      label: onTap == null ? null : '$title, ouvrir la session du record',
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              color.withValues(alpha: 0.1),
-              color.withValues(alpha: 0.05),
-            ],
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: MobileUtils.isMobile(context) ? 18 : 20),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.8),
-                      fontSize: MobileUtils.isMobile(context) ? 11 : null,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Flexible(
-                  child: Text(
-                    value,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                      // Réduction de la taille sur mobile pour éviter l'overflow
-                      fontSize: MobileUtils.isMobile(context) ? 20 : null,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (unit.isNotEmpty) ...[
-                  const SizedBox(width: 4),
-                  Text(
-                    unit,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+          onTap: onTap,
+          child: Container(
+            padding: EdgeInsets.all(padding),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  color.withValues(alpha: 0.1),
+                  color.withValues(alpha: 0.05),
                 ],
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(icon,
+                        color: color,
+                        size: MobileUtils.isMobile(context) ? 18 : 20),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: theme.textTheme.bodySmall?.color
+                              ?.withValues(alpha: 0.8),
+                          fontSize: MobileUtils.isMobile(context) ? 11 : null,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        value,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: color,
+                          // Réduction de la taille sur mobile pour éviter l'overflow
+                          fontSize: MobileUtils.isMobile(context) ? 20 : null,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (unit.isNotEmpty) ...[
+                      const SizedBox(width: 4),
+                      Text(
+                        unit,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.textTheme.bodySmall?.color
+                              ?.withValues(alpha: 0.6),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

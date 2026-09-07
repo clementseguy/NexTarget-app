@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:mockito/mockito.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/services/auth_service.dart';
@@ -10,6 +11,8 @@ import 'package:tir_sportif/services/server_coach_analysis_service.dart';
 import 'package:tir_sportif/services/auth_session_exceptions.dart';
 import 'package:tir_sportif/services/network_error.dart';
 import 'package:tir_sportif/constants/session_constants.dart';
+
+import 'auth_service_test.mocks.dart' show MockFlutterSecureStorage;
 
 DetailedShootingSession _session() => DetailedShootingSession(
       weapon: 'Glock 17',
@@ -29,7 +32,13 @@ void main() {
   // Note: ServerCoachAnalysisService(client: ...) ignore l'AuthenticatedHttpClient
   // par défaut quand un client de test est injecté (mêmes conventions que
   // CoachAnalysisService), donc AuthService peut rester un stub minimal ici.
-  final dummyAuthService = AuthService(authBaseUrl: 'http://unused');
+  final storage = MockFlutterSecureStorage();
+  when(storage.delete(key: anyNamed('key')))
+      .thenAnswer((_) async => Future<void>.value());
+  final dummyAuthService = AuthService(
+    authBaseUrl: 'http://unused',
+    storage: storage,
+  );
 
   test('analyzeSession success returns analysis text', () async {
     final client = MockClient((req) async {

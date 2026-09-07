@@ -5,12 +5,16 @@ Toutes les modifications notables de ce projet seront listées ici.
 ## [Non publié]
 
 ### Added
+- NT-146 : aide gestuelle commune aux champs de groupement de la séance guidée et du wizard, accessible et sans effet sur la saisie.
+- NT-145 : ouverture directe de la session source depuis les records de score et de groupement, avec départage déterministe et rechargement des statistiques au retour.
 - NT-025 : difficulté facultative des exercices, filtre combinable, migration Hive additive et cycle de sauvegarde rétrocompatible.
 - NT-077 : registre historique et vérification déterministe en lecture seule des migrations, `typeId` et index `HiveField`, intégrée au contrôle avant commit et à la CI.
 - NT-026/NT-027 : actions de suppression sécurisée et de duplication depuis la liste des exercices, avec formulaire prérempli, clonage profond et rafraîchissement des compteurs.
 - NT-143 : duplication des sessions détaillées et libres depuis leur détail, sans reprise de date, avec photo physique indépendante et rollback des fichiers en cas d'échec.
 
 ### Changed
+- NT-148 : séparateurs et espacements identiques entre les trois blocs de Préférences Tir, dans leur ordre existant.
+- NT-147 : ordre final de Synthèse ajusté en Répartition Calibres, Répartition Catégories puis Tirs par arme, sans changement statistique.
 - NT-056 : traduction commune et actionnable des erreurs réseau Auth, Profil et Coach, sans fuite technique ni suppression des jetons lors d'une panne transitoire.
 - NT-057 : suppression de quatre widgets sans appelant confirmé, sans modification des routes ni des écrans actifs.
 - NT-144 : gouvernance, vues et plan du backlog resynchronisés ; ancien plan concurrent archivé explicitement.
@@ -18,6 +22,9 @@ Toutes les modifications notables de ce projet seront listées ici.
 - NT-142 : carte « Tirs par arme » déplacée en dernière position de Statistiques > Synthèse, sans modification de calcul.
 
 ### Fixed
+- Android : suppression ciblée des avertissements de compatibilité Java 8 émis par le JDK 21 pour `file_picker` et `flutter_secure_storage`, sans migration fonctionnelle de ces plugins.
+- NT-149 : nom par défaut des exports partagés et enregistrés harmonisé en `nextarget_export_<timestamp>.json`, sans modification du JSON ni de l'import historique.
+- NT-150 : état d'authentification global invariant, cache sécurisé du dernier profil valide, migration immédiate des anciens jetons isolés et état « Connexion à vérifier » sans Coach actif lorsque le premier contrôle est impossible hors ligne.
 - Retours de recette NT-025 : Catégorie et Type alignés, difficulté présentée comme un sélecteur à quatre choix et textes des cartes lisibles dans le thème France.
 - Retours de recette UI : libellé de difficulté vide raccourci en « N/A » dans le formulaire et contraste des objectifs atteints corrigé dans le thème France.
 - Sauvegardes mobiles : « Enregistrer le fichier » transmet désormais le JSON au sélecteur natif Android/iOS, comme l'exige `file_picker`, tout en conservant l'écriture par chemin sur ordinateur.

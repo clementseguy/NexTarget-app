@@ -15,10 +15,35 @@ class ProfileScreen extends StatelessWidget {
     final user = authProvider.currentUser;
     final colorScheme = Theme.of(context).colorScheme;
 
-    if (user == null) {
+    if (!authProvider.isAuthenticated || user == null) {
+      final verificationPending = authProvider.isVerificationPending;
       return Scaffold(
         appBar: AppBar(title: const Text('Mon profil')),
-        body: const Center(child: Text('Non connecté')),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(verificationPending
+                  ? 'Connexion à vérifier'
+                  : 'Non connecté'),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                icon: authProvider.isLoading
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(verificationPending ? Icons.refresh : Icons.login),
+                label: Text(verificationPending ? 'Réessayer' : 'Se connecter'),
+                onPressed: authProvider.isLoading
+                    ? null
+                    : verificationPending
+                        ? authProvider.checkAuthStatus
+                        : () => _signIn(context, authProvider),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -189,6 +214,31 @@ class ProfileScreen extends StatelessWidget {
     };
   }
 
+  Future<void> _signIn(
+    BuildContext context,
+    AuthProvider authProvider,
+  ) async {
+    try {
+      await authProvider.signInWithGoogle();
+    } catch (error) {
+      AppLogger.I.error('PROFILE AUTH UI: connexion impossible', error);
+      if (!context.mounted) return;
+      final presentation = presentNetworkError(error);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(presentation.message),
+          backgroundColor: Colors.red,
+          action: presentation.action == NetworkErrorAction.none
+              ? null
+              : SnackBarAction(
+                  label: presentation.actionLabel!,
+                  onPressed: () => _signIn(context, authProvider),
+                ),
+        ),
+      );
+    }
+  }
+
   Future<void> _updateExperienceLevel(
     BuildContext context,
     AuthProvider authProvider,
@@ -226,7 +276,7 @@ class ProfileScreen extends StatelessWidget {
     if (email.isNotEmpty) {
       return email[0].toUpperCase();
     }
-    return '?';
+    return '';
   }
 
   String _formatDate(String? isoDate) {

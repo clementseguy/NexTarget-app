@@ -78,7 +78,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : DashboardTabView(sessions: _sessions),
+          : DashboardTabView(
+              sessions: _sessions,
+              onRecordsChanged: _loadSessions,
+            ),
     );
   }
 }

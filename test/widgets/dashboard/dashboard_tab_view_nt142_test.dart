@@ -16,7 +16,8 @@ void main() {
 
   tearDownAll(() async => Hive.close());
 
-  testWidgets('Tirs par arme est la dernière carte de Synthèse uniquement',
+  testWidgets(
+      'ordre final calibres, catégories puis tirs par arme sans doublon',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -32,8 +33,14 @@ void main() {
     await tester.drag(summaryScroll, const Offset(0, -4000));
     await tester.pumpAndSettle();
     expect(find.text('Tirs par arme'), findsOneWidget);
+    expect(find.text('Répartition Calibres'), findsOneWidget);
+    expect(find.text('Répartition Catégories'), findsOneWidget);
     expect(
       tester.getTopLeft(find.text('Répartition Calibres')).dy,
+      lessThan(tester.getTopLeft(find.text('Répartition Catégories')).dy),
+    );
+    expect(
+      tester.getTopLeft(find.text('Répartition Catégories')).dy,
       lessThan(tester.getTopLeft(find.text('Tirs par arme')).dy),
     );
 

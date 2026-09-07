@@ -14,6 +14,15 @@ Les écrans Auth, Profil et Coach partagent une traduction des erreurs réseau e
 
 Le profil affiche les informations fournies par le serveur. L'app permet actuellement de modifier le niveau d'expérience ; l'édition du nom n'est pas exposée.
 
+L'état de compte est porté uniquement par `AuthProvider` : vérification,
+connecté avec un profil exploitable, ou non connecté. Un profil valide est mis
+en cache dans le stockage sécurisé pour conserver l'affichage hors ligne. Une
+paire de jetons moderne sans profil en cache reste en « Connexion à vérifier »
+jusqu'à une action explicite « Réessayer » ; le Coach demeure alors inactif.
+Un ancien `jwt_token` isolé est supprimé au premier démarrage, sans toucher aux
+données du carnet. Toute invalidation confirmée est diffusée immédiatement aux
+Paramètres, au Profil et au Coach.
+
 ## Coach connecté uniquement
 
 Une session détaillée réalisée peut être envoyée à `POST /coach/analyze-session` avec son arme, son calibre, ses séries, sa synthèse et la variante de ton choisie. Le serveur construit le prompt et appelle Mistral ; aucune clé ni aucun prompt complet ne réside dans l'app.

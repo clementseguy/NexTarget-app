@@ -63,7 +63,7 @@ class BackupService {
     final jsonString = await _buildExportJson();
     final dir = await _locationProvider.getTemporaryDirectory();
     final file = File(
-      '${dir.path}/sessions_export_${DateTime.now().millisecondsSinceEpoch}.json',
+      '${dir.path}/nextarget_export_${DateTime.now().millisecondsSinceEpoch}.json',
     );
     await file.writeAsString(jsonString);
     return file;
@@ -227,7 +227,7 @@ class BackupService {
     final jsonString = await _buildExportJson();
 
     final safeName = suggestedFileName ??
-        'mycoach_export_${DateTime.now().millisecondsSinceEpoch}.json';
+        'nextarget_export_${DateTime.now().millisecondsSinceEpoch}.json';
     return _locationProvider.saveExportFile(
       safeName,
       utf8.encode(jsonString),

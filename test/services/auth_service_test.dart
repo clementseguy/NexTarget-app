@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -31,13 +33,19 @@ void main() {
 
     group('getToken', () {
       test('retourne le token stocke', () async {
-        when(mockStorage.read(key: 'jwt_token'))
-            .thenAnswer((_) async => 'test_jwt_token');
+        when(mockStorage.read(key: 'auth_token_set'))
+            .thenAnswer((_) async => jsonEncode({
+                  'access_token': 'test_access_token',
+                  'refresh_token': 'test_refresh_token',
+                  'access_expires_at': '2030-01-01T00:00:00.000Z',
+                  'refresh_expires_at': '2030-02-01T00:00:00.000Z',
+                  'email': 'test@example.com',
+                }));
 
         final token = await authService.getToken();
 
-        expect(token, 'test_jwt_token');
-        verify(mockStorage.read(key: 'jwt_token')).called(1);
+        expect(token, 'test_access_token');
+        verifyNever(mockStorage.read(key: 'jwt_token'));
       });
 
       test('retourne null si aucun token', () async {
@@ -51,8 +59,14 @@ void main() {
 
     group('hasToken', () {
       test('retourne true si token existe', () async {
-        when(mockStorage.read(key: 'jwt_token'))
-            .thenAnswer((_) async => 'test_token');
+        when(mockStorage.read(key: 'auth_token_set'))
+            .thenAnswer((_) async => jsonEncode({
+                  'access_token': 'test_token',
+                  'refresh_token': 'refresh_token',
+                  'access_expires_at': '2030-01-01T00:00:00.000Z',
+                  'refresh_expires_at': null,
+                  'email': null,
+                }));
 
         final result = await authService.hasToken();
 

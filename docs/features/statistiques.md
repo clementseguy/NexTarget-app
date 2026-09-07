@@ -14,10 +14,14 @@ Ce document décrit les règles fonctionnelles actuellement implémentées dans 
 - Moyenne des points sur 30 jours : moyenne simple des points de toutes les séries de la fenêtre.
 - Groupement moyen sur 30 jours : moyenne simple des valeurs enregistrées, y compris les anciennes valeurs nulles ou négatives. Seuls les records de groupement filtrent les valeurs non positives.
 - Meilleure série : maximum des points sur tout l'historique réalisé.
+- Les cartes du meilleur score de série et du meilleur groupement ouvrent leur
+  session source. En cas d'ex æquo, la séance la plus récente est retenue, puis
+  l'identifiant persistant le plus élevé à date égale.
 - Sessions du mois : sessions détaillées et libres réalisées du mois civil courant.
 - Courbes points et groupement : au plus les 30 dernières séries, affichées de l'ancienne vers la récente. La tendance points est une moyenne mobile sur trois séries, avec une fenêtre réduite au début.
 - Répartitions catégories et calibres : une occurrence par session réalisée. Les alias `9mm`, `9x19`, `9mm para` et `9mm (9x19)` sont regroupés sous `9 mm`. Un calibre inconnu reste dans la session mais est exclu de cette seule répartition.
-- Tirs par arme : dernière carte de Synthèse, après la répartition par calibre. Son calcul reste celui décrit ci-dessous.
+- En bas de Synthèse, l'ordre est Répartition Calibres, Répartition Catégories,
+  puis Tirs par arme. Son calcul reste celui décrit ci-dessous.
 
 ## Statistiques avancées
 
