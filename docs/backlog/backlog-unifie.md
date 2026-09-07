@@ -997,7 +997,7 @@
 | NT-147 | Déplacer « Répartition Catégories » sous les calibres | app | 1 | Should | S | À FAIRE |
 | NT-148 | Séparer les trois préférences de tir | app | 1 | Could | S | À FAIRE |
 | NT-149 | Renommer les fichiers d'export NexTarget | app | 1 | Should | S | À FAIRE |
-| NT-150 | Garantir un état d'authentification cohérent après mise à jour | app | 3 | Should | M | À FAIRE |
+| NT-150 | Garantir un état d'authentification cohérent après mise à jour | app | 3 | Should | M | EN COURS |
 | NT-151 | Harmoniser et densifier les cartes d'exercice | app | 3 | Could | M | À FAIRE |
 
 ### NT-140 — Supprimer le second écran de chargement Flutter
@@ -1156,7 +1156,7 @@
   - après « Réessayer », une vérification réussie conduit à connecté et met le profil en cache ; une invalidation confirmée conduit à non connecté avec l'action de connexion ;
   - une reconnexion OAuth réussie recharge le profil et rétablit tous les écrans sans redémarrage ; aucun contrat serveur ou mécanisme OAuth n'est modifié ;
   - les tests couvrent la migration v0.6.0, la conservation des données métier, l'invariant d'état, les trois écrans, l'expiration pendant une analyse, la panne transitoire avec cache, le premier démarrage hors ligne sans cache et les deux transitions depuis « Connexion à vérifier ».
-- **Priorité** : Should · **VM** : 3 · **Estimation** : M · **Statut** : À FAIRE.
+- **Priorité** : Should · **VM** : 3 · **Estimation** : M · **Statut** : EN COURS.
 - **Notes** : anomalie reproduite en v0.7.0 après mise à jour depuis v0.6.0 sans déconnexion/reconnexion. Ce correctif complète NT-056 : NT-056 harmonise la présentation des erreurs, NT-150 garantit la cohérence et les transitions de l'état global d'authentification.
 
 ### NT-151 — Harmoniser et densifier les cartes d'exercice

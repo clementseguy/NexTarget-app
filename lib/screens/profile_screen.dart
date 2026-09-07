@@ -15,10 +15,28 @@ class ProfileScreen extends StatelessWidget {
     final user = authProvider.currentUser;
     final colorScheme = Theme.of(context).colorScheme;
 
-    if (user == null) {
+    if (!authProvider.isAuthenticated || user == null) {
+      final verificationPending = authProvider.isVerificationPending;
       return Scaffold(
         appBar: AppBar(title: const Text('Mon profil')),
-        body: const Center(child: Text('Non connecté')),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(verificationPending
+                  ? 'Connexion à vérifier'
+                  : 'Non connecté'),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                icon: Icon(verificationPending ? Icons.refresh : Icons.login),
+                label: Text(verificationPending ? 'Réessayer' : 'Se connecter'),
+                onPressed: verificationPending
+                    ? authProvider.checkAuthStatus
+                    : authProvider.signInWithGoogle,
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -226,7 +244,7 @@ class ProfileScreen extends StatelessWidget {
     if (email.isNotEmpty) {
       return email[0].toUpperCase();
     }
-    return '?';
+    return '';
   }
 
   String _formatDate(String? isoDate) {

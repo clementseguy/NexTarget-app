@@ -3,6 +3,8 @@ import '../services/auth_service.dart';
 import '../services/auth_session_exceptions.dart';
 import '../services/logger.dart';
 
+enum AuthStatus { verifying, authenticated, unauthenticated }
+
 /// Provider pour la gestion d etat d authentification
 ///
 /// Utilise ChangeNotifier pour notifier l UI des changements d etat
@@ -10,60 +12,75 @@ import '../services/logger.dart';
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService;
 
-  bool _isAuthenticated = false;
+  AuthStatus _status = AuthStatus.verifying;
   Map<String, dynamic>? _currentUser;
-  bool _isLoading = false;
+  bool _isLoading = true;
 
-  AuthProvider(this._authService);
+  AuthProvider(this._authService) {
+    _authService.onSessionInvalidated = _handleSessionInvalidated;
+  }
 
   /// Exposé pour construire un AuthenticatedHttpClient depuis l'UI
   /// (ex. ServerCoachAnalysisService).
   AuthService get authService => _authService;
 
-  bool get isAuthenticated => _isAuthenticated;
+  AuthStatus get status => _status;
+  bool get isAuthenticated =>
+      _status == AuthStatus.authenticated && _currentUser != null;
+  bool get isVerificationPending =>
+      _status == AuthStatus.verifying && !_isLoading;
   Map<String, dynamic>? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
 
+  void _setAuthenticated(Map<String, dynamic> user) {
+    _currentUser = user;
+    _status = AuthStatus.authenticated;
+  }
+
+  void _setUnauthenticated() {
+    _currentUser = null;
+    _status = AuthStatus.unauthenticated;
+  }
+
+  void _handleSessionInvalidated() {
+    _isLoading = false;
+    _setUnauthenticated();
+    notifyListeners();
+  }
+
   /// Verifie au demarrage si l utilisateur a un token valide
   ///
-  /// NT-048 : une panne réseau ne doit ni effacer les tokens locaux ni être
-  /// traitée comme une session invalide. Comme un token est présent (sinon
-  /// aucun appel réseau n'aurait été tenté), l'utilisateur reste considéré
-  /// connecté ; le carnet reste utilisable hors ligne et les fonctionnalités
-  /// connectées (profil, Coach) signalent leur propre indisponibilité réseau
-  /// lors de leurs appels.
+  /// Une panne réseau ne doit ni effacer les tokens locaux ni être traitée
+  /// comme une session invalide. Un profil en cache permet de rester connecté
+  /// hors ligne ; sans cache, l'état reste en vérification jusqu'à une action
+  /// explicite de l'utilisateur.
   Future<void> checkAuthStatus() async {
     _isLoading = true;
     notifyListeners();
+    Map<String, dynamic>? cachedUser;
 
     try {
       final hasToken = await _authService.hasToken();
 
       if (hasToken) {
-        final isValid = await _authService.isAuthenticated();
-
-        if (isValid) {
-          _currentUser = await _authService.getUserInfo();
-          _isAuthenticated = true;
-        } else {
-          _isAuthenticated = false;
-          _currentUser = null;
-        }
+        cachedUser = await _authService.readCachedUser();
+        final user = await _authService.getUserInfo();
+        _setAuthenticated(user);
       } else {
-        _isAuthenticated = false;
-        _currentUser = null;
+        _setUnauthenticated();
       }
     } on SessionExpiredException {
-      _isAuthenticated = false;
-      _currentUser = null;
+      _setUnauthenticated();
     } on NetworkUnavailableException {
-      // Session non vérifiable pour l'instant (hors ligne) : on NE
-      // désauthentifie PAS un token local existant.
-      _isAuthenticated = true;
+      if (cachedUser != null) {
+        _setAuthenticated(cachedUser);
+      } else {
+        _currentUser = null;
+        _status = AuthStatus.verifying;
+      }
     } catch (e) {
       AppLogger.I.error('AUTH: erreur lors de la vérification du statut', e);
-      _isAuthenticated = false;
-      _currentUser = null;
+      _setUnauthenticated();
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -97,16 +114,14 @@ class AuthProvider extends ChangeNotifier {
     try {
       final result = await _authService.handleCallback(callbackUri);
 
-      _currentUser = result;
-      _isAuthenticated = true;
+      _setAuthenticated(result);
       _isLoading = false;
 
       notifyListeners();
     } on SessionExpiredException catch (e) {
       AppLogger.I.error('AUTH: erreur lors du traitement du callback OAuth', e);
 
-      _isAuthenticated = false;
-      _currentUser = null;
+      _setUnauthenticated();
       _isLoading = false;
 
       notifyListeners();
@@ -128,10 +143,13 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logout() async {
     await _authService.logout();
 
-    _isAuthenticated = false;
-    _currentUser = null;
+    _setUnauthenticated();
 
     notifyListeners();
+  }
+
+  Future<void> handleConfirmedInvalidation() async {
+    await _authService.invalidateSession();
   }
 
   /// Rafraichit les infos utilisateur
@@ -140,7 +158,7 @@ class AuthProvider extends ChangeNotifier {
   /// expiré, révoqué ou rejoué) déclenche une déconnexion locale ; une panne
   /// réseau ou une erreur transitoire laisse les tokens et l'état intacts.
   Future<void> refreshUserInfo() async {
-    if (!_isAuthenticated) return;
+    if (!isAuthenticated) return;
 
     try {
       _currentUser = await _authService.getUserInfo();
@@ -156,7 +174,7 @@ class AuthProvider extends ChangeNotifier {
   /// Met à jour le niveau d'expérience de l'utilisateur
   /// Appelle PATCH /users/me/profile puis rafraîchit _currentUser
   Future<void> updateExperienceLevel(String level) async {
-    if (!_isAuthenticated) return;
+    if (!isAuthenticated) return;
 
     try {
       await _authService.updateProfile(experienceLevel: level);

@@ -64,6 +64,7 @@ class AuthService {
   AuthenticatedHttpClient? _authenticatedClient;
 
   static const String _tokenSetKey = 'auth_token_set';
+  static const String _profileCacheKey = 'auth_profile_cache';
   // Clés historiques (pré-NT-048), lues en fallback pour détecter les
   // installations sans refresh token ; jamais réécrites après migration.
   static const String _legacyTokenKey = 'jwt_token';
@@ -85,6 +86,11 @@ class AuthService {
   // déjà en vol qui écrirait une nouvelle paire de tokens après un logout
   // (cf. _doRefresh). Ne remplace pas le single-flight, le complète.
   int _sessionGeneration = 0;
+  void Function()? _sessionInvalidated;
+
+  set onSessionInvalidated(void Function()? listener) {
+    _sessionInvalidated = listener;
+  }
 
   // Sérialise uniquement les mutations du stockage sécurisé. Un logout peut
   // ainsi attendre une écriture locale déjà commencée puis l'effacer, sans
@@ -219,20 +225,39 @@ class AuthService {
       return _StoredTokenSet.fromJson(jsonDecode(raw) as Map<String, dynamic>);
     }
 
-    // Installation historique (pré-NT-048) : un access token existe sans
-    // refresh token associé. Traité comme "déjà expiré" pour forcer, au
-    // premier besoin de renouvellement, une reconnexion Google unique.
+    // Installation v0.6 (pré-NT-048) : un access token seul ne constitue pas
+    // une session renouvelable. Il est supprimé localement dès sa première
+    // lecture, sans appel réseau et sans toucher aux données métier.
     final legacyToken = await _storage.read(key: _legacyTokenKey);
-    if (legacyToken == null || legacyToken.isEmpty) return null;
-    final legacyEmail = await _storage.read(key: _legacyEmailKey);
-    return _StoredTokenSet(
-      accessToken: legacyToken,
-      refreshToken: null,
-      accessExpiresAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
-      refreshExpiresAt: null,
-      email: legacyEmail,
-    );
+    if (legacyToken != null) {
+      await _clearLegacyAuthentication();
+    }
+    return null;
   }
+
+  Future<void> _clearLegacyAuthentication() =>
+      _serializeStorageMutation(() async {
+        await _storage.delete(key: _legacyTokenKey);
+        await _storage.delete(key: _legacyEmailKey);
+      });
+
+  Future<Map<String, dynamic>?> readCachedUser() async {
+    final raw = await _storage.read(key: _profileCacheKey);
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      return jsonDecode(raw) as Map<String, dynamic>;
+    } catch (error, stackTrace) {
+      AppLogger.I.error('AUTH: cache profil illisible', error, stackTrace);
+      await _storage.delete(key: _profileCacheKey);
+      return null;
+    }
+  }
+
+  Future<void> _cacheUser(Map<String, dynamic> user) =>
+      _serializeStorageMutation(() => _storage.write(
+            key: _profileCacheKey,
+            value: jsonEncode(user),
+          ));
 
   /// Exécute les écritures et suppressions locales dans leur ordre d'arrivée.
   Future<T> _serializeStorageMutation<T>(Future<T> Function() mutation) async {
@@ -272,12 +297,19 @@ class AuthService {
     });
   }
 
-  Future<void> _clearAll() async {
+  Future<void> _clearTokens({required bool clearProfile}) async {
     await _serializeStorageMutation(() async {
       await _storage.delete(key: _tokenSetKey);
       await _storage.delete(key: _legacyTokenKey);
       await _storage.delete(key: _legacyEmailKey);
+      if (clearProfile) await _storage.delete(key: _profileCacheKey);
     });
+  }
+
+  Future<void> invalidateSession() async {
+    _sessionGeneration++;
+    await _clearTokens(clearProfile: true);
+    _sessionInvalidated?.call();
   }
 
   // ---------------------------------------------------------------------
@@ -316,7 +348,7 @@ class AuthService {
       if (set.accessExpiresAt.isAfter(now)) {
         return set.accessToken;
       }
-      await _clearAll();
+      await invalidateSession();
       throw SessionExpiredException('Reconnexion requise.');
     }
 
@@ -351,7 +383,7 @@ class AuthService {
     final generation = _sessionGeneration;
     final set = await _readTokenSet();
     if (set == null || set.refreshToken == null) {
-      await _clearAll();
+      await invalidateSession();
       throw SessionExpiredException('Reconnexion requise.');
     }
 
@@ -376,7 +408,7 @@ class AuthService {
 
     if (response.statusCode == 401) {
       // Refresh invalide, expiré, révoqué ou rejoué : fin de session.
-      await _clearAll();
+      await invalidateSession();
       throw SessionExpiredException(_sessionExpiredMessage);
     }
     _throwForAuthResponse(response.statusCode, 'renouvellement de session');
@@ -437,7 +469,7 @@ class AuthService {
 
       if (response.statusCode == 200) return true;
       if (response.statusCode == 401) {
-        await logout();
+        await invalidateSession();
         return false;
       }
       // Seul un 401 confirme une session invalide. Tout autre statut est une
@@ -479,10 +511,10 @@ class AuthService {
       if (response.statusCode == 200) {
         final userInfo = jsonDecode(response.body) as Map<String, dynamic>;
         AppLogger.I.debug('AUTH: getUserInfo keys=${userInfo.keys.toList()}');
-
+        await _cacheUser(userInfo);
         return userInfo;
       } else if (response.statusCode == 401) {
-        await logout();
+        await invalidateSession();
         throw SessionExpiredException(_sessionExpiredMessage);
       }
       _throwForAuthResponse(response.statusCode, 'lecture du profil');
@@ -526,9 +558,11 @@ class AuthService {
           .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
+        final userInfo = jsonDecode(response.body) as Map<String, dynamic>;
+        await _cacheUser(userInfo);
+        return userInfo;
       } else if (response.statusCode == 401) {
-        await logout();
+        await invalidateSession();
         throw SessionExpiredException(_sessionExpiredMessage);
       }
       _throwForAuthResponse(response.statusCode, 'mise à jour du profil');
@@ -589,7 +623,7 @@ class AuthService {
       AppLogger.I.debug('AUTH: lecture des tokens indisponible au logout');
     }
 
-    await _clearAll();
+    await _clearTokens(clearProfile: true);
 
     if (refreshToken != null) {
       unawaited(_revokeOnServer(refreshToken));

@@ -11,6 +11,7 @@ import '../../navigation/app_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../services/coach_analysis_exception.dart';
+import '../../services/auth_session_exceptions.dart';
 import '../../services/server_coach_analysis_service.dart';
 import '../../services/network_error.dart';
 import '../../services/logger.dart';
@@ -301,6 +302,10 @@ class _SessionCoachAnalysisSectionState
       }
     } catch (e) {
       AppLogger.I.error('COACH UI: analyse impossible', e);
+      if (e is SessionExpiredException && mounted) {
+        await Provider.of<AuthProvider>(context, listen: false)
+            .handleConfirmedInvalidation();
+      }
       final presentation = e is CoachAnalysisException
           ? const NetworkErrorPresentation(
               family: NetworkErrorFamily.invalidRequest,
@@ -383,6 +388,26 @@ class _SessionCoachAnalysisSectionState
             // affiche un message clair + accès direct à l'écran de connexion.
             Consumer<AuthProvider>(
               builder: (context, authProvider, _) {
+                if (authProvider.isVerificationPending) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0, vertical: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Connexion à vérifier avant de lancer une analyse.',
+                        ),
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Réessayer'),
+                          onPressed: authProvider.checkAuthStatus,
+                        ),
+                      ],
+                    ),
+                  );
+                }
                 if (!authProvider.isAuthenticated) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(

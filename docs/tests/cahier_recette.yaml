@@ -1,6 +1,21 @@
 version: v0.8
 last_updated: 2026-09-06
 features:
+  - id: NT-150
+    name: Cohérence globale de l'authentification après mise à jour
+    objectif: Vérifier les trois états Auth et leur cohérence dans Paramètres, Mon profil et Analyse Coach.
+    steps:
+      - Simuler une mise à jour v0.6 avec seulement jwt_token et des données métier locales
+      - Démarrer connecté avec un profil en cache, puis couper le réseau
+      - Démarrer hors ligne avec une paire moderne mais aucun profil en cache, puis utiliser Réessayer après rétablissement du réseau
+      - Répéter le scénario précédent avec une invalidation confirmée
+      - Provoquer une expiration pendant une analyse, fermer le message puis lancer une reconnexion OAuth complète
+    expected:
+      - Seules les anciennes données Auth sont supprimées et toutes les données métier sont conservées
+      - Un profil en cache maintient l'état connecté hors ligne ; sans cache, les trois écrans affichent Connexion à vérifier sans avatar inconnu ni Coach actif
+      - Réessayer conduit soit à un profil connecté mis en cache, soit à l'état non connecté après invalidation confirmée, sans boucle automatique
+      - L'expiration rend immédiatement les trois écrans non connectés et la reconnexion OAuth les restaure sans redémarrage
+
   - id: NT-059
     name: Qualité SonarCloud et exports déterministes
     objectif: Vérifier les exports sans canal de plateforme et l'absence de tests masqués.

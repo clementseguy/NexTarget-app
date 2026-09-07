@@ -22,7 +22,7 @@ String _avatarInitial(Map<String, dynamic>? user) {
   if (name != null && name.isNotEmpty) return name[0].toUpperCase();
   final email = user?['email'] as String?;
   if (email != null && email.isNotEmpty) return email[0].toUpperCase();
-  return '?';
+  return '';
 }
 
 class SettingsScreen extends StatelessWidget {
@@ -81,9 +81,15 @@ class SettingsScreen extends StatelessWidget {
                 )
               else if (!authProvider.isAuthenticated)
                 IconButton(
-                  icon: const Icon(Icons.login),
-                  tooltip: 'Se connecter',
-                  onPressed: () => _signIn(context, authProvider),
+                  icon: Icon(authProvider.isVerificationPending
+                      ? Icons.sync
+                      : Icons.login),
+                  tooltip: authProvider.isVerificationPending
+                      ? 'Connexion à vérifier'
+                      : 'Se connecter',
+                  onPressed: authProvider.isVerificationPending
+                      ? authProvider.checkAuthStatus
+                      : () => _signIn(context, authProvider),
                 ),
               if (authProvider.isAuthenticated)
                 Padding(

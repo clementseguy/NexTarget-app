@@ -23,13 +23,15 @@ import 'network_error.dart';
 /// tels quels par l'UI (SessionCoachAnalysisSection).
 class ServerCoachAnalysisService {
   final String baseUrl;
+  final AuthService _authService;
   final http.Client _client;
 
   ServerCoachAnalysisService({
     required this.baseUrl,
     required AuthService authService,
     http.Client? client,
-  }) : _client = client ?? AuthenticatedHttpClient(authService);
+  })  : _authService = authService,
+        _client = client ?? AuthenticatedHttpClient(authService);
 
   Map<String, dynamic> _seriesToJson(dynamic s) {
     return {
@@ -92,6 +94,7 @@ class ServerCoachAnalysisService {
     }
 
     if (response.statusCode == 401) {
+      await _authService.invalidateSession();
       throw SessionExpiredException('Réponse HTTP 401 du Coach.');
     }
     if (response.statusCode == 422) {

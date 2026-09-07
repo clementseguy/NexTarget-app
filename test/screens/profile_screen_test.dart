@@ -34,6 +34,7 @@ void main() {
 
   setUp(() {
     mockAuthService = MockAuthService();
+    when(mockAuthService.readCachedUser()).thenAnswer((_) async => null);
   });
 
   Widget buildProfileScreen(AuthProvider authProvider) {
@@ -53,6 +54,7 @@ void main() {
 
       expect(find.text('Mon profil'), findsOneWidget);
       expect(find.text('Non connecté'), findsOneWidget);
+      expect(find.text('Se connecter'), findsOneWidget);
     });
 
     testWidgets('affiche le nom et l\'email de l\'utilisateur', (tester) async {

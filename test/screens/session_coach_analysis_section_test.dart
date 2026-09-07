@@ -24,6 +24,9 @@ class _FakeAuthProvider extends AuthProvider {
 
   @override
   bool get isAuthenticated => _authenticated;
+
+  @override
+  Future<void> handleConfirmedInvalidation() async {}
 }
 
 DetailedShootingSession _session() => DetailedShootingSession(

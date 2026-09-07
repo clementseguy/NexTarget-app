@@ -18,6 +18,7 @@ Toutes les modifications notables de ce projet seront listées ici.
 - NT-142 : carte « Tirs par arme » déplacée en dernière position de Statistiques > Synthèse, sans modification de calcul.
 
 ### Fixed
+- NT-150 : état d'authentification global invariant, cache sécurisé du dernier profil valide, migration immédiate des anciens jetons isolés et état « Connexion à vérifier » sans Coach actif lorsque le premier contrôle est impossible hors ligne.
 - Retours de recette NT-025 : Catégorie et Type alignés, difficulté présentée comme un sélecteur à quatre choix et textes des cartes lisibles dans le thème France.
 - Retours de recette UI : libellé de difficulté vide raccourci en « N/A » dans le formulaire et contraste des objectifs atteints corrigé dans le thème France.
 - Sauvegardes mobiles : « Enregistrer le fichier » transmet désormais le JSON au sélecteur natif Android/iOS, comme l'exige `file_picker`, tout en conservant l'écriture par chemin sur ordinateur.
