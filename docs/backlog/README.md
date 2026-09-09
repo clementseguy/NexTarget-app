@@ -11,14 +11,16 @@ l'application et le serveur.
 | [`descriptions.md`](descriptions.md) | Description fonctionnelle et critères d'acceptation des US actives. |
 | [`priorites.md`](priorites.md) | Ordre de traitement courant : P0, P1, P2, P3 et Icebox. |
 | [`journal/`](journal/) | Historique annuel et concis des décisions et livraisons significatives. |
-| [`archive/`](archive/) | US livrées ou annulées, classées par année. |
+| [`archive/`](archive/) | US archivées, classées par année d'archivage. |
 | [`details/`](details/) | Référentiels et compléments durables liés aux US. |
 
 ## Cycle de vie
 
 Les statuts autorisés sont `À FAIRE`, `EN COURS`, `FAIT` et `ANNULÉ`.
 
-- Une US passe à `FAIT` lorsqu'elle est fusionnée dans `dev`.
+- Une PR qui clôt une US prépare son statut `FAIT` et son entrée `LIVRAISON`.
+  Tant que la PR n'est pas fusionnée, le statut canonique sur `dev` reste
+  `EN COURS`. Les changements préparés deviennent canoniques à la fusion.
 - Une US remplacée passe à `ANNULÉ` et référence ses remplaçantes dans le
   tableau et dans sa description.
 - Le statut n'est modifié que dans `backlog-unifie.md`.
@@ -57,6 +59,8 @@ ou `L` est également facultative.
 - Changement de priorité : modifier uniquement `priorites.md`.
 - Changement fonctionnel : modifier uniquement `descriptions.md`, sauf si la
   portée, l'estimation ou MoSCoW évolue également.
+- Clôture par une PR : préparer `FAIT` dans `backlog-unifie.md` et une entrée
+  `LIVRAISON` dans le journal de l'année courante.
 
 ## Traçabilité du développement
 
@@ -64,9 +68,11 @@ Référencer l'ID de l'US dans les branches, commits et PR. Les détails de
 livraison restent dans les PR et changelogs ; `backlog-unifie.md` ne reçoit pas
 de journal intermédiaire.
 
-- Branche : `type/NT-XXX-slug-court`.
-- Commit : inclure `NT-XXX` dans le sujet.
-- PR : titre `[NT-XXX] …` et critères d'acceptation vérifiés dans le corps.
+- Branche liée à une US : `type/NT-XXX-slug-court`.
+- Maintenance sans US : `chore/slug-court`.
+- Commit et PR : inclure `NT-XXX` lorsqu'une US existe ; l'ID est facultatif
+  pour une maintenance technique ou documentaire sans US.
+- PR liée à une US : vérifier ses critères d'acceptation dans le corps.
 
 ## Journal du backlog
 
@@ -75,8 +81,8 @@ et des livraisons significatives, dans un fichier par année.
 
 - Le journal est historique et ne constitue jamais une source du statut courant.
 - Le statut courant existe uniquement dans `backlog-unifie.md`.
-- Une entrée est ajoutée pour un cadrage matériel, une annulation ou une fusion
-  dans `dev`.
+- Une entrée est ajoutée pour un cadrage matériel ou une annulation. Une PR qui
+  clôt une US prépare son entrée `LIVRAISON`, effective à sa fusion dans `dev`.
 - Les changements ordinaires `À FAIRE` vers `EN COURS`, ou inversement, ne sont
   pas journalisés.
 - Une livraison est résumée en quelques lignes et renvoie vers la PR, le
@@ -88,12 +94,24 @@ et des livraisons significatives, dans un fichier par année.
 - Le journal ne remplace ni [`priorites.md`](priorites.md), ni le changelog, ni
   les archives par US.
 
+Format recommandé :
+
+```md
+## AAAA-MM-JJ — CADRAGE | LIVRAISON | PRIORISATION | ANNULATION
+
+- **US** : NT-XXX.
+- **Décision ou événement** : résumé concis.
+- **Résultat** : uniquement pour une livraison.
+- **Référence** : PR, changelog ou note de release.
+```
+
 ## Definition of Done
 
 Une US peut être fusionnée dans `dev` lorsque ses critères d'acceptation sont
 vérifiés, les tests et contrôles qualité concernés sont verts, la recette est
-mise à jour si nécessaire et aucune règle de sécurité n'est régressée. La
-fusion dans `dev` déclenche son passage à `FAIT`.
+mise à jour si nécessaire et aucune règle de sécurité n'est régressée. La PR
+prépare son statut `FAIT` et son entrée `LIVRAISON` ; la fusion les rend
+canoniques.
 
 Les `AGENTS.md` restent la référence pour les conventions de code,
 l'architecture et les règles de sécurité propres à chaque dépôt.

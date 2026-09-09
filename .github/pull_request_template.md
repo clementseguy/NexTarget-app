@@ -4,7 +4,7 @@
 
 ## Description
 
-<!-- Une ligne par US. Préciser les impacts importants et le hors-périmètre. -->
+<!-- Une ligne par US, si applicable. Préciser les impacts importants et le hors-périmètre. -->
 
 - NT-XXX :
 
@@ -38,5 +38,6 @@ Lister uniquement les documents réellement modifiés.
 
 <!--
 Résumer l'état de préparation et les éventuels points restant à valider.
-Les US restent EN COURS jusqu'à la fusion dans dev.
+Si la PR clôt des US, leur statut FAIT et l'entrée de livraison sont préparés
+sur la branche et deviennent canoniques à la fusion dans dev.
 -->

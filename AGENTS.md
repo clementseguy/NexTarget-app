@@ -14,7 +14,7 @@ NexTarget est le carnet de tir sportif du tireur solo : saisie des sessions
 - **Stack** : Flutter / Dart (SDK `>=3.0.0 <4.0.0`), stockage local **Hive**
 - **State management** : `provider` (`ChangeNotifier`)
 - **Backend** : NexTarget-server (OAuth + proxy Coach IA), consommé via `http`
-- **Version** : voir `pubspec.yaml` (`version:`) — actuellement 0.7.0
+- **Version** : voir `pubspec.yaml` (`version:`)
 - **Package id historique** : `tir_sportif` (branding affiché = *NexTarget*, ne pas renommer le package)
 - **Langue** : identifiants en **anglais** ; commentaires, docs et **UI en français** ; certaines valeurs métier sont en français (`"réalisée"`, `"entraînement"`) — les conserver telles quelles.
 
@@ -176,9 +176,10 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
    `… fast` pour un sous-ensemble rapide).
 2. Adapters régénérés/committés si un modèle `@HiveType` a changé.
 3. Migration + test de migration ajoutés si le schéma Hive a changé.
-4. Statut de l'item mis à jour uniquement dans `docs/backlog/backlog-unifie.md` ;
-   `CHANGELOG.md` complété si la livraison doit y être annoncée.
-5. Lors d'une fusion dans `dev`, ajouter une entrée `LIVRAISON` concise dans
+4. Si la PR clôt une US, préparer son statut `FAIT` uniquement dans
+   `docs/backlog/backlog-unifie.md` ; ce statut devient canonique à la fusion
+   dans `dev`. Compléter `CHANGELOG.md` si la livraison doit y être annoncée.
+5. Dans la même PR, préparer une entrée `LIVRAISON` concise dans
    `docs/backlog/journal/<année>.md`. Lors d'un changement matériel de périmètre,
    mettre à jour `descriptions.md` et ajouter une entrée `CADRAGE` qui explique
    la décision. Ne jamais placer ce journal dans `backlog-unifie.md`,
@@ -193,7 +194,9 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
   - **`main`** : branche de **production**, taggée à chaque **release**. Jamais de commit direct.
   - **`dev`** : branche d'**intégration** ; reçoit les features validées.
   - Toute branche de développement part de **`dev`** (jamais de `main`) et suit la
-    convention `type/NT-XXX-slug` (ex. `feature/NT-061-coach-connecte-uniquement`).
+    convention `type/NT-XXX-slug` lorsqu'elle traite une US
+    (ex. `feature/NT-061-coach-connecte-uniquement`). Une maintenance technique
+    ou documentaire sans US utilise `chore/slug-court`.
     Pour un lot multi-features, une branche `features/<codes_noms_features>` regroupant
     les IDs concernés est acceptée.
 - **Cycle de développement d'une (ou plusieurs) feature(s)** :
@@ -201,9 +204,11 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
   2. Développer, puis ouvrir une **PR de la branche vers `dev`** (merge après revue + CI verte).
   3. Pour livrer : ouvrir une **PR de `dev` vers `main`**, accompagnée d'une **release**
      (bump de version dans `pubspec.yaml`, `CHANGELOG.md`, tag).
-- **Commit** : sujet préfixé par l'ID — Exemple : `feat(coach): NT-032 persona coach cool`.
-- **PR** : titre `[NT-XXX] …`, corps listant les IDs + critères d'acceptation cochés ;
-  la CI (« Test & SonarCloud ») s'exécute sur la PR.
+- **Commit** : sujet préfixé par l'ID lorsqu'une US existe — exemple :
+  `feat(coach): NT-032 persona coach cool`. L'ID est facultatif pour une tâche
+  technique ou documentaire sans US.
+- **PR** : titre `[NT-XXX] …` lorsqu'elle traite une US, corps listant les IDs et
+  critères d'acceptation cochés ; la CI (« Test & SonarCloud ») s'exécute sur la PR.
 - **Definition of Done** : voir [`docs/backlog/README.md`](docs/backlog/README.md).
 
 ## Décisions intentionnelles (ne pas « corriger »)
