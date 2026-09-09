@@ -18,9 +18,10 @@ Ces fichiers ne doivent décrire que l'existant. Toute fonctionnalité future ap
 - [Backlog unifié](backlog/backlog-unifie.md) : source de vérité produit.
 - [Descriptions des US](backlog/descriptions.md) : définition fonctionnelle et critères d'acceptation.
 - [Priorités](backlog/priorites.md) : ordre de réalisation courant, indépendant de l'inventaire.
+- [Journal](backlog/journal/2026.md) : chronologie concise des décisions et livraisons significatives.
 - [Archive](backlog/archive/2026.md) : US livrées ou annulées en 2026.
 - [Gouvernance](backlog/README.md) : statuts, Definition of Done et convention d'identifiants.
-- [REX TAR et saisie rapide](backlog/rex-tar-saisie-rapide-2026-07-24.md) : lecture obligatoire avant de reprendre ce périmètre.
+- [REX TAR et saisie rapide](backlog/details/rex-tar-saisie-rapide-2026-07-24.md) : lecture obligatoire avant de reprendre ce périmètre.
 - [Référentiel TAR 25 m](backlog/details/referentiel-tar-25m.md) : détail préparatoire conservé pour NT-100.
 
 Le dossier historique `specs` a été supprimé : les spécifications livrées étaient redondantes avec le code, les tests et les releases ; les intentions non livrées sont maintenant uniquement dans le backlog.

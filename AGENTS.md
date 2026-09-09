@@ -25,6 +25,7 @@ Le **quoi/pourquoi** vit dans les documents du backlog, pas ici :
 - **Backlog** : [`docs/backlog/backlog-unifie.md`](docs/backlog/backlog-unifie.md) — inventaire et statut des items `NT-XXX`.
 - **Descriptions** : [`docs/backlog/descriptions.md`](docs/backlog/descriptions.md) — définition fonctionnelle des items actifs.
 - **Priorités** : [`docs/backlog/priorites.md`](docs/backlog/priorites.md) — ordre de traitement courant.
+- **Journal** : [`docs/backlog/journal/`](docs/backlog/journal/) — historique concis des décisions et livraisons, jamais source du statut courant.
 - **Gouvernance / DoD / convention d'IDs** : [`docs/backlog/README.md`](docs/backlog/README.md).
 
 Ces documents se modifient **uniquement dans `NexTarget-app`**. Le repo
@@ -177,8 +178,14 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
 3. Migration + test de migration ajoutés si le schéma Hive a changé.
 4. Statut de l'item mis à jour uniquement dans `docs/backlog/backlog-unifie.md` ;
    `CHANGELOG.md` complété si la livraison doit y être annoncée.
-5. Aucun secret, token ou clé dans le diff ; aucun nouveau `print`/`withOpacity`.
-6. Aucun émoji dans le diff (code, doc, `CHANGELOG.md`, message de commit/PR).
+5. Lors d'une fusion dans `dev`, ajouter une entrée `LIVRAISON` concise dans
+   `docs/backlog/journal/<année>.md`. Lors d'un changement matériel de périmètre,
+   mettre à jour `descriptions.md` et ajouter une entrée `CADRAGE` qui explique
+   la décision. Ne jamais placer ce journal dans `backlog-unifie.md`,
+   `descriptions.md` ou `priorites.md`, ni recopier les détails déjà présents
+   dans une PR, le changelog ou une note de release.
+6. Aucun secret, token ou clé dans le diff ; aucun nouveau `print`/`withOpacity`.
+7. Aucun émoji dans le diff (code, doc, `CHANGELOG.md`, message de commit/PR).
 
 ## Workflow Git (rappel gouvernance)
 

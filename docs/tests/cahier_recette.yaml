@@ -154,15 +154,17 @@ features:
 
   - id: NT-144
     name: Cohérence de la documentation du backlog
-    objectif: Vérifier la séparation entre inventaire, descriptions, priorités et archive.
+    objectif: Vérifier la séparation entre inventaire, descriptions, priorités, journal et archive.
     steps:
       - Vérifier que chaque item actif du backlog possède une description et au plus une priorité
       - Vérifier que le statut des items actifs n'apparaît que dans backlog-unifie.md
       - Vérifier les liens, les ancres, le prochain ID et l'archive annuelle
+      - Vérifier que le journal reste chronologique, concis et sans statut courant concurrent
     expected:
       - Les inventaires du backlog, des descriptions et des priorités sont cohérents
       - Aucun identifiant ni aucune décision durable ne sont perdus
       - Les vues app/serveur et le plan de sprints ne sont plus nécessaires
+      - Les décisions et livraisons significatives restent traçables dans le journal annuel
 
   - id: NT-140
     name: Démarrage sans second splash Flutter
