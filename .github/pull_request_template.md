@@ -1,18 +1,42 @@
-## Objet de la PR
+## Motivation
 
-- [ ] Analyse SonarCloud OK
-- [ ] Tests unitaires verts
-- [ ] Couverture >= 50% (objectif)
-- [ ] Pas de secrets commités
+<!-- Problème(s) traité(s) et valeur attendue, en quelques phrases. -->
 
 ## Description
 
-Décrivez brièvement les changements, motivations, et impacts.
+<!-- Une ligne par US. Préciser les impacts importants et le hors-périmètre. -->
 
-## Checklist
+- NT-XXX :
 
-- [ ] `flutter test --coverage` exécuté en local
-- [ ] `dart analyze` (optionnel) ne remonte pas d’erreurs
-- [ ] Mise à jour des docs si nécessaire (README, specs)
-- [ ] Journal du backlog mis à jour si cette PR clôt une US ou acte un cadrage produit
-- [ ] Cahier de recette mis à jour et recette manuelle validée
+## Tests
+
+<!-- Tests ajoutés ou modifiés, puis résultat global. -->
+
+-
+
+## Validation
+
+<!-- Commandes exécutées et résultat. Signaler toute recette manuelle restante. -->
+
+- [ ] `flutter test` exécuté localement avec succès.
+- [ ] `dart analyze` exécuté localement sans erreur.
+- [ ] Aucun secret, token ou clé ajouté au dépôt.
+- Autres validations :
+
+## Documentation
+
+<!--
+Lister uniquement les documents réellement modifiés.
+- CHANGELOG si le changement est notable.
+- Cahier de recette YAML et Markdown si le comportement visible évolue.
+- Journal du backlog si la PR clôt une US ou acte un cadrage produit.
+-->
+
+-
+
+## Statut
+
+<!--
+Résumer l'état de préparation et les éventuels points restant à valider.
+Les US restent EN COURS jusqu'à la fusion dans dev.
+-->
