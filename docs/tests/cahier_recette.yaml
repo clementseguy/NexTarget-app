@@ -153,16 +153,18 @@ features:
       - Le cycle courant conserve la difficulté et les données historiques restent valides
 
   - id: NT-144
-    name: Cohérence du backlog et de ses vues
-    objectif: Vérifier que la gouvernance ne présente qu'une source et un plan actifs.
+    name: Cohérence de la documentation du backlog
+    objectif: Vérifier la séparation entre inventaire, descriptions, priorités, journal et archive.
     steps:
-      - Comparer les métadonnées des six items dans le backlog, la vue app et le plan
-      - Vérifier la projection serveur et les renvois NT-023, NT-033, NT-020 et NT-026
-      - Vérifier les liens, ancres, dates et l'archive de l'ancien plan S1-S6
+      - Vérifier que chaque item actif du backlog possède une description et au plus une priorité
+      - Vérifier que le statut des items actifs n'apparaît que dans backlog-unifie.md
+      - Vérifier les liens, les ancres, le prochain ID et l'archive annuelle
+      - Vérifier que le journal reste chronologique, concis et sans statut courant concurrent
     expected:
-      - Les six items restent EN COURS tant que la branche n'est pas fusionnée
-      - Aucun identifiant ni décision durable n'est supprimé
-      - backlog-unifie.md est l'unique source produit et plan-sprints.md l'unique plan actif
+      - Les inventaires du backlog, des descriptions et des priorités sont cohérents
+      - Aucun identifiant ni aucune décision durable ne sont perdus
+      - Les vues app/serveur et le plan de sprints ne sont plus nécessaires
+      - Les décisions et livraisons significatives restent traçables dans le journal annuel
 
   - id: NT-140
     name: Démarrage sans second splash Flutter

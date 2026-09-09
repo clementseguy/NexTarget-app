@@ -144,7 +144,11 @@ Toutes les modifications notables de ce projet seront listées ici.
     - Prints `[DEBUG]` hérités retirés des fichiers coach.
     - Rotation de la clé Mistral historique : action manuelle (console Mistral + env Render), hors code.
 
-## [0.4.0] - Unreleased
+## [0.4.0] - Non publiée
+
+Cette version n'a pas été publiée. La section est conservée pour tracer les
+travaux intégrés dans les versions suivantes.
+
 ### Technical
 - T1: Intégration SonarCloud (acceptation: badge visible, Quality Gate ≥ B, couverture ≥ 20%).
     - CI GitHub Actions: analyse automatique à chaque push sur `dev` et sur chaque PR vers `main`.

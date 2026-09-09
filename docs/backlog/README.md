@@ -1,129 +1,117 @@
 # Backlog NexTarget — Gouvernance
 
-Ce dossier contient la **source de vérité produit** de NexTarget (app + serveur)
-et ses vues dérivées. Il pilote le développement, y compris depuis Claude Code.
-
-## Vision produit
-
-> NexTarget est le carnet de tir sportif numérique du tireur solo : il enregistre
-> chaque session (armes, calibres, séries, groupements), en dégage des
-> statistiques et des objectifs mesurables, et s'appuie sur un coach IA pour
-> transformer ces données en conseils et exercices concrets — le tout utilisable
-> hors-ligne, avec un compte optionnel qui sécurise les appels IA côté serveur.
+Ce dossier contient la source de vérité produit de NexTarget pour
+l'application et le serveur.
 
 ## Fichiers
 
 | Fichier | Rôle |
 |---|---|
-| [`backlog-unifie.md`](backlog-unifie.md) | **LA source de vérité.** Tous les items produit (NT-XXX), groupés par thème. |
-| [`vue-app.md`](vue-app.md) | Projection des items de portée `app`/`both`. |
-| [`vue-serveur.md`](vue-serveur.md) | Vue serveur canonique : projection des items de portée `server`/`both`, maintenue dans ce repo. |
-| [`plan-sprints.md`](plan-sprints.md) | Vue de pilotage : tri métier + dépendances + planification par sprints livrables. |
-| [`details/`](details/) | Détails durables nécessaires aux items futurs, sans créer de backlog parallèle. |
+| [`backlog-unifie.md`](backlog-unifie.md) | Inventaire des US actives et source unique de leur statut. |
+| [`descriptions.md`](descriptions.md) | Description fonctionnelle et critères d'acceptation des US actives. |
+| [`priorites.md`](priorites.md) | Ordre de traitement courant : P0, P1, P2, P3 et Icebox. |
+| [`journal/`](journal/) | Historique annuel et concis des décisions et livraisons significatives. |
+| [`archive/`](archive/) | US archivées, classées par année d'archivage. |
+| [`details/`](details/) | Référentiels et compléments durables liés aux US. |
 
-## Règle de synchronisation (impérative)
+## Cycle de vie
 
-1. **`backlog-unifie.md` est la seule source de vérité.** Aucune information
-   produit ne doit exister *uniquement* dans une vue.
-2. **Les vues sont des projections.** Chaque item unifié se projette en **0 ou 1**
-   sous-item app **et** **0 ou 1** sous-item serveur, reliés par l'**ID unifié**.
-3. **Sens de mise à jour** : on modifie **toujours** le backlog unifié d'abord,
-   puis on répercute dans la ou les vues concernées. Jamais l'inverse.
-4. **Cohérence des statuts** : un même ID a le **même statut global** partout ; une
-   vue peut préciser un statut *par côté* en note (ex. NT-048 : serveur FAIT /
-   adoption app à câbler) mais ne le contredit pas.
-5. **IDs stables, jamais réutilisés.** Un item abandonné passe en `Won't-now` ou est
-   marqué obsolète — son ID n'est pas recyclé. Les trous de numérotation par thème
-   sont volontaires (réservés à l'insertion).
+Les statuts autorisés sont `À FAIRE`, `EN COURS`, `FAIT` et `ANNULÉ`.
 
-### Emplacement canonique et relation avec le serveur
+- Une PR qui clôt une US prépare son statut `FAIT` et son entrée `LIVRAISON`.
+  Tant que la PR n'est pas fusionnée, le statut canonique sur `dev` reste
+  `EN COURS`. Les changements préparés deviennent canoniques à la fusion.
+- Une US remplacée passe à `ANNULÉ` et référence ses remplaçantes dans le
+  tableau et dans sa description.
+- Le statut n'est modifié que dans `backlog-unifie.md`.
+- Le déplacement des US `FAIT` ou `ANNULÉ` dans l'archive est une tâche
+  documentaire distincte. Elle inclut leur retrait éventuel de `priorites.md`.
 
-- Le backlog unifié et toutes ses vues sont modifiés **exclusivement dans le repo
-  `NexTarget-app`**, sous `docs/backlog/`.
-- [`vue-serveur.md`](vue-serveur.md) est la **vue serveur canonique**. Le repo
-  `NexTarget-server` doit seulement pointer vers cette vue ; il ne doit pas en
-  maintenir une copie ni un backlog produit parallèle.
-- Les constats issus du développement serveur sont reportés ici, d'abord dans le
-  backlog unifié puis dans la vue serveur. **Aucune synchronisation inverse** de
-  fichiers depuis `NexTarget-server` vers `NexTarget-app` n'est attendue.
+## Identifiants
 
-## Format d'un item
+Les IDs `NT-XXX` sont globaux, stables et ne sont jamais réutilisés.
 
+- Les anciennes plages thématiques sont abandonnées à partir de `NT-152`.
+- Le prochain ID figure en tête de `backlog-unifie.md`.
+- Créer une US et incrémenter ce compteur forment une seule modification.
+- Les trous historiques ne sont pas réattribués.
+
+## Priorisation
+
+Une US peut être créée sans priorité. Son absence de `priorites.md` signifie
+simplement qu'elle n'a pas encore été arbitrée.
+
+- **P0** : immédiat — 2 US maximum fortement recommandé.
+- **P1** : prochain — 5 US maximum fortement recommandé.
+- **P2** : ultérieur.
+- **P3** : opportunité.
+- **Icebox** : pas envisagé actuellement.
+
+MoSCoW est une analyse facultative conservée dans `backlog-unifie.md`. Elle
+peut rester à `—` jusqu'à ce qu'un arbitrage soit utile. L'estimation `S`, `M`
+ou `L` est également facultative.
+
+## Mise à jour d'une US
+
+- Création : ajouter la ligne dans `backlog-unifie.md`, ajouter la définition
+  dans `descriptions.md`, puis incrémenter le prochain ID.
+- Changement de statut : modifier uniquement `backlog-unifie.md`.
+- Changement de priorité : modifier uniquement `priorites.md`.
+- Changement fonctionnel : modifier uniquement `descriptions.md`, sauf si la
+  portée, l'estimation ou MoSCoW évolue également.
+- Clôture par une PR : préparer `FAIT` dans `backlog-unifie.md` et une entrée
+  `LIVRAISON` dans le journal de l'année courante.
+
+## Traçabilité du développement
+
+Référencer l'ID de l'US dans les branches, commits et PR. Les détails de
+livraison restent dans les PR et changelogs ; `backlog-unifie.md` ne reçoit pas
+de journal intermédiaire.
+
+- Branche liée à une US : `type/NT-XXX-slug-court`.
+- Maintenance sans US : `chore/slug-court`.
+- Commit et PR : inclure `NT-XXX` lorsqu'une US existe ; l'ID est facultatif
+  pour une maintenance technique ou documentaire sans US.
+- PR liée à une US : vérifier ses critères d'acceptation dans le corps.
+
+## Journal du backlog
+
+Le dossier [`journal/`](journal/) conserve la chronologie des décisions produit
+et des livraisons significatives, dans un fichier par année.
+
+- Le journal est historique et ne constitue jamais une source du statut courant.
+- Le statut courant existe uniquement dans `backlog-unifie.md`.
+- Une entrée est ajoutée pour un cadrage matériel ou une annulation. Une PR qui
+  clôt une US prépare son entrée `LIVRAISON`, effective à sa fusion dans `dev`.
+- Les changements ordinaires `À FAIRE` vers `EN COURS`, ou inversement, ne sont
+  pas journalisés.
+- Une livraison est résumée en quelques lignes et renvoie vers la PR, le
+  `CHANGELOG.md` ou la note de release.
+- Les critères d'acceptation, fichiers modifiés et détails techniques déjà
+  documentés ailleurs ne sont pas recopiés.
+- Les entrées sont antéchronologiques et ne sont modifiées qu'en cas de
+  correction factuelle.
+- Le journal ne remplace ni [`priorites.md`](priorites.md), ni le changelog, ni
+  les archives par US.
+
+Format recommandé :
+
+```md
+## AAAA-MM-JJ — CADRAGE | LIVRAISON | PRIORISATION | ANNULATION
+
+- **US** : NT-XXX.
+- **Décision ou événement** : résumé concis.
+- **Résultat** : uniquement pour une livraison.
+- **Référence** : PR, changelog ou note de release.
 ```
-- ID            : NT-XXX (stable)
-- Titre
-- Thème / Epic
-- Description   : la valeur pour l'utilisateur (le « pourquoi »)
-- Portée        : app | server | both
-- Dépendances   : IDs d'autres items
-- Critères d'acceptation : liste vérifiable
-- Priorité      : Must | Should | Could | Won't-now (MoSCoW)
-- Estimation    : S | M | L
-- Statut        : FAIT | EN COURS | À FAIRE | À VÉRIFIER
-- Notes         : décisions, risques, liens
-```
 
-**Règle de statut** : le statut reflète l'**état réel du code**, jamais l'intention.
-En cas d'ambiguïté → `À VÉRIFIER` (ne pas inventer un statut).
+## Definition of Done
 
-## Thèmes / Epics
+Une US peut être fusionnée dans `dev` lorsque ses critères d'acceptation sont
+vérifiés, les tests et contrôles qualité concernés sont verts, la recette est
+mise à jour si nécessaire et aucune règle de sécurité n'est régressée. La PR
+prépare son statut `FAIT` et son entrée `LIVRAISON` ; la fusion les rend
+canoniques.
 
-1. Carnet de tir · 2. Statistiques & Objectifs · 3. Exercices · 4. Coach IA ·
-5. Auth & Compte · 6. Qualité & Observabilité · 7. Sécurité & Secrets ·
-8. Plateforme & Déploiement · 9. Idées / hors-scope ·
-10. Disciplines officielles & TAR · 11. Analyse de cible (photo) ·
-12. Coach : progression & génération · 13. Saisie au stand ·
-14. Finitions UX.
-
-## Convention d'usage dans Claude Code
-
-Référencer l'**ID d'item** partout pour tracer le travail au produit :
-
-- **Branches** : `type/NT-XXX-slug-court`
-  (ex. `feat/NT-061-coach-connecte-uniquement`, `fix/NT-065-cors-prod`).
-- **Commits** : préfixer le sujet par l'ID —
-  `feat(coach): NT-032 ajout persona coach cool`.
-- **PRs** : titre `[NT-XXX] …` ; corps qui **liste les IDs traités** et coche les
-  critères d'acceptation correspondants ; à la fusion, **mettre à jour le statut**
-  de l'item dans `backlog-unifie.md` (et la/les vue(s)).
-- **Multi-repo** : un item `both` (ex. NT-030, NT-061) peut donner une PR par repo ;
-  les deux référencent le **même ID**.
-
-## Definition of Done (DoD)
-
-Un item passe **FAIT** quand **tous** les points ci-dessous sont vrais :
-
-1. **Critères d'acceptation** de l'item tous vérifiés.
-2. **Code mergé** sur la branche par défaut du/des repo(s) concerné(s).
-3. **Tests** : au moins un test couvrant le cas nominal + un cas d'erreur pour toute
-   nouvelle logique (serveur : `pytest` ; app : `flutter test`).
-4. **Qualité** : app → `flutter analyze --fatal-infos` et `flutter test` verts ;
-   serveur → `pytest -q` vert. Le Quality Gate SonarCloud reste informatif tant
-   que sa règle de couverture du nouveau code n'est pas adaptée au projet.
-5. **Cahier de recette** (app) rejoué/mis à jour si le comportement visible change.
-6. **Docs à jour** : `backlog-unifie.md` (statut) + vue(s) + CHANGELOG du repo ;
-   `AGENTS.md` si une convention/architecture change.
-7. **Sécurité** : aucune régression sur les règles non négociables du serveur
-   (OAuth-only côté auth, state à usage unique, type de token JWT, secrets en env,
-   pas d'info interne dans les erreurs).
-
-## Cohérence avec les `AGENTS.md`
-
-- **App** — `NexTarget-app/AGENTS.md` référence ce dossier comme source de vérité,
-  rappelle la convention d'IDs et formalise l'emplacement canonique du backlog.
-- **Serveur** — `NexTarget-server/AGENTS.md` doit pointer vers le backlog et la vue
-  serveur canoniques de ce repo, sans demander de copie ni de synchronisation
-  inverse. Les règles de sécurité propres au serveur restent documentées côté
-  serveur.
-- En cas de conflit entre un `AGENTS.md` et ce backlog sur le **quoi/pourquoi
-  produit**, **ce backlog prime** ; les `AGENTS.md` restent la référence sur le
-  **comment** (conventions de code, architecture, sécurité).
-
-## Provenance & archivage
-
-Ce backlog unifie et remplace les anciens backlogs app et serveur, désormais
-supprimés afin d'éviter qu'un agent les interprète comme des sources actives.
-Les décisions durables ont été intégrées directement aux items concernés. Le
-repo serveur pointe vers ce dossier sans en maintenir de copie.
-
-*Dernier audit du code et des projections : 2026-09-07.*
+Les `AGENTS.md` restent la référence pour les conventions de code,
+l'architecture et les règles de sécurité propres à chaque dépôt.

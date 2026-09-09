@@ -14,23 +14,23 @@ NexTarget est le carnet de tir sportif du tireur solo : saisie des sessions
 - **Stack** : Flutter / Dart (SDK `>=3.0.0 <4.0.0`), stockage local **Hive**
 - **State management** : `provider` (`ChangeNotifier`)
 - **Backend** : NexTarget-server (OAuth + proxy Coach IA), consommé via `http`
-- **Version** : voir `pubspec.yaml` (`version:`) — actuellement 0.7.0
+- **Version** : voir `pubspec.yaml` (`version:`)
 - **Package id historique** : `tir_sportif` (branding affiché = *NexTarget*, ne pas renommer le package)
 - **Langue** : identifiants en **anglais** ; commentaires, docs et **UI en français** ; certaines valeurs métier sont en français (`"réalisée"`, `"entraînement"`) — les conserver telles quelles.
 
 ## Source de vérité produit
 
-Le **quoi/pourquoi** vit dans le backlog unifié, pas ici :
+Le **quoi/pourquoi** vit dans les documents du backlog, pas ici :
 
-- **Backlog** : [`docs/backlog/backlog-unifie.md`](docs/backlog/backlog-unifie.md) — items `NT-XXX`.
-- **Vue app** : [`docs/backlog/vue-app.md`](docs/backlog/vue-app.md).
-- **Vue serveur canonique** : [`docs/backlog/vue-serveur.md`](docs/backlog/vue-serveur.md).
+- **Backlog** : [`docs/backlog/backlog-unifie.md`](docs/backlog/backlog-unifie.md) — inventaire et statut des items `NT-XXX`.
+- **Descriptions** : [`docs/backlog/descriptions.md`](docs/backlog/descriptions.md) — définition fonctionnelle des items actifs.
+- **Priorités** : [`docs/backlog/priorites.md`](docs/backlog/priorites.md) — ordre de traitement courant.
+- **Journal** : [`docs/backlog/journal/`](docs/backlog/journal/) — historique concis des décisions et livraisons, jamais source du statut courant.
 - **Gouvernance / DoD / convention d'IDs** : [`docs/backlog/README.md`](docs/backlog/README.md).
 
-Le backlog et ses vues se modifient **uniquement dans `NexTarget-app`**. Le repo
-`NexTarget-server` peut pointer vers la vue serveur canonique, mais ne maintient
-ni copie synchronisée ni backlog concurrent : aucune synchronisation inverse
-depuis le serveur n'est attendue.
+Ces documents se modifient **uniquement dans `NexTarget-app`**. Le repo
+`NexTarget-server` pointe vers le backlog unifié et filtre les items par leur
+portée `server` ou `both`, sans maintenir de copie ni de backlog concurrent.
 
 En cas de conflit entre ce fichier et le backlog sur le périmètre produit, **le
 backlog prime**. Cet `AGENTS.md` fait autorité sur le **comment** (architecture,
@@ -176,9 +176,17 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
    `… fast` pour un sous-ensemble rapide).
 2. Adapters régénérés/committés si un modèle `@HiveType` a changé.
 3. Migration + test de migration ajoutés si le schéma Hive a changé.
-4. Statut de l'item mis à jour dans `docs/backlog/` + `CHANGELOG.md`.
-5. Aucun secret, token ou clé dans le diff ; aucun nouveau `print`/`withOpacity`.
-6. Aucun émoji dans le diff (code, doc, `CHANGELOG.md`, message de commit/PR).
+4. Si la PR clôt une US, préparer son statut `FAIT` uniquement dans
+   `docs/backlog/backlog-unifie.md` ; ce statut devient canonique à la fusion
+   dans `dev`. Compléter `CHANGELOG.md` si la livraison doit y être annoncée.
+5. Dans la même PR, préparer une entrée `LIVRAISON` concise dans
+   `docs/backlog/journal/<année>.md`. Lors d'un changement matériel de périmètre,
+   mettre à jour `descriptions.md` et ajouter une entrée `CADRAGE` qui explique
+   la décision. Ne jamais placer ce journal dans `backlog-unifie.md`,
+   `descriptions.md` ou `priorites.md`, ni recopier les détails déjà présents
+   dans une PR, le changelog ou une note de release.
+6. Aucun secret, token ou clé dans le diff ; aucun nouveau `print`/`withOpacity`.
+7. Aucun émoji dans le diff (code, doc, `CHANGELOG.md`, message de commit/PR).
 
 ## Workflow Git (rappel gouvernance)
 
@@ -186,7 +194,9 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
   - **`main`** : branche de **production**, taggée à chaque **release**. Jamais de commit direct.
   - **`dev`** : branche d'**intégration** ; reçoit les features validées.
   - Toute branche de développement part de **`dev`** (jamais de `main`) et suit la
-    convention `type/NT-XXX-slug` (ex. `feature/NT-061-coach-connecte-uniquement`).
+    convention `type/NT-XXX-slug` lorsqu'elle traite une US
+    (ex. `feature/NT-061-coach-connecte-uniquement`). Une maintenance technique
+    ou documentaire sans US utilise `chore/slug-court`.
     Pour un lot multi-features, une branche `features/<codes_noms_features>` regroupant
     les IDs concernés est acceptée.
 - **Cycle de développement d'une (ou plusieurs) feature(s)** :
@@ -194,9 +204,11 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
   2. Développer, puis ouvrir une **PR de la branche vers `dev`** (merge après revue + CI verte).
   3. Pour livrer : ouvrir une **PR de `dev` vers `main`**, accompagnée d'une **release**
      (bump de version dans `pubspec.yaml`, `CHANGELOG.md`, tag).
-- **Commit** : sujet préfixé par l'ID — Exemple : `feat(coach): NT-032 persona coach cool`.
-- **PR** : titre `[NT-XXX] …`, corps listant les IDs + critères d'acceptation cochés ;
-  la CI (« Test & SonarCloud ») s'exécute sur la PR.
+- **Commit** : sujet préfixé par l'ID lorsqu'une US existe — exemple :
+  `feat(coach): NT-032 persona coach cool`. L'ID est facultatif pour une tâche
+  technique ou documentaire sans US.
+- **PR** : titre `[NT-XXX] …` lorsqu'elle traite une US, corps listant les IDs et
+  critères d'acceptation cochés ; la CI (« Test & SonarCloud ») s'exécute sur la PR.
 - **Definition of Done** : voir [`docs/backlog/README.md`](docs/backlog/README.md).
 
 ## Décisions intentionnelles (ne pas « corriger »)
@@ -221,7 +233,7 @@ dart run scripts/generate_cahier_recette.dart   # régénérer le cahier de rece
 ```
 
 ## Documentation de référence
-- [`docs/backlog/`](docs/backlog/) — backlog unifié, vues, gouvernance (source de vérité produit)
+- [`docs/backlog/`](docs/backlog/) — backlog unifié, descriptions, priorités et gouvernance
 - [`docs/tech/`](docs/tech/) — specs techniques (API serveur, charts, build APK)
 - [`docs/features/`](docs/features/) — specs fonctionnelles (statistiques, objectifs…)
 - [`CHANGELOG.md`](CHANGELOG.md) — historique des changements
