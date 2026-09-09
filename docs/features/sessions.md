@@ -4,9 +4,9 @@ Ce document décrit le comportement livré. Les évolutions envisagées restent 
 
 ## Types et états de session
 
-Une session détaillée contient une date facultative, une arme, un calibre, une catégorie, des séries, une synthèse, des exercices associés et éventuellement une photo et une analyse Coach. Elle peut être `prévue` ou `réalisée`.
+Une session détaillée contient une date facultative, une arme, un calibre, une catégorie, des séries, une synthèse, zéro ou un exercice principal et éventuellement une photo et une analyse Coach. Elle peut être `prévue` ou `réalisée`.
 
-Une session libre sert à consigner rapidement une séance sans séries, score ni groupement. Elle exige une date, une arme, un calibre, un nombre de tirs entier positif et une distance entière positive. Elle est toujours `réalisée`, peut avoir une synthèse, une photo et plusieurs exercices, et ne propose jamais d'analyse Coach.
+Une session libre sert à consigner rapidement une séance sans séries, score ni groupement. Elle exige une date, une arme, un calibre, un nombre de tirs entier positif et une distance entière positive. Elle est toujours `réalisée`, peut avoir une synthèse, une photo et un exercice principal facultatif, et ne propose jamais d'analyse Coach.
 
 Une session détaillée peut aussi être `brouillon` pendant une séance guidée au stand. Ce troisième état métier est distinct d'une session `prévue` : il contient les séries validées et la saisie partielle courante, survit au redémarrage et reste exclu de tous les agrégats et du Coach jusqu'à sa clôture.
 
@@ -21,7 +21,7 @@ Les catégories persistées sont `entraînement`, `match` et `test matériel`.
 
 ## Séance guidée au stand
 
-La préparation propose la date et l'heure courantes, l'arme libre assistée par le râtelier, le calibre libre éventuellement prérempli, la catégorie, des exercices facultatifs, le nombre de séries, les coups par série, la distance initiale et la prise préférée. L'exercice n'impose jamais le nombre de séries.
+La préparation propose la date et l'heure courantes, l'arme libre assistée par le râtelier, le calibre libre éventuellement prérempli, la catégorie, un exercice principal facultatif, le nombre de séries, les coups par série, la distance initiale et la prise préférée. L'exercice n'impose jamais le nombre de séries.
 
 `Commencer la séance` crée immédiatement le brouillon. La saisie série par série préremplit les coups, hérite de la distance et de la prise précédentes sans lier les séries entre elles, et sauvegarde à chaque navigation ainsi qu'après une courte temporisation. Un score nul saisi reste distingué d'un score encore absent après reprise. Les distances 15 m et 25 m sont des raccourcis ; toute distance entière positive reste possible. Le commentaire est facultatif et recommandé pour le Coach.
 
@@ -49,4 +49,4 @@ Les sessions libres comptent dans l'assiduité, les catégories et les volumes d
 
 ## Persistance et compatibilité
 
-Le champ `sessionType` vaut `detailed` ou `simple`. Une ancienne donnée sans ce champ est relue comme une session détaillée. Pour une session détaillée, `status` accepte `prévue`, `réalisée` ou `brouillon` ; chaque série porte des marqueurs additifs de saisie guidée, dont la présence effective du score. Les séries historiques dépourvues de ces marqueurs sont relues comme enregistrées. Un type ou un état inconnu, ou un import qui créerait plusieurs brouillons, fait échouer l'import avant l'écriture des sessions.
+Le champ `sessionType` vaut `detailed` ou `simple`. Une ancienne donnée sans ce champ est relue comme une session détaillée. `exerciseId` contient l'identifiant facultatif de l'exercice principal. Lors de la migration d'une ancienne liste `exercises`, seul le premier identifiant dans l'ordre enregistré est conservé ; une liste vide devient `null`. Pour une session détaillée, `status` accepte `prévue`, `réalisée` ou `brouillon` ; chaque série porte des marqueurs additifs de saisie guidée, dont la présence effective du score. Les séries historiques dépourvues de ces marqueurs sont relues comme enregistrées. Un type ou un état inconnu, ou un import qui créerait plusieurs brouillons, fait échouer l'import avant l'écriture des sessions.

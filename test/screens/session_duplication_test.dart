@@ -47,7 +47,7 @@ void main() {
       category: SessionConstants.categoryMatch,
       synthese: 'Synthèse source',
       analyse: 'Analyse source',
-      exercises: const ['ex-1'],
+      exerciseId: 'ex-1',
       series: [
         Series(
           shotCount: 10,
@@ -113,7 +113,7 @@ void main() {
       shotCount: 30,
       distance: 50,
       synthese: 'Libre source',
-      exercises: const ['ex-libre'],
+      exerciseId: 'ex-libre',
     );
     await tester.pumpWidget(
       MaterialApp(

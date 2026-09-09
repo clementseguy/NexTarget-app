@@ -164,14 +164,14 @@ void main() {
           caliber: '9 mm',
           status: SessionConstants.statusRealisee,
           series: [Series(distance: 25, points: 40, groupSize: 5)],
-          exercises: [exerciseId],
+          exerciseId: exerciseId,
         ),
         DetailedShootingSession(
           weapon: '',
           caliber: '',
           status: SessionConstants.statusPrevue,
           series: [Series(distance: 25, points: 0, groupSize: 0)],
-          exercises: [exerciseId],
+          exerciseId: exerciseId,
         ),
         DetailedShootingSession(
           date: DateTime(2026, 9, 2),
@@ -186,7 +186,7 @@ void main() {
               isCompleted: false,
             ),
           ],
-          exercises: [exerciseId],
+          exerciseId: exerciseId,
         ),
         SimpleShootingSession(
           date: DateTime(2026, 9, 3),
@@ -194,7 +194,7 @@ void main() {
           caliber: '.22 LR',
           shotCount: 20,
           distance: 25,
-          exercises: [exerciseId],
+          exerciseId: exerciseId,
         ),
       ];
       for (final session in sessions) {

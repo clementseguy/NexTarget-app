@@ -32,7 +32,7 @@ void main() {
       shotCount: 18,
       distance: 12,
       synthese: 'Synthèse libre',
-      exercises: const ['ex-libre'],
+      exerciseId: 'ex-libre',
     );
 
     await tester.pumpWidget(

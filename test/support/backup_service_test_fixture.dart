@@ -77,6 +77,7 @@ class BackupServiceTestFixture {
         status: 'réalisée',
         category: 'entraînement',
         synthese: 'Export déterministe',
+        exerciseId: 'exercise-export',
         series: [Series(distance: 25, points: 45, shotCount: 5, groupSize: 8)],
       ),
     );

@@ -26,7 +26,7 @@ void main() {
     });
 
     test(
-      'écrit le fichier nommé dans le dossier choisi au format version 3',
+      'écrit le fichier nommé dans le dossier choisi au format version 4',
       () async {
         final fixture = await BackupServiceTestFixture.create(
           tempDirectory,
@@ -46,7 +46,7 @@ void main() {
         final data =
             jsonDecode(await file.readAsString()) as Map<String, dynamic>;
         expect(data['format'], 'mycoach-data');
-        expect(data['version'], 3);
+        expect(data['version'], 4);
         expect(data['sessions_count'], 1);
         expect(data['goals_count'], 1);
         expect(data['weapons_count'], 1);

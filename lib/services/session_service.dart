@@ -55,7 +55,7 @@ class SessionService implements ISessionService {
             .map((item) => Map<String, dynamic>.from(item.toMap()))
             .toList()
         : <Map<String, dynamic>>[];
-    sessionMap['exercises'] = List<String>.from(sourceSnapshot.exercises);
+    sessionMap['exerciseId'] = sourceSnapshot.exerciseId;
     return SessionDuplicationDraft(
       source: sourceSnapshot,
       initialSessionData: {'session': sessionMap, 'series': series},
@@ -232,7 +232,7 @@ class SessionService implements ISessionService {
       caliber: request.caliber.trim(),
       status: SessionConstants.statusDraft,
       category: request.category,
-      exercises: List<String>.from(request.exercises),
+      exerciseId: request.exerciseId,
       series: List.generate(
         request.seriesCount,
         (_) => Series(
@@ -445,7 +445,7 @@ class SessionService implements ISessionService {
       date: null,
       status: 'prévue',
       series: series,
-      exercises: [exercise.id],
+      exerciseId: exercise.id,
       category: 'entraînement',
       synthese: 'Session créée à partir de ${exercise.name}',
     );
@@ -453,8 +453,7 @@ class SessionService implements ISessionService {
     // Récupération post-insertion pour garantir séries présentes et id assigné
     try {
       final all = await getAllSessions();
-      final match =
-          all.where((s) => s.exercises.contains(exercise.id)).toList();
+      final match = all.where((s) => s.exerciseId == exercise.id).toList();
       if (match.isNotEmpty && match.first is DetailedShootingSession) {
         // On choisit la plus récente (souvent la dernière insérée)
         match.sort((a, b) => (b.id ?? 0).compareTo(a.id ?? 0));

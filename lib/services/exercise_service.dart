@@ -111,7 +111,7 @@ class ExerciseService {
         ? await (repository as StrictSessionRepository).getAllStrict()
         : await repository.getAll();
     final linkedCount =
-        sessions.where((session) => session.exercises.contains(id)).length;
+        sessions.where((session) => session.exerciseId == id).length;
     return ExerciseDeletionEligibility(linkedSessionCount: linkedCount);
   }
 

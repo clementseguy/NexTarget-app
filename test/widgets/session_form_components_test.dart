@@ -23,7 +23,8 @@ class _FakeImageProvider extends ImageProvider<_FakeImageProvider> {
       SynchronousFuture<_FakeImageProvider>(this);
 
   @override
-  ImageStreamCompleter loadImage(_FakeImageProvider key, ImageDecoderCallback decode) {
+  ImageStreamCompleter loadImage(
+      _FakeImageProvider key, ImageDecoderCallback decode) {
     // Complète immédiatement en erreur (silencieuse côté flutter_test) : pas
     // de décodage natif déclenché, le widget Image affiche son errorBuilder.
     return OneFrameImageStreamCompleter(
@@ -36,7 +37,8 @@ class _FakeImageProvider extends ImageProvider<_FakeImageProvider> {
 
 void main() {
   group('FormSummaryHeader', () {
-    testWidgets('affiche correctement les statistiques de session', (tester) async {
+    testWidgets('affiche correctement les statistiques de session',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -52,7 +54,8 @@ void main() {
         ),
       );
 
-      expect(find.text('Résumé'), findsNothing); // Le titre n'existe pas dans ce widget
+      expect(find.text('Résumé'),
+          findsNothing); // Le titre n'existe pas dans ce widget
       expect(find.text('17/10/2025'), findsOneWidget);
       expect(find.text('150'), findsOneWidget);
       expect(find.text('37.5'), findsOneWidget);
@@ -60,7 +63,8 @@ void main() {
       expect(find.text('4'), findsOneWidget);
     });
 
-    testWidgets('affiche "-" quand distance dominante est null', (tester) async {
+    testWidgets('affiche "-" quand distance dominante est null',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -81,7 +85,7 @@ void main() {
 
     testWidgets('le bouton Choisir appelle onPickDate', (tester) async {
       bool called = false;
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -209,7 +213,7 @@ void main() {
     });
   });
 
-  group('ExercisesSelector', () {
+  group('ExerciseSelector', () {
     final mockExercises = [
       Exercise(
         id: 'ex1',
@@ -235,28 +239,29 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ExercisesSelector(
+            body: ExerciseSelector(
               exercises: mockExercises,
-              selectedIds: const {},
-              onToggle: (_) {},
+              selectedId: null,
+              onChanged: (_) {},
               isLoading: false,
             ),
           ),
         ),
       );
 
-      expect(find.text('Exercices associés'), findsOneWidget);
-      expect(find.byType(FilterChip), findsNWidgets(2));
+      expect(find.text('Exercice principal'), findsOneWidget);
+      expect(find.byType(ChoiceChip), findsNWidgets(2));
     });
 
-    testWidgets('affiche loading indicator quand isLoading=true', (tester) async {
+    testWidgets('affiche loading indicator quand isLoading=true',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ExercisesSelector(
+            body: ExerciseSelector(
               exercises: mockExercises,
-              selectedIds: const {},
-              onToggle: (_) {},
+              selectedId: null,
+              onChanged: (_) {},
               isLoading: true,
             ),
           ),
@@ -266,16 +271,16 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('callback onToggle est appelé lors du tap', (tester) async {
+    testWidgets('sélectionne un unique exercice lors du tap', (tester) async {
       String? toggledId;
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ExercisesSelector(
+            body: ExerciseSelector(
               exercises: mockExercises,
-              selectedIds: const {},
-              onToggle: (id) => toggledId = id,
+              selectedId: null,
+              onChanged: (id) => toggledId = id,
               isLoading: false,
             ),
           ),
@@ -286,21 +291,29 @@ void main() {
       expect(toggledId, 'ex1');
     });
 
-    testWidgets('affiche le compte d\'exercices sélectionnés', (tester) async {
+    testWidgets('un second choix remplace visuellement le premier',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ExercisesSelector(
+            body: ExerciseSelector(
               exercises: mockExercises,
-              selectedIds: const {'ex1'},
-              onToggle: (_) {},
+              selectedId: 'ex2',
+              onChanged: (_) {},
               isLoading: false,
             ),
           ),
         ),
       );
 
-      expect(find.text('(1)'), findsOneWidget);
+      final first = tester.widget<ChoiceChip>(
+        find.widgetWithText(ChoiceChip, 'Exercice 1'),
+      );
+      final second = tester.widget<ChoiceChip>(
+        find.widgetWithText(ChoiceChip, 'Exercice 2'),
+      );
+      expect(first.selected, isFalse);
+      expect(second.selected, isTrue);
     });
   });
 

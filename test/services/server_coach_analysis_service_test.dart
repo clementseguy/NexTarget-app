@@ -17,6 +17,7 @@ import 'auth_service_test.mocks.dart' show MockFlutterSecureStorage;
 DetailedShootingSession _session() => DetailedShootingSession(
       weapon: 'Glock 17',
       caliber: '9mm',
+      exerciseId: 'exercise-1',
       series: [
         Series(
             shotCount: 5,
@@ -74,9 +75,13 @@ void main() {
       'analyzeSession envoie le prompt_variant choisi (NT-032), défaut coach_neutre',
       () async {
     final capturedVariants = <String>[];
+    final capturedExerciseIds = <String?>[];
     final client = MockClient((req) async {
       final body = jsonDecode(req.body) as Map<String, dynamic>;
       capturedVariants.add(body['prompt_variant'] as String);
+      capturedExerciseIds.add(
+        (body['session'] as Map<String, dynamic>)['exerciseId'] as String?,
+      );
       return http.Response('{"analysis":"OK"}', 200);
     });
     final svc = ServerCoachAnalysisService(
@@ -86,6 +91,7 @@ void main() {
     await svc.analyzeSession(_session(), promptVariant: 'coach_cool');
 
     expect(capturedVariants, ['coach_neutre', 'coach_cool']);
+    expect(capturedExerciseIds, ['exercise-1', 'exercise-1']);
   });
 
   test('analyzeSession 401 throws session expirée', () async {

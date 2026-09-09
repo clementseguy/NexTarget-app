@@ -488,20 +488,19 @@ class _SessionCoachAnalysisSectionState
 
 /// Section exercices travaillés
 class SessionExercisesSection extends StatelessWidget {
-  final List<String> exerciseIds;
+  final String exerciseId;
   final List<Exercise> allExercises;
 
   const SessionExercisesSection({
     super.key,
-    required this.exerciseIds,
+    required this.exerciseId,
     required this.allExercises,
   });
 
   @override
   Widget build(BuildContext context) {
     final nameMap = {for (final e in allExercises) e.id: e.name};
-    final names = exerciseIds.map((id) => nameMap[id] ?? id).toList();
-    if (names.isEmpty) return SizedBox.shrink();
+    final name = nameMap[exerciseId] ?? exerciseId;
 
     return Card(
       elevation: 1,
@@ -516,41 +515,34 @@ class SessionExercisesSection extends StatelessWidget {
                 Icon(Icons.fitness_center,
                     size: 18, color: Theme.of(context).colorScheme.secondary),
                 const SizedBox(width: 8),
-                const Text('Exercices travaillés',
+                const Text('Exercice principal',
                     style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              children: [
-                for (final n in names)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.12)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.check, size: 14, color: Colors.greenAccent),
-                        SizedBox(width: 4),
-                        Text(n, style: TextStyle(fontSize: 12)),
-                      ],
-                    ),
-                  ),
-              ],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.12),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.check, size: 14, color: Colors.greenAccent),
+                  SizedBox(width: 4),
+                  Text(name, style: TextStyle(fontSize: 12)),
+                ],
+              ),
             ),
           ],
         ),

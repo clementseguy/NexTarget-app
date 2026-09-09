@@ -209,7 +209,7 @@ class AppNavigator extends StatelessWidget {
           'status': SessionConstants.statusPrevue,
           'category': SessionConstants.categoryEntrainement,
           'series': [],
-          'exercises': [],
+          'exerciseId': null,
         },
         'series': [],
       };

@@ -64,7 +64,7 @@ void main() {
         distance: 50,
         category: SessionConstants.categoryTest,
         synthese: 'Bonne séance',
-        exercises: const ['ex-1', 'ex-2'],
+        exerciseId: 'ex-1',
         photoPath: '/photos/cible.jpg',
       );
 

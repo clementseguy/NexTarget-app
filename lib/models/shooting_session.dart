@@ -21,8 +21,8 @@ abstract class ShootingSession {
   set synthese(String? value);
   String get category;
   set category(String value);
-  List<String> get exercises;
-  set exercises(List<String> value);
+  String? get exerciseId;
+  set exerciseId(String? value);
   String? get photoPath;
   set photoPath(String? value);
 
@@ -61,7 +61,7 @@ class DetailedShootingSession implements ShootingSession {
   @override
   String category;
   @override
-  List<String> exercises;
+  String? exerciseId;
   @override
   String? photoPath;
 
@@ -75,9 +75,9 @@ class DetailedShootingSession implements ShootingSession {
     this.analyse,
     this.synthese,
     this.category = SessionConstants.categoryEntrainement,
-    List<String>? exercises,
+    this.exerciseId,
     this.photoPath,
-  }) : exercises = exercises ?? <String>[];
+  });
 
   @override
   String get sessionType => ShootingSession.detailedType;
@@ -94,7 +94,7 @@ class DetailedShootingSession implements ShootingSession {
         'analyse': analyse,
         'synthese': synthese,
         'category': category,
-        'exercises': exercises,
+        'exerciseId': exerciseId,
         'photoPath': photoPath,
       };
 
@@ -133,7 +133,7 @@ class DetailedShootingSession implements ShootingSession {
       analyse: map['analyse'] as String?,
       synthese: map['synthese'] as String?,
       category: category,
-      exercises: _readExercises(map['exercises']),
+      exerciseId: _readExerciseId(map),
       photoPath: map['photoPath'] as String?,
     );
   }
@@ -174,7 +174,7 @@ class SimpleShootingSession implements ShootingSession {
   @override
   String category;
   @override
-  List<String> exercises;
+  String? exerciseId;
   @override
   String? photoPath;
 
@@ -187,11 +187,10 @@ class SimpleShootingSession implements ShootingSession {
     required num distance,
     this.synthese,
     this.category = SessionConstants.categoryEntrainement,
-    List<String>? exercises,
+    this.exerciseId,
     this.photoPath,
   })  : distance = distance.toDouble(),
-        status = SessionConstants.statusRealisee,
-        exercises = exercises ?? <String>[] {
+        status = SessionConstants.statusRealisee {
     validate();
   }
 
@@ -232,7 +231,7 @@ class SimpleShootingSession implements ShootingSession {
         'status': SessionConstants.statusRealisee,
         'synthese': synthese,
         'category': category,
-        'exercises': exercises,
+        'exerciseId': exerciseId,
         'photoPath': photoPath,
       };
 
@@ -264,7 +263,7 @@ class SimpleShootingSession implements ShootingSession {
         synthese: map['synthese'] as String?,
         category:
             map['category'] as String? ?? SessionConstants.categoryEntrainement,
-        exercises: _readExercises(map['exercises']),
+        exerciseId: _readExerciseId(map),
         photoPath: map['photoPath'] as String?,
       );
     } on ArgumentError catch (error) {
@@ -288,8 +287,17 @@ DateTime? _readDate(dynamic value) {
   return null;
 }
 
-List<String> _readExercises(dynamic value) =>
-    value is List ? value.whereType<String>().toList() : <String>[];
+String? _readExerciseId(Map<String, dynamic> map) {
+  if (map.containsKey('exerciseId')) {
+    return map['exerciseId'] is String ? map['exerciseId'] as String : null;
+  }
+  final legacyExercises = map['exercises'];
+  if (legacyExercises is! List) return null;
+  for (final value in legacyExercises) {
+    if (value is String) return value;
+  }
+  return null;
+}
 
 extension ShootingSessionTypeAccess on ShootingSession {
   bool get isSimple => this is SimpleShootingSession;

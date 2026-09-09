@@ -1,7 +1,23 @@
 # Cahier de Recette
 
-- Dernière mise à jour: 2026-09-06
+- Dernière mise à jour: 2026-09-09
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
+
+## NT-152 — Exercice principal unique d'une session
+Objectif: Vérifier la cardinalité unique et la compatibilité des sessions historiques.
+Étapes:
+1. Créer puis modifier une session détaillée, une session libre et une séance Au stand avec puis sans exercice
+2. Choisir un second exercice dans chaque formulaire et vérifier qu'il remplace le premier
+3. Dupliquer une session avec exercice, filtrer l'historique par cet exercice puis tenter de supprimer l'exercice
+4. Importer une sauvegarde historique dont une session contient deux exercices ordonnés et une autre aucun
+5. Exporter les données restaurées puis relire le JSON produit
+6. Demander une analyse Coach d'une session détaillée avec exercice
+Résultats attendus:
+- Chaque session possède au maximum un exercice principal et peut rester sans exercice
+- La duplication, le filtre, l'affichage et le blocage de suppression utilisent ce seul exercice
+- L'import conserve le premier exercice historique, ignore le second et préserve la session sans exercice
+- L'export version 4 utilise exerciseId sans exercises ni prescriptionId
+- La requête Coach transmet exerciseId facultatif sans prescriptionId
 
 ## NT-149 — Noms des fichiers d'export
 Objectif: Vérifier le nom NexTarget dans les deux exports sans rupture du format.
@@ -12,7 +28,7 @@ Objectif: Vérifier le nom NexTarget dans les deux exports sans rupture du forma
 Résultats attendus:
 - Les deux noms par défaut suivent nextarget_export_timestamp.json
 - Le nom explicitement choisi est conservé sans réécriture
-- Le format mycoach-data, la version, le contenu JSON et l'import des anciens exports restent inchangés
+- Le format mycoach-data version 4 est produit et les anciens exports restent importables
 
 ## NT-148 — Séparateurs des préférences de tir
 Objectif: Distinguer les trois réglages avec deux séparateurs identiques.
@@ -80,7 +96,7 @@ Objectif: Vérifier les exports sans canal de plateforme et l'absence de tests m
 5. Simuler une erreur réelle d'écriture
 6. Contrôler l'absence de mécanisme d'exclusion nouveau dans les tests et l'analyse
 Résultats attendus:
-- Le nom, l'emplacement, l'existence et le JSON version 3 sont vérifiés
+- Le nom, l'emplacement, l'existence et le JSON version 4 sont vérifiés
 - Le chemin choisi n'est pas traité comme un dossier et l'import relit le fichier sans erreur OS I/O
 - Sur mobile, le fichier JSON est réellement écrit par le sélecteur natif et peut être ouvert ou réimporté
 - L'annulation ne crée aucun fichier et l'erreur d'écriture est propagée

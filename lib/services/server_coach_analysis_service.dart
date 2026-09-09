@@ -60,6 +60,7 @@ class ServerCoachAnalysisService {
         'weapon': session.weapon,
         'caliber': session.caliber,
         'date': session.date?.toIso8601String(),
+        'exerciseId': session.exerciseId,
         'series': session.series.map(_seriesToJson).toList(),
         'synthese': session.synthese,
       },

@@ -168,10 +168,10 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
             const SizedBox(height: 16),
             SessionPhotoSection(photoPath: session.photoPath!),
           ],
-          if (session.exercises.isNotEmpty) ...[
+          if (session.exerciseId != null) ...[
             const SizedBox(height: 16),
             SessionExercisesSection(
-              exerciseIds: session.exercises,
+              exerciseId: session.exerciseId!,
               allExercises: _allExercises,
             ),
           ],

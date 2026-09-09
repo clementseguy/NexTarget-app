@@ -56,7 +56,7 @@ void main() {
       final session = await sessionService.planFromExercise(exercise);
       expect(session.status, 'prévue');
       expect(session.id, isNotNull);
-      expect(session.exercises, contains(exercise.id));
+      expect(session.exerciseId, exercise.id);
       expect(session.series.length, 3);
       expect(session.series.map((s) => s.comment).toList(),
           equals(['Phase 1', 'Phase 2', 'Phase 3']));
@@ -65,7 +65,7 @@ void main() {
       // Reload sessions from repository to ensure series persisted
       final allSessions = await sessionService.getAllSessions();
       final planned =
-          allSessions.firstWhere((s) => s.exercises.contains(exercise.id));
+          allSessions.firstWhere((s) => s.exerciseId == exercise.id);
       expect(planned.id, isNotNull);
       expect((planned as DetailedShootingSession).series.length, 3);
     });
@@ -81,7 +81,7 @@ void main() {
       expect(session.series.first.comment, '');
       final allSessions = await sessionService.getAllSessions();
       final created =
-          allSessions.firstWhere((s) => s.exercises.contains(exercise.id));
+          allSessions.firstWhere((s) => s.exerciseId == exercise.id);
       expect(created.id, isNotNull);
       expect((created as DetailedShootingSession).series.length, 1);
       expect(created.synthese, isNotNull);

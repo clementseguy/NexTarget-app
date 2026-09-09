@@ -15,7 +15,7 @@ void main() {
         synthese: 'S',
         category: 'match',
         series: [Series(distance: 10, points: 50, groupSize: 20)],
-        exercises: ['ex1'],
+        exerciseId: 'ex1',
         photoPath: '/tmp/session_photos/target_abc.jpg',
       );
       final map = ss.toMap();
@@ -27,7 +27,7 @@ void main() {
       expect(ss2.category, 'match');
       expect(ss2.series.length, 1);
       expect(ss2.series.first.points, 50);
-      expect(ss2.exercises, ['ex1']);
+      expect(ss2.exerciseId, 'ex1');
       expect(ss2.hasAnalysis, isTrue);
       expect(ss2.hasSynthese, isTrue);
       expect(ss2.photoPath, '/tmp/session_photos/target_abc.jpg');
@@ -36,10 +36,11 @@ void main() {
 
     test('fromMap tolerates missing/empty series and exercises', () {
       final ss = ShootingSession.fromMap({
-        'weapon': 'C', 'caliber': '9mm',
+        'weapon': 'C',
+        'caliber': '9mm',
       });
       expect(ss.series, isEmpty);
-      expect(ss.exercises, isEmpty);
+      expect(ss.exerciseId, isNull);
       expect(ss.status, 'réalisée');
       expect(ss.category, 'entraînement');
       expect(ss.hasAnalysis, isFalse);
@@ -48,9 +49,23 @@ void main() {
       expect(ss.hasPhoto, isFalse);
     });
 
+    test('relit uniquement le premier exercice d’une sauvegarde historique', () {
+      final session = ShootingSession.fromMap({
+        'weapon': 'P',
+        'caliber': '9 mm',
+        'exercises': ['first', 'second'],
+      });
+
+      expect(session.exerciseId, 'first');
+      expect(session.toMap().containsKey('exercises'), isFalse);
+    });
+
     test('hasPhoto is false for a blank photoPath', () {
       final ss = DetailedShootingSession(
-        weapon: 'P', caliber: '22LR', series: const [], photoPath: '   ',
+        weapon: 'P',
+        caliber: '22LR',
+        series: const [],
+        photoPath: '   ',
       );
       expect(ss.hasPhoto, isFalse);
     });

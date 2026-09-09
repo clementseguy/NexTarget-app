@@ -13,3 +13,12 @@ dart run tool/verify_hive_schema.dart
 ```
 
 Le diagnostic indique le fichier, le type ou la version incohérente et le programme termine avec un code non nul. Ce contrôle est lancé par `scripts/verify_before_commit.sh` et par la CI SonarCloud. Il complète, sans les remplacer, les tests de migration utilisant des données historiques.
+
+## Migration de l'exercice principal
+
+La migration Hive v10 remplace, dans chaque enveloppe de session, la liste
+historique `exercises` par `exerciseId`. Le premier identifiant dans l'ordre
+persisté est conservé ; les suivants sont ignorés. Une liste absente, vide ou
+invalide produit une valeur `null`. Les séries et les autres champs de la session
+ne sont pas modifiés. La désérialisation conserve le même fallback pour les
+sauvegardes historiques importées après la migration locale.

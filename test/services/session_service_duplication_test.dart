@@ -76,7 +76,7 @@ DetailedShootingSession _detailed({
       category: SessionConstants.categoryMatch,
       synthese: 'Synthèse',
       analyse: 'Analyse',
-      exercises: ['ex-1', 'ex-2'],
+      exerciseId: 'ex-1',
       photoPath: photoPath,
       series: [
         Series(
@@ -122,12 +122,12 @@ void main() {
       expect(map['synthese'], source.synthese);
       expect(map['analyse'], source.analyse);
       expect(map['photoPath'], source.photoPath);
-      expect(map['exercises'], source.exercises);
+      expect(map['exerciseId'], source.exerciseId);
       expect(series.single['comment'], 'Série source');
 
-      (map['exercises'] as List<String>).removeAt(0);
+      map['exerciseId'] = 'copie-exercice';
       series.single['comment'] = 'Copie modifiée';
-      expect(source.exercises, ['ex-1', 'ex-2']);
+      expect(source.exerciseId, 'ex-1');
       expect(source.series.single.comment, 'Série source');
     });
 
@@ -140,7 +140,7 @@ void main() {
         shotCount: 40,
         distance: 50,
         synthese: 'Libre',
-        exercises: ['ex-libre'],
+        exerciseId: 'ex-libre',
       );
 
       final draft = service.prepareDuplication(source);
@@ -151,8 +151,8 @@ void main() {
       expect(map['date'], isNull);
       expect(map['shotCount'], 40);
       expect(map['distance'], 50);
-      (map['exercises'] as List<String>).clear();
-      expect(source.exercises, ['ex-libre']);
+      map['exerciseId'] = null;
+      expect(source.exerciseId, 'ex-libre');
     });
 
     test('enregistre une copie profonde avec nouvel identifiant', () async {
@@ -168,7 +168,7 @@ void main() {
         status: source.status,
         synthese: source.synthese,
         analyse: source.analyse,
-        exercises: List<String>.from(source.exercises),
+        exerciseId: source.exerciseId,
       );
 
       final saved = await service.saveDuplication(
@@ -181,9 +181,9 @@ void main() {
       expect(saved.date, DateTime(2026, 9, 4));
       final detailed = saved as DetailedShootingSession;
       detailed.series.single.comment = 'Changé';
-      detailed.exercises.clear();
+      detailed.exerciseId = null;
       expect(source.series.single.comment, 'Série source');
-      expect(source.exercises, ['ex-1', 'ex-2']);
+      expect(source.exerciseId, 'ex-1');
     });
 
     test('refuse une session réalisée sans nouvelle date', () async {

@@ -22,7 +22,7 @@ void main() {
       }
     });
 
-    test('écrit un export version 3 dans le répertoire temporaire injecté',
+    test('écrit un export version 4 dans le répertoire temporaire injecté',
         () async {
       final fixture = await BackupServiceTestFixture.create(tempDirectory);
 
@@ -35,11 +35,14 @@ void main() {
       final data =
           jsonDecode(await file.readAsString()) as Map<String, dynamic>;
       expect(data['format'], 'mycoach-data');
-      expect(data['version'], 3);
+      expect(data['version'], 4);
       expect(data['sessions_count'], 1);
       expect(data['goals_count'], 1);
       expect(data['weapons_count'], 1);
       expect(data['exercises_count'], 1);
+      final session = (data['sessions'] as List).single as Map<String, dynamic>;
+      expect(session['exerciseId'], 'exercise-export');
+      expect(session.containsKey('exercises'), isFalse);
       expect((data['exercises'] as List).single['difficulty'], 'expert');
     });
 

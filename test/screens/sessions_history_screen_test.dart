@@ -136,7 +136,7 @@ void main() {
         date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
-        exercises: [exA],
+        exerciseId: exA,
       ));
       await sessionService.addSession(DetailedShootingSession(
         weapon: 'P',
@@ -144,7 +144,7 @@ void main() {
         date: DateTime(2025, 1, 2),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 80, groupSize: 25)],
-        exercises: [exB],
+        exerciseId: exB,
       ));
 
       await pumpScreen(tester);
@@ -171,7 +171,7 @@ void main() {
         date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
-        exercises: [exA],
+        exerciseId: exA,
       ));
       await sessionService.addSession(DetailedShootingSession(
         weapon: 'P',
@@ -179,7 +179,7 @@ void main() {
         date: DateTime(2025, 1, 2),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 80, groupSize: 25)],
-        exercises: [exB],
+        exerciseId: exB,
       ));
 
       await pumpScreen(tester);
@@ -210,7 +210,7 @@ void main() {
         date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
-        exercises: [exA],
+        exerciseId: exA,
       ));
       // Prévue avec le même exercice -> ne doit PAS apparaître en onglet "Réalisées" + filtre exercice.
       await sessionService.addSession(DetailedShootingSession(
@@ -219,7 +219,7 @@ void main() {
         date: null,
         status: SessionConstants.statusPrevue,
         series: [Series(distance: 10, points: 0, groupSize: 0)],
-        exercises: [exA],
+        exerciseId: exA,
       ));
 
       await pumpScreen(tester);
@@ -258,7 +258,7 @@ void main() {
         date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
-        exercises: [exA],
+        exerciseId: exA,
       ));
 
       await pumpScreen(tester);
@@ -342,7 +342,7 @@ void main() {
         date: DateTime(2025, 1, 1),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 90, groupSize: 20)],
-        exercises: [exA],
+        exerciseId: exA,
       ));
       await sessionService.addSession(DetailedShootingSession(
         weapon: 'P',
@@ -350,7 +350,7 @@ void main() {
         date: DateTime(2025, 1, 2),
         status: SessionConstants.statusRealisee,
         series: [Series(distance: 10, points: 80, groupSize: 25)],
-        exercises: [exB],
+        exerciseId: exB,
       ));
 
       await pumpScreen(tester);

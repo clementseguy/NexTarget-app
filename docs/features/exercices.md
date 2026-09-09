@@ -16,7 +16,7 @@ Les anciennes catégories textuelles reconnues sont converties vers ces valeurs 
 - La liste filtre la difficulté par Tous, Non renseignée, Débutant, Avancé ou Expert ; ce choix se combine aux filtres de catégorie et de type ainsi qu'au tri courant.
 - Les consignes vides sont retirées lors de l'enregistrement.
 - Seul un exercice de type Stand peut être transformé en session prévue.
-- Une session peut référencer plusieurs exercices et l'historique peut être filtré par exercice.
+- Une session référence zéro ou un exercice principal et l'historique peut être filtré par exercice.
 - L'action « Supprimer » contrôle dans le service toutes les sessions, y compris les sessions libres, prévues, réalisées et les brouillons guidés. Toute référence bloque la suppression et le message indique le nombre de sessions à dissocier. Sans référence, une confirmation nommant l'exercice est exigée ; aucune session n'est modifiée en cascade.
 - L'action « Dupliquer » ouvre un formulaire de création prérempli, difficulté comprise. Le nom reçoit le suffixe « (copie) » ; l'identifiant, la date de création et l'ordre sont ceux d'un nouvel exercice, avec des listes de consignes et d'objectifs indépendantes.
 - Les sauvegardes historiques sans difficulté restent importables. Les exports courants conservent la difficulté et une valeur inconnue à l'import est normalisée à « Non renseignée ».

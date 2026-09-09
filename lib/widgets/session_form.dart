@@ -51,10 +51,10 @@ class SessionFormState extends State<SessionForm> {
   late List<SeriesFormControllers> _seriesControllers;
   String _category = SessionConstants.categoryEntrainement;
   String _status = SessionConstants.statusRealisee; // allow planned
-  // Exercises selection
+  // Exercise selection
   final ExerciseService _exerciseService = ExerciseService();
   List<Exercise> _allExercises = [];
-  final Set<String> _selectedExerciseIds = <String>{};
+  String? _selectedExerciseId;
   bool _loadingExercises = true;
   // Photo de la cible (NT-005)
   late final ISessionPhotoService _photoService =
@@ -91,13 +91,7 @@ class SessionFormState extends State<SessionForm> {
       _photoPath = session['photoPath'] as String?;
       _initialPhotoPath = _photoPath;
       _analyse = session['analyse'] as String?;
-      // Preload existing exercises list from session map if any
-      final existingEx = session['exercises'];
-      if (existingEx is List) {
-        for (final e in existingEx) {
-          if (e is String) _selectedExerciseIds.add(e);
-        }
-      }
+      _selectedExerciseId = _readInitialExerciseId(session);
       _series = series
           .map((s) => SeriesFormData(
                 shotCount: s['shot_count'] ?? 5,
@@ -330,7 +324,7 @@ class SessionFormState extends State<SessionForm> {
       analyse: _analyse,
       synthese: _syntheseController.text,
       category: _category,
-      exercises: _selectedExerciseIds.toList(),
+      exerciseId: _selectedExerciseId,
       photoPath: _photoPath,
     );
     widget.onSave(session);
@@ -434,20 +428,12 @@ class SessionFormState extends State<SessionForm> {
           ),
           // No direct goal link; exercises link goals indirectly.
           const SizedBox(height: 24),
-          // ---- Exercises selection ----
-          ExercisesSelector(
+          // ---- Exercise selection ----
+          ExerciseSelector(
             isLoading: _loadingExercises,
             exercises: _allExercises,
-            selectedIds: _selectedExerciseIds,
-            onToggle: (id) {
-              setState(() {
-                if (_selectedExerciseIds.contains(id)) {
-                  _selectedExerciseIds.remove(id);
-                } else {
-                  _selectedExerciseIds.add(id);
-                }
-              });
-            },
+            selectedId: _selectedExerciseId,
+            onChanged: (id) => setState(() => _selectedExerciseId = id),
           ),
           SizedBox(height: 24),
           Row(
@@ -531,4 +517,18 @@ class SessionFormState extends State<SessionForm> {
       ),
     );
   }
+}
+
+String? _readInitialExerciseId(Map<dynamic, dynamic> session) {
+  if (session.containsKey('exerciseId')) {
+    return session['exerciseId'] is String
+        ? session['exerciseId'] as String
+        : null;
+  }
+  final legacy = session['exercises'];
+  if (legacy is! List) return null;
+  for (final value in legacy) {
+    if (value is String) return value;
+  }
+  return null;
 }

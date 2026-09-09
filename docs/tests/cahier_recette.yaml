@@ -1,6 +1,23 @@
-version: v0.8
-last_updated: 2026-09-06
+version: v0.9
+last_updated: 2026-09-09
 features:
+  - id: NT-152
+    name: Exercice principal unique d'une session
+    objectif: Vérifier la cardinalité unique et la compatibilité des sessions historiques.
+    steps:
+      - Créer puis modifier une session détaillée, une session libre et une séance Au stand avec puis sans exercice
+      - Choisir un second exercice dans chaque formulaire et vérifier qu'il remplace le premier
+      - Dupliquer une session avec exercice, filtrer l'historique par cet exercice puis tenter de supprimer l'exercice
+      - Importer une sauvegarde historique dont une session contient deux exercices ordonnés et une autre aucun
+      - Exporter les données restaurées puis relire le JSON produit
+      - Demander une analyse Coach d'une session détaillée avec exercice
+    expected:
+      - Chaque session possède au maximum un exercice principal et peut rester sans exercice
+      - La duplication, le filtre, l'affichage et le blocage de suppression utilisent ce seul exercice
+      - L'import conserve le premier exercice historique, ignore le second et préserve la session sans exercice
+      - L'export version 4 utilise exerciseId sans exercises ni prescriptionId
+      - La requête Coach transmet exerciseId facultatif sans prescriptionId
+
   - id: NT-149
     name: Noms des fichiers d'export
     objectif: Vérifier le nom NexTarget dans les deux exports sans rupture du format.
@@ -11,7 +28,7 @@ features:
     expected:
       - Les deux noms par défaut suivent nextarget_export_timestamp.json
       - Le nom explicitement choisi est conservé sans réécriture
-      - Le format mycoach-data, la version, le contenu JSON et l'import des anciens exports restent inchangés
+      - Le format mycoach-data version 4 est produit et les anciens exports restent importables
 
   - id: NT-148
     name: Séparateurs des préférences de tir
@@ -85,7 +102,7 @@ features:
       - Simuler une erreur réelle d'écriture
       - Contrôler l'absence de mécanisme d'exclusion nouveau dans les tests et l'analyse
     expected:
-      - Le nom, l'emplacement, l'existence et le JSON version 3 sont vérifiés
+      - Le nom, l'emplacement, l'existence et le JSON version 4 sont vérifiés
       - Le chemin choisi n'est pas traité comme un dossier et l'import relit le fichier sans erreur OS I/O
       - Sur mobile, le fichier JSON est réellement écrit par le sélecteur natif et peut être ouvert ou réimporté
       - L'annulation ne crée aucun fichier et l'erreur d'écriture est propagée

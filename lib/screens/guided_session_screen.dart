@@ -762,10 +762,11 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
     final points = completed.fold<int>(0, (total, item) => total + item.points);
     final distances =
         completed.map((item) => item.distance.toInt()).toSet().toList()..sort();
-    final exerciseNames = _draft.exercises.map((id) {
-      final match = _exercises.where((item) => item.id == id);
-      return match.isEmpty ? id : match.first.name;
-    }).join(', ');
+    final exerciseId = _draft.exerciseId;
+    final exerciseMatches =
+        _exercises.where((item) => item.id == exerciseId).toList();
+    final exercise = exerciseMatches.isEmpty ? null : exerciseMatches.first;
+    final exerciseName = exercise?.name ?? exerciseId;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       children: [
@@ -781,8 +782,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
                 Text('Arme : ${_draft.weapon}'),
                 Text('Calibre : ${_draft.caliber}'),
                 Text('Catégorie : ${_draft.category}'),
-                Text(
-                    'Exercices : ${exerciseNames.isEmpty ? 'Aucun' : exerciseNames}'),
+                Text('Exercice : ${exerciseName ?? 'Aucun'}'),
                 Text('Séries réalisées : ${completed.length}'),
                 Text('Total des coups : $shots'),
                 Text(

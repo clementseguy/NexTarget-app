@@ -23,9 +23,7 @@ class SessionCard extends StatelessWidget {
     final dateLabel = date == null ? 'Sans date' : '${date.day}/${date.month}';
     final isPlanned = session['status'] == 'prévue';
     final isSimple = session['sessionType'] == 'simple';
-    final exerciseIds = session['exercises'] is List
-        ? session['exercises'] as List<dynamic>
-        : const <dynamic>[];
+    final exerciseId = session['exerciseId'] as String?;
     final totalPoints = series.fold<int>(
       0,
       (sum, item) => sum + ((item['points'] ?? 0) as int),
@@ -141,7 +139,7 @@ class SessionCard extends StatelessWidget {
                       avgScore: avgScore,
                       avgGroup: avgGroup,
                     ),
-                    if (exerciseIds.isNotEmpty) ...[
+                    if (exerciseId != null) ...[
                       const SizedBox(height: 6),
                       Row(
                         mainAxisSize: MainAxisSize.min,
@@ -149,7 +147,7 @@ class SessionCard extends StatelessWidget {
                           Icon(Icons.fitness_center, size: 14, color: accent),
                           const SizedBox(width: 4),
                           Text(
-                            '${exerciseIds.length} exercice(s)',
+                            '1 exercice',
                             style: TextStyle(
                               fontSize: 12,
                               color: isPlanned

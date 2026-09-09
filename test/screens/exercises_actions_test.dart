@@ -247,7 +247,7 @@ void main() {
       weapon: 'Pistolet',
       caliber: '9 mm',
       series: [Series(distance: 25, points: 40, groupSize: 5)],
-      exercises: const ['ex-1'],
+      exerciseId: 'ex-1',
     );
     final repositories = await pumpList(tester, sessions: [linked, linked]);
 

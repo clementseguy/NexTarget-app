@@ -42,7 +42,7 @@ void main() {
         shotCount: 40,
         distance: 25,
         category: 'test matériel',
-        exercises: const ['e1', 'e2'],
+        exerciseId: 'e1',
         synthese: 'Ne doit pas apparaître sur la carte',
       );
       await tester.pumpWidget(
@@ -69,7 +69,7 @@ void main() {
       expect(find.text('Test matériel'), findsOneWidget);
       expect(find.text('40'), findsOneWidget);
       expect(find.text('25 m'), findsOneWidget);
-      expect(find.text('2 exercice(s)'), findsOneWidget);
+      expect(find.text('1 exercice'), findsOneWidget);
       expect(find.textContaining('Score'), findsNothing);
       expect(find.textContaining('Groupement'), findsNothing);
       expect(find.textContaining('Ne doit pas apparaître'), findsNothing);
@@ -95,7 +95,7 @@ void main() {
       shotCount: 40,
       distance: 25,
       category: 'entraînement',
-      exercises: const ['e1'],
+      exerciseId: 'e1',
     );
     final detailed = DetailedShootingSession(
       date: DateTime(2026, 9, 3),
@@ -103,7 +103,7 @@ void main() {
       caliber: '9 mm',
       category: 'entraînement',
       analyse: 'Analyse disponible',
-      exercises: const ['e1'],
+      exerciseId: 'e1',
       series: [Series(points: 45, groupSize: 8, distance: 25)],
     );
 

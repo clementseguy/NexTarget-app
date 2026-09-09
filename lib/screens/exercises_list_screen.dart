@@ -98,10 +98,9 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
       final sessions = await _sessionService.getAllSessions();
       final Map<String, bool> map = {};
       for (final s in sessions) {
-        if (s.status == 'prévue') {
-          for (final exId in s.exercises) {
-            map[exId] = true;
-          }
+        final exerciseId = s.exerciseId;
+        if (s.status == 'prévue' && exerciseId != null) {
+          map[exerciseId] = true;
         }
       }
       if (mounted) setState(() => _plannedExerciseMap = map);

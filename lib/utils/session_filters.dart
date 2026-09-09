@@ -4,9 +4,11 @@ import '../constants/session_constants.dart';
 /// Centralized filters for sessions used by stats across the app (Lot C - F24).
 class SessionFilters {
   /// Keep only realized sessions that have a date.
-  static List<ShootingSession> realizedWithDate(Iterable<ShootingSession> sessions) {
+  static List<ShootingSession> realizedWithDate(
+      Iterable<ShootingSession> sessions) {
     return sessions
-        .where((s) => s.status == SessionConstants.statusRealisee && s.date != null)
+        .where((s) =>
+            s.status == SessionConstants.statusRealisee && s.date != null)
         .toList();
   }
 
@@ -14,9 +16,10 @@ class SessionFilters {
   ///
   /// If [exerciseId] is null, no filtering is applied and every session is
   /// returned unchanged (this represents the "all exercises" selection).
-  static List<ShootingSession> byExercise(Iterable<ShootingSession> sessions, String? exerciseId) {
+  static List<ShootingSession> byExercise(
+      Iterable<ShootingSession> sessions, String? exerciseId) {
     if (exerciseId == null) return sessions.toList();
-    return sessions.where((s) => s.exercises.contains(exerciseId)).toList();
+    return sessions.where((s) => s.exerciseId == exerciseId).toList();
   }
 
   static List<ShootingSession> byCategory(
