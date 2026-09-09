@@ -1,6 +1,6 @@
 # NexTarget — Backlog unifié
 
-> **Prochain ID disponible : NT-152**
+> **Prochain ID disponible : NT-159**
 
 Ce fichier inventorie les US actives de l'application et du serveur. Il est
 l'unique source de vérité pour leur statut. Les descriptions sont dans
@@ -81,12 +81,12 @@ l'unique source de vérité pour leur statut. Les descriptions sont dans
 
 | ID | Titre | Portée | Statut | MoSCoW | Est. | Remplacée par |
 |---|---|---|---|---|---|---|
-| [NT-120](descriptions.md#NT-120) | Payload d'analyse transverse compact | app | À FAIRE | Must (socle) | M | — |
-| [NT-121](descriptions.md#NT-121) | Écran Coach : analyse de progression | both | À FAIRE | Should | L | — |
+| [NT-120](descriptions.md#NT-120) | Payload d'analyse transverse compact | app | ANNULÉ | Won't-now | M | NT-121, NT-153, NT-156 |
+| [NT-121](descriptions.md#NT-121) | MVP Coach de progression transverse | both | À FAIRE | Should | L | — |
 | [NT-122](descriptions.md#NT-122) | Sortie coach structurée (JSON schema) | server | À FAIRE | Must (socle) | M | — |
-| [NT-123](descriptions.md#NT-123) | Coach propose des exercices | both | À FAIRE | Should | L | — |
-| [NT-124](descriptions.md#NT-124) | Coach propose des objectifs | both | À FAIRE | Should | M | — |
-| [NT-125](descriptions.md#NT-125) | Suivi des recommandations du coach | both | À FAIRE | Could | L | — |
+| [NT-123](descriptions.md#NT-123) | Coach de progression : sélectionner un exercice | both | À FAIRE | Should | L | — |
+| [NT-124](descriptions.md#NT-124) | Coach de progression : proposer un objectif | both | À FAIRE | Should | M | — |
+| [NT-125](descriptions.md#NT-125) | Suivi des prescriptions et tentatives | both | À FAIRE | Could | L | — |
 | [NT-126](descriptions.md#NT-126) | Plan d'entraînement | both | À FAIRE | Could | L | — |
 
 ## Thème 13 — Saisie au stand
@@ -102,3 +102,15 @@ l'unique source de vérité pour leur statut. Les descriptions sont dans
 | ID | Titre | Portée | Statut | MoSCoW | Est. | Remplacée par |
 |---|---|---|---|---|---|---|
 | [NT-151](descriptions.md#NT-151) | Harmoniser et densifier les cartes d'exercice | app | À FAIRE | Could | M | — |
+
+## Thème 15 — Socle Coach transverse
+
+| ID | Titre | Portée | Statut | MoSCoW | Est. | Remplacée par |
+|---|---|---|---|---|---|---|
+| [NT-152](descriptions.md#NT-152) | Limiter une session à un exercice principal | both | À FAIRE | Must | M | — |
+| [NT-153](descriptions.md#NT-153) | Consentement à l'utilisation des coachs | both | À FAIRE | Must | S | — |
+| [NT-154](descriptions.md#NT-154) | Qualifier l'exercice lors de la réalisation d'une session prévue | both | À FAIRE | Must | M | — |
+| [NT-155](descriptions.md#NT-155) | Déplacer le niveau d'expérience dans les préférences Coach | app | À FAIRE | Must | S | — |
+| [NT-156](descriptions.md#NT-156) | Recentrer le Coach de session sur le débrief | both | À FAIRE | Must | L | — |
+| [NT-157](descriptions.md#NT-157) | Séparer décision et ton du Coach de session | server | À FAIRE | Must | M | — |
+| [NT-158](descriptions.md#NT-158) | Supprimer les données transmises aux coachs | both | À FAIRE | Won't-now | — | — |

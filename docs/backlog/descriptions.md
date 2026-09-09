@@ -158,51 +158,55 @@ sont volontairement pas reproduits.
 
 <a id="NT-120"></a>
 ### NT-120 — Payload d'analyse transverse compact
+- **Annulation** : approche obsolète, remplacée par NT-121, NT-153 et NT-156.
 - **Thème** : Coach avancé · **Portée** : app · **Dépendances** : NT-101, NT-010
 - **Description** : Pré-agréger côté app (le `stats_service` calcule déjà tout) et n'envoyer au serveur que les agrégats + les N dernières sessions détaillées, par discipline — maîtrise du coût tokens et de la latence, et évite l'analyse « choux et carottes » entre disciplines.
 - **Critères d'acceptation** : fenêtre bornée et paramétrable (défaut : 10 sessions / 90 j) ; agrégats calculés localement ; taille de payload bornée et documentée.
-- **Notes** : conditionne NT-121.
+- **Notes** : les données nécessaires sont transmises lors d'une analyse autorisée par NT-153. Le serveur persiste les sessions reçues et calcule lui-même les métriques ; NT-121 reste la macro-US du Coach de progression.
 
 <a id="NT-121"></a>
-### NT-121 — Écran Coach : analyse de progression
-- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-120, NT-030
-- **Description** : Écran Coach dédié : analyse de la progression sur les dernières sessions (par discipline), axes de travail identifiés, actions suggérées. Reprend et remplace le périmètre UX de NT-033.
-- **Critères d'acceptation** : analyse par discipline sur la fenêtre NT-120 ; axes de progression explicites ; suggestions d'actions ; `coach_screen.dart` remplace le placeholder « Coming soon ».
+### NT-121 — MVP Coach de progression transverse
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-030, NT-152 à NT-157
+- **Description** : Macro-US du MVP Coach de progression : analyser plusieurs sessions comparables, choisir une priorité explicable, créer ou réviser un objectif de coaching, sélectionner un exercice validé et suivre un plan exprimé en nombre de sessions. Reprend et remplace le périmètre UX de NT-033.
+- **Critères d'acceptation** : à détailler dans des US dédiées avant développement ; `coach_screen.dart` remplace le placeholder « Coming soon » ; le Coach de progression reste seul autorisé à créer ou modifier le plan.
 - **VM** : 5
+- **Notes** : hors de la release préparatoire NT-152 à NT-157. La démo constitue un sous-ensemble contrôlé de cette macro-US et ne doit pas figer toutes les règles du MVP.
 
 <a id="NT-122"></a>
 ### NT-122 — Sortie coach structurée (JSON schema)
 - **Thème** : Coach avancé · **Portée** : server · **Dépendances** : NT-031
-- **Description** : Format de sortie structuré (structured outputs Mistral) conforme aux schémas `Exercise`/`Goal`, socle de toute génération d'entités par le coach.
-- **Critères d'acceptation** : schémas JSON versionnés alignés sur les entités app ; validation serveur des sorties ; gestion des erreurs de validation (retry / fallback texte).
-- **Notes** : fait référence pour NT-023.
+- **Description** : Définir des contrats de sortie structurés, distincts et versionnés pour le Coach de session et le Coach de progression. Les décisions métier validées sont séparées du texte finalement présenté à l'utilisateur.
+- **Critères d'acceptation** : schéma JSON versionné pour chaque type d'analyse ; validation serveur stricte ; champs et valeurs contrôlés ; gestion des sorties invalides par retry borné ou fallback déterministe.
+- **Notes** : NT-156 introduit le premier contrat concret du Coach de session et NT-157 sépare sa décision de sa reformulation. L'alignement commun avec le Coach de progression sera finalisé lors du découpage de NT-121.
 
 <a id="NT-123"></a>
-### NT-123 — Coach propose des exercices
-- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-122, NT-020
-- **Description** : Depuis une analyse (session ou progression), le coach propose des exercices ; le tireur prévisualise, édite puis ajoute au catalogue. Précise NT-023.
-- **Critères d'acceptation** : écran de prévisualisation/édition avant insertion ; rapprochement/déduplication avec le catalogue existant (anti-inflation d'exercices quasi-dupliqués) ; refus possible sans effet de bord.
+### NT-123 — Coach de progression : sélectionner un exercice
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-020, NT-121, NT-122
+- **Description** : Le Coach de progression sélectionne et paramètre un exercice provenant d'un catalogue fermé et validé. Le Coach de session ne propose ni ne crée d'exercice.
+- **Critères d'acceptation** : catalogue versionné ; sélection limitée aux exercices actifs et compatibles avec la priorité ; protocole, prérequis, mesure, critère de réussite et variante disponibles ; aucune génération libre d'exercice dans le MVP.
 - **VM** : 5
+- **Notes** : remplace l'orientation historique de NT-023 fondée sur la création d'un exercice par le Coach.
 
 <a id="NT-124"></a>
-### NT-124 — Coach propose des objectifs
-- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-122, NT-012
-- **Description** : Même mécanique que NT-123 appliquée aux objectifs : objectif mesurable (métrique, comparateur, valeur cible) pré-rempli, aligné sur les axes de progression.
-- **Critères d'acceptation** : proposition conforme au schéma `Goal` ; validation/édition avant création ; lien possible avec les exercices proposés (NT-021).
+### NT-124 — Coach de progression : proposer un objectif
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-012, NT-121, NT-122
+- **Description** : Le Coach de progression propose un objectif de coaching mesurable, aligné sur la priorité retenue et distinct de l'intention personnelle de l'utilisateur.
+- **Critères d'acceptation** : à revoir avant développement — compétence, métrique, référence initiale, valeur cible, nombre de sessions et justification structurés.
 - **VM** : 4
+- **Notes** : la pertinence de conserver cette capacité comme US autonome et son articulation avec le modèle actuel `Goal` restent à décider.
 
 <a id="NT-125"></a>
-### NT-125 — Suivi des recommandations du coach
-- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-121
-- **Description** : Le coach mémorise ses recommandations passées et mesure si elles ont été suivies et si elles ont porté — boucle de feedback qui évite les conseils répétitifs.
-- **Critères d'acceptation** : à définir — recommandations persistées ; statut suivie/non suivie ; effet mesuré sur les métriques visées ; réinjection dans le contexte des analyses suivantes.
+### NT-125 — Suivi des prescriptions et tentatives
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-121, NT-154
+- **Description** : Persister chaque prescription, les sessions qui tentent de la suivre et leur résultat afin que le Coach de progression puisse poursuivre, adapter ou arrêter un plan sans répéter des conseils sans justification.
+- **Critères d'acceptation** : prescription et tentative reliées aux sessions concernées ; exercice réalisé et protocole suivi pris en compte ; résultat réussi, échoué ou non évaluable ; métriques et décisions conservées pour les analyses suivantes.
 - **VM** : 4
 
 <a id="NT-126"></a>
 ### NT-126 — Plan d'entraînement
-- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-123, NT-124
-- **Description** : Générer un plan sur 2–4 semaines (sessions prévues + exercices) orienté vers un objectif TAR, en s'appuyant sur les entités existantes (sessions prévues, exercices, objectifs).
-- **Critères d'acceptation** : à définir — plan validé par le tireur avant création des entités ; s'appuie sur NT-123/NT-124.
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-121, NT-123, NT-124, NT-125
+- **Description** : Construire un plan de coaching composé d'un objectif mesurable, d'un exercice validé, d'un critère de réussite et d'un nombre de sessions. Le plan ne dépend ni d'un calendrier imposé ni du périmètre TAR.
+- **Critères d'acceptation** : une seule priorité et une seule prescription principale actives ; durée exprimée en nombre de sessions ; référence initiale et critère conservés ; transitions poursuivre, adapter, clôturer ou recommander un encadrement humain justifiées par les tentatives.
 - **VM** : 5
 
 ---
@@ -256,5 +260,56 @@ sont volontairement pas reproduits.
   de préserver les nouveaux items NT-145 à NT-150 sans collision. Hors
   périmètre du correctif de contraste NT-025 : ce dernier rend immédiatement
   les textes lisibles mais ne préjuge pas de la future composition des cartes.
+
+---
+
+## Thème 15 — Socle Coach transverse
+
+<a id="NT-152"></a>
+### NT-152 — Limiter une session à un exercice principal
+- **Thème** : Socle Coach transverse · **Portée** : both · **Dépendances** : NT-001, NT-020, NT-022, NT-072
+- **Description** : Remplacer l'association actuelle de plusieurs exercices par zéro ou un exercice principal par session, afin d'attribuer sans ambiguïté le résultat d'une session à l'exercice travaillé.
+- **Critères d'acceptation** : le modèle app et le contrat serveur portent un `exerciseId` facultatif ; aucun `prescriptionId` n'est ajouté ; les interfaces empêchent de sélectionner plusieurs exercices ; la migration des sessions existantes conserve le premier exercice dans l'ordre enregistré et ignore les suivants ; les sessions sans exercice restent valides ; duplication, import, export, affichage, filtres et contrôle de suppression d'un exercice utilisent la nouvelle cardinalité ; les anciennes sauvegardes restent lisibles.
+- **Notes** : cette évolution remplace la cardinalité plusieurs-à-plusieurs livrée par NT-022 sans réécrire son historique.
+
+<a id="NT-153"></a>
+### NT-153 — Consentement à l'utilisation des coachs
+- **Thème** : Socle Coach transverse · **Portée** : both · **Dépendances** : NT-030, NT-040, NT-048
+- **Description** : Ajouter une autorisation globale, explicite et simple avant toute transmission de données à un Coach NexTarget.
+- **Critères d'acceptation** : une case unique est disponible dans les préférences Coach ; cochée, elle autorise les Coachs de session et de progression à recevoir les données nécessaires uniquement lors d'une analyse demandée par l'utilisateur ; décochée, elle désactive les deux coachs et chaque point d'entrée affiche que le partage des données est requis ; le carnet et les autres fonctions locales restent utilisables ; aucune synchronisation automatique ou en arrière-plan n'est déclenchée ; retirer l'autorisation n'efface pas les données déjà transmises.
+- **Notes** : la suppression des données déjà transmises est hors périmètre et suivie par NT-158.
+
+<a id="NT-154"></a>
+### NT-154 — Qualifier l'exercice lors de la réalisation d'une session prévue
+- **Thème** : Socle Coach transverse · **Portée** : both · **Dépendances** : NT-002, NT-131, NT-152
+- **Description** : Lorsqu'une session prévue avec exercice devient une session réalisée, recueillir les informations minimales permettant au Coach d'évaluer la tentative.
+- **Critères d'acceptation** : la dernière page du wizard de conversion remplace le récapitulatif actuel par la qualification de l'exercice, sans ajouter d'étape ; elle demande si l'exercice a été réalisé, si le protocole a été suivi et permet un commentaire facultatif ; le modèle de session conserve ces trois valeurs dans une structure simple ; le résultat exploitable par le Coach est réussi, échoué ou non évaluable, notamment si l'exercice n'a pas été réalisé ou si le protocole est insuffisamment suivi ; les sessions sans exercice et les autres parcours de création ne sont pas modifiés ; les données sont incluses lors d'une analyse et persistées avec la session côté serveur.
+
+<a id="NT-155"></a>
+### NT-155 — Déplacer le niveau d'expérience dans les préférences Coach
+- **Thème** : Socle Coach transverse · **Portée** : app · **Dépendances** : NT-032, NT-042
+- **Description** : Déplacer l'édition du niveau d'expérience depuis le profil vers les préférences Coach, à côté des autres réglages influençant les analyses.
+- **Critères d'acceptation** : le contrôle n'est plus éditable depuis le profil ; il apparaît dans `Paramètres > Coach IA` ; les trois valeurs et leur stockage actuels sont strictement conservés ; si l'utilisateur n'a sélectionné aucune valeur, le niveau reste non renseigné ; aucune valeur par défaut n'est appliquée ; aucune migration ni modification de modèle ou de contrat serveur n'est introduite.
+- **Notes** : la transmission de cette préférence pendant une analyse relève de NT-156.
+
+<a id="NT-156"></a>
+### NT-156 — Recentrer le Coach de session sur le débrief
+- **Thème** : Socle Coach transverse · **Portée** : both · **Dépendances** : NT-030, NT-031, NT-152 à NT-155
+- **Description** : Faire du Coach de session un débrief limité à la session terminée et à l'exercice éventuellement travaillé, sans décision longitudinale réservée au Coach de progression.
+- **Critères d'acceptation** : l'analyse exige le consentement NT-153 et reçoit un identifiant stable, les données complètes de la session et des séries, le niveau d'expérience courant, l'exercice associé, sa réalisation, le suivi du protocole et les commentaires ; lors de la demande, le serveur crée ou met à jour la session reçue sans synchronisation préalable, puis persiste l'analyse séparément ; une demande rejouée sur une session inchangée ne crée pas de doublon ; la réponse structurée contient un débrief factuel, une à trois réussites, un point d'attention, les limites et, lorsqu'un exercice existe, son résultat réussi, échoué ou non évaluable ; la seule suite autorisée est de refaire l'exercice ou de demander une nouvelle décision au Coach de progression ; le Coach de session ne crée ni ne modifie objectif, exercice ou plan ; l'application présente dès cette release le futur Coach de progression, même s'il n'est pas encore utilisable ; aucun feature flag n'est ajouté.
+
+<a id="NT-157"></a>
+### NT-157 — Séparer décision et ton du Coach de session
+- **Thème** : Socle Coach transverse · **Portée** : server · **Dépendances** : NT-032, NT-122, NT-156
+- **Description** : Séparer l'analyse et les décisions du Coach de session de leur reformulation selon le ton choisi par l'utilisateur.
+- **Critères d'acceptation** : un premier prompt produit une sortie structurée validée ; un second prompt reçoit cette sortie et la reformule selon le ton configuré ; la reformulation ne peut modifier aucune métrique, conclusion, évaluation ou prochaine action ; les personas partagent donc exactement la même décision ; si la reformulation échoue ou devient invalide, le serveur renvoie une formulation de secours issue de la sortie structurée.
+- **Notes** : pipeline attendu : `PromptCoach` → sortie structurée → `PromptTonCoach` → texte utilisateur.
+
+<a id="NT-158"></a>
+### NT-158 — Supprimer les données transmises aux coachs
+- **Thème** : Socle Coach transverse · **Portée** : both · **Dépendances** : NT-153, NT-156
+- **Description** : Permettre ultérieurement à l'utilisateur de supprimer les sessions et analyses déjà transmises aux coachs.
+- **Critères d'acceptation** : à définir — déclenchement, périmètre, confirmation, propagation et conservation des traces légales ou techniques.
+- **Notes** : Icebox ; hors release préparatoire, démo et MVP immédiat. Retirer le consentement NT-153 ne déclenche pas cette suppression.
 
 ---
