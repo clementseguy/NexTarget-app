@@ -143,16 +143,16 @@ Résultats attendus:
 - La copie reprend la valeur sans partager d'état mutable avec la source
 - Le cycle courant conserve la difficulté et les données historiques restent valides
 
-## NT-144 — Cohérence du backlog et de ses vues
-Objectif: Vérifier que la gouvernance ne présente qu'une source et un plan actifs.
+## NT-144 — Cohérence de la documentation du backlog
+Objectif: Vérifier la séparation entre inventaire, descriptions, priorités et archive.
 Étapes:
-1. Comparer les métadonnées des six items dans le backlog, la vue app et le plan
-2. Vérifier la projection serveur et les renvois NT-023, NT-033, NT-020 et NT-026
-3. Vérifier les liens, ancres, dates et l'archive de l'ancien plan S1-S6
+1. Vérifier que chaque item actif du backlog possède une description et au plus une priorité
+2. Vérifier que le statut des items actifs n'apparaît que dans backlog-unifie.md
+3. Vérifier les liens, les ancres, le prochain ID et l'archive annuelle
 Résultats attendus:
-- Les six items restent EN COURS tant que la branche n'est pas fusionnée
-- Aucun identifiant ni décision durable n'est supprimé
-- backlog-unifie.md est l'unique source produit et plan-sprints.md l'unique plan actif
+- Les inventaires du backlog, des descriptions et des priorités sont cohérents
+- Aucun identifiant ni aucune décision durable ne sont perdus
+- Les vues app/serveur et le plan de sprints ne sont plus nécessaires
 
 ## NT-140 — Démarrage sans second splash Flutter
 Objectif: Vérifier que le splash natif conduit directement à la destination attendue.

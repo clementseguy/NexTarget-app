@@ -81,7 +81,8 @@ Un fichier `assets/config.example.yaml` est fourni comme modèle.
 
 ## Documentation
 
-- [Backlog unifié](docs/backlog/backlog-unifie.md) — source de vérité produit (items `NT-XXX`)
+- [Backlog unifié](docs/backlog/backlog-unifie.md) — inventaire et statut des items `NT-XXX`
+- [Priorités](docs/backlog/priorites.md) — ordre de traitement courant
 - [Notes de version](docs/releases/) · [CHANGELOG](CHANGELOG.md)
 - [Docs techniques](docs/tech/) · [Docs fonctionnelles](docs/features/)
 - [AGENTS.md](AGENTS.md) — conventions d'architecture et de contribution

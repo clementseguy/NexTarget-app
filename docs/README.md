@@ -16,8 +16,9 @@ Ces fichiers ne doivent décrire que l'existant. Toute fonctionnalité future ap
 ## Pilotage produit
 
 - [Backlog unifié](backlog/backlog-unifie.md) : source de vérité produit.
-- [Vue app](backlog/vue-app.md) et [vue serveur](backlog/vue-serveur.md) : projections à maintenir après le backlog.
-- [Plan de sprints](backlog/plan-sprints.md) : ordre de réalisation courant.
+- [Descriptions des US](backlog/descriptions.md) : définition fonctionnelle et critères d'acceptation.
+- [Priorités](backlog/priorites.md) : ordre de réalisation courant, indépendant de l'inventaire.
+- [Archive](backlog/archive/2026.md) : US livrées ou annulées en 2026.
 - [Gouvernance](backlog/README.md) : statuts, Definition of Done et convention d'identifiants.
 - [REX TAR et saisie rapide](backlog/rex-tar-saisie-rapide-2026-07-24.md) : lecture obligatoire avant de reprendre ce périmètre.
 - [Référentiel TAR 25 m](backlog/details/referentiel-tar-25m.md) : détail préparatoire conservé pour NT-100.

@@ -20,17 +20,16 @@ NexTarget est le carnet de tir sportif du tireur solo : saisie des sessions
 
 ## Source de vérité produit
 
-Le **quoi/pourquoi** vit dans le backlog unifié, pas ici :
+Le **quoi/pourquoi** vit dans les documents du backlog, pas ici :
 
-- **Backlog** : [`docs/backlog/backlog-unifie.md`](docs/backlog/backlog-unifie.md) — items `NT-XXX`.
-- **Vue app** : [`docs/backlog/vue-app.md`](docs/backlog/vue-app.md).
-- **Vue serveur canonique** : [`docs/backlog/vue-serveur.md`](docs/backlog/vue-serveur.md).
+- **Backlog** : [`docs/backlog/backlog-unifie.md`](docs/backlog/backlog-unifie.md) — inventaire et statut des items `NT-XXX`.
+- **Descriptions** : [`docs/backlog/descriptions.md`](docs/backlog/descriptions.md) — définition fonctionnelle des items actifs.
+- **Priorités** : [`docs/backlog/priorites.md`](docs/backlog/priorites.md) — ordre de traitement courant.
 - **Gouvernance / DoD / convention d'IDs** : [`docs/backlog/README.md`](docs/backlog/README.md).
 
-Le backlog et ses vues se modifient **uniquement dans `NexTarget-app`**. Le repo
-`NexTarget-server` peut pointer vers la vue serveur canonique, mais ne maintient
-ni copie synchronisée ni backlog concurrent : aucune synchronisation inverse
-depuis le serveur n'est attendue.
+Ces documents se modifient **uniquement dans `NexTarget-app`**. Le repo
+`NexTarget-server` pointe vers le backlog unifié et filtre les items par leur
+portée `server` ou `both`, sans maintenir de copie ni de backlog concurrent.
 
 En cas de conflit entre ce fichier et le backlog sur le périmètre produit, **le
 backlog prime**. Cet `AGENTS.md` fait autorité sur le **comment** (architecture,
@@ -176,7 +175,8 @@ Casser la persistance = corrompre les données des utilisateurs. Traiter avec so
    `… fast` pour un sous-ensemble rapide).
 2. Adapters régénérés/committés si un modèle `@HiveType` a changé.
 3. Migration + test de migration ajoutés si le schéma Hive a changé.
-4. Statut de l'item mis à jour dans `docs/backlog/` + `CHANGELOG.md`.
+4. Statut de l'item mis à jour uniquement dans `docs/backlog/backlog-unifie.md` ;
+   `CHANGELOG.md` complété si la livraison doit y être annoncée.
 5. Aucun secret, token ou clé dans le diff ; aucun nouveau `print`/`withOpacity`.
 6. Aucun émoji dans le diff (code, doc, `CHANGELOG.md`, message de commit/PR).
 
@@ -221,7 +221,7 @@ dart run scripts/generate_cahier_recette.dart   # régénérer le cahier de rece
 ```
 
 ## Documentation de référence
-- [`docs/backlog/`](docs/backlog/) — backlog unifié, vues, gouvernance (source de vérité produit)
+- [`docs/backlog/`](docs/backlog/) — backlog unifié, descriptions, priorités et gouvernance
 - [`docs/tech/`](docs/tech/) — specs techniques (API serveur, charts, build APK)
 - [`docs/features/`](docs/features/) — specs fonctionnelles (statistiques, objectifs…)
 - [`CHANGELOG.md`](CHANGELOG.md) — historique des changements
