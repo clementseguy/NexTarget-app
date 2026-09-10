@@ -41,6 +41,22 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Autorisation globale de transmettre des données aux Coachs NexTarget.
+  ///
+  /// L'absence de préférence vaut refus : une mise à jour de l'application ne
+  /// doit jamais activer implicitement un partage de données.
+  bool get isCoachDataSharingAllowed =>
+      _preferencesBox.get(
+        'coach_data_sharing_allowed',
+        defaultValue: false,
+      ) ==
+      true;
+
+  Future<void> updateCoachDataSharingAllowed(bool allowed) async {
+    await _preferencesBox.put('coach_data_sharing_allowed', allowed);
+    notifyListeners();
+  }
+
   // Thème
   AppThemeType get themeType {
     final stored = _preferencesBox.get('app_theme', defaultValue: 'classique');

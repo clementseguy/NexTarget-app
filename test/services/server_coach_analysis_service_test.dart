@@ -7,6 +7,7 @@ import 'package:mockito/mockito.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/services/auth_service.dart';
+import 'package:tir_sportif/services/coach_analysis_exception.dart';
 import 'package:tir_sportif/services/server_coach_analysis_service.dart';
 import 'package:tir_sportif/services/auth_session_exceptions.dart';
 import 'package:tir_sportif/services/network_error.dart';
@@ -50,7 +51,10 @@ void main() {
     });
     final svc = ServerCoachAnalysisService(
         baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    final out = await svc.analyzeSession(_session());
+    final out = await svc.analyzeSession(
+      _session(),
+      coachDataSharingAllowed: true,
+    );
     expect(out, 'OK');
   });
 
@@ -65,7 +69,7 @@ void main() {
     final draft = _session()..status = SessionConstants.statusDraft;
 
     await expectLater(
-      svc.analyzeSession(draft),
+      svc.analyzeSession(draft, coachDataSharingAllowed: true),
       throwsA(predicate((e) => e.toString().contains('session réalisée'))),
     );
     expect(called, isFalse);
@@ -87,8 +91,12 @@ void main() {
     final svc = ServerCoachAnalysisService(
         baseUrl: 'http://x', authService: dummyAuthService, client: client);
 
-    await svc.analyzeSession(_session());
-    await svc.analyzeSession(_session(), promptVariant: 'coach_cool');
+    await svc.analyzeSession(_session(), coachDataSharingAllowed: true);
+    await svc.analyzeSession(
+      _session(),
+      coachDataSharingAllowed: true,
+      promptVariant: 'coach_cool',
+    );
 
     expect(capturedVariants, ['coach_neutre', 'coach_cool']);
     expect(capturedExerciseIds, ['exercise-1', 'exercise-1']);
@@ -99,7 +107,7 @@ void main() {
     final svc = ServerCoachAnalysisService(
         baseUrl: 'http://x', authService: dummyAuthService, client: client);
     await expectLater(
-      svc.analyzeSession(_session()),
+      svc.analyzeSession(_session(), coachDataSharingAllowed: true),
       throwsA(isA<SessionExpiredException>()),
     );
   });
@@ -109,7 +117,7 @@ void main() {
     final svc = ServerCoachAnalysisService(
         baseUrl: 'http://x', authService: dummyAuthService, client: client);
     await expectLater(
-      svc.analyzeSession(_session()),
+      svc.analyzeSession(_session(), coachDataSharingAllowed: true),
       throwsA(isA<NetworkOperationException>().having(
         (error) => error.family,
         'family',
@@ -123,7 +131,7 @@ void main() {
     final svc = ServerCoachAnalysisService(
         baseUrl: 'http://x', authService: dummyAuthService, client: client);
     await expectLater(
-      svc.analyzeSession(_session()),
+      svc.analyzeSession(_session(), coachDataSharingAllowed: true),
       throwsA(isA<NetworkOperationException>().having(
         (error) => error.family,
         'family',
@@ -137,8 +145,10 @@ void main() {
         MockClient((req) async => http.Response('{"analysis":""}', 200));
     final svc = ServerCoachAnalysisService(
         baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    expect(() => svc.analyzeSession(_session()),
-        throwsA(predicate((e) => e.toString().contains('Réponse vide'))));
+    await expectLater(
+      svc.analyzeSession(_session(), coachDataSharingAllowed: true),
+      throwsA(predicate((e) => e.toString().contains('Réponse vide'))),
+    );
   });
 
   test('analyzeSession SocketException produces user-friendly message',
@@ -148,12 +158,32 @@ void main() {
     final svc = ServerCoachAnalysisService(
         baseUrl: 'http://x', authService: dummyAuthService, client: client);
     await expectLater(
-      svc.analyzeSession(_session()),
+      svc.analyzeSession(_session(), coachDataSharingAllowed: true),
       throwsA(isA<NetworkOperationException>().having(
         (error) => error.family,
         'family',
         NetworkErrorFamily.offline,
       )),
     );
+  });
+
+  test('consentement absent : aucune requête ni sérialisation envoyée',
+      () async {
+    var called = false;
+    final client = MockClient((req) async {
+      called = true;
+      return http.Response('{"analysis":"OK"}', 200);
+    });
+    final svc = ServerCoachAnalysisService(
+      baseUrl: 'http://x',
+      authService: dummyAuthService,
+      client: client,
+    );
+
+    await expectLater(
+      svc.analyzeSession(_session(), coachDataSharingAllowed: false),
+      throwsA(isA<CoachConsentRequiredException>()),
+    );
+    expect(called, isFalse);
   });
 }

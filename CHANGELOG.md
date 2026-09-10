@@ -5,6 +5,7 @@ Toutes les modifications notables de ce projet seront listées ici.
 ## [Non publié]
 
 ### Added
+- NT-153 : autorisation locale unique, explicite et refusée par défaut avant tout partage de données avec les Coachs de session et de progression ; les deux points d'entrée expliquent le prérequis et aucune requête n'est construite sans accord.
 - NT-146 : aide gestuelle commune aux champs de groupement de la séance guidée et du wizard, accessible et sans effet sur la saisie.
 - NT-145 : ouverture directe de la session source depuis les records de score et de groupement, avec départage déterministe et rechargement des statistiques au retour.
 - NT-025 : difficulté facultative des exercices, filtre combinable, migration Hive additive et cycle de sauvegarde rétrocompatible.

@@ -60,6 +60,10 @@ void main() {
     AuthService? authService,
   }) async {
     await Hive.box('app_preferences').put('app_theme', theme);
+    await Hive.box('app_preferences').put(
+      'coach_data_sharing_allowed',
+      false,
+    );
     final authProvider = AuthProvider(authService ?? _NoTokenAuthService());
     await authProvider.checkAuthStatus();
     await tester.binding.setSurfaceSize(const Size(390, 3000));
@@ -75,6 +79,46 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets('une case unique persiste le consentement Coach', (tester) async {
+    await pumpSettings(tester, theme: 'classique');
+
+    expect(find.byType(CheckboxListTile), findsOneWidget);
+    expect(
+      find.text('Partager les données avec les Coachs'),
+      findsOneWidget,
+    );
+    expect(find.byTooltip('Pourquoi partager les données ?'), findsOneWidget);
+    expect(
+      tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+      isFalse,
+    );
+
+    await tester.tap(find.byType(CheckboxListTile));
+    await tester.pumpAndSettle();
+
+    expect(
+      Hive.box('app_preferences').get('coach_data_sharing_allowed'),
+      isTrue,
+    );
+    expect(
+      tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+      isTrue,
+    );
+
+    await tester.tap(find.byTooltip('Pourquoi partager les données ?'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Partage des données'), findsOneWidget);
+    expect(
+      find.text(
+        'Pour être utilisés, les Coachs ont besoin d’analyser les données de vos sessions. Si vous ne souhaitez pas partager vos données, les Coachs ne peuvent pas être utilisés.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('supprim'), findsNothing);
+    expect(find.textContaining('transmis'), findsNothing);
+  });
 
   for (final theme in ['classique', 'bleuBlancRouge']) {
     testWidgets('ordre complet des paramètres en thème $theme', (tester) async {

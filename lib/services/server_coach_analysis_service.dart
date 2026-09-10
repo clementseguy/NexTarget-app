@@ -48,8 +48,12 @@ class ServerCoachAnalysisService {
   /// (neutre / cool), défaut = 'coach_neutre'.
   Future<String> analyzeSession(
     DetailedShootingSession session, {
+    required bool coachDataSharingAllowed,
     String promptVariant = 'coach_neutre',
   }) async {
+    if (!coachDataSharingAllowed) {
+      throw CoachConsentRequiredException();
+    }
     if (session.status != SessionConstants.statusRealisee) {
       throw CoachAnalysisException(
         'Seule une session réalisée peut être analysée par le Coach.',

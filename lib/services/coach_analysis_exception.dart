@@ -9,3 +9,11 @@ class CoachAnalysisException implements Exception {
   @override
   String toString() => 'CoachAnalysisException: $message';
 }
+
+/// Refus local d'une transmission de données sans consentement explicite.
+class CoachConsentRequiredException extends CoachAnalysisException {
+  CoachConsentRequiredException()
+      : super(
+          'Le partage de vos données est requis pour que le Coach puisse les analyser.',
+        );
+}

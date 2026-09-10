@@ -33,6 +33,21 @@ class AppRouter {
   static const String login = '/login';
   static const String dashboard = '/dashboard';
 
+  /// Ouvre l'onglet Paramètres du navigateur principal afin de conserver la
+  /// barre de navigation inférieure.
+  static void showSettingsTab(BuildContext context) {
+    final navigationProvider = Provider.of<NavigationProvider?>(
+      context,
+      listen: false,
+    );
+    if (navigationProvider == null) {
+      Navigator.of(context).pushNamed(settings);
+      return;
+    }
+    navigationProvider.goToSettings();
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   /// Retourne la route correspondant au nom spécifié
   static Route<dynamic> generateRoute(RouteSettings settings) {
     final name = settings.name;

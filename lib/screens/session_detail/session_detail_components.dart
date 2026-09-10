@@ -239,15 +239,23 @@ class _SessionCoachAnalysisSectionState
   /// `coachPersona` (Paramètres > Coach IA — retour de recette S2 : pas de
   /// sélecteur dans la session) et part au serveur en `prompt_variant`.
   Future<String> _fetchAnalysisText() async {
+    final settingsProvider =
+        Provider.of<SettingsProvider?>(context, listen: false);
+    if (settingsProvider == null ||
+        !settingsProvider.isCoachDataSharingAllowed) {
+      throw CoachConsentRequiredException();
+    }
     if (widget.analysisLoader != null) return widget.analysisLoader!();
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final persona =
-        Provider.of<SettingsProvider>(context, listen: false).coachPersona;
     final serverService = ServerCoachAnalysisService(
       baseUrl: AppConfig.I.authBaseUrl,
       authService: authProvider.authService,
     );
-    return serverService.analyzeSession(widget.session, promptVariant: persona);
+    return serverService.analyzeSession(
+      widget.session,
+      coachDataSharingAllowed: settingsProvider.isCoachDataSharingAllowed,
+      promptVariant: settingsProvider.coachPersona,
+    );
   }
 
   Future<void> _launchAnalysis() async {
@@ -308,13 +316,19 @@ class _SessionCoachAnalysisSectionState
           await authProvider.handleConfirmedInvalidation();
         }
       }
-      final presentation = e is CoachAnalysisException
-          ? const NetworkErrorPresentation(
+      final presentation = e is CoachConsentRequiredException
+          ? NetworkErrorPresentation(
               family: NetworkErrorFamily.invalidRequest,
-              message: 'Cette session ne peut pas être analysée.',
+              message: e.message,
               action: NetworkErrorAction.none,
             )
-          : presentNetworkError(e);
+          : e is CoachAnalysisException
+              ? const NetworkErrorPresentation(
+                  family: NetworkErrorFamily.invalidRequest,
+                  message: 'Cette session ne peut pas être analysée.',
+                  action: NetworkErrorAction.none,
+                )
+              : presentNetworkError(e);
       if (mounted) {
         await showDialog(
           context: context,
@@ -361,7 +375,7 @@ class _SessionCoachAnalysisSectionState
             widget.analyse != null && widget.analyse!.trim().isNotEmpty,
         leading: Icon(Icons.analytics,
             color: Theme.of(context).colorScheme.secondary),
-        title: const Text('Analyse Coach',
+        title: const Text('Débrief du Coach',
             style: TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(
           (widget.analyse != null && widget.analyse!.trim().isNotEmpty)
@@ -390,6 +404,30 @@ class _SessionCoachAnalysisSectionState
             // affiche un message clair + accès direct à l'écran de connexion.
             Consumer<AuthProvider>(
               builder: (context, authProvider, _) {
+                final settingsProvider =
+                    Provider.of<SettingsProvider?>(context);
+                if (settingsProvider?.isCoachDataSharingAllowed != true) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12.0,
+                      vertical: 8,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Le partage de vos données est requis pour que le Coach puisse les analyser.',
+                        ),
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.settings_outlined),
+                          label: const Text('Paramètres Coach'),
+                          onPressed: () => AppRouter.showSettingsTab(context),
+                        ),
+                      ],
+                    ),
+                  );
+                }
                 if (authProvider.isVerificationPending) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(

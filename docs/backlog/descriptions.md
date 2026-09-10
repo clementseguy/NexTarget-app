@@ -274,10 +274,10 @@ sont volontairement pas reproduits.
 
 <a id="NT-153"></a>
 ### NT-153 — Consentement à l'utilisation des coachs
-- **Thème** : Socle Coach transverse · **Portée** : both · **Dépendances** : NT-030, NT-040, NT-048
+- **Thème** : Socle Coach transverse · **Portée** : app · **Dépendances** : NT-030, NT-040, NT-048
 - **Description** : Ajouter une autorisation globale, explicite et simple avant toute transmission de données à un Coach NexTarget.
 - **Critères d'acceptation** : une case unique est disponible dans les préférences Coach ; cochée, elle autorise les Coachs de session et de progression à recevoir les données nécessaires uniquement lors d'une analyse demandée par l'utilisateur ; décochée, elle désactive les deux coachs et chaque point d'entrée affiche que le partage des données est requis ; le carnet et les autres fonctions locales restent utilisables ; aucune synchronisation automatique ou en arrière-plan n'est déclenchée ; retirer l'autorisation n'efface pas les données déjà transmises.
-- **Notes** : la suppression des données déjà transmises est hors périmètre et suivie par NT-158.
+- **Notes** : le consentement est persisté localement dans Hive, refusé par défaut et contrôlé dans l'application avant toute requête. Aucun champ ni stockage serveur n'est introduit. La suppression des données déjà transmises est hors périmètre et suivie par NT-158.
 
 <a id="NT-154"></a>
 ### NT-154 — Qualifier l'exercice lors de la réalisation d'une session prévue

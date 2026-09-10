@@ -386,6 +386,50 @@ class SettingsScreen extends StatelessWidget {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          CheckboxListTile(
+                            contentPadding: EdgeInsets.zero,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            title: Row(
+                              children: [
+                                const Expanded(
+                                  child: Text(
+                                    'Partager les données avec les Coachs',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                IconButton(
+                                  tooltip: 'Pourquoi partager les données ?',
+                                  icon: const Icon(Icons.help_outline),
+                                  onPressed: () => showDialog<void>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text(
+                                        'Partage des données',
+                                      ),
+                                      content: const Text(
+                                        'Pour être utilisés, les Coachs ont besoin d’analyser les données de vos sessions. Si vous ne souhaitez pas partager vos données, les Coachs ne peuvent pas être utilisés.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: const Text('Fermer'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            value: settings.isCoachDataSharingAllowed,
+                            onChanged: (value) {
+                              if (value != null) {
+                                settings.updateCoachDataSharingAllowed(value);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 12),
                           Text(
                             'Ton du coach',
                             style: TextStyle(fontWeight: FontWeight.w600),

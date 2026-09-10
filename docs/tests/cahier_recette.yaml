@@ -1,6 +1,25 @@
 version: v0.9
-last_updated: 2026-09-09
+last_updated: 2026-09-10
 features:
+  - id: NT-153
+    name: Consentement à l'utilisation des Coachs
+    objectif: Vérifier qu'aucune donnée n'est transmise aux Coachs sans autorisation explicite.
+    preconditions:
+      - Application mise à jour avec ou sans compte connecté
+      - Session détaillée réalisée disponible
+    steps:
+      - Démarrer sans préférence existante puis ouvrir le futur Coach et la section Débrief du Coach d'une session
+      - Dans Paramètres > Coach IA, cocher l'autorisation de partage puis redémarrer l'application
+      - Connecté, demander une analyse de session et contrôler la requête réseau
+      - Revenir dans Paramètres, retirer l'autorisation puis rouvrir les deux points d'entrée
+      - Couper le réseau et parcourir le carnet, les exercices, les objectifs et les statistiques
+    expected:
+      - Une seule case gère les deux Coachs, elle est décochée par défaut et son choix persiste après redémarrage
+      - Décochée, les deux points d'entrée indiquent que le partage des données est requis et aucune analyse ne peut être lancée
+      - Cochée, les données sont transmises uniquement au déclenchement explicite d'une analyse, sans synchronisation automatique ni en arrière-plan
+      - Retirer l'autorisation ne supprime ni l'analyse locale existante ni les données déjà transmises
+      - Toutes les fonctions locales restent utilisables hors ligne
+
   - id: NT-152
     name: Exercice principal unique d'une session
     objectif: Vérifier la cardinalité unique et la compatibilité des sessions historiques.
@@ -78,7 +97,7 @@ features:
 
   - id: NT-150
     name: Cohérence globale de l'authentification après mise à jour
-    objectif: Vérifier les trois états Auth et leur cohérence dans Paramètres, Mon profil et Analyse Coach.
+    objectif: Vérifier les trois états Auth et leur cohérence dans Paramètres, Mon profil et Débrief du Coach.
     steps:
       - Simuler une mise à jour v0.6 avec seulement jwt_token et des données métier locales
       - Démarrer connecté avec un profil en cache, puis couper le réseau
@@ -590,7 +609,7 @@ features:
       - Session avec au moins 1 série
     steps:
       - Ouvrir une session réalisée avec au moins 1 série
-      - Ouvrir la section "Analyse Coach" et lancer l'analyse
+      - Ouvrir la section "Débrief du Coach" et lancer l'analyse
     expected:
       - L'analyse s'affiche normalement (popup markdown), sans configurer de clé Mistral locale
       - La réponse est enregistrée dans la session (relecture après réouverture)
@@ -602,7 +621,7 @@ features:
       - Utilisateur non connecté (pas de compte)
     steps:
       - Vérifier que l'app démarre normalement sans être connecté (carnet de tir accessible)
-      - Ouvrir une session réalisée et déplier la section "Analyse Coach"
+      - Ouvrir une session réalisée et déplier la section "Débrief du Coach"
     expected:
       - Aucun bouton "Lancer analyse" ; message "Le coach IA nécessite un compte" + bouton "Se connecter" menant à l'écran de connexion
       - Le reste de l'app (sessions, exercices, objectifs, stats) reste pleinement utilisable hors connexion
@@ -627,7 +646,7 @@ features:
       - Session réalisée avec au moins 1 série
     steps:
       - Dans Paramètres > Coach IA, sélectionner le ton Cool
-      - Ouvrir une session réalisée, déplier Analyse Coach (aucun sélecteur de ton ne doit y figurer)
+      - Ouvrir une session réalisée, déplier Débrief du Coach (aucun sélecteur de ton ne doit y figurer)
       - Lancer l'analyse ; puis repasser sur Neutre dans Paramètres et relancer une analyse sur une autre session
     expected:
       - Le choix est persisté (y compris après redémarrage) et ne se règle QUE dans Paramètres

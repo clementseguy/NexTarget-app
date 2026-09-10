@@ -49,7 +49,7 @@ void main() {
     expect(find.text('12 m'), findsOneWidget);
     expect(find.text('Synthèse libre'), findsOneWidget);
     expect(find.text('ex-libre'), findsOneWidget);
-    expect(find.text('Analyse Coach'), findsNothing);
+    expect(find.text('Débrief du Coach'), findsNothing);
     expect(find.text('Séries'), findsNothing);
     expect(find.byTooltip('Modifier'), findsOneWidget);
     expect(find.byTooltip('Supprimer'), findsOneWidget);
