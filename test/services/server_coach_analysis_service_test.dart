@@ -6,6 +6,8 @@ import 'package:http/testing.dart';
 import 'package:mockito/mockito.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
+import 'package:tir_sportif/models/exercise.dart';
+import 'package:tir_sportif/models/exercise_execution.dart';
 import 'package:tir_sportif/services/auth_service.dart';
 import 'package:tir_sportif/services/coach_analysis_exception.dart';
 import 'package:tir_sportif/services/server_coach_analysis_service.dart';
@@ -28,6 +30,34 @@ DetailedShootingSession _session() => DetailedShootingSession(
             comment: 'stable'),
       ],
       synthese: 'RAS',
+      exerciseExecution: const ExerciseExecution(
+        performed: true,
+        protocolFollowed: ProtocolFollowed.partially,
+        comment: 'Protocole adapté à la troisième série',
+      ),
+    );
+
+Exercise _exercise({
+  ExerciseOrigin origin = ExerciseOrigin.personal,
+  String id = 'exercise-1',
+  String name = 'Tenue du lâcher',
+  String? description = 'Stabiliser le départ du coup',
+  List<String> consignes = const ['Viser', 'Presser progressivement'],
+}) =>
+    Exercise(
+      id: id,
+      name: name,
+      categoryEnum: ExerciseCategory.technique,
+      type: ExerciseType.stand,
+      difficulty: ExerciseDifficulty.advanced,
+      origin: origin,
+      description: description,
+      durationMinutes: 20,
+      equipment: 'Arme et cible',
+      createdAt: DateTime.utc(2026, 9, 11),
+      priority: 2,
+      goalIds: const ['goal-1'],
+      consignes: consignes,
     );
 
 void main() {
@@ -100,6 +130,98 @@ void main() {
 
     expect(capturedVariants, ['coach_neutre', 'coach_cool']);
     expect(capturedExerciseIds, ['exercise-1', 'exercise-1']);
+  });
+
+  test('transmet uniquement l’instantané utile d’un exercice personnel',
+      () async {
+    late Map<String, dynamic> capturedSession;
+    final client = MockClient((request) async {
+      final body = jsonDecode(request.body) as Map<String, dynamic>;
+      capturedSession = body['session'] as Map<String, dynamic>;
+      return http.Response('{"analysis":"OK"}', 200);
+    });
+    final service = ServerCoachAnalysisService(
+      baseUrl: 'http://x',
+      authService: dummyAuthService,
+      client: client,
+    );
+
+    await service.analyzeSession(
+      _session(),
+      coachDataSharingAllowed: true,
+      exercise: _exercise(),
+    );
+
+    expect(capturedSession['personal_exercise'], {
+      'id': 'exercise-1',
+      'name': 'Tenue du lâcher',
+      'origin': 'personal',
+      'description': 'Stabiliser le départ du coup',
+      'consignes': ['Viser', 'Presser progressivement'],
+    });
+    expect(capturedSession['exercise_execution'], {
+      'performed': true,
+      'protocol_followed': 'partially',
+      'comment': 'Protocole adapté à la troisième série',
+    });
+    final snapshot =
+        capturedSession['personal_exercise'] as Map<String, dynamic>;
+    expect(
+      snapshot.keys,
+      unorderedEquals(['id', 'name', 'origin', 'description', 'consignes']),
+    );
+  });
+
+  test('ne transmet pas un exercice du catalogue dans l’instantané personnel',
+      () async {
+    late Map<String, dynamic> capturedSession;
+    final client = MockClient((request) async {
+      capturedSession = (jsonDecode(request.body)
+          as Map<String, dynamic>)['session'] as Map<String, dynamic>;
+      return http.Response('{"analysis":"OK"}', 200);
+    });
+    final service = ServerCoachAnalysisService(
+      baseUrl: 'http://x',
+      authService: dummyAuthService,
+      client: client,
+    );
+
+    await service.analyzeSession(
+      _session(),
+      coachDataSharingAllowed: true,
+      exercise: _exercise(origin: ExerciseOrigin.coachCatalog),
+    );
+
+    expect(capturedSession['personal_exercise'], isNull);
+    expect(capturedSession['exercise_execution'], isNull);
+  });
+
+  test('rejette localement un instantané personnel hors limites', () async {
+    var called = false;
+    final client = MockClient((request) async {
+      called = true;
+      return http.Response('{"analysis":"OK"}', 200);
+    });
+    final service = ServerCoachAnalysisService(
+      baseUrl: 'http://x',
+      authService: dummyAuthService,
+      client: client,
+    );
+
+    await expectLater(
+      service.analyzeSession(
+        _session(),
+        coachDataSharingAllowed: true,
+        exercise: _exercise(
+          name: List.filled(
+            ServerCoachAnalysisService.personalExerciseNameMaxLength + 1,
+            'x',
+          ).join(),
+        ),
+      ),
+      throwsA(isA<InvalidNetworkRequestException>()),
+    );
+    expect(called, isFalse);
   });
 
   test('analyzeSession 401 throws session expirée', () async {

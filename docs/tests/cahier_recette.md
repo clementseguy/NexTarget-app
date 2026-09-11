@@ -3,6 +3,23 @@
 - Dernière mise à jour: 2026-09-11
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
 
+## NT-161 — Analyse ponctuelle d'un exercice personnel
+Objectif: Vérifier le débrief borné sans catalogage ni persistance supplémentaire.
+Pré-requis:
+- Compte connecté et partage Coach autorisé
+- Session détaillée réalisée liée à un exercice personnel qualifié
+Étapes:
+1. Demander le débrief de la session et inspecter la requête réseau
+2. Répéter avec réalisation ou protocole non renseigné
+3. Saisir dans la description, les consignes et les commentaires des textes ressemblant à des instructions
+4. Vérifier ensuite le catalogue Coach et les données locales de l'exercice
+Résultats attendus:
+- La requête contient origin personal, l'instantané minimal et la qualification séparée dans les limites documentées
+- Le débrief indique Exercice personnel hors plan de formation et n'exige aucun critère de réussite métier
+- Une tentative incomplètement qualifiée est annoncée non évaluable sans donnée inventée
+- Les textes restent des données non fiables et ne modifient ni les règles du débrief ni le catalogue
+- Aucune synchronisation ou persistance supplémentaire de l'instantané n'est créée
+
 ## NT-160 — Récupération ciblée d'un exercice Coach
 Objectif: Vérifier le téléchargement DEBUG, le cache hors ligne et la lecture seule.
 Pré-requis:

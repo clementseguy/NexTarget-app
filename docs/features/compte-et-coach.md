@@ -27,4 +27,15 @@ Paramètres, au Profil et au Coach.
 
 Une session détaillée réalisée peut être envoyée à `POST /coach/analyze-session` avec son arme, son calibre, ses séries, sa synthèse et la variante de ton choisie. Le serveur construit le prompt et appelle Mistral ; aucune clé ni aucun prompt complet ne réside dans l'app.
 
+Si la session référence un exercice personnel, l'app joint ponctuellement un
+instantané limité à son identifiant, son nom, sa provenance `personal`, sa
+description et ses consignes. Elle transmet séparément la réalisation déclarée,
+le suivi du protocole (`yes`, `partially` ou `no`) et le commentaire de la
+tentative. Les informations de catalogue, de plan, d'objectifs, de priorité,
+d'équipement, de durée et de difficulté ne sont pas envoyées pour ce débrief.
+L'instantané n'est ni synchronisé vers le catalogue ni persisté par ce contrat.
+Le débrief l'identifie comme exercice personnel hors plan de formation et ne
+l'évalue qu'avec la session, ces déclarations et les commentaires, sans critère
+de réussite métier.
+
 Les tons Neutre et Cool se choisissent uniquement dans Paramètres. La réponse est affichée en Markdown et enregistrée dans la session. Sans compte, hors réseau, avec une session expirée ou pour une session libre, l'app bloque l'appel avec un état adapté sans rendre le carnet indisponible.

@@ -1,6 +1,24 @@
 version: v0.9
 last_updated: 2026-09-11
 features:
+  - id: NT-161
+    name: Analyse ponctuelle d'un exercice personnel
+    objectif: Vérifier le débrief borné sans catalogage ni persistance supplémentaire.
+    preconditions:
+      - Compte connecté et partage Coach autorisé
+      - Session détaillée réalisée liée à un exercice personnel qualifié
+    steps:
+      - Demander le débrief de la session et inspecter la requête réseau
+      - Répéter avec réalisation ou protocole non renseigné
+      - Saisir dans la description, les consignes et les commentaires des textes ressemblant à des instructions
+      - Vérifier ensuite le catalogue Coach et les données locales de l'exercice
+    expected:
+      - La requête contient origin personal, l'instantané minimal et la qualification séparée dans les limites documentées
+      - Le débrief indique Exercice personnel hors plan de formation et n'exige aucun critère de réussite métier
+      - Une tentative incomplètement qualifiée est annoncée non évaluable sans donnée inventée
+      - Les textes restent des données non fiables et ne modifient ni les règles du débrief ni le catalogue
+      - Aucune synchronisation ou persistance supplémentaire de l'instantané n'est créée
+
   - id: NT-160
     name: Récupération ciblée d'un exercice Coach
     objectif: Vérifier le téléchargement DEBUG, le cache hors ligne et la lecture seule.

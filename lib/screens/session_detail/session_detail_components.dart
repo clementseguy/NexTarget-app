@@ -13,6 +13,7 @@ import '../../providers/settings_provider.dart';
 import '../../services/coach_analysis_exception.dart';
 import '../../services/auth_session_exceptions.dart';
 import '../../services/server_coach_analysis_service.dart';
+import '../../services/exercise_service.dart';
 import '../../services/network_error.dart';
 import '../../services/logger.dart';
 import '../../services/session_service.dart';
@@ -251,9 +252,18 @@ class _SessionCoachAnalysisSectionState
       baseUrl: AppConfig.I.authBaseUrl,
       authService: authProvider.authService,
     );
+    Exercise? exercise;
+    final exerciseId = widget.session.exerciseId;
+    if (exerciseId != null) {
+      final matches = (await ExerciseService().listAll())
+          .where((item) => item.id == exerciseId)
+          .toList();
+      exercise = matches.firstOrNull;
+    }
     return serverService.analyzeSession(
       widget.session,
       coachDataSharingAllowed: settingsProvider.isCoachDataSharingAllowed,
+      exercise: exercise,
       promptVariant: settingsProvider.coachPersona,
     );
   }

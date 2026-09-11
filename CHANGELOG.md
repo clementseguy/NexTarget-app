@@ -5,6 +5,9 @@ Toutes les modifications notables de ce projet seront listées ici.
 ## [Non publié]
 
 ### Added
+- NT-161 : instantané borné et ponctuel des seuls champs utiles d'un exercice
+  personnel lors d'une analyse, avec qualification d'exécution séparée, sans
+  synchronisation catalogue ni nouvelle persistance.
 - NT-160 : récupération ciblée par identifiant d'un exercice actif du catalogue
   Coach, cache Hive hors ligne sans synchronisation automatique, contrôle DEBUG
   dédié et consultation en lecture seule identifiée « Créé par le Coach » ; cartes
