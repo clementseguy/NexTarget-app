@@ -16,6 +16,7 @@ import 'migrations/migration_7_add_guided_draft_fields.dart';
 import 'migrations/migration_8_add_score_entered_field.dart';
 import 'migrations/migration_9_add_exercise_difficulty.dart';
 import 'migrations/migration_10_single_session_exercise.dart';
+import 'migrations/migration_11_add_exercise_execution.dart';
 import 'constants/session_constants.dart';
 import 'providers/navigation_provider.dart';
 import 'providers/settings_provider.dart';
@@ -49,6 +50,7 @@ Future<void> main() async {
     Migration8AddScoreEnteredField(), // v8
     Migration9AddExerciseDifficulty(), // v9
     Migration10SingleSessionExercise(), // v10
+    Migration11AddExerciseExecution(), // v11
   ], schemaStore);
   await runner.run();
 

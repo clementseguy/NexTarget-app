@@ -22,3 +22,11 @@ persisté est conservé ; les suivants sont ignorés. Une liste absente, vide ou
 invalide produit une valeur `null`. Les séries et les autres champs de la session
 ne sont pas modifiés. La désérialisation conserve le même fallback pour les
 sauvegardes historiques importées après la migration locale.
+
+## Qualification de l'exécution d'un exercice
+
+La migration Hive v11 ajoute une valeur `exerciseExecution` vide aux enveloppes
+de sessions qui référencent déjà un `exerciseId`. Les sessions sans exercice,
+les qualifications existantes, les séries et les autres champs ne sont pas
+réécrits. La désérialisation accepte également l'absence de cette structure et
+ignore ses valeurs inconnues sans inventer de réponse.

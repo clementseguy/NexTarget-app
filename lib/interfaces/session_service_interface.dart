@@ -1,5 +1,6 @@
 import '../models/shooting_session.dart';
 import '../models/exercise.dart';
+import '../models/exercise_execution.dart';
 import '../models/series.dart';
 
 /// Interface pour le service de gestion des sessions de tir
@@ -45,6 +46,7 @@ abstract class ISessionService {
     String? caliber,
     String? category,
     String? synthese,
+    ExerciseExecution? exerciseExecution,
     DateTime? forcedDate,
     List<Series>? updatedSeries,
   });

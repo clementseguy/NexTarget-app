@@ -1,4 +1,5 @@
 import '../constants/session_constants.dart';
+import 'exercise_execution.dart';
 import 'series.dart';
 
 /// Racine commune des sessions détaillées et libres.
@@ -23,6 +24,7 @@ abstract class ShootingSession {
   set category(String value);
   String? get exerciseId;
   set exerciseId(String? value);
+  ExerciseExecution? get exerciseExecution;
   String? get photoPath;
   set photoPath(String? value);
 
@@ -63,6 +65,8 @@ class DetailedShootingSession implements ShootingSession {
   @override
   String? exerciseId;
   @override
+  ExerciseExecution? exerciseExecution;
+  @override
   String? photoPath;
 
   DetailedShootingSession({
@@ -76,6 +80,7 @@ class DetailedShootingSession implements ShootingSession {
     this.synthese,
     this.category = SessionConstants.categoryEntrainement,
     this.exerciseId,
+    this.exerciseExecution,
     this.photoPath,
   });
 
@@ -95,6 +100,7 @@ class DetailedShootingSession implements ShootingSession {
         'synthese': synthese,
         'category': category,
         'exerciseId': exerciseId,
+        'exerciseExecution': exerciseExecution?.toMap(),
         'photoPath': photoPath,
       };
 
@@ -134,6 +140,7 @@ class DetailedShootingSession implements ShootingSession {
       synthese: map['synthese'] as String?,
       category: category,
       exerciseId: _readExerciseId(map),
+      exerciseExecution: _readExerciseExecution(map['exerciseExecution']),
       photoPath: map['photoPath'] as String?,
     );
   }
@@ -156,6 +163,11 @@ class DetailedShootingSession implements ShootingSession {
   bool get hasSynthese => synthese != null && synthese!.trim().isNotEmpty;
 }
 
+ExerciseExecution? _readExerciseExecution(dynamic value) {
+  if (value is! Map) return null;
+  return ExerciseExecution.fromMap(Map<String, dynamic>.from(value));
+}
+
 class SimpleShootingSession implements ShootingSession {
   @override
   int? id;
@@ -175,6 +187,8 @@ class SimpleShootingSession implements ShootingSession {
   String category;
   @override
   String? exerciseId;
+  @override
+  ExerciseExecution? get exerciseExecution => null;
   @override
   String? photoPath;
 

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../constants/session_constants.dart';
 import '../../models/series.dart';
 import '../../models/exercise.dart';
+import '../../models/exercise_execution.dart';
 import '../../models/goal.dart';
 import '../../widgets/weapon_autocomplete_field.dart';
 import '../../widgets/caliber_autocomplete_field.dart';
@@ -42,7 +43,6 @@ class WizardIntroStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasExercise = linkedExercise != null || loadingExercise;
-    final displayedCategory = SessionConstants.categoryLabel(categoryDraft);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Form(
@@ -52,63 +52,88 @@ class WizardIntroStep extends StatelessWidget {
           children: [
             Text('Démarrage', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Exercice',
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    if (!hasExercise)
-                      const Text('Pas d\'exercice associé',
-                          style: TextStyle(color: Colors.white60))
-                    else if (loadingExercise)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.0),
-                        child: SizedBox(
+            SizedBox(
+              width: double.infinity,
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Exercice',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 10),
+                      if (!hasExercise)
+                        const Text('Pas d\'exercice associé')
+                      else if (loadingExercise)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: SizedBox(
                             width: 24,
                             height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2)),
-                      )
-                    else if (linkedExercise != null) ...[
-                      Text(linkedExercise!.name,
-                          style: const TextStyle(fontWeight: FontWeight.w600)),
-                      if (linkedExercise!.description != null &&
-                          linkedExercise!.description!.trim().isNotEmpty) ...[
-                        const SizedBox(height: 6),
-                        Text(linkedExercise!.description!,
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.white70)),
-                      ],
-                      if (goals.isNotEmpty) ...[
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: goals
-                              .map((g) => Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.08),
-                                      borderRadius: BorderRadius.circular(18),
-                                      border: Border.all(color: Colors.white12),
-                                    ),
-                                    child: Text(g.title,
-                                        style: const TextStyle(fontSize: 11)),
-                                  ))
-                              .toList(),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      else if (linkedExercise != null) ...[
+                        Text(
+                          linkedExercise!.name,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
-                      ],
-                    ] else
-                      const Text('Exercice introuvable',
-                          style:
-                              TextStyle(color: Colors.redAccent, fontSize: 12)),
-                    const SizedBox(height: 12),
-                  ],
+                        if (linkedExercise!.description != null &&
+                            linkedExercise!.description!.trim().isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            linkedExercise!.description!,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _ExerciseMetadataLabel(
+                              icon: Icons.list_alt,
+                              text:
+                                  '${linkedExercise!.consignes.length} consigne(s)',
+                            ),
+                            _ExerciseMetadataLabel(
+                              icon: Icons.timer_outlined,
+                              text: linkedExercise!.durationMinutes == null
+                                  ? 'Durée : non renseignée'
+                                  : 'Durée : ${linkedExercise!.durationMinutes} min',
+                            ),
+                            _ExerciseMetadataLabel(
+                              icon: Icons.build_outlined,
+                              text: linkedExercise!.equipment == null ||
+                                      linkedExercise!.equipment!.trim().isEmpty
+                                  ? 'Matériel requis : non renseigné'
+                                  : 'Matériel requis : ${linkedExercise!.equipment!.trim()}',
+                            ),
+                          ],
+                        ),
+                        if (goals.isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: goals
+                                .map(
+                                  (goal) => Chip(
+                                    label: Text(goal.title),
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ],
+                      ] else
+                        const Text('Exercice introuvable'),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -120,23 +145,30 @@ class WizardIntroStep extends StatelessWidget {
               controller: weaponController,
               labelText: 'Arme',
             ),
+            const SizedBox(height: 12),
             CaliberAutocompleteField(
               controller: caliberController,
               focusNode: caliberFocusNode,
               onChanged: onCaliberChanged,
               onSaved: onCaliberSaved,
             ),
-            TextFormField(
-              initialValue: displayedCategory,
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: SessionConstants.categories.contains(categoryDraft)
+                  ? categoryDraft
+                  : SessionConstants.categoryEntrainement,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'Catégorie'),
-              onSaved: (value) {
-                if (value?.trim() == displayedCategory &&
-                    categoryDraft != null) {
-                  onCategorySaved(categoryDraft);
-                  return;
-                }
-                onCategorySaved(SessionConstants.categoryValue(value));
-              },
+              items: SessionConstants.categories
+                  .map(
+                    (category) => DropdownMenuItem(
+                      value: category,
+                      child: Text(SessionConstants.categoryLabel(category)),
+                    ),
+                  )
+                  .toList(),
+              onSaved: onCategorySaved,
+              onChanged: onCategorySaved,
             ),
             const SizedBox(height: 24),
             Align(
@@ -150,6 +182,225 @@ class WizardIntroStep extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ExerciseMetadataLabel extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _ExerciseMetadataLabel({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16),
+          const SizedBox(width: 6),
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.sizeOf(context).width - 100,
+            ),
+            child: Text(text, overflow: TextOverflow.ellipsis),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Qualification facultative de l'exercice sur la dernière page du wizard.
+class WizardExerciseQualificationStep extends StatelessWidget {
+  final GlobalKey<FormState> formKey;
+  final String initialSynthese;
+  final bool? initialPerformed;
+  final ProtocolFollowed? initialProtocolFollowed;
+  final String? initialComment;
+  final bool saving;
+  final ValueChanged<String?> onSyntheseSaved;
+  final ValueChanged<bool?> onPerformedChanged;
+  final ValueChanged<ProtocolFollowed?> onProtocolFollowedChanged;
+  final ValueChanged<String?> onCommentSaved;
+  final VoidCallback onFinish;
+
+  const WizardExerciseQualificationStep({
+    super.key,
+    required this.formKey,
+    required this.initialSynthese,
+    required this.initialPerformed,
+    required this.initialProtocolFollowed,
+    required this.initialComment,
+    required this.saving,
+    required this.onSyntheseSaved,
+    required this.onPerformedChanged,
+    required this.onProtocolFollowedChanged,
+    required this.onCommentSaved,
+    required this.onFinish,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Form(
+        key: formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Synthèse de la session',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Synthèse du tireur',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              key: const ValueKey('session_synthese'),
+              initialValue: initialSynthese,
+              minLines: 3,
+              maxLines: 6,
+              decoration: const InputDecoration(
+                labelText: 'Commentaire de la session (facultatif)',
+                alignLabelWithHint: true,
+              ),
+              onSaved: onSyntheseSaved,
+            ),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 16),
+            Text(
+              'Analyse de l’exercice',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 6),
+            const Text('Ces informations sont facultatives.'),
+            const SizedBox(height: 16),
+            _QualificationLabel(
+              label: 'Exercice réalisé',
+              help: 'Indiquez si vous avez réussi à faire l’exercice du '
+                  'début à la fin. Vous pouvez préciser votre réponse dans '
+                  'le commentaire.',
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              key: const ValueKey('exercise_performed'),
+              initialValue: switch (initialPerformed) {
+                true => 'yes',
+                false => 'no',
+                null => 'unanswered',
+              },
+              decoration: const InputDecoration(labelText: 'Réponse'),
+              items: const [
+                DropdownMenuItem(
+                    value: 'unanswered', child: Text('Non renseigné')),
+                DropdownMenuItem(value: 'yes', child: Text('Oui')),
+                DropdownMenuItem(value: 'no', child: Text('Non')),
+              ],
+              onChanged: saving
+                  ? null
+                  : (value) => onPerformedChanged(switch (value) {
+                        'yes' => true,
+                        'no' => false,
+                        _ => null,
+                      }),
+            ),
+            const SizedBox(height: 20),
+            _QualificationLabel(
+              label: 'Protocole suivi',
+              help: 'Indiquez si vous avez réussi à suivre le protocole '
+                  'proposé par l’exercice du début à la fin. Vous pouvez '
+                  'préciser votre réponse dans le commentaire.',
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              key: const ValueKey('protocol_followed'),
+              initialValue: initialProtocolFollowed?.name ?? 'unanswered',
+              decoration: const InputDecoration(labelText: 'Réponse'),
+              items: const [
+                DropdownMenuItem(
+                    value: 'unanswered', child: Text('Non renseigné')),
+                DropdownMenuItem(value: 'yes', child: Text('Oui')),
+                DropdownMenuItem(
+                    value: 'partially', child: Text('Partiellement')),
+                DropdownMenuItem(value: 'no', child: Text('Non')),
+              ],
+              onChanged: saving
+                  ? null
+                  : (value) => onProtocolFollowedChanged(switch (value) {
+                        'yes' => ProtocolFollowed.yes,
+                        'partially' => ProtocolFollowed.partially,
+                        'no' => ProtocolFollowed.no,
+                        _ => null,
+                      }),
+            ),
+            const SizedBox(height: 20),
+            TextFormField(
+              key: const ValueKey('exercise_comment'),
+              initialValue: initialComment,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: 'Commentaire sur l’exercice (facultatif)',
+                alignLabelWithHint: true,
+              ),
+              onSaved: onCommentSaved,
+            ),
+            const SizedBox(height: 24),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton.icon(
+                onPressed: saving ? null : onFinish,
+                icon: const Icon(Icons.check),
+                label: saving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Terminer'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QualificationLabel extends StatelessWidget {
+  final String label;
+  final String help;
+
+  const _QualificationLabel({required this.label, required this.help});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(label, style: Theme.of(context).textTheme.titleMedium),
+        ),
+        Tooltip(
+          message: help,
+          triggerMode: TooltipTriggerMode.tap,
+          showDuration: const Duration(seconds: 5),
+          child: const SizedBox(
+            width: 44,
+            height: 44,
+            child: Icon(Icons.help_outline, semanticLabel: 'Aide'),
+          ),
+        ),
+      ],
     );
   }
 }

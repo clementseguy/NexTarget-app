@@ -37,6 +37,27 @@ Résultats attendus:
 - L'export version 4 utilise exerciseId sans exercises ni prescriptionId
 - La requête Coach transmet exerciseId facultatif sans prescriptionId
 
+## NT-154 — Qualification d'un exercice planifié
+Objectif: Qualifier facultativement l'exécution lors de la conversion d'une session prévue avec exercice.
+Étapes:
+1. Créer une session prévue depuis un exercice de stand avec dix consignes, une durée et du matériel requis
+2. Vérifier la card Exercice, les espacements Arme, Calibre et Catégorie puis modifier la catégorie
+3. Renseigner les séries et vérifier que la dernière page contient Synthèse du tireur puis Analyse de l'exercice
+4. Toucher les aides d'Exercice réalisé et de Protocole suivi
+5. Choisir successivement Oui, Non et Non renseigné pour l'exercice réalisé
+6. Choisir successivement Oui, Partiellement, Non et Non renseigné pour le protocole suivi
+7. Ajouter un commentaire, terminer la session, redémarrer puis contrôler exerciseExecution dans un export JSON
+8. Convertir une autre session avec exercice sans renseigner aucun champ
+9. Convertir enfin une session prévue sans exercice
+Résultats attendus:
+- La card Exercice occupe toute la largeur et affiche dix consignes, la durée et le matériel requis
+- Arme, Calibre et Catégorie ne se chevauchent pas et la catégorie reste une liste contrôlée
+- La dernière page conserve la synthèse du tireur puis ajoute l'analyse de l'exercice, sans étape supplémentaire
+- Les aides s'ouvrent au toucher et expliquent l'exécution de l'exercice et du protocole du début à la fin
+- Toutes les réponses et le commentaire sont facultatifs et n'empêchent jamais l'enregistrement
+- Les réponses choisies et le commentaire sont conservés après redémarrage
+- La session sans exercice conserve la dernière page et le comportement historiques
+
 ## NT-149 — Noms des fichiers d'export
 Objectif: Vérifier le nom NexTarget dans les deux exports sans rupture du format.
 Étapes:

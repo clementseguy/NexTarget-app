@@ -6,6 +6,7 @@ import '../interfaces/session_service_interface.dart';
 import '../interfaces/session_photo_service_interface.dart';
 import 'logger.dart';
 import '../models/exercise.dart';
+import '../models/exercise_execution.dart';
 import '../models/series.dart';
 import 'preferences_service.dart';
 import 'session_photo_service.dart';
@@ -56,6 +57,7 @@ class SessionService implements ISessionService {
             .toList()
         : <Map<String, dynamic>>[];
     sessionMap['exerciseId'] = sourceSnapshot.exerciseId;
+    sessionMap['exerciseExecution'] = null;
     return SessionDuplicationDraft(
       source: sourceSnapshot,
       initialSessionData: {'session': sessionMap, 'series': series},
@@ -384,6 +386,7 @@ class SessionService implements ISessionService {
     String? caliber,
     String? category,
     String? synthese,
+    ExerciseExecution? exerciseExecution,
     DateTime? forcedDate,
     List<Series>? updatedSeries,
   }) async {
@@ -395,6 +398,9 @@ class SessionService implements ISessionService {
     if (caliber != null) session.caliber = caliber;
     if (category != null) session.category = category;
     if (synthese != null) session.synthese = synthese;
+    if (session.exerciseId != null && exerciseExecution != null) {
+      session.exerciseExecution = exerciseExecution;
+    }
     if (updatedSeries != null) {
       session.series = updatedSeries;
     }

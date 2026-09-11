@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/models/series.dart';
+import 'package:tir_sportif/models/exercise_execution.dart';
 
 void main() {
   group('ShootingSession model mapping & flags', () {
@@ -16,6 +17,11 @@ void main() {
         category: 'match',
         series: [Series(distance: 10, points: 50, groupSize: 20)],
         exerciseId: 'ex1',
+        exerciseExecution: const ExerciseExecution(
+          performed: true,
+          protocolFollowed: ProtocolFollowed.partially,
+          comment: '  Dernière série adaptée.  ',
+        ),
         photoPath: '/tmp/session_photos/target_abc.jpg',
       );
       final map = ss.toMap();
@@ -28,6 +34,12 @@ void main() {
       expect(ss2.series.length, 1);
       expect(ss2.series.first.points, 50);
       expect(ss2.exerciseId, 'ex1');
+      expect(ss2.exerciseExecution?.performed, isTrue);
+      expect(
+        ss2.exerciseExecution?.protocolFollowed,
+        ProtocolFollowed.partially,
+      );
+      expect(ss2.exerciseExecution?.comment, 'Dernière série adaptée.');
       expect(ss2.hasAnalysis, isTrue);
       expect(ss2.hasSynthese, isTrue);
       expect(ss2.photoPath, '/tmp/session_photos/target_abc.jpg');
@@ -41,6 +53,7 @@ void main() {
       });
       expect(ss.series, isEmpty);
       expect(ss.exerciseId, isNull);
+      expect(ss.exerciseExecution, isNull);
       expect(ss.status, 'réalisée');
       expect(ss.category, 'entraînement');
       expect(ss.hasAnalysis, isFalse);
@@ -49,7 +62,25 @@ void main() {
       expect(ss.hasPhoto, isFalse);
     });
 
-    test('relit uniquement le premier exercice d’une sauvegarde historique', () {
+    test('tolère une qualification historique partielle ou invalide', () {
+      final session = ShootingSession.fromMap({
+        'weapon': 'P',
+        'caliber': '9 mm',
+        'exerciseId': 'ex-1',
+        'exerciseExecution': {
+          'performed': 'inconnu',
+          'protocolFollowed': 'presque',
+          'comment': 42,
+        },
+      }) as DetailedShootingSession;
+
+      expect(session.exerciseExecution?.performed, isNull);
+      expect(session.exerciseExecution?.protocolFollowed, isNull);
+      expect(session.exerciseExecution?.comment, isNull);
+    });
+
+    test('relit uniquement le premier exercice d’une sauvegarde historique',
+        () {
       final session = ShootingSession.fromMap({
         'weapon': 'P',
         'caliber': '9 mm',

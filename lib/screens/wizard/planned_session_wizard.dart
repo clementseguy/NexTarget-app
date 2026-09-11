@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/shooting_session.dart';
+import '../../models/exercise_execution.dart';
 import '../../models/series.dart';
 import '../../services/session_service.dart';
 import '../../constants/session_constants.dart';
@@ -28,6 +29,9 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
   String? _caliberDraft;
   String? _categoryDraft;
   String? _syntheseDraft;
+  bool? _performedDraft;
+  ProtocolFollowed? _protocolFollowedDraft;
+  String? _exerciseCommentDraft;
   bool _saving = false;
   late TextEditingController _caliberCtrl;
   final FocusNode _caliberFocus = FocusNode();
@@ -49,6 +53,9 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
     _categoryDraft = _session.category;
     _syntheseDraft =
         _session.synthese; // peut contenir "Session créée à partir de ..."
+    _performedDraft = _session.exerciseExecution?.performed;
+    _protocolFollowedDraft = _session.exerciseExecution?.protocolFollowed;
+    _exerciseCommentDraft = _session.exerciseExecution?.comment;
     _loadExerciseAndGoals();
   }
 
@@ -146,6 +153,13 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
         caliber: _caliberDraft,
         category: _categoryDraft,
         synthese: _syntheseDraft,
+        exerciseExecution: _session.exerciseId == null
+            ? null
+            : ExerciseExecution(
+                performed: _performedDraft,
+                protocolFollowed: _protocolFollowedDraft,
+                comment: _exerciseCommentDraft,
+              ),
       );
       if (mounted) {
         Navigator.of(context).pop(true); // true => conversion effectuée
@@ -197,7 +211,9 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
               Text(_step == 0
                   ? 'Session prévue'
                   : _step == _lastStepIndex
-                      ? 'Synthèse'
+                      ? _session.exerciseId == null
+                          ? 'Synthèse'
+                          : 'Synthèse de la session'
                       : 'Série $_step / $_seriesCount'),
               const SizedBox(height: 4),
               LinearProgressIndicator(
@@ -294,6 +310,21 @@ class _PlannedSessionWizardState extends State<PlannedSessionWizard> {
   }
 
   Widget _buildSynthese() {
+    if (_session.exerciseId != null) {
+      return WizardExerciseQualificationStep(
+        formKey: _formSynthese,
+        initialSynthese: _normalizedSyntheseInitial(),
+        initialPerformed: _performedDraft,
+        initialProtocolFollowed: _protocolFollowedDraft,
+        initialComment: _exerciseCommentDraft,
+        saving: _saving,
+        onSyntheseSaved: (value) => _syntheseDraft = value,
+        onPerformedChanged: (value) => _performedDraft = value,
+        onProtocolFollowedChanged: (value) => _protocolFollowedDraft = value,
+        onCommentSaved: (value) => _exerciseCommentDraft = value,
+        onFinish: _onFinish,
+      );
+    }
     return WizardSyntheseStep(
       formKey: _formSynthese,
       initialSynthese: _normalizedSyntheseInitial(),

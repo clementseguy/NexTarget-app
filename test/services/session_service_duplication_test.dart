@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tir_sportif/constants/session_constants.dart';
 import 'package:tir_sportif/interfaces/session_photo_service_interface.dart';
+import 'package:tir_sportif/models/exercise_execution.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/repositories/session_repository.dart';
@@ -77,6 +78,11 @@ DetailedShootingSession _detailed({
       synthese: 'Synthèse',
       analyse: 'Analyse',
       exerciseId: 'ex-1',
+      exerciseExecution: const ExerciseExecution(
+        performed: true,
+        protocolFollowed: ProtocolFollowed.yes,
+        comment: 'Qualification source',
+      ),
       photoPath: photoPath,
       series: [
         Series(
@@ -123,6 +129,7 @@ void main() {
       expect(map['analyse'], source.analyse);
       expect(map['photoPath'], source.photoPath);
       expect(map['exerciseId'], source.exerciseId);
+      expect(map['exerciseExecution'], isNull);
       expect(series.single['comment'], 'Série source');
 
       map['exerciseId'] = 'copie-exercice';
