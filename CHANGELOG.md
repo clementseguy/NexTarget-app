@@ -5,6 +5,11 @@ Toutes les modifications notables de ce projet seront listées ici.
 ## [Non publié]
 
 ### Added
+- NT-160 : récupération ciblée par identifiant d'un exercice actif du catalogue
+  Coach, cache Hive hors ligne sans synchronisation automatique, contrôle DEBUG
+  dédié et consultation en lecture seule identifiée « Créé par le Coach » ; cartes
+  de liste compactées avec les puces communes, des couleurs conditionnelles et
+  une colonne d'actions réduite aux icônes sans fond.
 - NT-159 : provenance `personal` ou `coach_catalog` ajoutée au modèle Exercise,
   avec migration Hive rétrocompatible, duplication et sauvegardes version 5
   alignées sur le contrat serveur complet.

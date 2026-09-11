@@ -103,7 +103,10 @@ class ExerciseService {
         consignes: consignes,
       );
 
-  Future<void> updateExercise(Exercise exercise) => _repo.put(exercise);
+  Future<void> updateExercise(Exercise exercise) async {
+    _rejectCoachMutation(exercise);
+    await _repo.put(exercise);
+  }
 
   Future<ExerciseDeletionEligibility> checkDeletionEligibility(
       String id) async {
@@ -117,6 +120,9 @@ class ExerciseService {
   }
 
   Future<void> deleteExercise(String id) async {
+    final exercise =
+        (await _repo.getAll()).where((item) => item.id == id).firstOrNull;
+    if (exercise != null) _rejectCoachMutation(exercise);
     final eligibility = await checkDeletionEligibility(id);
     if (!eligibility.canDelete) {
       throw ExerciseLinkedSessionsException(eligibility.linkedSessionCount);
@@ -125,6 +131,9 @@ class ExerciseService {
   }
 
   Future<void> reorder(List<Exercise> ordered) async {
+    for (final exercise in ordered) {
+      _rejectCoachMutation(exercise);
+    }
     int idx = 0;
     for (final ex in ordered) {
       await _repo.put(ex.copyWith(priority: idx++));
@@ -135,16 +144,31 @@ class ExerciseService {
 
   /// Replace goal associations for an exercise.
   Future<void> setGoals(Exercise exercise, List<String> goalIds) async {
+    _rejectCoachMutation(exercise);
     final distinct = goalIds.toSet().toList();
     await _repo.put(exercise.copyWith(goalIds: distinct));
   }
 
   /// Replace consignes (steps) for an exercise.
   Future<void> setConsignes(Exercise exercise, List<String> consignes) async {
+    _rejectCoachMutation(exercise);
     final cleaned =
         consignes.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
     await _repo.put(exercise.copyWith(consignes: cleaned));
   }
+
+  void _rejectCoachMutation(Exercise exercise) {
+    if (exercise.origin == ExerciseOrigin.coachCatalog) {
+      throw const CoachCatalogExerciseMutationException();
+    }
+  }
+}
+
+class CoachCatalogExerciseMutationException implements Exception {
+  const CoachCatalogExerciseMutationException();
+
+  @override
+  String toString() => 'Un exercice créé par le Coach est en lecture seule.';
 }
 
 class ExerciseDeletionEligibility {

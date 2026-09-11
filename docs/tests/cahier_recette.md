@@ -1,7 +1,26 @@
 # Cahier de Recette
 
-- Dernière mise à jour: 2026-09-10
+- Dernière mise à jour: 2026-09-11
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
+
+## NT-160 — Récupération ciblée d'un exercice Coach
+Objectif: Vérifier le téléchargement DEBUG, le cache hors ligne et la lecture seule.
+Pré-requis:
+- Build DEBUG relié à un serveur contenant une fixture active connue
+Étapes:
+1. Ouvrir la liste des exercices et vérifier qu'aucun téléchargement ne démarre
+2. Contrôler sur une largeur mobile la carte d'un exercice personnel avec description et matériel
+3. Utiliser le bouton éclair de la topbar, saisir l'identifiant actif puis valider
+4. Ouvrir la carte téléchargée, couper le réseau puis redémarrer l'application
+5. Réessayer avec un identifiant absent ou inactif et avec une panne réseau
+6. Contrôler un exercice personnel et une collision d'identifiant simulée
+Résultats attendus:
+- Seul l'exercice demandé apparaît ou est actualisé et reste disponible hors ligne
+- La carte reste compacte, réserve une colonne étroite aux actions, utilise les puces des cartes Sessions et n'affiche ni description ni matériel
+- Les icônes Exercice et Planifier n'ont pas de fond ; Stand est bleu comme Planifier, objectifs et consignes sont jaunes, et seule une difficulté correspondant au niveau du profil est verte dans les thèmes Classique et France
+- La liste et le détail affichent Créé par le Coach sans action de modification ou suppression
+- Les échecs conservent la copie Coach déjà en cache et tous les exercices personnels
+- Le bouton éclair est absent des builds hors DEBUG
 
 ## NT-153 — Consentement à l'utilisation des Coachs
 Objectif: Vérifier qu'aucune donnée n'est transmise aux Coachs sans autorisation explicite.

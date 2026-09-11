@@ -1,12 +1,20 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../config/app_config.dart';
+import '../providers/auth_provider.dart';
 import '../services/exercise_service.dart';
+import '../services/coach_catalog_service.dart';
+import '../services/network_error.dart';
 import '../models/exercise.dart';
 import '../services/session_service.dart';
 import '../services/goal_service.dart';
 import '../widgets/exercises_total_card.dart';
 import '../widgets/help_button.dart';
+import '../widgets/session_chip.dart';
 import 'session_detail_screen.dart';
 import 'exercise_form_screen.dart';
+import 'exercise_detail_screen.dart';
 import '../utils/exercise_sorting.dart';
 import '../utils/exercise_filters.dart';
 
@@ -21,12 +29,16 @@ class ExercisesListScreen extends StatefulWidget {
   final ExerciseService? exerciseService;
   final SessionService? sessionService;
   final GoalService? goalService;
+  final CoachCatalogService? catalogService;
+  final bool debugCatalogControlEnabled;
 
   const ExercisesListScreen({
     super.key,
     this.exerciseService,
     this.sessionService,
     this.goalService,
+    this.catalogService,
+    this.debugCatalogControlEnabled = true,
   });
   @override
   State<ExercisesListScreen> createState() => _ExercisesListScreenState();
@@ -37,6 +49,9 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
       widget.exerciseService ?? ExerciseService();
   late final SessionService _sessionService =
       widget.sessionService ?? SessionService();
+  CoachCatalogService get _catalogService =>
+      widget.catalogService ??
+      CoachCatalogService(baseUrl: AppConfig.I.authBaseUrl);
   late Future<List<Exercise>> _future;
   // Map des exercices ayant au moins une session prévue associée
   Map<String, bool> _plannedExerciseMap = {};
@@ -117,10 +132,92 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
   }
 
   Future<void> _openEdit(Exercise exercise) async {
+    if (exercise.origin == ExerciseOrigin.coachCatalog) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => ExerciseDetailScreen(exercise)),
+      );
+      return;
+    }
     final updated = await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => ExerciseFormScreen(editing: exercise)),
+      MaterialPageRoute(
+        builder: (_) => ExerciseFormScreen(
+          editing: exercise,
+          exerciseService: _service,
+          goalService: widget.goalService,
+        ),
+      ),
     );
     if (updated == true) _reload();
+  }
+
+  Future<void> _downloadCatalogExercise() async {
+    final controller = TextEditingController();
+    final id = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Télécharger un exercice Coach'),
+        content: TextField(
+          key: const Key('coach_catalog_id_field'),
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(labelText: 'Identifiant'),
+          textInputAction: TextInputAction.done,
+          onSubmitted: (value) {
+            if (value.trim().isNotEmpty) Navigator.pop(dialogContext, value);
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                Navigator.pop(dialogContext, controller.text);
+              }
+            },
+            child: const Text('Télécharger'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (id == null || !mounted) return;
+
+    try {
+      final exercise = await _catalogService.downloadById(id);
+      if (!mounted) return;
+      _reload();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('« ${exercise.name} » est disponible hors ligne.')),
+      );
+    } on CatalogExerciseNotFoundException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'Aucun exercice Coach actif ne correspond à cet identifiant.')),
+      );
+    } on CatalogExerciseConflictException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'Cet identifiant appartient déjà à un exercice personnel.')),
+      );
+    } on InvalidCatalogExerciseException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La réponse du catalogue est invalide.')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(presentNetworkError(error).message)),
+      );
+    }
   }
 
   Future<void> _openDuplicate(Exercise exercise) async {
@@ -194,8 +291,44 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
     }
   }
 
+  Future<void> _planExercise(Exercise exercise) async {
+    try {
+      final session = await _sessionService.planFromExercise(exercise);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Session prévue créée (${session.series.length} série(s))',
+          ),
+        ),
+      );
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SessionDetailScreen(
+            sessionData: {
+              'session': session.toMap(),
+              'series': session.series.map((series) => series.toMap()).toList(),
+            },
+          ),
+        ),
+      );
+      await _refreshPlannedMapping();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Impossible de planifier: $error')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final rawExperienceLevel =
+        context.watch<AuthProvider?>()?.currentUser?['experience_level'];
+    final experienceLevel =
+        rawExperienceLevel is String ? rawExperienceLevel : null;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Exercices'),
@@ -222,6 +355,12 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
               _menuItem(ExerciseSortMode.newest, 'Plus récents'),
             ],
           ),
+          if (kDebugMode && widget.debugCatalogControlEnabled)
+            IconButton(
+              onPressed: _downloadCatalogExercise,
+              icon: const Icon(Icons.bolt, color: Colors.amber),
+              tooltip: 'Télécharger un exercice Coach',
+            ),
           IconButton(
             onPressed: _reload,
             icon: const Icon(Icons.refresh),
@@ -272,176 +411,14 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                 );
               }
               final ex = data[i - 2];
-              return Card(
-                child: ListTile(
-                  title: Text(ex.name),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${ex.categoryLabelFr} • ${ex.goalIds.length} objectif(s)',
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2.0),
-                        child: Text(
-                          'Type: ${ex.typeLabelFr} · Difficulté: ${ex.difficultyLabelFr}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ),
-                      if (ex.consignes.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: [
-                              _Badge(
-                                icon: Icons.list_alt,
-                                text: '${ex.consignes.length} consigne(s)',
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (ex.description != null &&
-                          ex.description!.trim().isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Text(
-                            ex.description!.split('\n').first.trim(),
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      fontSize: 12,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      if (ex.durationMinutes != null ||
-                          (ex.equipment != null &&
-                              ex.equipment!.trim().isNotEmpty))
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6.0),
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
-                            children: [
-                              if (ex.durationMinutes != null)
-                                _Badge(
-                                  icon: Icons.timer,
-                                  text: '${ex.durationMinutes} min',
-                                ),
-                              if (ex.equipment != null &&
-                                  ex.equipment!.trim().isNotEmpty)
-                                _Badge(
-                                  icon: Icons.build,
-                                  text: ex.equipment!.trim(),
-                                  maxWidth: 140,
-                                ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                  leading: Icon(
-                    ex.description != null && ex.description!.trim().isNotEmpty
-                        ? Icons.description
-                        : Icons.fitness_center,
-                    color: ex.description != null &&
-                            ex.description!.trim().isNotEmpty
-                        ? Colors.amberAccent
-                        : null,
-                  ),
-                  trailing: Wrap(
-                    spacing: 4,
-                    children: [
-                      if (ex.type == ExerciseType.stand &&
-                          _plannedExerciseMap[ex.id] == true)
-                        Tooltip(
-                          message: 'Au moins une session prévue liée',
-                          child: SizedBox(
-                            height:
-                                40, // proche de la hauteur d'un IconButton standard
-                            width: 32,
-                            child: Center(
-                              child: Icon(
-                                Icons.schedule,
-                                size: 20,
-                                color: Colors.lightBlueAccent,
-                              ),
-                            ),
-                          ),
-                        ),
-                      if (ex.type == ExerciseType.stand)
-                        IconButton(
-                          icon: const Icon(Icons.event_available, size: 20),
-                          tooltip: 'Planifier une session',
-                          onPressed: () async {
-                            try {
-                              final sess =
-                                  await _sessionService.planFromExercise(ex);
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Session prévue créée (${sess.series.length} série(s))',
-                                  ),
-                                ),
-                              );
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => SessionDetailScreen(
-                                    sessionData: {
-                                      'session': sess.toMap(),
-                                      'series': sess.series
-                                          .map((s) => s.toMap())
-                                          .toList(),
-                                    },
-                                  ),
-                                ),
-                              );
-                              // Actualiser le mapping (au cas où l'utilisateur revienne en arrière sans convertir)
-                              await _refreshPlannedMapping();
-                            } catch (e) {
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Impossible de planifier: $e'),
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                      IconButton(
-                        icon: const Icon(Icons.edit, size: 18),
-                        tooltip: 'Modifier',
-                        onPressed: () => _openEdit(ex),
-                      ),
-                      PopupMenuButton<String>(
-                        tooltip: 'Actions sur ${ex.name}',
-                        onSelected: (action) {
-                          if (action == 'duplicate') {
-                            _openDuplicate(ex);
-                          } else if (action == 'delete') {
-                            _delete(ex);
-                          }
-                        },
-                        itemBuilder: (_) => const [
-                          PopupMenuItem(
-                            value: 'duplicate',
-                            child: Text('Dupliquer'),
-                          ),
-                          PopupMenuItem(
-                            value: 'delete',
-                            child: Text('Supprimer'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  onTap: () => _openEdit(ex),
-                ),
+              return _ExerciseCard(
+                exercise: ex,
+                hasPlannedSession: _plannedExerciseMap[ex.id] == true,
+                onTap: () => _openEdit(ex),
+                onPlan: () => _planExercise(ex),
+                onDuplicate: () => _openDuplicate(ex),
+                onDelete: () => _delete(ex),
+                experienceLevel: experienceLevel,
               );
             },
           );
@@ -457,6 +434,230 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
 
 PopupMenuItem<ExerciseSortMode> _menuItem(ExerciseSortMode m, String label) {
   return PopupMenuItem(value: m, child: Text(label));
+}
+
+class _ExerciseCard extends StatelessWidget {
+  final Exercise exercise;
+  final bool hasPlannedSession;
+  final VoidCallback onTap;
+  final VoidCallback onPlan;
+  final VoidCallback onDuplicate;
+  final VoidCallback onDelete;
+  final String? experienceLevel;
+
+  const _ExerciseCard({
+    required this.exercise,
+    required this.hasPlannedSession,
+    required this.onTap,
+    required this.onPlan,
+    required this.onDuplicate,
+    required this.onDelete,
+    required this.experienceLevel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isCoach = exercise.origin == ExerciseOrigin.coachCatalog;
+    final planColor = isDark ? Colors.lightBlueAccent : colors.primary;
+    final yellowColor = isDark ? Colors.amberAccent : const Color(0xFF8A5A00);
+    final matchingDifficultyColor =
+        isDark ? colors.secondary : const Color(0xFF147A3D);
+    final difficultyMatchesExperience =
+        exercise.difficulty?.name == experienceLevel;
+    final accent = isCoach ? planColor : colors.primary;
+    final goalLabel = exercise.goalIds.length == 1
+        ? '1 objectif'
+        : '${exercise.goalIds.length} objectifs';
+    final instructionLabel = exercise.consignes.length == 1
+        ? '1 consigne'
+        : '${exercise.consignes.length} consignes';
+
+    return Card(
+      key: ValueKey('exercise_card_${exercise.id}'),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: accent.withValues(alpha: 0.55), width: 1),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                key: ValueKey('exercise_leading_${exercise.id}'),
+                width: 42,
+                child: Icon(Icons.fitness_center, color: accent, size: 22),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      exercise.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 6),
+                    _ExerciseChipRow(
+                      first: SessionChip(
+                        text: goalLabel,
+                        icon: Icons.track_changes,
+                        color: yellowColor,
+                        compact: true,
+                      ),
+                      second: SessionChip(
+                        text: exercise.categoryLabelFr,
+                        icon: Icons.category,
+                        color: colors.secondary,
+                        compact: true,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    _ExerciseChipRow(
+                      first: SessionChip(
+                        text: exercise.typeLabelFr,
+                        icon: Icons.place_outlined,
+                        color: exercise.type == ExerciseType.stand
+                            ? planColor
+                            : null,
+                        compact: true,
+                      ),
+                      second: SessionChip(
+                        text: exercise.difficultyLabelFr,
+                        icon: Icons.signal_cellular_alt,
+                        color: difficultyMatchesExperience
+                            ? matchingDifficultyColor
+                            : null,
+                        compact: true,
+                      ),
+                    ),
+                    if (isCoach) ...[
+                      const SizedBox(height: 5),
+                      SizedBox(
+                        width: double.infinity,
+                        child: SessionChip(
+                          text: 'Créé par le Coach',
+                          icon: Icons.school_outlined,
+                          color: planColor,
+                          compact: true,
+                        ),
+                      ),
+                    ],
+                    if (exercise.consignes.isNotEmpty ||
+                        exercise.durationMinutes != null) ...[
+                      const SizedBox(height: 5),
+                      _ExerciseChipRow(
+                        first: exercise.consignes.isNotEmpty
+                            ? SessionChip(
+                                text: instructionLabel,
+                                icon: Icons.list_alt,
+                                color: yellowColor,
+                                compact: true,
+                              )
+                            : SessionChip(
+                                text: '${exercise.durationMinutes} min',
+                                icon: Icons.timer_outlined,
+                                compact: true,
+                              ),
+                        second: exercise.consignes.isNotEmpty &&
+                                exercise.durationMinutes != null
+                            ? SessionChip(
+                                text: '${exercise.durationMinutes} min',
+                                icon: Icons.timer_outlined,
+                                compact: true,
+                              )
+                            : null,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 4),
+              SizedBox(
+                key: ValueKey('exercise_actions_${exercise.id}'),
+                width: 38,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (exercise.type == ExerciseType.stand)
+                      IconButton(
+                        key: ValueKey('exercise_plan_${exercise.id}'),
+                        constraints: const BoxConstraints.tightFor(
+                          width: 34,
+                          height: 34,
+                        ),
+                        padding: EdgeInsets.zero,
+                        icon: Icon(
+                          hasPlannedSession
+                              ? Icons.event_repeat
+                              : Icons.event_available,
+                          size: 19,
+                          color: planColor,
+                        ),
+                        tooltip: hasPlannedSession
+                            ? 'Planifier une autre session'
+                            : 'Planifier une session',
+                        onPressed: onPlan,
+                      ),
+                    if (!isCoach)
+                      SizedBox(
+                        width: 34,
+                        height: 34,
+                        child: PopupMenuButton<String>(
+                          padding: EdgeInsets.zero,
+                          iconSize: 20,
+                          tooltip: 'Actions sur ${exercise.name}',
+                          onSelected: (action) {
+                            if (action == 'duplicate') onDuplicate();
+                            if (action == 'delete') onDelete();
+                          },
+                          itemBuilder: (_) => const [
+                            PopupMenuItem(
+                              value: 'duplicate',
+                              child: Text('Dupliquer'),
+                            ),
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Supprimer'),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExerciseChipRow extends StatelessWidget {
+  final Widget first;
+  final Widget? second;
+
+  const _ExerciseChipRow({required this.first, this.second});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: first),
+        const SizedBox(width: 6),
+        Expanded(child: second ?? const SizedBox.shrink()),
+      ],
+    );
+  }
 }
 
 class _FiltersBar extends StatelessWidget {
@@ -718,51 +919,6 @@ class _ActiveCountBadge extends StatelessWidget {
           color: Colors.amberAccent,
         ),
       ),
-    );
-  }
-}
-
-/// Badge informatif compact pour afficher icône + texte
-class _Badge extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  final double? maxWidth;
-
-  const _Badge({required this.icon, required this.text, this.maxWidth});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final content = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 12, color: colors.secondary),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Text(
-            text,
-            style: TextStyle(fontSize: 11, color: colors.onSurface),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-
-    final child = maxWidth != null
-        ? ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxWidth!),
-            child: content,
-          )
-        : content;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: colors.secondary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.secondary.withValues(alpha: 0.25)),
-      ),
-      child: child,
     );
   }
 }

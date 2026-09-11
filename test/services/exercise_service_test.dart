@@ -273,6 +273,44 @@ void main() {
       expect((await repo.getAll()).single.id, 'ex');
     });
 
+    test('refuse toutes les mutations d’un exercice Coach', () async {
+      final coachExercise = Exercise(
+        id: 'coach-1',
+        name: 'Coach',
+        categoryEnum: ExerciseCategory.technique,
+        type: ExerciseType.stand,
+        origin: ExerciseOrigin.coachCatalog,
+        createdAt: DateTime(2026, 9, 11),
+      );
+      await repo.put(coachExercise);
+
+      await expectLater(
+        service.updateExercise(coachExercise.copyWith(name: 'Modifié')),
+        throwsA(isA<CoachCatalogExerciseMutationException>()),
+      );
+      await expectLater(
+        service.deleteExercise(coachExercise.id),
+        throwsA(isA<CoachCatalogExerciseMutationException>()),
+      );
+      await expectLater(
+        service.setGoals(coachExercise, ['g1']),
+        throwsA(isA<CoachCatalogExerciseMutationException>()),
+      );
+      await expectLater(
+        service.setConsignes(coachExercise, ['Nouvelle consigne']),
+        throwsA(isA<CoachCatalogExerciseMutationException>()),
+      );
+      await expectLater(
+        service.reorder([coachExercise]),
+        throwsA(isA<CoachCatalogExerciseMutationException>()),
+      );
+
+      final stored = (await repo.getAll()).single;
+      expect(stored.name, 'Coach');
+      expect(stored.goalIds, isEmpty);
+      expect(stored.consignes, isEmpty);
+    });
+
     test('une erreur d’écriture ne crée aucune duplication partielle',
         () async {
       final source = Exercise(

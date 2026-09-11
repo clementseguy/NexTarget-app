@@ -9,6 +9,7 @@ class SessionChip extends StatelessWidget {
   final IconData icon;
   final Color? color;
   final bool overrideBase;
+  final bool compact;
 
   const SessionChip({
     super.key,
@@ -16,6 +17,7 @@ class SessionChip extends StatelessWidget {
     required this.icon,
     this.color,
     this.overrideBase = false,
+    this.compact = false,
   });
 
   @override
@@ -25,7 +27,10 @@ class SessionChip extends StatelessWidget {
             ? Theme.of(context).colorScheme.primary
             : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7));
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 10,
+        vertical: compact ? 4 : 6,
+      ),
       decoration: BoxDecoration(
         color: base.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(20),
@@ -34,7 +39,7 @@ class SessionChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: base),
+          Icon(icon, size: compact ? 12 : 14, color: base),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
@@ -42,7 +47,7 @@ class SessionChip extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: compact ? 11 : 12,
                 fontWeight: FontWeight.w500,
                 color: base,
               ),

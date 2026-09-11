@@ -115,6 +115,6 @@ l'unique source de vérité pour leur statut. Les descriptions sont dans
 | [NT-157](descriptions.md#NT-157) | Séparer décision et ton du Coach de session | server | À FAIRE | Must | M | — |
 | [NT-158](descriptions.md#NT-158) | Supprimer les données transmises aux coachs | both | À FAIRE | Won't-now | — | — |
 | [NT-159](descriptions.md#NT-159) | Créer le modèle Exercise partagé et sa provenance | both | FAIT | Must | M | — |
-| [NT-160](descriptions.md#NT-160) | Récupérer à la demande les exercices du catalogue Coach | both | EN COURS | Must | M | — |
+| [NT-160](descriptions.md#NT-160) | Récupérer à la demande les exercices du catalogue Coach | both | FAIT | Must | M | — |
 | [NT-161](descriptions.md#NT-161) | Analyser un exercice personnel sans le cataloguer | both | À FAIRE | Must | M | — |
 | [NT-162](descriptions.md#NT-162) | Auditer et enrichir le modèle métier Exercise | both | À FAIRE | Should | L | — |
