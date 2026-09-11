@@ -12,12 +12,16 @@ de limiter P0 à **2 US** et P1 à **5 US**.
 - [NT-152](descriptions.md#NT-152) — Limiter une session à un exercice principal.
 - [NT-153](descriptions.md#NT-153) — Exiger le consentement avant l'utilisation des coachs.
 - [NT-154](descriptions.md#NT-154) — Qualifier l'exercice réalisé dans le wizard.
+- [NT-159](descriptions.md#NT-159) — Ajouter la provenance au modèle Exercise partagé.
+- [NT-160](descriptions.md#NT-160) — Fournir le catalogue validé des exercices Coach.
+- [NT-161](descriptions.md#NT-161) — Encadrer l'analyse des exercices personnels.
 - [NT-156](descriptions.md#NT-156) — Livrer le nouveau débrief du Coach de session.
 
 ## P1 — Prochain
 
 - [NT-155](descriptions.md#NT-155) — Déplacer le niveau dans les préférences Coach.
 - [NT-157](descriptions.md#NT-157) — Séparer la décision du ton du Coach.
+- [NT-162](descriptions.md#NT-162) — Auditer et enrichir le modèle métier Exercise.
 
 ## P2 — Ultérieur
 

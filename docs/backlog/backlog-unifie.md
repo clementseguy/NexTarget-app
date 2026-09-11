@@ -1,6 +1,6 @@
 # NexTarget — Backlog unifié
 
-> **Prochain ID disponible : NT-159**
+> **Prochain ID disponible : NT-163**
 
 Ce fichier inventorie les US actives de l'application et du serveur. Il est
 l'unique source de vérité pour leur statut. Les descriptions sont dans
@@ -109,8 +109,12 @@ l'unique source de vérité pour leur statut. Les descriptions sont dans
 |---|---|---|---|---|---|---|
 | [NT-152](descriptions.md#NT-152) | Limiter une session à un exercice principal | both | EN COURS | Must | M | — |
 | [NT-153](descriptions.md#NT-153) | Consentement à l'utilisation des coachs | app | FAIT | Must | S | — |
-| [NT-154](descriptions.md#NT-154) | Qualifier l'exercice lors de la réalisation d'une session prévue | both | À FAIRE | Must | M | — |
+| [NT-154](descriptions.md#NT-154) | Qualifier l'exercice lors de la réalisation d'une session prévue | app | À FAIRE | Must | M | — |
 | [NT-155](descriptions.md#NT-155) | Déplacer le niveau d'expérience dans les préférences Coach | app | À FAIRE | Must | S | — |
 | [NT-156](descriptions.md#NT-156) | Recentrer le Coach de session sur le débrief | both | À FAIRE | Must | L | — |
 | [NT-157](descriptions.md#NT-157) | Séparer décision et ton du Coach de session | server | À FAIRE | Must | M | — |
 | [NT-158](descriptions.md#NT-158) | Supprimer les données transmises aux coachs | both | À FAIRE | Won't-now | — | — |
+| [NT-159](descriptions.md#NT-159) | Ajouter la provenance au modèle Exercise partagé | both | À FAIRE | Must | M | — |
+| [NT-160](descriptions.md#NT-160) | Catalogue serveur des exercices Coach | both | À FAIRE | Must | L | — |
+| [NT-161](descriptions.md#NT-161) | Analyser un exercice personnel sans le cataloguer | both | À FAIRE | Must | M | — |
+| [NT-162](descriptions.md#NT-162) | Auditer et enrichir le modèle métier Exercise | both | À FAIRE | Should | L | — |

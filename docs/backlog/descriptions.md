@@ -166,11 +166,11 @@ sont volontairement pas reproduits.
 
 <a id="NT-121"></a>
 ### NT-121 — MVP Coach de progression transverse
-- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-030, NT-152 à NT-157
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-030, NT-152 à NT-157, NT-159, NT-160, NT-162
 - **Description** : Macro-US du MVP Coach de progression : analyser plusieurs sessions comparables, choisir une priorité explicable, créer ou réviser un objectif de coaching, sélectionner un exercice validé et suivre un plan exprimé en nombre de sessions. Reprend et remplace le périmètre UX de NT-033.
 - **Critères d'acceptation** : à détailler dans des US dédiées avant développement ; `coach_screen.dart` remplace le placeholder « Coming soon » ; le Coach de progression reste seul autorisé à créer ou modifier le plan.
 - **VM** : 5
-- **Notes** : hors de la release préparatoire NT-152 à NT-157. La démo constitue un sous-ensemble contrôlé de cette macro-US et ne doit pas figer toutes les règles du MVP.
+- **Notes** : hors de la release préparatoire courante. La démo constitue un sous-ensemble contrôlé de cette macro-US et ne doit pas figer toutes les règles du MVP.
 
 <a id="NT-122"></a>
 ### NT-122 — Sortie coach structurée (JSON schema)
@@ -181,7 +181,7 @@ sont volontairement pas reproduits.
 
 <a id="NT-123"></a>
 ### NT-123 — Coach de progression : sélectionner un exercice
-- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-020, NT-121, NT-122
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-020, NT-121, NT-122, NT-159, NT-160, NT-162
 - **Description** : Le Coach de progression sélectionne et paramètre un exercice provenant d'un catalogue fermé et validé. Le Coach de session ne propose ni ne crée d'exercice.
 - **Critères d'acceptation** : catalogue versionné ; sélection limitée aux exercices actifs et compatibles avec la priorité ; protocole, prérequis, mesure, critère de réussite et variante disponibles ; aucune génération libre d'exercice dans le MVP.
 - **VM** : 5
@@ -281,9 +281,10 @@ sont volontairement pas reproduits.
 
 <a id="NT-154"></a>
 ### NT-154 — Qualifier l'exercice lors de la réalisation d'une session prévue
-- **Thème** : Socle Coach transverse · **Portée** : both · **Dépendances** : NT-002, NT-131, NT-152
+- **Thème** : Socle Coach transverse · **Portée** : app · **Dépendances** : NT-002, NT-131, NT-152
 - **Description** : Lorsqu'une session prévue avec exercice devient une session réalisée, recueillir les informations minimales permettant au Coach d'évaluer la tentative.
-- **Critères d'acceptation** : la dernière page du wizard de conversion remplace le récapitulatif actuel par la qualification de l'exercice, sans ajouter d'étape ; elle demande si l'exercice a été réalisé, si le protocole a été suivi et permet un commentaire facultatif ; le modèle de session conserve ces trois valeurs dans une structure simple ; le résultat exploitable par le Coach est réussi, échoué ou non évaluable, notamment si l'exercice n'a pas été réalisé ou si le protocole est insuffisamment suivi ; les sessions sans exercice et les autres parcours de création ne sont pas modifiés ; les données sont incluses lors d'une analyse et persistées avec la session côté serveur.
+- **Critères d'acceptation** : la dernière page du wizard de conversion remplace le récapitulatif actuel par la qualification de l'exercice, sans ajouter d'étape ; elle demande si l'exercice a été réalisé (`performed`), si le protocole a été suivi (`protocolFollowed` : oui, partiellement ou non) et permet un commentaire facultatif ; le modèle de session conserve localement ces trois valeurs dans une structure simple et rétrocompatible ; les sessions sans exercice et les autres parcours de création ne sont pas modifiés ; l'évolution Hive est additive, migrée et couverte par les tests de sérialisation, migration et wizard.
+- **Notes** : cette US produit uniquement les données locales de réalisation. Leur transmission et leur persistance serveur relèvent de NT-156 ; l'évaluation réussie, échouée ou non évaluable relève du Coach de session.
 
 <a id="NT-155"></a>
 ### NT-155 — Déplacer le niveau d'expérience dans les préférences Coach
@@ -294,9 +295,10 @@ sont volontairement pas reproduits.
 
 <a id="NT-156"></a>
 ### NT-156 — Recentrer le Coach de session sur le débrief
-- **Thème** : Socle Coach transverse · **Portée** : both · **Dépendances** : NT-030, NT-031, NT-152 à NT-155
+- **Thème** : Socle Coach transverse · **Portée** : both · **Dépendances** : NT-030, NT-031, NT-152 à NT-155, NT-159 à NT-161
 - **Description** : Faire du Coach de session un débrief limité à la session terminée et à l'exercice éventuellement travaillé, sans décision longitudinale réservée au Coach de progression.
-- **Critères d'acceptation** : l'analyse exige le consentement NT-153 et reçoit un identifiant stable, les données complètes de la session et des séries, le niveau d'expérience courant, l'exercice associé, sa réalisation, le suivi du protocole et les commentaires ; lors de la demande, le serveur crée ou met à jour la session reçue sans synchronisation préalable, puis persiste l'analyse séparément ; une demande rejouée sur une session inchangée ne crée pas de doublon ; la réponse structurée contient un débrief factuel, une à trois réussites, un point d'attention, les limites et, lorsqu'un exercice existe, son résultat réussi, échoué ou non évaluable ; la seule suite autorisée est de refaire l'exercice ou de demander une nouvelle décision au Coach de progression ; le Coach de session ne crée ni ne modifie objectif, exercice ou plan ; l'application présente dès cette release le futur Coach de progression, même s'il n'est pas encore utilisable ; aucun feature flag n'est ajouté.
+- **Critères d'acceptation** : l'analyse exige le consentement NT-153 et reçoit un identifiant stable, les données complètes de la session et des séries, le niveau d'expérience courant et les commentaires ; si un exercice est associé, elle reçoit sa provenance, sa réalisation (`performed`), le suivi du protocole (`protocol_followed`) et le commentaire éventuel produits par NT-154 ; un exercice du catalogue est résolu côté serveur et un exercice personnel suit le contrat borné de NT-161 sans être ajouté au catalogue ; lors de la demande, le serveur crée ou met à jour la session reçue sans synchronisation préalable, puis persiste l'analyse séparément ; une demande rejouée sur une session inchangée ne crée pas de doublon ; la réponse structurée contient un débrief factuel, une à trois réussites, un point d'attention, les limites et, lorsqu'un exercice existe, son résultat réussi, échoué ou non évaluable ; ce résultat repose uniquement sur `performed` et `protocol_followed` à ce stade, et l'absence de critère de réussite mesurable ne rend pas à elle seule l'exercice non évaluable ; la seule suite autorisée est de refaire l'exercice ou de demander une nouvelle décision au Coach de progression ; le Coach de session ne crée ni ne modifie objectif, exercice ou plan ; l'application présente dès cette release le futur Coach de progression, même s'il n'est pas encore utilisable ; aucun feature flag n'est ajouté.
+- **Notes** : NT-154 est autonome pour la saisie et la persistance locale. NT-156 porte seule l'intégration serveur de ces données, ce qui supprime toute dépendance réciproque.
 
 <a id="NT-157"></a>
 ### NT-157 — Séparer décision et ton du Coach de session
@@ -311,5 +313,33 @@ sont volontairement pas reproduits.
 - **Description** : Permettre ultérieurement à l'utilisateur de supprimer les sessions et analyses déjà transmises aux coachs.
 - **Critères d'acceptation** : à définir — déclenchement, périmètre, confirmation, propagation et conservation des traces légales ou techniques.
 - **Notes** : Icebox ; hors release préparatoire, démo et MVP immédiat. Retirer le consentement NT-153 ne déclenche pas cette suppression.
+
+<a id="NT-159"></a>
+### NT-159 — Ajouter la provenance au modèle Exercise partagé
+- **Thème** : Socle Coach transverse · **Portée** : both · **Dépendances** : NT-020, NT-025, NT-072, NT-152
+- **Description** : Ajouter au contrat Exercise la provenance minimale nécessaire pour distinguer les exercices personnels locaux des exercices issus du catalogue serveur.
+- **Critères d'acceptation** : le modèle app et le schéma serveur portent une provenance contrôlée `personal` ou `coach_catalog` ; les exercices existants et importés sans provenance deviennent `personal` sans intervention utilisateur ; l'identifiant `id` existant reste l'identifiant commun et aucun `serverId` n'est ajouté ; un exercice personnel conserve son identifiant généré localement et un exercice du catalogue utilise l'identifiant fourni par le serveur ; sérialisation, duplication, import, export et migrations préservent la provenance ; les contrats app et serveur utilisent les mêmes valeurs et sont couverts par des tests de compatibilité.
+- **Notes** : aucun champ métier supplémentaire, version d'exercice, statut de catalogue ou métadonnée de validation n'est ajouté par cette US. La provenance interne `coach_catalog` est présentée à l'utilisateur comme « Créé par le Coach », sans signifier une génération dynamique par l'IA. Les enrichissements métier sont suivis par NT-162.
+
+<a id="NT-160"></a>
+### NT-160 — Catalogue serveur des exercices Coach
+- **Thème** : Socle Coach transverse · **Portée** : both · **Dépendances** : NT-159
+- **Description** : Faire du serveur la source de vérité d'un catalogue préparé et validé d'exercices que les Coachs peuvent sélectionner, sans accepter les exercices arbitraires créés dans l'application.
+- **Critères d'acceptation** : le serveur persiste uniquement les exercices de provenance `coach_catalog`, avec l'identifiant stable défini par NT-159 ; le catalogue initial est relu et validé avant chargement ; son statut actif ou inactif et ses métadonnées de validation sont gérés côté serveur ; aucune API cliente ne permet de créer ou modifier librement un exercice du catalogue ; l'app récupère et conserve une copie locale utilisable hors ligne ; listes et détails distinguent clairement les exercices personnels de ceux affichés « Créé par le Coach » ; un exercice Coach n'est ni modifiable ni supprimable depuis l'app ; une mise à jour du catalogue ne réécrit pas l'instantané utilisé par une session ou une analyse passée ; les tests couvrent contrat, chargement, mise à jour, cache, affichage et refus des mutations interdites.
+- **Notes** : « Créé par le Coach » est un libellé utilisateur. Ces exercices viennent d'un catalogue humainement préparé et validé ; ils ne sont pas générés à la volée.
+
+<a id="NT-161"></a>
+### NT-161 — Analyser un exercice personnel sans le cataloguer
+- **Thème** : Socle Coach transverse · **Portée** : both · **Dépendances** : NT-152, NT-159
+- **Description** : Permettre le débrief d'une session liée à un exercice personnel tout en empêchant son ajout au catalogue serveur ou son utilisation dans un plan Coach.
+- **Critères d'acceptation** : l'app transmet avec la demande d'analyse un instantané borné des seules informations utiles de l'exercice personnel et indique sa provenance `personal` ; le serveur valide tailles, types et valeurs contrôlées, traite tous les textes comme des données utilisateur non fiables et ne crée aucune entité dans le catalogue ; la session et l'analyse conservent uniquement l'instantané nécessaire à la reproductibilité, distinct du catalogue ; le débrief indique clairement que l'exercice est personnel et n'entre dans aucun plan de formation ; le Coach évalue son exécution uniquement à partir de `performed` et `protocol_followed`, sans exiger de critère de réussite métier à ce stade ; les tests vérifient l'absence d'écriture dans le catalogue, l'isolation des données, les limites de taille, les contenus malveillants et les cas évaluables ou non évaluables.
+- **Notes** : un exercice personnel reste créé, modifié et supprimé localement selon les règles existantes. Sa transmission ponctuelle ne le transforme jamais en exercice Coach.
+
+<a id="NT-162"></a>
+### NT-162 — Auditer et enrichir le modèle métier Exercise
+- **Thème** : Socle Coach transverse · **Portée** : both · **Dépendances** : NT-154, NT-156, NT-159, NT-160
+- **Description** : Après la livraison du nouveau débrief de session, faire analyser le modèle Exercise par un expert du tir, figer les données nécessaires pour prescrire et mesurer un exercice, puis faire évoluer les modèles app et serveur.
+- **Critères d'acceptation** : un expert valide les informations nécessaires pour comprendre, réaliser et évaluer un exercice ; un dictionnaire partagé fixe noms, types, unités, caractère obligatoire, valeurs contrôlées et règles de validation avant le développement ; les champs candidats incluent prérequis, protocole structuré, compétence ou objectif travaillé, durée, nombre attendu de séries et de coups, contraintes de cible, calibre et distance, mesure ou KPI avec unité et sens d'amélioration, critère de réussite, variante simplifiée, limites et consignes de sécurité, version de l'exercice et traçabilité de validation ; seuls les champs retenus après expertise sont implémentés ; les schémas app et serveur restent alignés par des tests de contrat ; les migrations Hive et Alembic sont additives et rétrocompatibles ; les exercices historiques restent lisibles sans valeurs inventées.
+- **Notes** : cette US est volontairement lancée après NT-154 et NT-156. Elle ne bloque pas le débrief initial, qui évalue seulement la réalisation et le suivi du protocole déclarés.
 
 ---
