@@ -112,6 +112,7 @@ class BackupServiceTestFixture {
         categoryEnum: ExerciseCategory.precision,
         type: ExerciseType.stand,
         difficulty: ExerciseDifficulty.expert,
+        origin: ExerciseOrigin.coachCatalog,
         createdAt: DateTime(2026, 9, 1),
       ),
     ]);

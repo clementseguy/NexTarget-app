@@ -68,6 +68,7 @@ class ExerciseService {
         categoryEnum: source.categoryEnum,
         type: source.type,
         difficulty: source.difficulty,
+        origin: source.origin,
         description: source.description,
         durationMinutes: source.durationMinutes,
         equipment: source.equipment,

@@ -5,6 +5,9 @@ Toutes les modifications notables de ce projet seront listées ici.
 ## [Non publié]
 
 ### Added
+- NT-159 : provenance `personal` ou `coach_catalog` ajoutée au modèle Exercise,
+  avec migration Hive rétrocompatible, duplication et sauvegardes version 5
+  alignées sur le contrat serveur complet.
 - NT-154 : wizard des sessions prévues clarifié et aéré, avec card exercice enrichie, catégorie contrôlée et dernière page regroupant synthèse du tireur et qualification facultative de l'exercice ; réalisation, protocole et commentaire sont persistés dans une structure Hive rétrocompatible.
 - NT-153 : autorisation locale unique, explicite et refusée par défaut avant tout partage de données avec les Coachs de session et de progression ; les deux points d'entrée expliquent le prérequis et aucune requête n'est construite sans accord.
 - NT-146 : aide gestuelle commune aux champs de groupement de la séance guidée et du wizard, accessible et sans effet sur la saisie.

@@ -22,7 +22,7 @@ void main() {
       }
     });
 
-    test('écrit un export version 4 dans le répertoire temporaire injecté',
+    test('écrit un export version 5 dans le répertoire temporaire injecté',
         () async {
       final fixture = await BackupServiceTestFixture.create(tempDirectory);
 
@@ -35,7 +35,7 @@ void main() {
       final data =
           jsonDecode(await file.readAsString()) as Map<String, dynamic>;
       expect(data['format'], 'mycoach-data');
-      expect(data['version'], 4);
+      expect(data['version'], 5);
       expect(data['sessions_count'], 1);
       expect(data['goals_count'], 1);
       expect(data['weapons_count'], 1);
@@ -44,10 +44,10 @@ void main() {
       expect(session['exerciseId'], 'exercise-export');
       expect(session.containsKey('exercises'), isFalse);
       expect((data['exercises'] as List).single['difficulty'], 'expert');
+      expect((data['exercises'] as List).single['origin'], 'coach_catalog');
     });
 
-    test('conserve la difficulté au cycle export/import et ignore une inconnue',
-        () async {
+    test('conserve difficulté et provenance au cycle export/import', () async {
       final fixture = await BackupServiceTestFixture.create(tempDirectory);
       final file = await fixture.service.exportAllSessionsToJsonFile();
       final data =
@@ -59,6 +59,10 @@ void main() {
         (await fixture.exerciseRepository.getAll()).single.difficulty,
         ExerciseDifficulty.expert,
       );
+      expect(
+        (await fixture.exerciseRepository.getAll()).single.origin,
+        ExerciseOrigin.coachCatalog,
+      );
 
       await fixture.exerciseRepository.clear();
       (data['exercises'] as List).single['difficulty'] = 'impossible';
@@ -66,6 +70,23 @@ void main() {
       expect(
         (await fixture.exerciseRepository.getAll()).single.difficulty,
         isNull,
+      );
+    });
+
+    test('importe un exercice historique sans provenance comme personnel',
+        () async {
+      final fixture = await BackupServiceTestFixture.create(tempDirectory);
+      final file = await fixture.service.exportAllSessionsToJsonFile();
+      final data =
+          jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+      (data['exercises'] as List).single.remove('origin');
+
+      await fixture.exerciseRepository.clear();
+      await fixture.service.importSessionsFromJson(jsonEncode(data));
+
+      expect(
+        (await fixture.exerciseRepository.getAll()).single.origin,
+        ExerciseOrigin.personal,
       );
     });
   });

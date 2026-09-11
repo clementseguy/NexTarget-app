@@ -6,6 +6,15 @@ enum ExerciseType { stand, home }
 
 enum ExerciseDifficulty { beginner, advanced, expert }
 
+enum ExerciseOrigin { personal, coachCatalog }
+
+extension ExerciseOriginSerialization on ExerciseOrigin {
+  String get serializedName => switch (this) {
+        ExerciseOrigin.personal => 'personal',
+        ExerciseOrigin.coachCatalog => 'coach_catalog',
+      };
+}
+
 class Exercise {
   final String id;
   final String name;
@@ -13,6 +22,7 @@ class Exercise {
   final ExerciseCategory categoryEnum;
   final ExerciseType type;
   final ExerciseDifficulty? difficulty;
+  final ExerciseOrigin origin;
   final String? description;
   final int? durationMinutes; // estimated duration in minutes
   final String? equipment; // required equipment list / free text
@@ -27,6 +37,7 @@ class Exercise {
     required this.categoryEnum,
     required this.type,
     this.difficulty,
+    this.origin = ExerciseOrigin.personal,
     this.description,
     this.durationMinutes,
     this.equipment,
@@ -44,6 +55,7 @@ class Exercise {
     ExerciseType? type,
     ExerciseDifficulty? difficulty,
     bool clearDifficulty = false,
+    ExerciseOrigin? origin,
     String? description,
     DateTime? createdAt,
     int? priority,
@@ -58,6 +70,7 @@ class Exercise {
         categoryEnum: category ?? categoryEnum,
         type: type ?? this.type,
         difficulty: clearDifficulty ? null : difficulty ?? this.difficulty,
+        origin: origin ?? this.origin,
         description: description ?? this.description,
         durationMinutes: durationMinutes ?? this.durationMinutes,
         equipment: equipment ?? this.equipment,
@@ -74,6 +87,7 @@ class Exercise {
         'category': categoryEnum.name,
         'type': type.name,
         'difficulty': difficulty?.name,
+        'origin': origin.serializedName,
         'description': description,
         'durationMinutes': durationMinutes,
         'equipment': equipment,
@@ -128,12 +142,19 @@ class Exercise {
     for (final value in ExerciseDifficulty.values) {
       if (value.name == rawDifficulty) difficulty = value;
     }
+    final origin = switch (map['origin']) {
+      null => ExerciseOrigin.personal,
+      'personal' => ExerciseOrigin.personal,
+      'coach_catalog' => ExerciseOrigin.coachCatalog,
+      _ => throw const FormatException('Provenance d’exercice invalide.'),
+    };
     return Exercise(
       id: map['id'] as String,
       name: map['name'] as String,
       categoryEnum: cat,
       type: type,
       difficulty: difficulty,
+      origin: origin,
       description: map['description'] as String?,
       durationMinutes: map['durationMinutes'] as int?,
       equipment: map['equipment'] as String?,

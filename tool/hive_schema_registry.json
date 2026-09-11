@@ -1,6 +1,6 @@
 {
   "registryVersion": 2,
-  "currentSchemaVersion": 11,
+  "currentSchemaVersion": 12,
   "reservedTypes": {
     "40": {"name": "GoalMetric", "status": "active", "fields": {"0": "averagePoints", "1": "sessionCount", "2": "totalPoints", "3": "groupSize", "4": "averageSessionPoints", "5": "bestSeriesPoints", "6": "bestSessionPoints", "7": "bestGroupSize"}, "retiredFields": {}},
     "41": {"name": "GoalComparator", "status": "active", "fields": {"0": "greaterOrEqual", "1": "lessOrEqual"}, "retiredFields": {}},

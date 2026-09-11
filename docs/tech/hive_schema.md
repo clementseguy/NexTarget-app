@@ -30,3 +30,11 @@ de sessions qui référencent déjà un `exerciseId`. Les sessions sans exercice
 les qualifications existantes, les séries et les autres champs ne sont pas
 réécrits. La désérialisation accepte également l'absence de cette structure et
 ignore ses valeurs inconnues sans inventer de réponse.
+
+## Provenance des exercices
+
+La migration Hive v12 ajoute `origin: personal` aux exercices qui ne portent
+pas encore de provenance. Une valeur existante, notamment `coach_catalog`, est
+préservée sans réécriture. La désérialisation applique le même défaut aux
+sauvegardes historiques importées après la migration locale et rejette les
+valeurs étrangères au contrat partagé.

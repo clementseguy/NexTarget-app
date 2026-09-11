@@ -92,6 +92,7 @@ void main() {
       expect(all.first.description, 'desc');
       // 'stand' as legacy category string defaults to precision via parser
       expect(all.first.categoryEnum, ExerciseCategory.precision);
+      expect(all.first.origin, ExerciseOrigin.personal);
       expect(all.first.consignes, ['a', 'b']);
     });
 
@@ -116,6 +117,7 @@ void main() {
         categoryEnum: ExerciseCategory.precision,
         type: ExerciseType.stand,
         difficulty: ExerciseDifficulty.expert,
+        origin: ExerciseOrigin.coachCatalog,
         description: 'Description',
         durationMinutes: 20,
         equipment: 'Pistolet',
@@ -133,6 +135,7 @@ void main() {
       expect(duplicate.categoryEnum, source.categoryEnum);
       expect(duplicate.type, source.type);
       expect(duplicate.difficulty, ExerciseDifficulty.expert);
+      expect(duplicate.origin, ExerciseOrigin.coachCatalog);
       expect(duplicate.description, source.description);
       expect(duplicate.durationMinutes, source.durationMinutes);
       expect(duplicate.equipment, source.equipment);

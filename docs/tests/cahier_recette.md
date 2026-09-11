@@ -34,7 +34,7 @@ Résultats attendus:
 - Chaque session possède au maximum un exercice principal et peut rester sans exercice
 - La duplication, le filtre, l'affichage et le blocage de suppression utilisent ce seul exercice
 - L'import conserve le premier exercice historique, ignore le second et préserve la session sans exercice
-- L'export version 4 utilise exerciseId sans exercises ni prescriptionId
+- L'export version 5 utilise exerciseId sans exercises ni prescriptionId et conserve la provenance de l'exercice
 - La requête Coach transmet exerciseId facultatif sans prescriptionId
 
 ## NT-154 — Qualification d'un exercice planifié
@@ -67,7 +67,7 @@ Objectif: Vérifier le nom NexTarget dans les deux exports sans rupture du forma
 Résultats attendus:
 - Les deux noms par défaut suivent nextarget_export_timestamp.json
 - Le nom explicitement choisi est conservé sans réécriture
-- Le format mycoach-data version 4 est produit et les anciens exports restent importables
+- Le format mycoach-data version 5 est produit et les anciens exports sans provenance restent importables comme exercices personnels
 
 ## NT-148 — Séparateurs des préférences de tir
 Objectif: Distinguer les trois réglages avec deux séparateurs identiques.
@@ -135,7 +135,7 @@ Objectif: Vérifier les exports sans canal de plateforme et l'absence de tests m
 5. Simuler une erreur réelle d'écriture
 6. Contrôler l'absence de mécanisme d'exclusion nouveau dans les tests et l'analyse
 Résultats attendus:
-- Le nom, l'emplacement, l'existence et le JSON version 4 sont vérifiés
+- Le nom, l'emplacement, l'existence et le JSON version 5 sont vérifiés
 - Le chemin choisi n'est pas traité comme un dossier et l'import relit le fichier sans erreur OS I/O
 - Sur mobile, le fichier JSON est réellement écrit par le sélecteur natif et peut être ouvert ou réimporté
 - L'annulation ne crée aucun fichier et l'erreur d'écriture est propagée
