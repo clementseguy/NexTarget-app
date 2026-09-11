@@ -1,3 +1,5 @@
+import 'package:uuid/uuid.dart';
+
 import '../models/shooting_session.dart';
 import '../constants/session_constants.dart';
 import '../repositories/session_repository.dart';
@@ -50,7 +52,10 @@ class SessionService implements ISessionService {
     final sourceSnapshot = ShootingSession.fromMap(source.toMap());
     final sessionMap = Map<String, dynamic>.from(sourceSnapshot.toMap())
       ..['id'] = null
-      ..['date'] = null;
+      ..['date'] = null
+      ..['sessionUuid'] = const Uuid().v4()
+      ..['coachAnalysis'] = null
+      ..['analyse'] = null;
     final series = sourceSnapshot is DetailedShootingSession
         ? sourceSnapshot.series
             .map((item) => Map<String, dynamic>.from(item.toMap()))

@@ -170,7 +170,7 @@ void main() {
         onAnalyseUpdated: () {},
         analysisLoader: () async {
           calls++;
-          return 'Analyse interdite';
+          throw StateError('Analyse interdite');
         },
       ),
       authenticated: true,

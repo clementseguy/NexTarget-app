@@ -5,6 +5,10 @@ Toutes les modifications notables de ce projet seront listées ici.
 ## [Non publié]
 
 ### Added
+- NT-156 : débrief du Coach de session structuré et limité à la session, UUID
+  persistant partagé avec le serveur, transmission complète à la demande,
+  résultat d'exercice fermé, affichage rétrocompatible et présentation du futur
+  Coach de progression ; aucune mutation d'objectif, d'exercice ou de plan.
 - NT-161 : instantané borné et ponctuel des seuls champs utiles d'un exercice
   personnel lors d'une analyse, avec qualification d'exécution séparée, sans
   synchronisation catalogue ni nouvelle persistance.

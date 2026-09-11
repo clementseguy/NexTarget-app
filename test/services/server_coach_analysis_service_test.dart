@@ -1,245 +1,264 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:mockito/mockito.dart';
-import 'package:tir_sportif/models/series.dart';
-import 'package:tir_sportif/models/shooting_session.dart';
+import 'package:tir_sportif/constants/session_constants.dart';
+import 'package:tir_sportif/models/coach_session_analysis.dart';
 import 'package:tir_sportif/models/exercise.dart';
 import 'package:tir_sportif/models/exercise_execution.dart';
+import 'package:tir_sportif/models/series.dart';
+import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/services/auth_service.dart';
-import 'package:tir_sportif/services/coach_analysis_exception.dart';
-import 'package:tir_sportif/services/server_coach_analysis_service.dart';
 import 'package:tir_sportif/services/auth_session_exceptions.dart';
+import 'package:tir_sportif/services/coach_analysis_exception.dart';
 import 'package:tir_sportif/services/network_error.dart';
-import 'package:tir_sportif/constants/session_constants.dart';
+import 'package:tir_sportif/services/server_coach_analysis_service.dart';
 
 import 'auth_service_test.mocks.dart' show MockFlutterSecureStorage;
 
-DetailedShootingSession _session() => DetailedShootingSession(
+DetailedShootingSession _session({bool withExercise = false}) =>
+    DetailedShootingSession(
+      sessionUuid: '123e4567-e89b-42d3-a456-426614174000',
+      date: DateTime.utc(2026, 9, 11, 18, 30),
       weapon: 'Glock 17',
       caliber: '9mm',
-      exerciseId: 'exercise-1',
+      category: 'entraînement',
+      exerciseId: withExercise ? 'exercise-1' : null,
       series: [
         Series(
-            shotCount: 5,
-            distance: 25,
-            points: 45,
-            groupSize: 8.5,
-            comment: 'stable'),
+          id: 7,
+          shotCount: 5,
+          distance: 25,
+          points: 45,
+          groupSize: 8.5,
+          comment: 'stable',
+          handMethod: HandMethod.oneHand,
+        ),
       ],
       synthese: 'RAS',
-      exerciseExecution: const ExerciseExecution(
-        performed: true,
-        protocolFollowed: ProtocolFollowed.partially,
-        comment: 'Protocole adapté à la troisième série',
-      ),
+      exerciseExecution: withExercise
+          ? const ExerciseExecution(
+              performed: true,
+              protocolFollowed: ProtocolFollowed.partially,
+              comment: 'Protocole adapté à la troisième série',
+            )
+          : null,
     );
 
 Exercise _exercise({
   ExerciseOrigin origin = ExerciseOrigin.personal,
-  String id = 'exercise-1',
   String name = 'Tenue du lâcher',
-  String? description = 'Stabiliser le départ du coup',
-  List<String> consignes = const ['Viser', 'Presser progressivement'],
 }) =>
     Exercise(
-      id: id,
+      id: 'exercise-1',
       name: name,
       categoryEnum: ExerciseCategory.technique,
       type: ExerciseType.stand,
       difficulty: ExerciseDifficulty.advanced,
       origin: origin,
-      description: description,
+      description: 'Stabiliser le départ du coup',
       durationMinutes: 20,
       equipment: 'Arme et cible',
       createdAt: DateTime.utc(2026, 9, 11),
       priority: 2,
       goalIds: const ['goal-1'],
-      consignes: consignes,
+      consignes: const ['Viser', 'Presser progressivement'],
     );
 
+String _response({String result = 'failed'}) => jsonEncode({
+      'analysis_id': '123e4567-e89b-42d3-a456-426614174001',
+      'session_id': '123e4567-e89b-42d3-a456-426614174000',
+      'debrief': 'Session régulière.',
+      'successes': ['Groupement stable.'],
+      'attention_point': 'Surveiller le score.',
+      'limitations': ['Une seule série.'],
+      'exercise_evaluation': {
+        'result': result,
+        'debrief': 'Protocole partiellement suivi.',
+      },
+      'next_action': 'repeat_exercise',
+      'model': 'm',
+      'generated_at': '2026-09-11T18:35:00Z',
+      'reused': false,
+    });
+
 void main() {
-  // Note: ServerCoachAnalysisService(client: ...) ignore l'AuthenticatedHttpClient
-  // par défaut quand un client de test est injecté (mêmes conventions que
-  // CoachAnalysisService), donc AuthService peut rester un stub minimal ici.
   final storage = MockFlutterSecureStorage();
   when(storage.delete(key: anyNamed('key')))
       .thenAnswer((_) async => Future<void>.value());
-  final dummyAuthService = AuthService(
+  final authService = AuthService(
     authBaseUrl: 'http://unused',
     storage: storage,
   );
 
-  test('analyzeSession success returns analysis text', () async {
-    final client = MockClient((req) async {
-      expect(req.url.path, '/coach/analyze-session');
-      return http.Response(
-          '{"analysis":"OK","model":"m","generated_at":"2026-07-07T10:00:00Z"}',
-          200);
-    });
-    final svc = ServerCoachAnalysisService(
-        baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    final out = await svc.analyzeSession(
-      _session(),
-      coachDataSharingAllowed: true,
-    );
-    expect(out, 'OK');
-  });
-
-  test('un brouillon est rejeté avant tout appel Coach', () async {
-    var called = false;
-    final client = MockClient((req) async {
-      called = true;
-      return http.Response('{"analysis":"OK"}', 200);
-    });
-    final svc = ServerCoachAnalysisService(
-        baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    final draft = _session()..status = SessionConstants.statusDraft;
-
-    await expectLater(
-      svc.analyzeSession(draft, coachDataSharingAllowed: true),
-      throwsA(predicate((e) => e.toString().contains('session réalisée'))),
-    );
-    expect(called, isFalse);
-  });
-
-  test(
-      'analyzeSession envoie le prompt_variant choisi (NT-032), défaut coach_neutre',
-      () async {
-    final capturedVariants = <String>[];
-    final capturedExerciseIds = <String?>[];
-    final client = MockClient((req) async {
-      final body = jsonDecode(req.body) as Map<String, dynamic>;
-      capturedVariants.add(body['prompt_variant'] as String);
-      capturedExerciseIds.add(
-        (body['session'] as Map<String, dynamic>)['exerciseId'] as String?,
+  ServerCoachAnalysisService service(http.Client client) =>
+      ServerCoachAnalysisService(
+        baseUrl: 'http://x',
+        authService: authService,
+        client: client,
       );
-      return http.Response('{"analysis":"OK"}', 200);
-    });
-    final svc = ServerCoachAnalysisService(
-        baseUrl: 'http://x', authService: dummyAuthService, client: client);
 
-    await svc.analyzeSession(_session(), coachDataSharingAllowed: true);
-    await svc.analyzeSession(
-      _session(),
-      coachDataSharingAllowed: true,
-      promptVariant: 'coach_cool',
-    );
-
-    expect(capturedVariants, ['coach_neutre', 'coach_cool']);
-    expect(capturedExerciseIds, ['exercise-1', 'exercise-1']);
-  });
-
-  test('transmet uniquement l’instantané utile d’un exercice personnel',
-      () async {
-    late Map<String, dynamic> capturedSession;
-    final client = MockClient((request) async {
-      final body = jsonDecode(request.body) as Map<String, dynamic>;
-      capturedSession = body['session'] as Map<String, dynamic>;
-      return http.Response('{"analysis":"OK"}', 200);
-    });
-    final service = ServerCoachAnalysisService(
-      baseUrl: 'http://x',
-      authService: dummyAuthService,
-      client: client,
-    );
-
-    await service.analyzeSession(
-      _session(),
+  test('retourne et valide le débrief structuré', () async {
+    final output = await service(
+      MockClient((_) async => http.Response(_response(), 200)),
+    ).analyzeSession(
+      _session(withExercise: true),
       coachDataSharingAllowed: true,
       exercise: _exercise(),
+      experienceLevel: 'advanced',
     );
+    expect(output.debrief, 'Session régulière.');
+    expect(output.successes, ['Groupement stable.']);
+    expect(output.exerciseEvaluation?.result, ExerciseResult.failed);
+    expect(output.nextAction, CoachNextAction.repeatExercise);
+  });
 
-    expect(capturedSession['personal_exercise'], {
-      'id': 'exercise-1',
-      'name': 'Tenue du lâcher',
-      'origin': 'personal',
-      'description': 'Stabiliser le départ du coup',
-      'consignes': ['Viser', 'Presser progressivement'],
+  test('transmet le snapshot complet, le niveau et l’exercice personnel',
+      () async {
+    late Map<String, dynamic> body;
+    final client = MockClient((request) async {
+      body = jsonDecode(request.body) as Map<String, dynamic>;
+      return http.Response(_response(), 200);
     });
-    expect(capturedSession['exercise_execution'], {
+    await service(client).analyzeSession(
+      _session(withExercise: true),
+      coachDataSharingAllowed: true,
+      exercise: _exercise(),
+      experienceLevel: 'advanced',
+    );
+    final session = body['session'] as Map<String, dynamic>;
+    expect(session['session_id'], '123e4567-e89b-42d3-a456-426614174000');
+    expect(session['status'], 'réalisée');
+    expect(session['category'], 'entraînement');
+    expect(session['exercise_origin'], 'personal');
+    expect(body['experience_level'], 'advanced');
+    expect(session['series'].single['hand_method'], 'one');
+    expect(session['series'].single['completed'], isTrue);
+    expect(session['exercise_execution'], {
       'performed': true,
       'protocol_followed': 'partially',
       'comment': 'Protocole adapté à la troisième série',
     });
-    final snapshot =
-        capturedSession['personal_exercise'] as Map<String, dynamic>;
-    expect(
-      snapshot.keys,
-      unorderedEquals(['id', 'name', 'origin', 'description', 'consignes']),
-    );
+    expect(session['personal_exercise'].keys, {
+      'id',
+      'name',
+      'origin',
+      'description',
+      'consignes',
+    });
   });
 
-  test('ne transmet pas un exercice du catalogue dans l’instantané personnel',
-      () async {
-    late Map<String, dynamic> capturedSession;
+  test('un exercice catalogue envoie sa provenance sans son contenu', () async {
+    late Map<String, dynamic> sent;
     final client = MockClient((request) async {
-      capturedSession = (jsonDecode(request.body)
-          as Map<String, dynamic>)['session'] as Map<String, dynamic>;
-      return http.Response('{"analysis":"OK"}', 200);
+      sent = (jsonDecode(request.body) as Map<String, dynamic>)['session']
+          as Map<String, dynamic>;
+      return http.Response(_response(result: 'succeeded'), 200);
     });
-    final service = ServerCoachAnalysisService(
-      baseUrl: 'http://x',
-      authService: dummyAuthService,
-      client: client,
-    );
-
-    await service.analyzeSession(
-      _session(),
+    await service(client).analyzeSession(
+      _session(withExercise: true),
       coachDataSharingAllowed: true,
       exercise: _exercise(origin: ExerciseOrigin.coachCatalog),
     );
-
-    expect(capturedSession['personal_exercise'], isNull);
-    expect(capturedSession['exercise_execution'], isNull);
+    expect(sent['exercise_origin'], 'coach_catalog');
+    expect(sent['personal_exercise'], isNull);
+    expect(sent['exercise_execution'], isNotNull);
   });
 
-  test('rejette localement un instantané personnel hors limites', () async {
+  test('rejette une session dont l’exercice associé est indisponible',
+      () async {
     var called = false;
-    final client = MockClient((request) async {
+    final client = MockClient((_) async {
       called = true;
-      return http.Response('{"analysis":"OK"}', 200);
+      return http.Response(_response(), 200);
     });
-    final service = ServerCoachAnalysisService(
-      baseUrl: 'http://x',
-      authService: dummyAuthService,
-      client: client,
-    );
-
     await expectLater(
-      service.analyzeSession(
-        _session(),
+      service(client).analyzeSession(
+        _session(withExercise: true),
         coachDataSharingAllowed: true,
-        exercise: _exercise(
-          name: List.filled(
-            ServerCoachAnalysisService.personalExerciseNameMaxLength + 1,
-            'x',
-          ).join(),
-        ),
       ),
       throwsA(isA<InvalidNetworkRequestException>()),
     );
     expect(called, isFalse);
   });
 
-  test('analyzeSession 401 throws session expirée', () async {
-    final client = MockClient((req) async => http.Response('{}', 401));
-    final svc = ServerCoachAnalysisService(
-        baseUrl: 'http://x', authService: dummyAuthService, client: client);
+  test('rejette localement un instantané personnel hors limites', () async {
+    final oversized = List.filled(
+      ServerCoachAnalysisService.personalExerciseNameMaxLength + 1,
+      'x',
+    ).join();
     await expectLater(
-      svc.analyzeSession(_session(), coachDataSharingAllowed: true),
-      throwsA(isA<SessionExpiredException>()),
+      service(MockClient((_) async => http.Response(_response(), 200)))
+          .analyzeSession(
+        _session(withExercise: true),
+        coachDataSharingAllowed: true,
+        exercise: _exercise(name: oversized),
+      ),
+      throwsA(isA<InvalidNetworkRequestException>()),
     );
   });
 
-  test('analyzeSession 429 throws trop de requêtes', () async {
-    final client = MockClient((req) async => http.Response('{}', 429));
-    final svc = ServerCoachAnalysisService(
-        baseUrl: 'http://x', authService: dummyAuthService, client: client);
+  test('un brouillon est rejeté avant tout appel Coach', () async {
+    var called = false;
+    final draft = _session()..status = SessionConstants.statusDraft;
+    final client = MockClient((_) async {
+      called = true;
+      return http.Response(_response(), 200);
+    });
     await expectLater(
-      svc.analyzeSession(_session(), coachDataSharingAllowed: true),
+      service(client).analyzeSession(
+        draft,
+        coachDataSharingAllowed: true,
+      ),
+      throwsA(isA<CoachAnalysisException>()),
+    );
+    expect(called, isFalse);
+  });
+
+  test('consentement absent : aucune requête envoyée', () async {
+    var called = false;
+    final client = MockClient((_) async {
+      called = true;
+      return http.Response(_response(), 200);
+    });
+    await expectLater(
+      service(client).analyzeSession(
+        _session(),
+        coachDataSharingAllowed: false,
+      ),
+      throwsA(isA<CoachConsentRequiredException>()),
+    );
+    expect(called, isFalse);
+  });
+
+  test('une réponse structurée invalide est rejetée', () async {
+    await expectLater(
+      service(MockClient((_) async => http.Response('{"debrief":"x"}', 200)))
+          .analyzeSession(
+        _session(),
+        coachDataSharingAllowed: true,
+      ),
+      throwsA(isA<CoachAnalysisException>()),
+    );
+  });
+
+  test('401 invalide la session et 429 est présenté comme rate limit',
+      () async {
+    await expectLater(
+      service(MockClient((_) async => http.Response('{}', 401))).analyzeSession(
+        _session(),
+        coachDataSharingAllowed: true,
+      ),
+      throwsA(isA<SessionExpiredException>()),
+    );
+    await expectLater(
+      service(MockClient((_) async => http.Response('{}', 429))).analyzeSession(
+        _session(),
+        coachDataSharingAllowed: true,
+      ),
       throwsA(isA<NetworkOperationException>().having(
         (error) => error.family,
         'family',
@@ -248,64 +267,18 @@ void main() {
     );
   });
 
-  test('analyzeSession 5xx throws erreur serveur', () async {
-    final client = MockClient((req) async => http.Response('{}', 503));
-    final svc = ServerCoachAnalysisService(
-        baseUrl: 'http://x', authService: dummyAuthService, client: client);
+  test('SocketException est présentée comme indisponibilité réseau', () async {
+    final client = MockClient((_) async => throw const SocketException('DNS'));
     await expectLater(
-      svc.analyzeSession(_session(), coachDataSharingAllowed: true),
-      throwsA(isA<NetworkOperationException>().having(
-        (error) => error.family,
-        'family',
-        NetworkErrorFamily.serviceUnavailable,
-      )),
-    );
-  });
-
-  test('analyzeSession malformed content throws réponse vide', () async {
-    final client =
-        MockClient((req) async => http.Response('{"analysis":""}', 200));
-    final svc = ServerCoachAnalysisService(
-        baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    await expectLater(
-      svc.analyzeSession(_session(), coachDataSharingAllowed: true),
-      throwsA(predicate((e) => e.toString().contains('Réponse vide'))),
-    );
-  });
-
-  test('analyzeSession SocketException produces user-friendly message',
-      () async {
-    final client =
-        MockClient((req) async => throw SocketException('Failed host lookup'));
-    final svc = ServerCoachAnalysisService(
-        baseUrl: 'http://x', authService: dummyAuthService, client: client);
-    await expectLater(
-      svc.analyzeSession(_session(), coachDataSharingAllowed: true),
+      service(client).analyzeSession(
+        _session(),
+        coachDataSharingAllowed: true,
+      ),
       throwsA(isA<NetworkOperationException>().having(
         (error) => error.family,
         'family',
         NetworkErrorFamily.offline,
       )),
     );
-  });
-
-  test('consentement absent : aucune requête ni sérialisation envoyée',
-      () async {
-    var called = false;
-    final client = MockClient((req) async {
-      called = true;
-      return http.Response('{"analysis":"OK"}', 200);
-    });
-    final svc = ServerCoachAnalysisService(
-      baseUrl: 'http://x',
-      authService: dummyAuthService,
-      client: client,
-    );
-
-    await expectLater(
-      svc.analyzeSession(_session(), coachDataSharingAllowed: false),
-      throwsA(isA<CoachConsentRequiredException>()),
-    );
-    expect(called, isFalse);
   });
 }

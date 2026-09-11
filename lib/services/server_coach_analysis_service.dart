@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import '../models/coach_session_analysis.dart';
 import '../models/exercise.dart';
 import '../models/exercise_execution.dart';
+import '../models/series.dart';
 import '../models/shooting_session.dart';
 import '../constants/session_constants.dart';
 import 'auth_service.dart';
@@ -42,13 +44,18 @@ class ServerCoachAnalysisService {
   })  : _authService = authService,
         _client = client ?? AuthenticatedHttpClient(authService);
 
-  Map<String, dynamic> _seriesToJson(dynamic s) {
+  Map<String, dynamic> _seriesToJson(Series series) {
     return {
-      'shot_count': s.shotCount,
-      'distance': s.distance,
-      'points': s.points,
-      'group_size_cm': s.groupSize,
-      'comment': s.comment,
+      'id': series.id,
+      'shot_count': series.shotCount,
+      'distance': series.distance,
+      'points': series.points,
+      'group_size_cm': series.groupSize,
+      'comment': series.comment,
+      'hand_method': series.handMethod == HandMethod.oneHand ? 'one' : 'two',
+      'completed': series.isCompleted,
+      'draft_started': series.isDraftStarted,
+      'score_entered': series.isScoreEntered,
     };
   }
 
@@ -120,13 +127,14 @@ class ServerCoachAnalysisService {
     }
   }
 
-  /// Envoie la session au serveur et retourne le texte d'analyse.
+  /// Envoie la session au serveur et retourne le débrief structuré.
   /// [promptVariant] permet la future sélection de persona coach
   /// (neutre / cool), défaut = 'coach_neutre'.
-  Future<String> analyzeSession(
+  Future<CoachSessionAnalysis> analyzeSession(
     DetailedShootingSession session, {
     required bool coachDataSharingAllowed,
     Exercise? exercise,
+    String? experienceLevel,
     String promptVariant = 'coach_neutre',
   }) async {
     if (!coachDataSharingAllowed) {
@@ -137,23 +145,32 @@ class ServerCoachAnalysisService {
         'Seule une session réalisée peut être analysée par le Coach.',
       );
     }
-    final personalExercise = exercise?.id == session.exerciseId
-        ? _personalExerciseToJson(exercise)
-        : null;
-    final exerciseExecution = personalExercise == null
+    if (session.exerciseId != null && exercise?.id != session.exerciseId) {
+      throw InvalidNetworkRequestException(
+        'L’exercice associé à la session est indisponible.',
+      );
+    }
+    final personalExercise = _personalExerciseToJson(exercise);
+    final exerciseExecution = session.exerciseId == null
         ? null
         : _exerciseExecutionToJson(session.exerciseExecution);
     final body = jsonEncode({
       'session': {
+        'session_id': session.sessionUuid,
+        'session_type': session.sessionType,
+        'status': session.status,
         'weapon': session.weapon,
         'caliber': session.caliber,
         'date': session.date?.toIso8601String(),
+        'category': session.category,
         'exerciseId': session.exerciseId,
+        'exercise_origin': exercise?.origin.serializedName,
         'series': session.series.map(_seriesToJson).toList(),
         'synthese': session.synthese,
         'personal_exercise': personalExercise,
         'exercise_execution': exerciseExecution,
       },
+      'experience_level': experienceLevel,
       'prompt_variant': promptVariant,
     });
 
@@ -209,11 +226,15 @@ class ServerCoachAnalysisService {
       );
     }
 
-    final data = jsonDecode(response.body) as Map<String, dynamic>;
-    final analysis = data['analysis']?.toString();
-    if (analysis == null || analysis.trim().isEmpty) {
-      throw CoachAnalysisException('Réponse vide du modèle.');
+    try {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return CoachSessionAnalysis.fromMap(data);
+    } on FormatException catch (error) {
+      throw CoachAnalysisException(
+        'Réponse structurée invalide du Coach : ${error.message}',
+      );
+    } on TypeError {
+      throw CoachAnalysisException('Réponse structurée invalide du Coach.');
     }
-    return analysis;
   }
 }

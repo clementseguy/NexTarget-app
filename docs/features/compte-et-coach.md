@@ -25,17 +25,36 @@ Paramètres, au Profil et au Coach.
 
 ## Coach connecté uniquement
 
-Une session détaillée réalisée peut être envoyée à `POST /coach/analyze-session` avec son arme, son calibre, ses séries, sa synthèse et la variante de ton choisie. Le serveur construit le prompt et appelle Mistral ; aucune clé ni aucun prompt complet ne réside dans l'app.
+Une session détaillée réalisée peut être envoyée à `POST /coach/analyze-session`
+uniquement après consentement explicite. La requête contient son UUID stable,
+ses données complètes et ses séries, le niveau d'expérience courant, les
+commentaires et la variante de ton choisie. Le serveur construit le prompt et
+appelle Mistral ; aucune clé ni aucun prompt complet ne réside dans l'app.
 
 Si la session référence un exercice personnel, l'app joint ponctuellement un
 instantané limité à son identifiant, son nom, sa provenance `personal`, sa
 description et ses consignes. Elle transmet séparément la réalisation déclarée,
 le suivi du protocole (`yes`, `partially` ou `no`) et le commentaire de la
 tentative. Les informations de catalogue, de plan, d'objectifs, de priorité,
-d'équipement, de durée et de difficulté ne sont pas envoyées pour ce débrief.
-L'instantané n'est ni synchronisé vers le catalogue ni persisté par ce contrat.
+d'équipement, de durée et de difficulté ne sont pas envoyées par l'app pour ce
+débrief. L'instantané est persisté avec la session reçue, mais n'est jamais
+synchronisé vers le catalogue.
 Le débrief l'identifie comme exercice personnel hors plan de formation et ne
 l'évalue qu'avec la session, ces déclarations et les commentaires, sans critère
 de réussite métier.
 
-Les tons Neutre et Cool se choisissent uniquement dans Paramètres. La réponse est affichée en Markdown et enregistrée dans la session. Sans compte, hors réseau, avec une session expirée ou pour une session libre, l'app bloque l'appel avec un état adapté sans rendre le carnet indisponible.
+Le serveur résout lui-même un exercice du catalogue actif. Il crée ou met à
+jour le snapshot de session à la demande, puis persiste séparément le débrief.
+Une empreinte du contenu réutilise une analyse identique sans nouvel appel IA.
+
+La réponse structurée affiche le débrief, une à trois réussites, un point
+d'attention, les limites, l'évaluation éventuelle de l'exercice et uniquement
+les suites autorisées. Les anciennes analyses Markdown restent lisibles. Les
+tons Neutre et Cool se choisissent uniquement dans Paramètres ; un seul prompt
+est exécuté, sans anticiper la séparation de ton. Sans compte, hors réseau,
+avec une session expirée ou pour une session libre, l'app bloque l'appel avec
+un état adapté sans rendre le carnet indisponible.
+
+L'écran Coach présente le Coach de session et le futur Coach de progression.
+Ce dernier reste annoncé comme bientôt disponible et ne prend encore aucune
+décision.

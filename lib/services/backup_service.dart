@@ -77,7 +77,7 @@ class BackupService {
     final exercises = await _exerciseService.listAll();
     final data = {
       'format': 'mycoach-data',
-      'version': 5,
+      'version': 6,
       'exported_at': DateTime.now().toUtc().toIso8601String(),
       'sessions_count': sessions.length,
       'goals_count': goals.length,

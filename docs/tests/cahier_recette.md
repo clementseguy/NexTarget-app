@@ -70,7 +70,7 @@ Résultats attendus:
 - Chaque session possède au maximum un exercice principal et peut rester sans exercice
 - La duplication, le filtre, l'affichage et le blocage de suppression utilisent ce seul exercice
 - L'import conserve le premier exercice historique, ignore le second et préserve la session sans exercice
-- L'export version 5 utilise exerciseId sans exercises ni prescriptionId et conserve la provenance de l'exercice
+- L'export version 6 utilise sessionUuid et exerciseId sans exercises ni prescriptionId, et conserve la provenance de l'exercice
 - La requête Coach transmet exerciseId facultatif sans prescriptionId
 
 ## NT-154 — Qualification d'un exercice planifié
@@ -94,6 +94,28 @@ Résultats attendus:
 - Les réponses choisies et le commentaire sont conservés après redémarrage
 - La session sans exercice conserve la dernière page et le comportement historiques
 
+## NT-156 — Débrief structuré du Coach de session
+Objectif: Vérifier la transmission à la demande, l'idempotence et les limites du Coach de session.
+Pré-requis:
+- Utilisateur connecté avec consentement Coach activé et niveau d'expérience renseigné
+- Une session réalisée sans exercice, une avec exercice personnel et une avec exercice du catalogue
+Étapes:
+1. Lancer le débrief de la session sans exercice puis rouvrir son détail
+2. Lancer le débrief avec exercice personnel qualifié comme réalisé et protocole partiellement suivi
+3. Lancer le débrief avec exercice du catalogue qualifié comme réalisé et protocole suivi
+4. Rejouer côté API la même demande avec le même sessionUuid et un payload inchangé
+5. Modifier un commentaire de session puis relancer la demande côté API
+6. Désactiver le consentement et vérifier les deux présentations depuis le détail et l'écran Coach
+Résultats attendus:
+- Le débrief affiche un texte factuel, une à trois réussites, un point d'attention et les limites
+- L'exercice affiche Réussi, Échoué ou Non évaluable uniquement d'après sa réalisation et son protocole déclaré
+- La seule prochaine action éventuelle est de refaire l'exercice ou solliciter le Coach de progression
+- L'exercice personnel est borné et l'exercice catalogue est résolu côté serveur sans copie cliente de son contenu
+- Le rejeu inchangé renvoie la même analyse sans nouvel appel IA ni doublon ; le commentaire modifié produit un nouveau débrief lié à la même session
+- Le débrief structuré reste visible après redémarrage et une ancienne analyse Markdown reste lisible
+- L'écran Coach présente le Coach de session et le Coach de progression comme bientôt disponible
+- Sans consentement, aucune requête n'est construite et aucune synchronisation automatique n'a lieu
+
 ## NT-149 — Noms des fichiers d'export
 Objectif: Vérifier le nom NexTarget dans les deux exports sans rupture du format.
 Étapes:
@@ -103,7 +125,7 @@ Objectif: Vérifier le nom NexTarget dans les deux exports sans rupture du forma
 Résultats attendus:
 - Les deux noms par défaut suivent nextarget_export_timestamp.json
 - Le nom explicitement choisi est conservé sans réécriture
-- Le format mycoach-data version 5 est produit et les anciens exports sans provenance restent importables comme exercices personnels
+- Le format mycoach-data version 6 est produit et les anciens exports sans provenance ni sessionUuid restent importables
 
 ## NT-148 — Séparateurs des préférences de tir
 Objectif: Distinguer les trois réglages avec deux séparateurs identiques.
@@ -171,7 +193,7 @@ Objectif: Vérifier les exports sans canal de plateforme et l'absence de tests m
 5. Simuler une erreur réelle d'écriture
 6. Contrôler l'absence de mécanisme d'exclusion nouveau dans les tests et l'analyse
 Résultats attendus:
-- Le nom, l'emplacement, l'existence et le JSON version 5 sont vérifiés
+- Le nom, l'emplacement, l'existence et le JSON version 6 sont vérifiés
 - Le chemin choisi n'est pas traité comme un dossier et l'import relit le fichier sans erreur OS I/O
 - Sur mobile, le fichier JSON est réellement écrit par le sélecteur natif et peut être ouvert ou réimporté
 - L'annulation ne crée aucun fichier et l'erreur d'écriture est propagée
@@ -626,8 +648,8 @@ Pré-requis:
 1. Ouvrir une session réalisée avec au moins 1 série
 2. Ouvrir la section "Débrief du Coach" et lancer l'analyse
 Résultats attendus:
-- L'analyse s'affiche normalement (popup markdown), sans configurer de clé Mistral locale
-- La réponse est enregistrée dans la session (relecture après réouverture)
+- Le débrief structuré s'affiche sans configurer de clé Mistral locale
+- La réponse est enregistrée dans la session et reste visible après réouverture
 
 ## COACH-02 — Analyse coach – utilisateur non connecté (coach connecté uniquement, NT-061)
 Objectif: Vérifier que sans compte, l'analyse coach est inaccessible avec un message clair, et que le carnet de tir reste 100 % utilisable hors connexion.

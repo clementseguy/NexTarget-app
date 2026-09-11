@@ -38,3 +38,12 @@ pas encore de provenance. Une valeur existante, notamment `coach_catalog`, est
 préservée sans réécriture. La désérialisation applique le même défaut aux
 sauvegardes historiques importées après la migration locale et rejette les
 valeurs étrangères au contrat partagé.
+
+## Contrat du débrief Coach
+
+La migration Hive v13 ajoute à chaque session un `sessionUuid` stable et un
+champ `coachAnalysis` nullable. Les UUID existants et les débriefs déjà
+structurés sont préservés. Le modèle génère également un UUID lors de la lecture
+d'une sauvegarde historique qui n'en contient pas. Le champ historique
+`analyse` n'est pas supprimé afin de conserver l'affichage des réponses Markdown
+antérieures à NT-156.

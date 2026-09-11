@@ -40,7 +40,9 @@ void main() {
     expect(find.textContaining('Le partage de vos données est requis'),
         findsOneWidget);
     expect(find.text('Paramètres Coach'), findsOneWidget);
-    expect(find.text('Coming soon'), findsNothing);
+    expect(find.text('Coach de session'), findsOneWidget);
+    expect(find.text('Coach de progression'), findsOneWidget);
+    expect(find.text('Bientôt disponible'), findsOneWidget);
   });
 
   testWidgets('le futur Coach reste présenté lorsque le partage est autorisé',
@@ -49,7 +51,9 @@ void main() {
 
     await pumpCoach(tester);
 
-    expect(find.text('Coming soon'), findsOneWidget);
+    expect(find.text('Coach de session'), findsOneWidget);
+    expect(find.text('Coach de progression'), findsOneWidget);
+    expect(find.text('Bientôt disponible'), findsOneWidget);
     expect(find.textContaining('Le partage de vos données est requis'),
         findsNothing);
   });

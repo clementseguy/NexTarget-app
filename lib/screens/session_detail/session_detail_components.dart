@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import '../../constants/session_constants.dart';
+import '../../models/coach_session_analysis.dart';
 import '../../models/shooting_session.dart';
 import '../../models/series.dart';
 import '../../models/exercise.dart';
@@ -19,6 +19,7 @@ import '../../services/logger.dart';
 import '../../services/session_service.dart';
 import '../../utils/markdown_sanitizer.dart';
 import '../../widgets/coach_analysis_card.dart';
+import '../../widgets/coach_debrief_card.dart';
 import '../../widgets/session_chip.dart';
 
 /// Carte header récapitulative de la session
@@ -210,13 +211,15 @@ class _SimpleSessionHeader extends StatelessWidget {
 class SessionCoachAnalysisSection extends StatefulWidget {
   final DetailedShootingSession session;
   final String? analyse;
+  final CoachSessionAnalysis? analysis;
   final VoidCallback onAnalyseUpdated;
-  final Future<String> Function()? analysisLoader;
+  final Future<CoachSessionAnalysis> Function()? analysisLoader;
 
   const SessionCoachAnalysisSection({
     super.key,
     required this.session,
     required this.analyse,
+    this.analysis,
     required this.onAnalyseUpdated,
     this.analysisLoader,
   });
@@ -239,7 +242,7 @@ class _SessionCoachAnalysisSectionState
   /// Le ton du coach (NT-032) vient exclusivement de la préférence
   /// `coachPersona` (Paramètres > Coach IA — retour de recette S2 : pas de
   /// sélecteur dans la session) et part au serveur en `prompt_variant`.
-  Future<String> _fetchAnalysisText() async {
+  Future<CoachSessionAnalysis> _fetchAnalysis() async {
     final settingsProvider =
         Provider.of<SettingsProvider?>(context, listen: false);
     if (settingsProvider == null ||
@@ -264,6 +267,7 @@ class _SessionCoachAnalysisSectionState
       widget.session,
       coachDataSharingAllowed: settingsProvider.isCoachDataSharingAllowed,
       exercise: exercise,
+      experienceLevel: authProvider.currentUser?['experience_level'] as String?,
       promptVariant: settingsProvider.coachPersona,
     );
   }
@@ -271,53 +275,31 @@ class _SessionCoachAnalysisSectionState
   Future<void> _launchAnalysis() async {
     setState(() => _isAnalysing = true);
     try {
-      final rawReply = await _fetchAnalysisText();
-      final coachReply = sanitizeCoachMarkdown(rawReply);
-
-      if (coachReply.trim().isNotEmpty) {
-        // Afficher la popup markdown
-        if (!mounted) return;
-        await showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Analyse du coach'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: SingleChildScrollView(
-                child: MarkdownBody(data: coachReply),
-              ),
+      final coachReply = await _fetchAnalysis();
+      if (!mounted) return;
+      await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Débrief du Coach'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: CoachDebriefCard(analysis: coachReply),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Fermer'),
-              ),
-            ],
           ),
-        );
-
-        // Enregistrer la réponse dans la session
-        final updatedSession = widget.session..analyse = coachReply;
-        await SessionService().updateSession(updatedSession);
-        widget.onAnalyseUpdated();
-      } else {
-        // Erreur API
-        if (!mounted) return;
-        await showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Erreur'),
-            content: const Text(
-                'Une erreur est survenue lors de l\'analyse, veuillez réesayer ultérieurement.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Fermer'),
-              ),
-            ],
-          ),
-        );
-      }
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Fermer'),
+            ),
+          ],
+        ),
+      );
+      final updatedSession = widget.session
+        ..coachAnalysis = coachReply
+        ..analyse = null;
+      await SessionService().updateSession(updatedSession);
+      widget.onAnalyseUpdated();
     } catch (e) {
       AppLogger.I.error('COACH UI: analyse impossible', e);
       if (e is SessionExpiredException && mounted) {
@@ -381,16 +363,13 @@ class _SessionCoachAnalysisSectionState
       color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ExpansionTile(
-        initiallyExpanded:
-            widget.analyse != null && widget.analyse!.trim().isNotEmpty,
+        initiallyExpanded: _hasAnalysis,
         leading: Icon(Icons.analytics,
             color: Theme.of(context).colorScheme.secondary),
         title: const Text('Débrief du Coach',
             style: TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(
-          (widget.analyse != null && widget.analyse!.trim().isNotEmpty)
-              ? 'Analyse disponible'
-              : 'Aucune analyse générée',
+          _hasAnalysis ? 'Analyse disponible' : 'Aucune analyse générée',
           style: const TextStyle(fontSize: 12),
         ),
         children: [
@@ -504,20 +483,22 @@ class _SessionCoachAnalysisSectionState
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.play_arrow),
                       label: Text(
-                        (widget.analyse != null &&
-                                widget.analyse!.trim().isNotEmpty)
-                            ? 'Re-générer'
-                            : 'Lancer analyse',
+                        _hasAnalysis ? 'Re-générer' : 'Lancer analyse',
                       ),
-                      onPressed: (widget.analyse == null ||
-                              widget.analyse!.trim().isEmpty)
-                          ? _launchAnalysis
-                          : null,
+                      onPressed: _hasAnalysis ? null : _launchAnalysis,
                     ),
                   ),
                 );
               },
             ),
+          ],
+          if (widget.analysis case final analysis?) ...[
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: CoachDebriefCard(analysis: analysis),
+            ),
+            const SizedBox(height: 12),
           ],
           if (widget.analyse != null && widget.analyse!.trim().isNotEmpty) ...[
             SizedBox(height: 12),
@@ -532,6 +513,10 @@ class _SessionCoachAnalysisSectionState
       ),
     );
   }
+
+  bool get _hasAnalysis =>
+      widget.analysis != null ||
+      (widget.analyse != null && widget.analyse!.trim().isNotEmpty);
 }
 
 /// Section exercices travaillés

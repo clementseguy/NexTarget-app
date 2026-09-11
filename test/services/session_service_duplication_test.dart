@@ -126,7 +126,10 @@ void main() {
       expect(map['category'], source.category);
       expect(map['status'], source.status);
       expect(map['synthese'], source.synthese);
-      expect(map['analyse'], source.analyse);
+      expect(map['analyse'], isNull);
+      expect(map['coachAnalysis'], isNull);
+      expect(map['sessionUuid'], isNotEmpty);
+      expect(map['sessionUuid'], isNot(source.sessionUuid));
       expect(map['photoPath'], source.photoPath);
       expect(map['exerciseId'], source.exerciseId);
       expect(map['exerciseExecution'], isNull);

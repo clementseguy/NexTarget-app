@@ -180,6 +180,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
             SessionCoachAnalysisSection(
               session: session,
               analyse: analyse,
+              analysis: session.coachAnalysis,
               onAnalyseUpdated: () async {
                 final all = await _sessionService.getAllSessions();
                 final updated = all.firstWhere((s) => s.id == session.id,

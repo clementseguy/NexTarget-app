@@ -1,4 +1,7 @@
+import 'package:uuid/uuid.dart';
+
 import '../constants/session_constants.dart';
+import 'coach_session_analysis.dart';
 import 'exercise_execution.dart';
 import 'series.dart';
 
@@ -8,6 +11,7 @@ abstract class ShootingSession {
   static const simpleType = 'simple';
 
   String get sessionType;
+  String get sessionUuid;
   int? get id;
   set id(int? value);
   DateTime? get date;
@@ -25,6 +29,7 @@ abstract class ShootingSession {
   String? get exerciseId;
   set exerciseId(String? value);
   ExerciseExecution? get exerciseExecution;
+  CoachSessionAnalysis? get coachAnalysis;
   String? get photoPath;
   set photoPath(String? value);
 
@@ -47,6 +52,8 @@ abstract class ShootingSession {
 
 class DetailedShootingSession implements ShootingSession {
   @override
+  final String sessionUuid;
+  @override
   int? id;
   @override
   DateTime? date;
@@ -59,6 +66,8 @@ class DetailedShootingSession implements ShootingSession {
   String status;
   String? analyse;
   @override
+  CoachSessionAnalysis? coachAnalysis;
+  @override
   String? synthese;
   @override
   String category;
@@ -70,6 +79,7 @@ class DetailedShootingSession implements ShootingSession {
   String? photoPath;
 
   DetailedShootingSession({
+    String? sessionUuid,
     this.id,
     this.date,
     required this.weapon,
@@ -77,12 +87,13 @@ class DetailedShootingSession implements ShootingSession {
     required this.series,
     this.status = SessionConstants.statusRealisee,
     this.analyse,
+    this.coachAnalysis,
     this.synthese,
     this.category = SessionConstants.categoryEntrainement,
     this.exerciseId,
     this.exerciseExecution,
     this.photoPath,
-  });
+  }) : sessionUuid = sessionUuid ?? const Uuid().v4();
 
   @override
   String get sessionType => ShootingSession.detailedType;
@@ -90,6 +101,7 @@ class DetailedShootingSession implements ShootingSession {
   @override
   Map<String, dynamic> toMap() => {
         'sessionType': sessionType,
+        'sessionUuid': sessionUuid,
         'id': id,
         'date': date?.toIso8601String(),
         'weapon': weapon,
@@ -97,6 +109,7 @@ class DetailedShootingSession implements ShootingSession {
         'series': series.map((s) => s.toMap()).toList(),
         'status': status,
         'analyse': analyse,
+        'coachAnalysis': coachAnalysis?.toMap(),
         'synthese': synthese,
         'category': category,
         'exerciseId': exerciseId,
@@ -130,6 +143,7 @@ class DetailedShootingSession implements ShootingSession {
       throw const FormatException('Brouillon de séance guidée invalide.');
     }
     return DetailedShootingSession(
+      sessionUuid: _readSessionUuid(map['sessionUuid']),
       id: _readId(map['id']),
       date: date,
       weapon: weapon,
@@ -137,6 +151,7 @@ class DetailedShootingSession implements ShootingSession {
       series: parsedSeries,
       status: status,
       analyse: map['analyse'] as String?,
+      coachAnalysis: _readCoachAnalysis(map['coachAnalysis']),
       synthese: map['synthese'] as String?,
       category: category,
       exerciseId: _readExerciseId(map),
@@ -145,7 +160,8 @@ class DetailedShootingSession implements ShootingSession {
     );
   }
 
-  bool get hasAnalysis => analyse != null && analyse!.trim().isNotEmpty;
+  bool get hasAnalysis =>
+      coachAnalysis != null || (analyse != null && analyse!.trim().isNotEmpty);
 
   bool get isDraft => status == SessionConstants.statusDraft;
 
@@ -168,7 +184,18 @@ ExerciseExecution? _readExerciseExecution(dynamic value) {
   return ExerciseExecution.fromMap(Map<String, dynamic>.from(value));
 }
 
+CoachSessionAnalysis? _readCoachAnalysis(dynamic value) {
+  if (value is! Map) return null;
+  try {
+    return CoachSessionAnalysis.fromMap(Map<String, dynamic>.from(value));
+  } on FormatException {
+    return null;
+  }
+}
+
 class SimpleShootingSession implements ShootingSession {
+  @override
+  final String sessionUuid;
   @override
   int? id;
   @override
@@ -190,9 +217,12 @@ class SimpleShootingSession implements ShootingSession {
   @override
   ExerciseExecution? get exerciseExecution => null;
   @override
+  CoachSessionAnalysis? get coachAnalysis => null;
+  @override
   String? photoPath;
 
   SimpleShootingSession({
+    String? sessionUuid,
     this.id,
     required DateTime this.date,
     required this.weapon,
@@ -203,7 +233,8 @@ class SimpleShootingSession implements ShootingSession {
     this.category = SessionConstants.categoryEntrainement,
     this.exerciseId,
     this.photoPath,
-  })  : distance = distance.toDouble(),
+  })  : sessionUuid = sessionUuid ?? const Uuid().v4(),
+        distance = distance.toDouble(),
         status = SessionConstants.statusRealisee {
     validate();
   }
@@ -236,6 +267,7 @@ class SimpleShootingSession implements ShootingSession {
   @override
   Map<String, dynamic> toMap() => {
         'sessionType': sessionType,
+        'sessionUuid': sessionUuid,
         'id': id,
         'date': date?.toIso8601String(),
         'weapon': weapon,
@@ -268,6 +300,7 @@ class SimpleShootingSession implements ShootingSession {
     }
     try {
       return SimpleShootingSession(
+        sessionUuid: _readSessionUuid(map['sessionUuid']),
         id: _readId(map['id']),
         date: date,
         weapon: map['weapon'] as String? ?? '',
@@ -313,6 +346,9 @@ String? _readExerciseId(Map<String, dynamic> map) {
   return null;
 }
 
+String? _readSessionUuid(dynamic value) =>
+    value is String && value.trim().isNotEmpty ? value : null;
+
 extension ShootingSessionTypeAccess on ShootingSession {
   bool get isSimple => this is SimpleShootingSession;
 
@@ -336,7 +372,8 @@ extension ShootingSessionTypeAccess on ShootingSession {
       ? (this as DetailedShootingSession).analyse
       : null;
 
-  bool get hasAnalysis => analyse != null && analyse!.trim().isNotEmpty;
+  bool get hasAnalysis =>
+      coachAnalysis != null || (analyse != null && analyse!.trim().isNotEmpty);
 
   int get totalShotCount => this is SimpleShootingSession
       ? (this as SimpleShootingSession).shotCount

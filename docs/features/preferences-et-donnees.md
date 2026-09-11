@@ -16,7 +16,16 @@ Le râtelier contient des noms uniques après suppression des espaces de bord et
 
 ## Sauvegarde JSON
 
-Le format courant `mycoach-data`, version 5, exporte les sessions, objectifs, armes et exercices. Chaque session porte un `exerciseId` facultatif et chaque exercice une provenance `personal` ou `coach_catalog`. Les sessions sont validées avant une insertion groupée ; leurs identifiants importés sont remplacés pour éviter les collisions. Les anciens exports restent acceptés : si une session contient une liste `exercises`, seul son premier identifiant est conservé ; un exercice sans provenance devient `personal`. Une difficulté d'exercice absente ou inconnue est importée comme non renseignée.
+Le format courant `mycoach-data`, version 6, exporte les sessions, objectifs,
+armes et exercices. Chaque session porte un `sessionUuid` stable, son débrief
+Coach structuré éventuel et un `exerciseId` facultatif ; chaque exercice porte
+une provenance `personal` ou `coach_catalog`. Les identifiants Hive importés
+sont remplacés pour éviter les collisions, tandis que le `sessionUuid` est
+conservé afin d'identifier la même session côté serveur. Les anciens exports
+restent acceptés : un UUID absent est généré, une ancienne analyse Markdown
+reste lisible, le premier élément d'une liste `exercises` devient l'exercice
+principal et un exercice sans provenance devient `personal`. Une difficulté
+d'exercice absente ou inconnue est importée comme non renseignée.
 
 Les exports temporaires partagés et les exports enregistrés dans un dossier
 utilisent par défaut `nextarget_export_<timestamp>.json`. Ce nom n'affecte pas
