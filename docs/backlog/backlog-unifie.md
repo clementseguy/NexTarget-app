@@ -107,7 +107,7 @@ l'unique source de vérité pour leur statut. Les descriptions sont dans
 
 | ID | Titre | Portée | Statut | MoSCoW | Est. | Remplacée par |
 |---|---|---|---|---|---|---|
-| [NT-152](descriptions.md#NT-152) | Limiter une session à un exercice principal | both | EN COURS | Must | M | — |
+| [NT-152](descriptions.md#NT-152) | Limiter une session à un exercice principal | both | FAIT | Must | M | — |
 | [NT-153](descriptions.md#NT-153) | Consentement à l'utilisation des coachs | app | FAIT | Must | S | — |
 | [NT-154](descriptions.md#NT-154) | Qualifier l'exercice lors de la réalisation d'une session prévue | app | FAIT | Must | M | — |
 | [NT-155](descriptions.md#NT-155) | Déplacer le niveau d'expérience dans les préférences Coach | app | FAIT | Must | M | — |
