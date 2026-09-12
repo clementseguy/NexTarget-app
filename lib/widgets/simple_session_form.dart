@@ -143,6 +143,7 @@ class SimpleSessionFormState extends State<SimpleSessionForm> {
       return false;
     }
     final session = SimpleShootingSession(
+      sessionUuid: widget.initialSession?.sessionUuid,
       id: widget.initialSession?.id,
       date: _date!,
       weapon: _weaponController.text.trim(),

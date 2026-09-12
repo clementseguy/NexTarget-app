@@ -482,7 +482,7 @@ class _SessionCoachAnalysisSectionState
                       label: Text(
                         _hasAnalysis ? 'Re-générer' : 'Lancer analyse',
                       ),
-                      onPressed: _hasAnalysis ? null : _launchAnalysis,
+                      onPressed: _launchAnalysis,
                     ),
                   ),
                 );

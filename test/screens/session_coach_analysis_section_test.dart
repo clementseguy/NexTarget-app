@@ -100,6 +100,19 @@ DetailedShootingSession _session() => DetailedShootingSession(
       ],
     );
 
+CoachSessionAnalysis _analysis() => CoachSessionAnalysis(
+      analysisId: 'analysis-1',
+      sessionId: 'session-1',
+      debrief: 'Débrief existant',
+      successes: const ['Réussite'],
+      attentionPoint: 'Attention',
+      limitations: const [],
+      exerciseEvaluation: null,
+      nextAction: null,
+      model: 'test',
+      generatedAt: DateTime(2026, 9, 12),
+    );
+
 class _NavigationHarness extends StatelessWidget {
   const _NavigationHarness();
 
@@ -304,6 +317,26 @@ void main() {
     expect(
         find.textContaining('Le coach IA nécessite un compte'), findsNothing);
     expect(find.text('Se connecter'), findsNothing);
+  });
+
+  testWidgets('une analyse existante peut être régénérée', (tester) async {
+    await tester.pumpWidget(_wrap(
+      SessionCoachAnalysisSection(
+        session: _session(),
+        analysis: _analysis(),
+        onAnalyseUpdated: () {},
+      ),
+      authenticated: true,
+    ));
+    await tester.pumpAndSettle();
+
+    final button = tester.widget<ElevatedButton>(
+      find.ancestor(
+        of: find.text('Re-générer'),
+        matching: find.byWidgetPredicate((widget) => widget is ElevatedButton),
+      ),
+    );
+    expect(button.onPressed, isNotNull);
   });
 
   testWidgets('vérification active : aucun bouton de connexion ou d’analyse',

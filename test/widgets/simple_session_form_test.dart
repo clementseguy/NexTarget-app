@@ -117,6 +117,38 @@ void main() {
     expect(tester.getTopLeft(weapon).dy, tester.getTopLeft(caliber).dy);
   });
 
+  testWidgets('conserve le UUID stable lors de la modification',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final key = GlobalKey<SimpleSessionFormState>();
+    final initial = SimpleShootingSession(
+      sessionUuid: 'stable-session-uuid',
+      id: 42,
+      date: DateTime(2026, 9, 12),
+      weapon: 'Pistolet',
+      caliber: '9mm',
+      shotCount: 20,
+      distance: 25,
+    );
+    SimpleShootingSession? saved;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SimpleSessionForm(
+            key: key,
+            initialSession: initial,
+            onSave: (session) => saved = session,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(key.currentState!.validateAndBuild(), isTrue);
+    expect(saved!.sessionUuid, initial.sessionUuid);
+  });
+
   testWidgets('refuse zéro et les champs obligatoires vides', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 1800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
