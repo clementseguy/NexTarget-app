@@ -20,8 +20,10 @@ de limiter P0 à **2 US** et P1 à **5 US**.
 ## P1 — Prochain
 
 - [NT-155](descriptions.md#NT-155) — Déplacer le niveau dans les préférences Coach.
-- [NT-157](descriptions.md#NT-157) — Séparer la décision du ton du Coach.
 - [NT-162](descriptions.md#NT-162) — Auditer et enrichir le modèle métier Exercise.
+- [NT-163](descriptions.md#NT-163) — Déterminer la réussite et la suite du Coach de session.
+- [NT-164](descriptions.md#NT-164) — Gérer l'attente du Coach de progression.
+- [NT-157](descriptions.md#NT-157) — Séparer la décision du ton du Coach.
 
 ## P2 — Ultérieur
 

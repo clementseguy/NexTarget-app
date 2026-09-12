@@ -1,6 +1,6 @@
 # NexTarget — Backlog unifié
 
-> **Prochain ID disponible : NT-163**
+> **Prochain ID disponible : NT-165**
 
 Ce fichier inventorie les US actives de l'application et du serveur. Il est
 l'unique source de vérité pour leur statut. Les descriptions sont dans
@@ -118,3 +118,5 @@ l'unique source de vérité pour leur statut. Les descriptions sont dans
 | [NT-160](descriptions.md#NT-160) | Récupérer à la demande les exercices du catalogue Coach | both | FAIT | Must | M | — |
 | [NT-161](descriptions.md#NT-161) | Analyser un exercice personnel sans le cataloguer | both | FAIT | Must | M | — |
 | [NT-162](descriptions.md#NT-162) | Auditer et enrichir le modèle métier Exercise | both | À FAIRE | Should | L | — |
+| [NT-163](descriptions.md#NT-163) | Déterminer la réussite et la suite du Coach de session | both | À FAIRE | Must | L | — |
+| [NT-164](descriptions.md#NT-164) | Gérer l'attente du Coach de progression | app | À FAIRE | Should | S | — |
