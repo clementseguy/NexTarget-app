@@ -214,6 +214,7 @@ class SessionCoachAnalysisSection extends StatefulWidget {
   final CoachSessionAnalysis? analysis;
   final VoidCallback onAnalyseUpdated;
   final Future<CoachSessionAnalysis> Function()? analysisLoader;
+  final ServerCoachAnalysisService? analysisService;
 
   const SessionCoachAnalysisSection({
     super.key,
@@ -222,6 +223,7 @@ class SessionCoachAnalysisSection extends StatefulWidget {
     this.analysis,
     required this.onAnalyseUpdated,
     this.analysisLoader,
+    this.analysisService,
   });
 
   @override
@@ -251,10 +253,11 @@ class _SessionCoachAnalysisSectionState
     }
     if (widget.analysisLoader != null) return widget.analysisLoader!();
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final serverService = ServerCoachAnalysisService(
-      baseUrl: AppConfig.I.authBaseUrl,
-      authService: authProvider.authService,
-    );
+    final serverService = widget.analysisService ??
+        ServerCoachAnalysisService(
+          baseUrl: AppConfig.I.authBaseUrl,
+          authService: authProvider.authService,
+        );
     Exercise? exercise;
     final exerciseId = widget.session.exerciseId;
     if (exerciseId != null) {
@@ -267,7 +270,7 @@ class _SessionCoachAnalysisSectionState
       widget.session,
       coachDataSharingAllowed: settingsProvider.isCoachDataSharingAllowed,
       exercise: exercise,
-      experienceLevel: authProvider.currentUser?['experience_level'] as String?,
+      experienceLevel: settingsProvider.coachExperienceLevel,
       promptVariant: settingsProvider.coachPersona,
     );
   }

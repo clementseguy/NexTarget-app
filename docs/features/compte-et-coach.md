@@ -12,7 +12,17 @@ La déconnexion tente de révoquer le refresh token côté serveur puis efface t
 
 Les écrans Auth, Profil et Coach partagent une traduction des erreurs réseau en sept familles : hors connexion/DNS, délai dépassé, service indisponible, limitation de débit, session invalide, requête invalide et erreur inattendue. Les détails techniques restent dans les journaux. Une erreur transitoire propose « Réessayer » pour la seule opération concernée et ne supprime jamais les jetons ; seule une invalidation confirmée propose « Se reconnecter ».
 
-Le profil affiche les informations fournies par le serveur. L'app permet actuellement de modifier le niveau d'expérience ; l'édition du nom n'est pas exposée.
+Le profil affiche les informations fournies par le serveur sans permettre
+d'éditer le niveau d'expérience. Ce niveau se règle dans `Paramètres > Coach IA`
+et accepte Débutant, Avancé, Expert ou aucune sélection. Il est conservé
+localement dans Hive et reste indépendant de la connexion et du compte courant.
+
+Lors de la première exécution après la migration, une ancienne valeur valide du
+profil localement mis en cache est reprise si la préférence n'a jamais été
+initialisée. Le marqueur `coach_experience_level_initialized` distingue cet état
+d'une absence volontaire ; une fois posé, aucun profil ne peut restaurer ou
+modifier la préférence. La valeur nullable est stockée sous
+`coach_experience_level` dans la box `app_preferences`.
 
 L'état de compte est porté uniquement par `AuthProvider` : vérification,
 connecté avec un profil exploitable, ou non connecté. Un profil valide est mis
@@ -27,7 +37,7 @@ Paramètres, au Profil et au Coach.
 
 Une session détaillée réalisée peut être envoyée à `POST /coach/analyze-session`
 uniquement après consentement explicite. La requête contient son UUID stable,
-ses données complètes et ses séries, le niveau d'expérience courant, les
+ses données complètes et ses séries, le niveau d'expérience local courant, les
 commentaires et la variante de ton choisie. Le serveur construit le prompt et
 appelle Mistral ; aucune clé ni aucun prompt complet ne réside dans l'app.
 

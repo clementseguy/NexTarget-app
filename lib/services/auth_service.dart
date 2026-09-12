@@ -535,55 +535,6 @@ class AuthService {
     }
   }
 
-  /// Met à jour le profil utilisateur (experience_level)
-  /// Retourne le profil mis à jour (UserPublic)
-  Future<Map<String, dynamic>> updateProfile({String? experienceLevel}) async {
-    final token = await getToken();
-    if (token == null) {
-      throw Exception('Non authentifié');
-    }
-
-    try {
-      final body = <String, dynamic>{};
-      if (experienceLevel != null) {
-        body['experience_level'] = experienceLevel;
-      }
-
-      final response = await _authedClient
-          .patch(
-            Uri.parse('$_authBaseUrl/users/me/profile'),
-            headers: _jsonHeaders,
-            body: jsonEncode(body),
-          )
-          .timeout(const Duration(seconds: 30));
-
-      if (response.statusCode == 200) {
-        final userInfo = jsonDecode(response.body) as Map<String, dynamic>;
-        await _cacheUser(userInfo);
-        return userInfo;
-      } else if (response.statusCode == 401) {
-        await invalidateSession();
-        throw SessionExpiredException(_sessionExpiredMessage);
-      }
-      _throwForAuthResponse(response.statusCode, 'mise à jour du profil');
-      throw StateError('Réponse profil non traitée.');
-    } on TimeoutException catch (error) {
-      throw NetworkOperationException(NetworkErrorFamily.timeout, '$error');
-    } on SocketException catch (error) {
-      throw NetworkOperationException(
-          NetworkErrorFamily.offline, error.message);
-    } on http.ClientException catch (error) {
-      throw NetworkOperationException(
-          NetworkErrorFamily.offline, error.message);
-    } catch (e) {
-      if (e is SessionExpiredException || e is NetworkUnavailableException) {
-        rethrow;
-      }
-      AppLogger.I.error('AUTH: erreur lors de la mise à jour du profil', e);
-      rethrow;
-    }
-  }
-
   void _throwForAuthResponse(int statusCode, String operation) {
     if (statusCode >= 200 && statusCode < 300) return;
     if (statusCode == 422 ||

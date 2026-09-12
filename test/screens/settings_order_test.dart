@@ -11,6 +11,7 @@ import 'package:tir_sportif/providers/auth_provider.dart';
 import 'package:tir_sportif/providers/settings_provider.dart';
 import 'package:tir_sportif/screens/settings_screen.dart';
 import 'package:tir_sportif/services/auth_service.dart';
+import 'package:tir_sportif/widgets/settings/weapon_rack_section.dart';
 
 class _FailingSettingsAuthService extends AuthService {
   _FailingSettingsAuthService() : super(authBaseUrl: 'http://unused');
@@ -53,6 +54,8 @@ void main() {
   tearDownAll(() async {
     await Hive.close();
   });
+
+  setUp(() => Hive.box('app_preferences').clear());
 
   Future<void> pumpSettings(
     WidgetTester tester, {
@@ -120,6 +123,76 @@ void main() {
     expect(find.textContaining('transmis'), findsNothing);
   });
 
+  testWidgets('le niveau Coach est local, nullable et persistant',
+      (tester) async {
+    await pumpSettings(tester, theme: 'classique');
+
+    expect(find.text('Niveau d\'expérience'), findsOneWidget);
+    expect(
+      find.textContaining('Utilisé pour adapter les exercices'),
+      findsNothing,
+    );
+    var selector = tester.widget<SegmentedButton<String>>(
+      find.byKey(const Key('coach_experience_level')),
+    );
+    expect(selector.selected, isEmpty);
+
+    await tester.tap(find.text('Avancé'));
+    await tester.pumpAndSettle();
+    expect(
+      Hive.box('app_preferences').get('coach_experience_level'),
+      'advanced',
+    );
+
+    selector = tester.widget<SegmentedButton<String>>(
+      find.byKey(const Key('coach_experience_level')),
+    );
+    expect(selector.selected, {'advanced'});
+
+    await tester.tap(find.text('Avancé'));
+    await tester.pumpAndSettle();
+    selector = tester.widget<SegmentedButton<String>>(
+      find.byKey(const Key('coach_experience_level')),
+    );
+    expect(selector.selected, isEmpty);
+    expect(
+      Hive.box('app_preferences').get('coach_experience_level_initialized'),
+      isTrue,
+    );
+  });
+
+  testWidgets('deux écrans Paramètres montés utilisent des clés distinctes',
+      (tester) async {
+    final authProvider = AuthProvider(_NoTokenAuthService());
+    await authProvider.checkAuthStatus();
+    await tester.binding.setSurfaceSize(const Size(390, 3000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: authProvider),
+          ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ],
+        child: const MaterialApp(
+          home: IndexedStack(
+            children: [
+              SettingsScreen(key: ValueKey('settings_first')),
+              SettingsScreen(key: ValueKey('settings_second')),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(
+      find.byType(WeaponRackSection, skipOffstage: false),
+      findsNWidgets(2),
+    );
+  });
+
   for (final theme in ['classique', 'bleuBlancRouge']) {
     testWidgets('ordre complet des paramètres en thème $theme', (tester) async {
       await pumpSettings(tester, theme: theme);
@@ -139,7 +212,7 @@ void main() {
         lessThan(top("Râtelier d'armes")),
       );
       expect(top("Râtelier d'armes"), lessThan(top('Calibre par défaut')));
-      expect(find.byType(Divider), findsNWidgets(2));
+      expect(find.byType(Divider), findsNWidgets(3));
       final dividerTops = [
         tester.getTopLeft(find.byType(Divider).at(0)).dy,
         tester.getTopLeft(find.byType(Divider).at(1)).dy,

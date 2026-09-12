@@ -1,17 +1,18 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' show Response;
-import 'package:http/testing.dart';
+import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:tir_sportif/models/exercise.dart';
 import 'package:tir_sportif/models/goal.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
-import 'package:tir_sportif/providers/auth_provider.dart';
+import 'package:tir_sportif/providers/settings_provider.dart';
 import 'package:tir_sportif/repositories/exercise_repository.dart';
 import 'package:tir_sportif/repositories/goal_repository.dart';
 import 'package:tir_sportif/screens/exercises_list_screen.dart';
-import 'package:tir_sportif/services/auth_service.dart';
 import 'package:tir_sportif/services/exercise_service.dart';
 import 'package:tir_sportif/services/coach_catalog_service.dart';
 import 'package:tir_sportif/services/goal_service.dart';
@@ -73,22 +74,6 @@ class _CountingCatalogService extends CoachCatalogService {
   }
 }
 
-class _ExperienceAuthProvider extends AuthProvider {
-  final Map<String, dynamic> _user;
-
-  _ExperienceAuthProvider(String experienceLevel)
-      : _user = {'experience_level': experienceLevel},
-        super(
-          AuthService(
-            authBaseUrl: 'https://server.test',
-            httpClient: MockClient((_) async => Response('', 500)),
-          ),
-        );
-
-  @override
-  Map<String, dynamic> get currentUser => _user;
-}
-
 Exercise _exercise() => Exercise(
       id: 'ex-1',
       name: 'Exercice source',
@@ -115,6 +100,14 @@ Exercise _coachExercise() => Exercise(
     );
 
 void main() {
+  setUpAll(() async {
+    final directory = await Directory.systemTemp.createTemp('nt155_exercises_');
+    Hive.init(directory.path);
+    await Hive.openBox('app_preferences', bytes: Uint8List(0));
+  });
+
+  tearDownAll(Hive.close);
+
   Future<
       ({
         _ExerciseRepository exerciseRepository,
@@ -152,16 +145,19 @@ void main() {
       catalogService: catalogService,
       debugCatalogControlEnabled: debugCatalogControlEnabled,
     );
+    final preferencesBox = Hive.box('app_preferences');
+    await preferencesBox.clear();
+    if (experienceLevel != null) {
+      await preferencesBox.put('coach_experience_level', experienceLevel);
+    }
     await tester.pumpWidget(
-      MaterialApp(
-        theme: theme,
-        home: experienceLevel == null
-            ? screen
-            : ChangeNotifierProvider<AuthProvider>(
-                key: ObjectKey(exerciseService),
-                create: (_) => _ExperienceAuthProvider(experienceLevel),
-                child: screen,
-              ),
+      ChangeNotifierProvider<SettingsProvider>(
+        key: ObjectKey(exerciseService),
+        create: (_) => SettingsProvider(preferencesBox: preferencesBox),
+        child: MaterialApp(
+          theme: theme,
+          home: screen,
+        ),
       ),
     );
     await tester.pumpAndSettle();

@@ -141,7 +141,7 @@ void main() {
       expect(find.text('AD'), findsOneWidget);
     });
 
-    testWidgets('affiche le SegmentedButton avec le niveau actuel sélectionné',
+    testWidgets('ne présente pas le niveau renvoyé par le profil',
         (tester) async {
       when(mockAuthService.hasToken()).thenAnswer((_) async => true);
       when(mockAuthService.isAuthenticated()).thenAnswer((_) async => true);
@@ -153,9 +153,8 @@ void main() {
       await tester.pumpWidget(buildProfileScreen(authProvider));
       await tester.pump();
 
-      expect(find.text('Débutant'), findsOneWidget);
-      expect(find.text('Confirmé'), findsOneWidget);
-      expect(find.text('Expert'), findsOneWidget);
+      expect(find.text('Niveau d\'expérience'), findsNothing);
+      expect(find.byType(SegmentedButton<String>), findsNothing);
     });
 
     testWidgets('affiche le provider avec majuscule', (tester) async {
@@ -231,64 +230,6 @@ void main() {
       await tester.pump();
 
       expect(find.text('Se déconnecter'), findsOneWidget);
-    });
-
-    testWidgets('changement de niveau appelle updateExperienceLevel',
-        (tester) async {
-      when(mockAuthService.hasToken()).thenAnswer((_) async => true);
-      when(mockAuthService.isAuthenticated()).thenAnswer((_) async => true);
-      when(mockAuthService.getUserInfo()).thenAnswer((_) async => testUser);
-      when(mockAuthService.updateProfile(experienceLevel: 'expert'))
-          .thenAnswer((_) async => {...testUser, 'experience_level': 'expert'});
-
-      final authProvider = AuthProvider(mockAuthService);
-      await authProvider.checkAuthStatus();
-
-      await tester.pumpWidget(buildProfileScreen(authProvider));
-      await tester.pump();
-
-      // Tap sur "Expert"
-      await tester.tap(find.text('Expert'));
-      await tester.pump();
-
-      verify(mockAuthService.updateProfile(experienceLevel: 'expert'))
-          .called(1);
-    });
-
-    testWidgets('affiche SnackBar en cas d\'erreur de mise à jour',
-        (tester) async {
-      when(mockAuthService.hasToken()).thenAnswer((_) async => true);
-      when(mockAuthService.isAuthenticated()).thenAnswer((_) async => true);
-      when(mockAuthService.getUserInfo()).thenAnswer((_) async => testUser);
-      var calls = 0;
-      when(mockAuthService.updateProfile(experienceLevel: 'expert'))
-          .thenAnswer((_) async {
-        calls++;
-        throw NetworkOperationException(
-          NetworkErrorFamily.offline,
-          'Erreur DNS interne',
-        );
-      });
-
-      final authProvider = AuthProvider(mockAuthService);
-      await authProvider.checkAuthStatus();
-
-      await tester.pumpWidget(buildProfileScreen(authProvider));
-      await tester.pump();
-
-      await tester.tap(find.text('Expert'));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.text('Aucune connexion disponible. Vérifiez votre réseau.'),
-        findsOneWidget,
-      );
-      expect(find.text('Réessayer'), findsOneWidget);
-      expect(find.textContaining('DNS'), findsNothing);
-
-      await tester.tap(find.text('Réessayer'));
-      await tester.pump();
-      expect(calls, 2);
     });
 
     testWidgets('affiche initiale de l\'email si display_name est null',

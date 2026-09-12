@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/logger.dart';
 import '../services/network_error.dart';
-import '../navigation/app_router.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -50,7 +49,6 @@ class ProfileScreen extends StatelessWidget {
     final displayName = user['display_name'] as String?;
     final email = user['email'] as String? ?? '';
     final avatarUrl = user['avatar_url'] as String?;
-    final experienceLevel = user['experience_level'] as String?;
     final provider = user['provider'] as String? ?? '';
     final createdAt = user['created_at'] as String?;
 
@@ -92,33 +90,6 @@ class ProfileScreen extends StatelessWidget {
                     color: colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
             ),
-          ),
-
-          const SizedBox(height: 28),
-
-          // Niveau d'expérience
-          Text(
-            'Niveau d\'expérience',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 12),
-          SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'beginner', label: Text('Débutant')),
-              ButtonSegment(value: 'advanced', label: Text('Confirmé')),
-              ButtonSegment(value: 'expert', label: Text('Expert')),
-            ],
-            selected: experienceLevel != null ? {experienceLevel} : {},
-            emptySelectionAllowed: true,
-            onSelectionChanged: (selected) {
-              if (selected.isNotEmpty) {
-                _updateExperienceLevel(context, authProvider, selected.first);
-              }
-            },
           ),
 
           const SizedBox(height: 28),
@@ -195,25 +166,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  SnackBarAction? _profileErrorAction(
-    BuildContext context,
-    AuthProvider authProvider,
-    String level,
-    NetworkErrorPresentation presentation,
-  ) {
-    return switch (presentation.action) {
-      NetworkErrorAction.retry => SnackBarAction(
-          label: presentation.actionLabel!,
-          onPressed: () => _updateExperienceLevel(context, authProvider, level),
-        ),
-      NetworkErrorAction.reconnect => SnackBarAction(
-          label: presentation.actionLabel!,
-          onPressed: () => Navigator.of(context).pushNamed(AppRouter.login),
-        ),
-      NetworkErrorAction.none => null,
-    };
-  }
-
   Future<void> _signIn(
     BuildContext context,
     AuthProvider authProvider,
@@ -234,32 +186,6 @@ class ProfileScreen extends StatelessWidget {
                   label: presentation.actionLabel!,
                   onPressed: () => _signIn(context, authProvider),
                 ),
-        ),
-      );
-    }
-  }
-
-  Future<void> _updateExperienceLevel(
-    BuildContext context,
-    AuthProvider authProvider,
-    String level,
-  ) async {
-    try {
-      await authProvider.updateExperienceLevel(level);
-    } catch (e) {
-      AppLogger.I.error('PROFILE UI: mise à jour impossible', e);
-      if (!context.mounted) return;
-      final presentation = presentNetworkError(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(presentation.message),
-          backgroundColor: Colors.red,
-          action: _profileErrorAction(
-            context,
-            authProvider,
-            level,
-            presentation,
-          ),
         ),
       );
     }

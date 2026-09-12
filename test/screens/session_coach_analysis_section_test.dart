@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
+import 'package:tir_sportif/models/coach_session_analysis.dart';
+import 'package:tir_sportif/models/exercise.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/providers/auth_provider.dart';
@@ -13,6 +15,7 @@ import 'package:tir_sportif/screens/session_detail/session_detail_components.dar
 import 'package:tir_sportif/services/auth_service.dart';
 import 'package:tir_sportif/services/auth_session_exceptions.dart';
 import 'package:tir_sportif/services/network_error.dart';
+import 'package:tir_sportif/services/server_coach_analysis_service.dart';
 
 /// NT-061 — coach « connecté uniquement » : la section Débrief du Coach doit
 /// exiger un utilisateur authentifié (message clair + CTA login sinon).
@@ -59,6 +62,28 @@ class _FakeAuthProvider extends AuthProvider {
   Future<void> handleConfirmedInvalidation() async {
     invalidationCalls++;
     markUnauthenticated();
+  }
+}
+
+class _CapturingAnalysisService extends ServerCoachAnalysisService {
+  String? capturedExperienceLevel;
+
+  _CapturingAnalysisService()
+      : super(
+          baseUrl: 'http://unused',
+          authService: AuthService(authBaseUrl: 'http://unused'),
+        );
+
+  @override
+  Future<CoachSessionAnalysis> analyzeSession(
+    DetailedShootingSession session, {
+    required bool coachDataSharingAllowed,
+    Exercise? exercise,
+    String? experienceLevel,
+    String promptVariant = 'coach_neutre',
+  }) async {
+    capturedExperienceLevel = experienceLevel;
+    throw StateError('Arrêt après capture');
   }
 }
 
@@ -335,6 +360,31 @@ void main() {
     expect(find.text('Lancer analyse'), findsOneWidget);
     expect(find.text('Neutre'), findsNothing);
     expect(find.text('Cool'), findsNothing);
+  });
+
+  testWidgets('transmet à l’analyse le niveau de la préférence locale',
+      (tester) async {
+    await Hive.box('app_preferences').put(
+      'coach_experience_level',
+      'advanced',
+    );
+    final service = _CapturingAnalysisService();
+    await tester.pumpWidget(_wrap(
+      SessionCoachAnalysisSection(
+        session: _session(),
+        analyse: null,
+        onAnalyseUpdated: () {},
+        analysisService: service,
+      ),
+      authenticated: true,
+    ));
+
+    await tester.tap(find.text('Débrief du Coach'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lancer analyse'));
+    await tester.pump();
+
+    expect(service.capturedExperienceLevel, 'advanced');
   });
 
   testWidgets('erreur transitoire : Réessayer relance uniquement l’analyse',

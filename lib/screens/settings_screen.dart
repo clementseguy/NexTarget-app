@@ -25,13 +25,15 @@ String _avatarInitial(Map<String, dynamic>? user) {
   return '';
 }
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
-  // Clé statique : un seul SettingsScreen est monté à la fois, elle permet de
-  // rafraîchir le râtelier après un import de sauvegarde sans faire de
-  // SettingsScreen un StatefulWidget.
-  static final _weaponRackKey = GlobalKey<WeaponRackSectionState>();
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  final _weaponRackKey = GlobalKey<WeaponRackSectionState>();
 
   Future<void> _signIn(BuildContext context, AuthProvider authProvider) async {
     try {
@@ -430,6 +432,40 @@ class SettingsScreen extends StatelessWidget {
                             },
                           ),
                           const SizedBox(height: 12),
+                          Text(
+                            'Niveau d\'expérience',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 12),
+                          SegmentedButton<String>(
+                            key: const Key('coach_experience_level'),
+                            segments: const [
+                              ButtonSegment(
+                                value: 'beginner',
+                                label: Text('Débutant'),
+                              ),
+                              ButtonSegment(
+                                value: 'advanced',
+                                label: Text('Avancé'),
+                              ),
+                              ButtonSegment(
+                                value: 'expert',
+                                label: Text('Expert'),
+                              ),
+                            ],
+                            selected: settings.coachExperienceLevel == null
+                                ? const <String>{}
+                                : {settings.coachExperienceLevel!},
+                            emptySelectionAllowed: true,
+                            onSelectionChanged: (selected) {
+                              settings.updateCoachExperienceLevel(
+                                selected.isEmpty ? null : selected.first,
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          const Divider(),
+                          const SizedBox(height: 4),
                           Text(
                             'Ton du coach',
                             style: TextStyle(fontWeight: FontWeight.w600),

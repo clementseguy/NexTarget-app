@@ -34,7 +34,7 @@ Pré-requis:
 Résultats attendus:
 - Seul l'exercice demandé apparaît ou est actualisé et reste disponible hors ligne
 - La carte reste compacte, réserve une colonne étroite aux actions, utilise les puces des cartes Sessions et n'affiche ni description ni matériel
-- Les icônes Exercice et Planifier n'ont pas de fond ; Stand est bleu comme Planifier, objectifs et consignes sont jaunes, et seule une difficulté correspondant au niveau du profil est verte dans les thèmes Classique et France
+- Les icônes Exercice et Planifier n'ont pas de fond ; Stand est bleu comme Planifier, objectifs et consignes sont jaunes, et seule une difficulté correspondant au niveau des préférences Coach est verte dans les thèmes Classique et France
 - La liste et le détail affichent Créé par le Coach sans action de modification ou suppression
 - Les échecs conservent la copie Coach déjà en cache et tous les exercices personnels
 - Le bouton éclair est absent des builds hors DEBUG
@@ -93,6 +93,24 @@ Résultats attendus:
 - Toutes les réponses et le commentaire sont facultatifs et n'empêchent jamais l'enregistrement
 - Les réponses choisies et le commentaire sont conservés après redémarrage
 - La session sans exercice conserve la dernière page et le comportement historiques
+
+## NT-155 — Niveau d'expérience local du Coach
+Objectif: Vérifier la reprise unique du niveau du profil et sa stabilité locale.
+Pré-requis:
+- Une installation avec un profil en cache portant le niveau avancé, puis une installation sans ancien niveau
+- Une session détaillée réalisée et des exercices de difficultés différentes
+Étapes:
+1. Mettre à jour l'application puis ouvrir Mon profil et Paramètres > Coach IA
+2. Vérifier le niveau repris, redémarrer hors ligne puis se déconnecter et se connecter avec un autre compte
+3. Sélectionner Expert puis toucher de nouveau Expert pour laisser le niveau non renseigné
+4. Redémarrer avec l'ancien profil toujours en cache
+5. Sélectionner Avancé, contrôler la liste des exercices et lancer une analyse depuis le détail d'une session
+Résultats attendus:
+- Le profil n'affiche plus le niveau et n'émet aucune mise à jour vers le serveur
+- Les choix disponibles sont Débutant, Avancé et Expert, sans valeur sélectionnée par défaut
+- L'ancien niveau valide est repris une seule fois ; son absence initialise une valeur vide
+- Le choix et l'absence volontaire persistent hors ligne, après redémarrage et indépendamment de l'authentification
+- La difficulté Avancé correspondante est mise en valeur et la requête d'analyse transmet experience_level advanced
 
 ## NT-156 — Débrief structuré du Coach de session
 Objectif: Vérifier la transmission à la demande, l'idempotence et les limites du Coach de session.

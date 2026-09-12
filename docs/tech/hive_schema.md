@@ -47,3 +47,17 @@ structurés sont préservés. Le modèle génère également un UUID lors de la 
 d'une sauvegarde historique qui n'en contient pas. Le champ historique
 `analyse` n'est pas supprimé afin de conserver l'affichage des réponses Markdown
 antérieures à NT-156.
+
+## Préférence de niveau Coach
+
+NT-155 ajoute deux clés simples à la box `app_preferences`, sans modifier un
+modèle Hive structuré : `coach_experience_level`, nullable et limité à
+`beginner`, `advanced` ou `expert`, et
+`coach_experience_level_initialized`, booléen. Cette évolution ne change donc
+pas la version du schéma gérée par `MigrationRunner`.
+
+Au démarrage, après ouverture de la box et avant la création des providers, un
+service lit une seule fois le profil du stockage sécurisé. Si le marqueur est
+absent, il copie son ancien niveau valide ou initialise explicitement une valeur
+nulle, puis pose le marqueur. Les démarrages suivants, les états hors ligne et
+les changements de compte ne consultent plus le profil pour cette préférence.

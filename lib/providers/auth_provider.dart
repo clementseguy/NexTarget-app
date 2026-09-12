@@ -169,21 +169,4 @@ class AuthProvider extends ChangeNotifier {
           'AUTH: erreur lors du rafraîchissement des infos utilisateur', e);
     }
   }
-
-  /// Met à jour le niveau d'expérience de l'utilisateur
-  /// Appelle PATCH /users/me/profile puis rafraîchit _currentUser
-  Future<void> updateExperienceLevel(String level) async {
-    if (!isAuthenticated) return;
-
-    try {
-      await _authService.updateProfile(experienceLevel: level);
-      await refreshUserInfo();
-    } on SessionExpiredException {
-      await logout();
-      rethrow;
-    } catch (e) {
-      AppLogger.I.error('AUTH: erreur lors de la mise à jour du niveau', e);
-      rethrow;
-    }
-  }
 }

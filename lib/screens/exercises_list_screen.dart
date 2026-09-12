@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/app_config.dart';
-import '../providers/auth_provider.dart';
+import '../providers/settings_provider.dart';
 import '../services/exercise_service.dart';
 import '../services/coach_catalog_service.dart';
 import '../services/network_error.dart';
@@ -324,10 +324,8 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final rawExperienceLevel =
-        context.watch<AuthProvider?>()?.currentUser?['experience_level'];
     final experienceLevel =
-        rawExperienceLevel is String ? rawExperienceLevel : null;
+        context.watch<SettingsProvider?>()?.coachExperienceLevel;
 
     return Scaffold(
       appBar: AppBar(

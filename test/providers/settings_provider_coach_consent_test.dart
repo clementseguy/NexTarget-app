@@ -54,4 +54,20 @@ void main() {
 
     expect(settings.isCoachDataSharingAllowed, isFalse);
   });
+
+  test('le niveau Coach nullable est persisté et notifie', () async {
+    final settings = SettingsProvider(preferencesBox: preferencesBox);
+    var notifications = 0;
+    settings.addListener(() => notifications++);
+
+    await settings.updateCoachExperienceLevel('advanced');
+    expect(settings.coachExperienceLevel, 'advanced');
+
+    final restarted = SettingsProvider(preferencesBox: preferencesBox);
+    expect(restarted.coachExperienceLevel, 'advanced');
+
+    await restarted.updateCoachExperienceLevel(null);
+    expect(restarted.coachExperienceLevel, isNull);
+    expect(notifications, 1);
+  });
 }

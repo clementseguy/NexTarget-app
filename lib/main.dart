@@ -24,6 +24,7 @@ import 'providers/navigation_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/auth_provider.dart';
 import 'services/auth_service.dart';
+import 'services/coach_experience_preference_service.dart';
 import 'services/logger.dart';
 import 'app/my_app.dart';
 
@@ -85,13 +86,27 @@ Future<void> main() async {
     authBaseUrl: AppConfig.I.authBaseUrl,
     callbackScheme: AppConfig.I.authCallbackScheme,
   );
+  final coachExperiencePreferences = CoachExperiencePreferenceService(
+    Hive.box('app_preferences'),
+  );
+  try {
+    await coachExperiencePreferences.initializeFromCachedProfile(
+      authService.readCachedUser,
+    );
+  } catch (error) {
+    AppLogger.I.warn('SETTINGS: reprise du niveau Coach différée: $error');
+  }
 
   // Lancer l'application avec les providers
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(
+          create: (_) => SettingsProvider(
+            coachExperiencePreferences: coachExperiencePreferences,
+          ),
+        ),
         ChangeNotifierProvider(create: (_) => AuthProvider(authService)),
       ],
       child: MyApp(navigatorKey: navigatorKey),
