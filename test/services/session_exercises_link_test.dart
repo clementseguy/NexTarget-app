@@ -30,26 +30,36 @@ void main() {
 
     test('create session with exercises and retrieve', () async {
       // Create a couple of exercises
-  await exerciseService.addExerciseLegacy(name: 'Drill précision', category: 'précision');
-  await exerciseService.addExerciseLegacy(name: 'Vitesse contrôlée', category: 'vitesse');
+      await exerciseService.addExerciseLegacy(
+          name: 'Drill précision', category: 'précision');
+      await exerciseService.addExerciseLegacy(
+          name: 'Vitesse contrôlée', category: 'vitesse');
       final exList = await exerciseService.listAll();
       expect(exList.length, 2);
 
-      final ids = exList.map((e) => e.id).toList();
+      final exerciseId = exList.first.id;
 
       final session = DetailedShootingSession(
         weapon: 'Pistolet',
         caliber: '22LR',
         date: DateTime(2024, 1, 10),
-        series: [Series(shotCount: 5, distance: 25, points: 40, groupSize: 20, comment: '', handMethod: HandMethod.twoHands)],
-        exercises: ids,
+        series: [
+          Series(
+              shotCount: 5,
+              distance: 25,
+              points: 40,
+              groupSize: 20,
+              comment: '',
+              handMethod: HandMethod.twoHands)
+        ],
+        exerciseId: exerciseId,
       );
 
       await sessionService.addSession(session);
       final all = await sessionService.getAllSessions();
       expect(all.length, 1);
       final stored = all.first;
-      expect(stored.exercises.toSet(), ids.toSet());
+      expect(stored.exerciseId, exerciseId);
     });
   });
 }

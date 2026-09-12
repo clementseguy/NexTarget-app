@@ -1,4 +1,8 @@
+import 'package:uuid/uuid.dart';
+
 import '../constants/session_constants.dart';
+import 'coach_session_analysis.dart';
+import 'exercise_execution.dart';
 import 'series.dart';
 
 /// Racine commune des sessions détaillées et libres.
@@ -7,6 +11,7 @@ abstract class ShootingSession {
   static const simpleType = 'simple';
 
   String get sessionType;
+  String get sessionUuid;
   int? get id;
   set id(int? value);
   DateTime? get date;
@@ -21,8 +26,10 @@ abstract class ShootingSession {
   set synthese(String? value);
   String get category;
   set category(String value);
-  List<String> get exercises;
-  set exercises(List<String> value);
+  String? get exerciseId;
+  set exerciseId(String? value);
+  ExerciseExecution? get exerciseExecution;
+  CoachSessionAnalysis? get coachAnalysis;
   String? get photoPath;
   set photoPath(String? value);
 
@@ -45,6 +52,8 @@ abstract class ShootingSession {
 
 class DetailedShootingSession implements ShootingSession {
   @override
+  final String sessionUuid;
+  @override
   int? id;
   @override
   DateTime? date;
@@ -55,29 +64,34 @@ class DetailedShootingSession implements ShootingSession {
   List<Series> series;
   @override
   String status;
-  String? analyse;
+  @override
+  CoachSessionAnalysis? coachAnalysis;
   @override
   String? synthese;
   @override
   String category;
   @override
-  List<String> exercises;
+  String? exerciseId;
+  @override
+  ExerciseExecution? exerciseExecution;
   @override
   String? photoPath;
 
   DetailedShootingSession({
+    String? sessionUuid,
     this.id,
     this.date,
     required this.weapon,
     required this.caliber,
     required this.series,
     this.status = SessionConstants.statusRealisee,
-    this.analyse,
+    this.coachAnalysis,
     this.synthese,
     this.category = SessionConstants.categoryEntrainement,
-    List<String>? exercises,
+    this.exerciseId,
+    this.exerciseExecution,
     this.photoPath,
-  }) : exercises = exercises ?? <String>[];
+  }) : sessionUuid = sessionUuid ?? const Uuid().v4();
 
   @override
   String get sessionType => ShootingSession.detailedType;
@@ -85,16 +99,18 @@ class DetailedShootingSession implements ShootingSession {
   @override
   Map<String, dynamic> toMap() => {
         'sessionType': sessionType,
+        'sessionUuid': sessionUuid,
         'id': id,
         'date': date?.toIso8601String(),
         'weapon': weapon,
         'caliber': caliber,
         'series': series.map((s) => s.toMap()).toList(),
         'status': status,
-        'analyse': analyse,
+        'coachAnalysis': coachAnalysis?.toMap(),
         'synthese': synthese,
         'category': category,
-        'exercises': exercises,
+        'exerciseId': exerciseId,
+        'exerciseExecution': exerciseExecution?.toMap(),
         'photoPath': photoPath,
       };
 
@@ -124,21 +140,23 @@ class DetailedShootingSession implements ShootingSession {
       throw const FormatException('Brouillon de séance guidée invalide.');
     }
     return DetailedShootingSession(
+      sessionUuid: _readSessionUuid(map['sessionUuid']),
       id: _readId(map['id']),
       date: date,
       weapon: weapon,
       caliber: caliber,
       series: parsedSeries,
       status: status,
-      analyse: map['analyse'] as String?,
+      coachAnalysis: _readCoachAnalysis(map['coachAnalysis']),
       synthese: map['synthese'] as String?,
       category: category,
-      exercises: _readExercises(map['exercises']),
+      exerciseId: _readExerciseId(map),
+      exerciseExecution: _readExerciseExecution(map['exerciseExecution']),
       photoPath: map['photoPath'] as String?,
     );
   }
 
-  bool get hasAnalysis => analyse != null && analyse!.trim().isNotEmpty;
+  bool get hasAnalysis => coachAnalysis != null;
 
   bool get isDraft => status == SessionConstants.statusDraft;
 
@@ -156,7 +174,23 @@ class DetailedShootingSession implements ShootingSession {
   bool get hasSynthese => synthese != null && synthese!.trim().isNotEmpty;
 }
 
+ExerciseExecution? _readExerciseExecution(dynamic value) {
+  if (value is! Map) return null;
+  return ExerciseExecution.fromMap(Map<String, dynamic>.from(value));
+}
+
+CoachSessionAnalysis? _readCoachAnalysis(dynamic value) {
+  if (value is! Map) return null;
+  try {
+    return CoachSessionAnalysis.fromMap(Map<String, dynamic>.from(value));
+  } on FormatException {
+    return null;
+  }
+}
+
 class SimpleShootingSession implements ShootingSession {
+  @override
+  final String sessionUuid;
   @override
   int? id;
   @override
@@ -174,11 +208,16 @@ class SimpleShootingSession implements ShootingSession {
   @override
   String category;
   @override
-  List<String> exercises;
+  String? exerciseId;
+  @override
+  ExerciseExecution? get exerciseExecution => null;
+  @override
+  CoachSessionAnalysis? get coachAnalysis => null;
   @override
   String? photoPath;
 
   SimpleShootingSession({
+    String? sessionUuid,
     this.id,
     required DateTime this.date,
     required this.weapon,
@@ -187,11 +226,11 @@ class SimpleShootingSession implements ShootingSession {
     required num distance,
     this.synthese,
     this.category = SessionConstants.categoryEntrainement,
-    List<String>? exercises,
+    this.exerciseId,
     this.photoPath,
-  })  : distance = distance.toDouble(),
-        status = SessionConstants.statusRealisee,
-        exercises = exercises ?? <String>[] {
+  })  : sessionUuid = sessionUuid ?? const Uuid().v4(),
+        distance = distance.toDouble(),
+        status = SessionConstants.statusRealisee {
     validate();
   }
 
@@ -223,6 +262,7 @@ class SimpleShootingSession implements ShootingSession {
   @override
   Map<String, dynamic> toMap() => {
         'sessionType': sessionType,
+        'sessionUuid': sessionUuid,
         'id': id,
         'date': date?.toIso8601String(),
         'weapon': weapon,
@@ -232,7 +272,7 @@ class SimpleShootingSession implements ShootingSession {
         'status': SessionConstants.statusRealisee,
         'synthese': synthese,
         'category': category,
-        'exercises': exercises,
+        'exerciseId': exerciseId,
         'photoPath': photoPath,
       };
 
@@ -255,6 +295,7 @@ class SimpleShootingSession implements ShootingSession {
     }
     try {
       return SimpleShootingSession(
+        sessionUuid: _readSessionUuid(map['sessionUuid']),
         id: _readId(map['id']),
         date: date,
         weapon: map['weapon'] as String? ?? '',
@@ -264,7 +305,7 @@ class SimpleShootingSession implements ShootingSession {
         synthese: map['synthese'] as String?,
         category:
             map['category'] as String? ?? SessionConstants.categoryEntrainement,
-        exercises: _readExercises(map['exercises']),
+        exerciseId: _readExerciseId(map),
         photoPath: map['photoPath'] as String?,
       );
     } on ArgumentError catch (error) {
@@ -288,8 +329,20 @@ DateTime? _readDate(dynamic value) {
   return null;
 }
 
-List<String> _readExercises(dynamic value) =>
-    value is List ? value.whereType<String>().toList() : <String>[];
+String? _readExerciseId(Map<String, dynamic> map) {
+  if (map.containsKey('exerciseId')) {
+    return map['exerciseId'] is String ? map['exerciseId'] as String : null;
+  }
+  final legacyExercises = map['exercises'];
+  if (legacyExercises is! List) return null;
+  for (final value in legacyExercises) {
+    if (value is String) return value;
+  }
+  return null;
+}
+
+String? _readSessionUuid(dynamic value) =>
+    value is String && value.trim().isNotEmpty ? value : null;
 
 extension ShootingSessionTypeAccess on ShootingSession {
   bool get isSimple => this is SimpleShootingSession;
@@ -310,11 +363,7 @@ extension ShootingSessionTypeAccess on ShootingSession {
     (this as DetailedShootingSession).series = value;
   }
 
-  String? get analyse => this is DetailedShootingSession
-      ? (this as DetailedShootingSession).analyse
-      : null;
-
-  bool get hasAnalysis => analyse != null && analyse!.trim().isNotEmpty;
+  bool get hasAnalysis => coachAnalysis != null;
 
   int get totalShotCount => this is SimpleShootingSession
       ? (this as SimpleShootingSession).shotCount

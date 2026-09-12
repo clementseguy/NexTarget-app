@@ -2,6 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import '../models/coach_session_analysis.dart';
+import '../models/exercise.dart';
+import '../models/exercise_execution.dart';
+import '../models/series.dart';
 import '../models/shooting_session.dart';
 import '../constants/session_constants.dart';
 import 'auth_service.dart';
@@ -22,6 +26,13 @@ import 'network_error.dart';
 /// [CoachAnalysisException] avec des messages user-friendly affichés
 /// tels quels par l'UI (SessionCoachAnalysisSection).
 class ServerCoachAnalysisService {
+  static const int personalExerciseIdMaxLength = 128;
+  static const int personalExerciseNameMaxLength = 120;
+  static const int personalExerciseDescriptionMaxLength = 2000;
+  static const int personalExerciseInstructionMaxLength = 500;
+  static const int personalExerciseInstructionsMaxCount = 20;
+  static const int exerciseExecutionCommentMaxLength = 1000;
+
   final String baseUrl;
   final AuthService _authService;
   final http.Client _client;
@@ -33,36 +44,133 @@ class ServerCoachAnalysisService {
   })  : _authService = authService,
         _client = client ?? AuthenticatedHttpClient(authService);
 
-  Map<String, dynamic> _seriesToJson(dynamic s) {
+  Map<String, dynamic> _seriesToJson(Series series) {
     return {
-      'shot_count': s.shotCount,
-      'distance': s.distance,
-      'points': s.points,
-      'group_size_cm': s.groupSize,
-      'comment': s.comment,
+      'id': series.id,
+      'shot_count': series.shotCount,
+      'distance': series.distance,
+      'points': series.points,
+      'group_size_cm': series.groupSize,
+      'comment': series.comment,
+      'hand_method': series.handMethod == HandMethod.oneHand ? 'one' : 'two',
+      'completed': series.isCompleted,
+      'draft_started': series.isDraftStarted,
+      'score_entered': series.isScoreEntered,
     };
   }
 
-  /// Envoie la session au serveur et retourne le texte d'analyse.
+  Map<String, dynamic>? _personalExerciseToJson(Exercise? exercise) {
+    if (exercise == null || exercise.origin != ExerciseOrigin.personal) {
+      return null;
+    }
+    _checkTextLength(
+      exercise.id,
+      personalExerciseIdMaxLength,
+      'identifiant de l’exercice personnel',
+    );
+    _checkTextLength(
+      exercise.name,
+      personalExerciseNameMaxLength,
+      'nom de l’exercice personnel',
+    );
+    if (exercise.description != null) {
+      _checkTextLength(
+        exercise.description!,
+        personalExerciseDescriptionMaxLength,
+        'description de l’exercice personnel',
+      );
+    }
+    if (exercise.consignes.length > personalExerciseInstructionsMaxCount) {
+      throw InvalidNetworkRequestException(
+        'L’exercice personnel contient trop de consignes.',
+      );
+    }
+    for (final instruction in exercise.consignes) {
+      _checkTextLength(
+        instruction,
+        personalExerciseInstructionMaxLength,
+        'consigne de l’exercice personnel',
+      );
+    }
+    return {
+      'id': exercise.id,
+      'name': exercise.name,
+      'origin': exercise.origin.serializedName,
+      'description': exercise.description,
+      'consignes': exercise.consignes,
+    };
+  }
+
+  Map<String, dynamic>? _exerciseExecutionToJson(
+    ExerciseExecution? execution,
+  ) {
+    if (execution == null) return null;
+    if (execution.comment != null) {
+      _checkTextLength(
+        execution.comment!,
+        exerciseExecutionCommentMaxLength,
+        'commentaire d’exécution',
+      );
+    }
+    return {
+      'performed': execution.performed,
+      'protocol_followed': execution.protocolFollowed?.name,
+      'comment': execution.comment,
+    };
+  }
+
+  void _checkTextLength(String value, int maximum, String fieldLabel) {
+    if (value.isEmpty || value.runes.length > maximum) {
+      throw InvalidNetworkRequestException(
+        'Le $fieldLabel est vide ou dépasse la taille autorisée.',
+      );
+    }
+  }
+
+  /// Envoie la session au serveur et retourne le débrief structuré.
   /// [promptVariant] permet la future sélection de persona coach
   /// (neutre / cool), défaut = 'coach_neutre'.
-  Future<String> analyzeSession(
+  Future<CoachSessionAnalysis> analyzeSession(
     DetailedShootingSession session, {
+    required bool coachDataSharingAllowed,
+    Exercise? exercise,
+    String? experienceLevel,
     String promptVariant = 'coach_neutre',
   }) async {
+    if (!coachDataSharingAllowed) {
+      throw CoachConsentRequiredException();
+    }
     if (session.status != SessionConstants.statusRealisee) {
       throw CoachAnalysisException(
         'Seule une session réalisée peut être analysée par le Coach.',
       );
     }
+    if (session.exerciseId != null && exercise?.id != session.exerciseId) {
+      throw InvalidNetworkRequestException(
+        'L’exercice associé à la session est indisponible.',
+      );
+    }
+    final personalExercise = _personalExerciseToJson(exercise);
+    final exerciseExecution = session.exerciseId == null
+        ? null
+        : _exerciseExecutionToJson(session.exerciseExecution);
     final body = jsonEncode({
       'session': {
+        'session_id': session.sessionUuid,
+        'session_type': session.sessionType,
+        'status': session.status,
         'weapon': session.weapon,
         'caliber': session.caliber,
         'date': session.date?.toIso8601String(),
+        'category': session.category,
+        'exerciseId': session.exerciseId,
+        'exercise_origin': exercise?.origin.serializedName,
         'series': session.series.map(_seriesToJson).toList(),
         'synthese': session.synthese,
+        'personal_exercise': personalExercise,
+        'exercise_execution': exerciseExecution,
       },
+      'experience_level': experienceLevel,
       'prompt_variant': promptVariant,
     });
 
@@ -118,11 +226,15 @@ class ServerCoachAnalysisService {
       );
     }
 
-    final data = jsonDecode(response.body) as Map<String, dynamic>;
-    final analysis = data['analysis']?.toString();
-    if (analysis == null || analysis.trim().isEmpty) {
-      throw CoachAnalysisException('Réponse vide du modèle.');
+    try {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return CoachSessionAnalysis.fromMap(data);
+    } on FormatException catch (error) {
+      throw CoachAnalysisException(
+        'Réponse structurée invalide du Coach : ${error.message}',
+      );
+    } on TypeError {
+      throw CoachAnalysisException('Réponse structurée invalide du Coach.');
     }
-    return analysis;
   }
 }

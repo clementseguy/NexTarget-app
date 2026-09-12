@@ -54,7 +54,7 @@ class _GuidedSessionPreparationScreenState
   late DateTime _date;
   String _category = SessionConstants.categoryEntrainement;
   late HandMethod _handMethod;
-  final Set<String> _selectedExerciseIds = <String>{};
+  String? _selectedExerciseId;
   List<Exercise> _exercises = const [];
   bool _loadingExercises = true;
   bool _saving = false;
@@ -135,7 +135,7 @@ class _GuidedSessionPreparationScreenState
           weapon: _weaponController.text,
           caliber: _caliberController.text,
           category: _category,
-          exercises: _selectedExerciseIds.toList(),
+          exerciseId: _selectedExerciseId,
           seriesCount: _positiveInt(_seriesCountController.text)!,
           shotsPerSeries: _positiveInt(_shotsController.text)!,
           initialDistance: _positiveInt(_distanceController.text)!,
@@ -216,15 +216,11 @@ class _GuidedSessionPreparationScreenState
               }),
             ),
             const SizedBox(height: 16),
-            ExercisesSelector(
+            ExerciseSelector(
               exercises: _exercises,
-              selectedIds: _selectedExerciseIds,
+              selectedId: _selectedExerciseId,
               isLoading: _loadingExercises,
-              onToggle: (id) => setState(() {
-                _selectedExerciseIds.contains(id)
-                    ? _selectedExerciseIds.remove(id)
-                    : _selectedExerciseIds.add(id);
-              }),
+              onChanged: (id) => setState(() => _selectedExerciseId = id),
             ),
             const SizedBox(height: 16),
             Row(

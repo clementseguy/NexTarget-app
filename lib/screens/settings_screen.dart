@@ -25,13 +25,15 @@ String _avatarInitial(Map<String, dynamic>? user) {
   return '';
 }
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
-  // Clé statique : un seul SettingsScreen est monté à la fois, elle permet de
-  // rafraîchir le râtelier après un import de sauvegarde sans faire de
-  // SettingsScreen un StatefulWidget.
-  static final _weaponRackKey = GlobalKey<WeaponRackSectionState>();
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  final _weaponRackKey = GlobalKey<WeaponRackSectionState>();
 
   Future<void> _signIn(BuildContext context, AuthProvider authProvider) async {
     try {
@@ -386,6 +388,84 @@ class SettingsScreen extends StatelessWidget {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          CheckboxListTile(
+                            contentPadding: EdgeInsets.zero,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            title: Row(
+                              children: [
+                                const Expanded(
+                                  child: Text(
+                                    'Partager les données avec les Coachs',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                IconButton(
+                                  tooltip: 'Pourquoi partager les données ?',
+                                  icon: const Icon(Icons.help_outline),
+                                  onPressed: () => showDialog<void>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text(
+                                        'Partage des données',
+                                      ),
+                                      content: const Text(
+                                        'Pour être utilisés, les Coachs ont besoin d’analyser les données de vos sessions. Si vous ne souhaitez pas partager vos données, les Coachs ne peuvent pas être utilisés.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: const Text('Fermer'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            value: settings.isCoachDataSharingAllowed,
+                            onChanged: (value) {
+                              if (value != null) {
+                                settings.updateCoachDataSharingAllowed(value);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Niveau d\'expérience',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 12),
+                          SegmentedButton<String>(
+                            key: const Key('coach_experience_level'),
+                            segments: const [
+                              ButtonSegment(
+                                value: 'beginner',
+                                label: Text('Débutant'),
+                              ),
+                              ButtonSegment(
+                                value: 'advanced',
+                                label: Text('Avancé'),
+                              ),
+                              ButtonSegment(
+                                value: 'expert',
+                                label: Text('Expert'),
+                              ),
+                            ],
+                            selected: settings.coachExperienceLevel == null
+                                ? const <String>{}
+                                : {settings.coachExperienceLevel!},
+                            emptySelectionAllowed: true,
+                            onSelectionChanged: (selected) {
+                              settings.updateCoachExperienceLevel(
+                                selected.isEmpty ? null : selected.first,
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          const Divider(),
+                          const SizedBox(height: 4),
                           Text(
                             'Ton du coach',
                             style: TextStyle(fontWeight: FontWeight.w600),

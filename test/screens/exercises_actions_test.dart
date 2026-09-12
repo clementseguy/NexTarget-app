@@ -1,13 +1,20 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive/hive.dart';
+import 'package:provider/provider.dart';
 import 'package:tir_sportif/models/exercise.dart';
 import 'package:tir_sportif/models/goal.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
+import 'package:tir_sportif/providers/settings_provider.dart';
 import 'package:tir_sportif/repositories/exercise_repository.dart';
 import 'package:tir_sportif/repositories/goal_repository.dart';
 import 'package:tir_sportif/screens/exercises_list_screen.dart';
 import 'package:tir_sportif/services/exercise_service.dart';
+import 'package:tir_sportif/services/coach_catalog_service.dart';
 import 'package:tir_sportif/services/goal_service.dart';
 import 'package:tir_sportif/services/session_service.dart';
 import 'package:tir_sportif/theme/app_theme.dart';
@@ -54,6 +61,19 @@ class _GoalRepository implements GoalRepository {
   Future<void> put(Goal goal) async {}
 }
 
+class _CountingCatalogService extends CoachCatalogService {
+  int calls = 0;
+
+  _CountingCatalogService(ExerciseRepository repository)
+      : super(baseUrl: 'https://server.test', repository: repository);
+
+  @override
+  Future<Exercise> downloadById(String requestedId) async {
+    calls++;
+    throw StateError('Le téléchargement ne doit pas démarrer.');
+  }
+}
+
 Exercise _exercise() => Exercise(
       id: 'ex-1',
       name: 'Exercice source',
@@ -68,7 +88,26 @@ Exercise _exercise() => Exercise(
       consignes: ['Première consigne', 'Deuxième consigne'],
     );
 
+Exercise _coachExercise() => Exercise(
+      id: 'coach-1',
+      name: 'Exercice Coach',
+      categoryEnum: ExerciseCategory.technique,
+      type: ExerciseType.stand,
+      origin: ExerciseOrigin.coachCatalog,
+      description: 'Description Coach',
+      createdAt: DateTime(2026, 9, 11),
+      consignes: ['Consigne Coach'],
+    );
+
 void main() {
+  setUpAll(() async {
+    final directory = await Directory.systemTemp.createTemp('nt155_exercises_');
+    Hive.init(directory.path);
+    await Hive.openBox('app_preferences', bytes: Uint8List(0));
+  });
+
+  tearDownAll(Hive.close);
+
   Future<
       ({
         _ExerciseRepository exerciseRepository,
@@ -76,11 +115,15 @@ void main() {
       })> pumpList(
     WidgetTester tester, {
     List<ShootingSession> sessions = const [],
+    List<Exercise>? exercises,
     ThemeData? theme,
+    bool debugCatalogControlEnabled = true,
+    CoachCatalogService? catalogService,
+    String? experienceLevel,
   }) async {
     await tester.binding.setSurfaceSize(const Size(1100, 1000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    final exerciseRepository = _ExerciseRepository([_exercise()]);
+    final exerciseRepository = _ExerciseRepository(exercises ?? [_exercise()]);
     final sessionRepository = FakeSessionRepository();
     for (final session in sessions) {
       await sessionRepository.insert(session);
@@ -94,13 +137,26 @@ void main() {
       goalRepository: _GoalRepository(),
       sessionRepository: sessionRepository,
     );
+    final screen = ExercisesListScreen(
+      key: ObjectKey(exerciseService),
+      exerciseService: exerciseService,
+      sessionService: sessionService,
+      goalService: goalService,
+      catalogService: catalogService,
+      debugCatalogControlEnabled: debugCatalogControlEnabled,
+    );
+    final preferencesBox = Hive.box('app_preferences');
+    await preferencesBox.clear();
+    if (experienceLevel != null) {
+      await preferencesBox.put('coach_experience_level', experienceLevel);
+    }
     await tester.pumpWidget(
-      MaterialApp(
-        theme: theme,
-        home: ExercisesListScreen(
-          exerciseService: exerciseService,
-          sessionService: sessionService,
-          goalService: goalService,
+      ChangeNotifierProvider<SettingsProvider>(
+        key: ObjectKey(exerciseService),
+        create: (_) => SettingsProvider(preferencesBox: preferencesBox),
+        child: MaterialApp(
+          theme: theme,
+          home: screen,
         ),
       ),
     );
@@ -110,6 +166,55 @@ void main() {
       sessionRepository: sessionRepository,
     );
   }
+
+  testWidgets('le contrôle de téléchargement DEBUG est dans la topbar',
+      (tester) async {
+    await pumpList(tester);
+
+    expect(find.byTooltip('Télécharger un exercice Coach'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Télécharger un exercice Coach'));
+    await tester.pumpAndSettle();
+    expect(find.text('Télécharger un exercice Coach'), findsOneWidget);
+    expect(find.byKey(const Key('coach_catalog_id_field')), findsOneWidget);
+  });
+
+  testWidgets('n’effectue aucun téléchargement à l’ouverture', (tester) async {
+    final repository = _ExerciseRepository([_exercise()]);
+    final catalogService = _CountingCatalogService(repository);
+
+    await pumpList(tester, catalogService: catalogService);
+
+    expect(catalogService.calls, 0);
+  });
+
+  testWidgets('le contrôle peut être masqué hors configuration DEBUG',
+      (tester) async {
+    await pumpList(tester, debugCatalogControlEnabled: false);
+
+    expect(find.byTooltip('Télécharger un exercice Coach'), findsNothing);
+  });
+
+  testWidgets(
+    'affiche la provenance Coach et ouvre un détail sans mutations',
+    (tester) async {
+      await pumpList(tester, exercises: [_coachExercise()]);
+
+      expect(find.text('Créé par le Coach'), findsOneWidget);
+      expect(find.byTooltip('Modifier'), findsNothing);
+      expect(find.byTooltip('Actions sur Exercice Coach'), findsNothing);
+
+      await tester.tap(find.text('Exercice Coach'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Détail de l’exercice'), findsOneWidget);
+      expect(find.text('Créé par le Coach'), findsOneWidget);
+      expect(find.text('Description Coach'), findsOneWidget);
+      expect(find.text('Consigne Coach'), findsOneWidget);
+      expect(find.byTooltip('Enregistrer'), findsNothing);
+      expect(find.byTooltip('Supprimer'), findsNothing);
+    },
+  );
 
   testWidgets(
     'Dupliquer ouvre un formulaire de création entièrement prérempli',
@@ -163,15 +268,95 @@ void main() {
   testWidgets('la carte reste lisible dans le thème France', (tester) async {
     await pumpList(tester, theme: AppTheme.bleuBlancRougeTheme);
 
-    final details = tester.widget<Text>(
-      find.text('Type: Stand · Difficulté: Avancé'),
-    );
+    final type = tester.widget<Text>(find.text('Stand'));
+    final difficulty = tester.widget<Text>(find.text('Avancé'));
     final duration = tester.widget<Text>(find.text('15 min'));
 
-    expect(details.style?.color?.computeLuminance(), lessThan(0.5));
+    expect(type.style?.color?.computeLuminance(), lessThan(0.5));
+    expect(difficulty.style?.color?.computeLuminance(), lessThan(0.5));
     expect(duration.style?.color?.computeLuminance(), lessThan(0.5));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('la carte mobile reste compacte et réserve 38 px aux actions', (
+    tester,
+  ) async {
+    await pumpList(tester);
+    await tester.binding.setSurfaceSize(const Size(390, 1000));
+    await tester.pumpAndSettle();
+
+    final card = find.byKey(const ValueKey('exercise_card_ex-1'));
+    final actions = find.byKey(const ValueKey('exercise_actions_ex-1'));
+
+    expect(tester.getSize(actions).width, 38);
+    expect(tester.getSize(card).height, lessThan(180));
+    expect(find.text('1 objectif'), findsOneWidget);
+    expect(find.text('Vitesse'), findsOneWidget);
+    expect(find.text('Stand'), findsOneWidget);
+    expect(find.text('Avancé'), findsOneWidget);
+    expect(find.text('2 consignes'), findsOneWidget);
+    expect(find.text('15 min'), findsOneWidget);
+    expect(find.text('Description complète'), findsNothing);
+    expect(find.text('Timer'), findsNothing);
+    expect(find.byTooltip('Modifier'), findsNothing);
+    expect(find.byTooltip('Planifier une session'), findsOneWidget);
+    expect(find.byTooltip('Actions sur Exercice source'), findsOneWidget);
+
+    await tester.tap(find.text('Exercice source'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Modifier exercice'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final themeType in AppThemeType.values) {
+    testWidgets(
+      'les couleurs conditionnelles respectent le thème ${themeType.name}',
+      (tester) async {
+        final theme = AppTheme.forType(themeType);
+        await pumpList(
+          tester,
+          theme: theme,
+          experienceLevel: 'advanced',
+        );
+
+        final planButton = tester.widget<IconButton>(
+          find.byKey(const ValueKey('exercise_plan_ex-1')),
+        );
+        final planColor = (planButton.icon as Icon).color;
+        final type = tester.widget<Text>(find.text('Stand'));
+        final goal = tester.widget<Text>(find.text('1 objectif'));
+        final instructions = tester.widget<Text>(find.text('2 consignes'));
+        final difficulty = tester.widget<Text>(find.text('Avancé'));
+        final expectedGreen = theme.brightness == Brightness.dark
+            ? theme.colorScheme.secondary
+            : const Color(0xFF147A3D);
+        final leading = tester.widget<SizedBox>(
+          find.byKey(const ValueKey('exercise_leading_ex-1')),
+        );
+
+        expect(leading.child, isA<Icon>());
+        expect(planButton.icon, isA<Icon>());
+        expect(type.style?.color, planColor);
+        expect(instructions.style?.color, goal.style?.color);
+        expect(difficulty.style?.color, expectedGreen);
+
+        await pumpList(
+          tester,
+          theme: theme,
+          exercises: [_exercise().copyWith(type: ExerciseType.home)],
+          experienceLevel: 'beginner',
+        );
+
+        final homeType = tester.widget<Text>(find.text('Maison'));
+        final unmatchedDifficulty = tester.widget<Text>(find.text('Avancé'));
+        expect(find.byKey(const ValueKey('exercise_plan_ex-1')), findsNothing);
+        expect(homeType.style?.color, isNot(planColor));
+        expect(unmatchedDifficulty.style?.color, isNot(expectedGreen));
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   testWidgets('Réinitialiser resynchronise le filtre de difficulté affiché', (
     tester,
@@ -247,7 +432,7 @@ void main() {
       weapon: 'Pistolet',
       caliber: '9 mm',
       series: [Series(distance: 25, points: 40, groupSize: 5)],
-      exercises: const ['ex-1'],
+      exerciseId: 'ex-1',
     );
     final repositories = await pumpList(tester, sessions: [linked, linked]);
 

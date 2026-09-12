@@ -22,7 +22,7 @@ void main() {
       }
     });
 
-    test('écrit un export version 3 dans le répertoire temporaire injecté',
+    test('écrit un export version 6 dans le répertoire temporaire injecté',
         () async {
       final fixture = await BackupServiceTestFixture.create(tempDirectory);
 
@@ -35,16 +35,24 @@ void main() {
       final data =
           jsonDecode(await file.readAsString()) as Map<String, dynamic>;
       expect(data['format'], 'mycoach-data');
-      expect(data['version'], 3);
+      expect(data['version'], 6);
       expect(data['sessions_count'], 1);
       expect(data['goals_count'], 1);
       expect(data['weapons_count'], 1);
       expect(data['exercises_count'], 1);
+      final session = (data['sessions'] as List).single as Map<String, dynamic>;
+      expect(session['exerciseId'], 'exercise-export');
+      expect(session.containsKey('exercises'), isFalse);
+      expect(session.containsKey('analyse'), isFalse);
+      expect(
+        (session['coachAnalysis'] as Map)['debrief'],
+        'Débrief structuré exporté',
+      );
       expect((data['exercises'] as List).single['difficulty'], 'expert');
+      expect((data['exercises'] as List).single['origin'], 'coach_catalog');
     });
 
-    test('conserve la difficulté au cycle export/import et ignore une inconnue',
-        () async {
+    test('conserve difficulté et provenance au cycle export/import', () async {
       final fixture = await BackupServiceTestFixture.create(tempDirectory);
       final file = await fixture.service.exportAllSessionsToJsonFile();
       final data =
@@ -56,6 +64,10 @@ void main() {
         (await fixture.exerciseRepository.getAll()).single.difficulty,
         ExerciseDifficulty.expert,
       );
+      expect(
+        (await fixture.exerciseRepository.getAll()).single.origin,
+        ExerciseOrigin.coachCatalog,
+      );
 
       await fixture.exerciseRepository.clear();
       (data['exercises'] as List).single['difficulty'] = 'impossible';
@@ -63,6 +75,23 @@ void main() {
       expect(
         (await fixture.exerciseRepository.getAll()).single.difficulty,
         isNull,
+      );
+    });
+
+    test('importe un exercice historique sans provenance comme personnel',
+        () async {
+      final fixture = await BackupServiceTestFixture.create(tempDirectory);
+      final file = await fixture.service.exportAllSessionsToJsonFile();
+      final data =
+          jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+      (data['exercises'] as List).single.remove('origin');
+
+      await fixture.exerciseRepository.clear();
+      await fixture.service.importSessionsFromJson(jsonEncode(data));
+
+      expect(
+        (await fixture.exerciseRepository.getAll()).single.origin,
+        ExerciseOrigin.personal,
       );
     });
   });

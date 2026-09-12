@@ -56,7 +56,6 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
         .toList();
     final isRealisee = session.status == SessionConstants.statusRealisee;
     final bool isPlanned = session.status == SessionConstants.statusPrevue;
-    String? analyse = _currentSessionData!['session']['analyse'];
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -168,10 +167,10 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
             const SizedBox(height: 16),
             SessionPhotoSection(photoPath: session.photoPath!),
           ],
-          if (session.exercises.isNotEmpty) ...[
+          if (session.exerciseId != null) ...[
             const SizedBox(height: 16),
             SessionExercisesSection(
-              exerciseIds: session.exercises,
+              exerciseId: session.exerciseId!,
               allExercises: _allExercises,
             ),
           ],
@@ -179,7 +178,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
             const SizedBox(height: 16),
             SessionCoachAnalysisSection(
               session: session,
-              analyse: analyse,
+              analysis: session.coachAnalysis,
               onAnalyseUpdated: () async {
                 final all = await _sessionService.getAllSessions();
                 final updated = all.firstWhere((s) => s.id == session.id,

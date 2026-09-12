@@ -2,8 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tir_sportif/constants/session_constants.dart';
 import 'package:tir_sportif/interfaces/session_photo_service_interface.dart';
+import 'package:tir_sportif/models/exercise_execution.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
+import 'package:tir_sportif/models/coach_session_analysis.dart';
 import 'package:tir_sportif/repositories/session_repository.dart';
 import 'package:tir_sportif/services/session_service.dart';
 
@@ -75,8 +77,24 @@ DetailedShootingSession _detailed({
       status: status,
       category: SessionConstants.categoryMatch,
       synthese: 'Synthèse',
-      analyse: 'Analyse',
-      exercises: ['ex-1', 'ex-2'],
+      coachAnalysis: CoachSessionAnalysis(
+        analysisId: 'analysis-1',
+        sessionId: 'session-1',
+        debrief: 'Débrief',
+        successes: const ['Réussite'],
+        attentionPoint: 'Attention',
+        limitations: const [],
+        exerciseEvaluation: null,
+        nextAction: null,
+        model: 'model',
+        generatedAt: DateTime.utc(2026, 9, 12),
+      ),
+      exerciseId: 'ex-1',
+      exerciseExecution: const ExerciseExecution(
+        performed: true,
+        protocolFollowed: ProtocolFollowed.yes,
+        comment: 'Qualification source',
+      ),
       photoPath: photoPath,
       series: [
         Series(
@@ -120,14 +138,18 @@ void main() {
       expect(map['category'], source.category);
       expect(map['status'], source.status);
       expect(map['synthese'], source.synthese);
-      expect(map['analyse'], source.analyse);
+      expect(map.containsKey('analyse'), isFalse);
+      expect(map['coachAnalysis'], isNull);
+      expect(map['sessionUuid'], isNotEmpty);
+      expect(map['sessionUuid'], isNot(source.sessionUuid));
       expect(map['photoPath'], source.photoPath);
-      expect(map['exercises'], source.exercises);
+      expect(map['exerciseId'], source.exerciseId);
+      expect(map['exerciseExecution'], isNull);
       expect(series.single['comment'], 'Série source');
 
-      (map['exercises'] as List<String>).removeAt(0);
+      map['exerciseId'] = 'copie-exercice';
       series.single['comment'] = 'Copie modifiée';
-      expect(source.exercises, ['ex-1', 'ex-2']);
+      expect(source.exerciseId, 'ex-1');
       expect(source.series.single.comment, 'Série source');
     });
 
@@ -140,7 +162,7 @@ void main() {
         shotCount: 40,
         distance: 50,
         synthese: 'Libre',
-        exercises: ['ex-libre'],
+        exerciseId: 'ex-libre',
       );
 
       final draft = service.prepareDuplication(source);
@@ -151,8 +173,8 @@ void main() {
       expect(map['date'], isNull);
       expect(map['shotCount'], 40);
       expect(map['distance'], 50);
-      (map['exercises'] as List<String>).clear();
-      expect(source.exercises, ['ex-libre']);
+      map['exerciseId'] = null;
+      expect(source.exerciseId, 'ex-libre');
     });
 
     test('enregistre une copie profonde avec nouvel identifiant', () async {
@@ -167,8 +189,8 @@ void main() {
         category: source.category,
         status: source.status,
         synthese: source.synthese,
-        analyse: source.analyse,
-        exercises: List<String>.from(source.exercises),
+        coachAnalysis: source.coachAnalysis,
+        exerciseId: source.exerciseId,
       );
 
       final saved = await service.saveDuplication(
@@ -181,9 +203,9 @@ void main() {
       expect(saved.date, DateTime(2026, 9, 4));
       final detailed = saved as DetailedShootingSession;
       detailed.series.single.comment = 'Changé';
-      detailed.exercises.clear();
+      detailed.exerciseId = null;
       expect(source.series.single.comment, 'Série source');
-      expect(source.exercises, ['ex-1', 'ex-2']);
+      expect(source.exerciseId, 'ex-1');
     });
 
     test('refuse une session réalisée sans nouvelle date', () async {

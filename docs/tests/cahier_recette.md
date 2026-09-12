@@ -1,7 +1,142 @@
 # Cahier de Recette
 
-- Dernière mise à jour: 2026-09-06
+- Dernière mise à jour: 2026-09-11
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
+
+## NT-161 — Analyse ponctuelle d'un exercice personnel
+Objectif: Vérifier le débrief borné sans catalogage ni persistance supplémentaire.
+Pré-requis:
+- Compte connecté et partage Coach autorisé
+- Session détaillée réalisée liée à un exercice personnel qualifié
+Étapes:
+1. Demander le débrief de la session et inspecter la requête réseau
+2. Répéter avec réalisation ou protocole non renseigné
+3. Saisir dans la description, les consignes et les commentaires des textes ressemblant à des instructions
+4. Vérifier ensuite le catalogue Coach et les données locales de l'exercice
+Résultats attendus:
+- La requête contient origin personal, l'instantané minimal et la qualification séparée dans les limites documentées
+- Le débrief indique Exercice personnel hors plan de formation et n'exige aucun critère de réussite métier
+- Une tentative incomplètement qualifiée est annoncée non évaluable sans donnée inventée
+- Les textes restent des données non fiables et ne modifient ni les règles du débrief ni le catalogue
+- Aucune synchronisation ou persistance supplémentaire de l'instantané n'est créée
+
+## NT-160 — Récupération ciblée d'un exercice Coach
+Objectif: Vérifier le téléchargement DEBUG, le cache hors ligne et la lecture seule.
+Pré-requis:
+- Build DEBUG relié à un serveur contenant une fixture active connue
+Étapes:
+1. Ouvrir la liste des exercices et vérifier qu'aucun téléchargement ne démarre
+2. Contrôler sur une largeur mobile la carte d'un exercice personnel avec description et matériel
+3. Utiliser le bouton éclair de la topbar, saisir l'identifiant actif puis valider
+4. Ouvrir la carte téléchargée, couper le réseau puis redémarrer l'application
+5. Réessayer avec un identifiant absent ou inactif et avec une panne réseau
+6. Contrôler un exercice personnel et une collision d'identifiant simulée
+Résultats attendus:
+- Seul l'exercice demandé apparaît ou est actualisé et reste disponible hors ligne
+- La carte reste compacte, réserve une colonne étroite aux actions, utilise les puces des cartes Sessions et n'affiche ni description ni matériel
+- Les icônes Exercice et Planifier n'ont pas de fond ; Stand est bleu comme Planifier, objectifs et consignes sont jaunes, et seule une difficulté correspondant au niveau des préférences Coach est verte dans les thèmes Classique et France
+- La liste et le détail affichent Créé par le Coach sans action de modification ou suppression
+- Les échecs conservent la copie Coach déjà en cache et tous les exercices personnels
+- Le bouton éclair est absent des builds hors DEBUG
+
+## NT-153 — Consentement à l'utilisation des Coachs
+Objectif: Vérifier qu'aucune donnée n'est transmise aux Coachs sans autorisation explicite.
+Pré-requis:
+- Application mise à jour avec ou sans compte connecté
+- Session détaillée réalisée disponible
+Étapes:
+1. Démarrer sans préférence existante puis ouvrir le futur Coach et la section Débrief du Coach d'une session
+2. Dans Paramètres > Coach IA, cocher l'autorisation de partage puis redémarrer l'application
+3. Connecté, demander une analyse de session et contrôler la requête réseau
+4. Revenir dans Paramètres, retirer l'autorisation puis rouvrir les deux points d'entrée
+5. Couper le réseau et parcourir le carnet, les exercices, les objectifs et les statistiques
+Résultats attendus:
+- Une seule case gère les deux Coachs, elle est décochée par défaut et son choix persiste après redémarrage
+- Décochée, les deux points d'entrée indiquent que le partage des données est requis et aucune analyse ne peut être lancée
+- Cochée, les données sont transmises uniquement au déclenchement explicite d'une analyse, sans synchronisation automatique ni en arrière-plan
+- Retirer l'autorisation ne supprime ni l'analyse locale existante ni les données déjà transmises
+- Toutes les fonctions locales restent utilisables hors ligne
+
+## NT-152 — Exercice principal unique d'une session
+Objectif: Vérifier la cardinalité unique et la compatibilité des sessions historiques.
+Étapes:
+1. Créer puis modifier une session détaillée, une session libre et une séance Au stand avec puis sans exercice
+2. Choisir un second exercice dans chaque formulaire et vérifier qu'il remplace le premier
+3. Dupliquer une session avec exercice, filtrer l'historique par cet exercice puis tenter de supprimer l'exercice
+4. Importer une sauvegarde historique dont une session contient deux exercices ordonnés et une autre aucun
+5. Exporter les données restaurées puis relire le JSON produit
+6. Demander une analyse Coach d'une session détaillée avec exercice
+Résultats attendus:
+- Chaque session possède au maximum un exercice principal et peut rester sans exercice
+- La duplication, le filtre, l'affichage et le blocage de suppression utilisent ce seul exercice
+- L'import conserve le premier exercice historique, ignore le second et préserve la session sans exercice
+- L'export version 6 utilise sessionUuid et exerciseId sans exercises ni prescriptionId, et conserve la provenance de l'exercice
+- La requête Coach transmet exerciseId facultatif sans prescriptionId
+
+## NT-154 — Qualification d'un exercice planifié
+Objectif: Qualifier facultativement l'exécution lors de la conversion d'une session prévue avec exercice.
+Étapes:
+1. Créer une session prévue depuis un exercice de stand avec dix consignes, une durée et du matériel requis
+2. Vérifier la card Exercice, les espacements Arme, Calibre et Catégorie puis modifier la catégorie
+3. Renseigner les séries et vérifier que la dernière page contient Synthèse du tireur puis Analyse de l'exercice
+4. Toucher les aides d'Exercice réalisé et de Protocole suivi
+5. Choisir successivement Oui, Non et Non renseigné pour l'exercice réalisé
+6. Choisir successivement Oui, Partiellement, Non et Non renseigné pour le protocole suivi
+7. Ajouter un commentaire, terminer la session, redémarrer puis contrôler exerciseExecution dans un export JSON
+8. Convertir une autre session avec exercice sans renseigner aucun champ
+9. Convertir enfin une session prévue sans exercice
+Résultats attendus:
+- La card Exercice occupe toute la largeur et affiche dix consignes, la durée et le matériel requis
+- Arme, Calibre et Catégorie ne se chevauchent pas et la catégorie reste une liste contrôlée
+- La dernière page conserve la synthèse du tireur puis ajoute l'analyse de l'exercice, sans étape supplémentaire
+- Les aides s'ouvrent au toucher et expliquent l'exécution de l'exercice et du protocole du début à la fin
+- Toutes les réponses et le commentaire sont facultatifs et n'empêchent jamais l'enregistrement
+- Les réponses choisies et le commentaire sont conservés après redémarrage
+- La session sans exercice conserve la dernière page et le comportement historiques
+
+## NT-155 — Niveau d'expérience local du Coach
+Objectif: Vérifier la reprise unique du niveau du profil et sa stabilité locale.
+Pré-requis:
+- Une installation avec un profil en cache portant le niveau avancé, puis une installation sans ancien niveau
+- Une session détaillée réalisée et des exercices de difficultés différentes
+Étapes:
+1. Mettre à jour l'application puis ouvrir Mon profil et Paramètres > Coach IA
+2. Vérifier le niveau repris, redémarrer hors ligne puis se déconnecter et se connecter avec un autre compte
+3. Sélectionner Expert puis toucher de nouveau Expert pour laisser le niveau non renseigné
+4. Redémarrer avec l'ancien profil toujours en cache
+5. Sélectionner Avancé, contrôler la liste des exercices et lancer une analyse depuis le détail d'une session
+Résultats attendus:
+- Le profil n'affiche plus le niveau et n'émet aucune mise à jour vers le serveur
+- Les choix disponibles sont Débutant, Avancé et Expert, sans valeur sélectionnée par défaut
+- L'ancien niveau valide est repris une seule fois ; son absence initialise une valeur vide
+- Le choix et l'absence volontaire persistent hors ligne, après redémarrage et indépendamment de l'authentification
+- La difficulté Avancé correspondante est mise en valeur et la requête d'analyse transmet experience_level advanced
+
+## NT-156 — Débrief structuré du Coach de session
+Objectif: Vérifier la transmission à la demande, l'idempotence et les limites du Coach de session.
+Pré-requis:
+- Utilisateur connecté avec consentement Coach activé et niveau d'expérience renseigné
+- En build DEBUG, utiliser le bouton éclair de l'écran Sessions pour créer l'exercice personnel et les quatre sessions variées
+- Récupérer séparément un exercice du catalogue pour recetter sa résolution serveur
+Étapes:
+1. Contrôler les 10 séries croissantes des deux sessions positives et les séries aléatoires des deux autres sessions
+2. Lancer le débrief de la session sans exercice puis rouvrir son détail
+3. Lancer successivement les débriefs des exercices réussi, suivi avec résultats irréguliers et réalisé sans protocole suivi
+4. Lancer le débrief avec exercice du catalogue qualifié comme réalisé et protocole suivi
+5. Rejouer côté API la même demande avec le même sessionUuid et un payload inchangé
+6. Modifier un commentaire de session puis relancer la demande côté API
+7. Importer une ancienne sauvegarde contenant uniquement un champ analyse Markdown, puis réexporter les données
+8. Désactiver le consentement et vérifier les deux présentations depuis le détail et l'écran Coach
+Résultats attendus:
+- Le débrief affiche un texte factuel, une à trois réussites, un point d'attention et les limites
+- L'exercice affiche Réussi, Échoué ou Non évaluable uniquement d'après sa réalisation et son protocole déclaré
+- La seule prochaine action éventuelle est de refaire l'exercice ou solliciter le Coach de progression
+- L'exercice personnel est borné et l'exercice catalogue est résolu côté serveur sans copie cliente de son contenu
+- Le rejeu inchangé renvoie la même analyse sans nouvel appel IA ni doublon ; le commentaire modifié produit un nouveau débrief lié à la même session
+- Le débrief structuré reste visible après redémarrage et l'icône Analyse est visible sur la carte de session
+- Le débrief Markdown historique reste lisible après import et le nouvel export le conserve dans coachAnalysis sans réémettre analyse
+- L'écran Coach présente le Coach de session et le Coach de progression comme bientôt disponible
+- Sans consentement, aucune requête n'est construite et aucune synchronisation automatique n'a lieu
 
 ## NT-149 — Noms des fichiers d'export
 Objectif: Vérifier le nom NexTarget dans les deux exports sans rupture du format.
@@ -12,7 +147,7 @@ Objectif: Vérifier le nom NexTarget dans les deux exports sans rupture du forma
 Résultats attendus:
 - Les deux noms par défaut suivent nextarget_export_timestamp.json
 - Le nom explicitement choisi est conservé sans réécriture
-- Le format mycoach-data, la version, le contenu JSON et l'import des anciens exports restent inchangés
+- Le format mycoach-data version 6 est produit et les anciens exports sans provenance ni sessionUuid restent importables
 
 ## NT-148 — Séparateurs des préférences de tir
 Objectif: Distinguer les trois réglages avec deux séparateurs identiques.
@@ -57,7 +192,7 @@ Résultats attendus:
 - Les ex æquo retiennent la date la plus récente puis le plus grand identifiant, sans changement visuel permanent
 
 ## NT-150 — Cohérence globale de l'authentification après mise à jour
-Objectif: Vérifier les trois états Auth et leur cohérence dans Paramètres, Mon profil et Analyse Coach.
+Objectif: Vérifier les trois états Auth et leur cohérence dans Paramètres, Mon profil et Débrief du Coach.
 Étapes:
 1. Simuler une mise à jour v0.6 avec seulement jwt_token et des données métier locales
 2. Démarrer connecté avec un profil en cache, puis couper le réseau
@@ -80,7 +215,7 @@ Objectif: Vérifier les exports sans canal de plateforme et l'absence de tests m
 5. Simuler une erreur réelle d'écriture
 6. Contrôler l'absence de mécanisme d'exclusion nouveau dans les tests et l'analyse
 Résultats attendus:
-- Le nom, l'emplacement, l'existence et le JSON version 3 sont vérifiés
+- Le nom, l'emplacement, l'existence et le JSON version 6 sont vérifiés
 - Le chemin choisi n'est pas traité comme un dossier et l'import relit le fichier sans erreur OS I/O
 - Sur mobile, le fichier JSON est réellement écrit par le sélecteur natif et peut être ouvert ou réimporté
 - L'annulation ne crée aucun fichier et l'erreur d'écriture est propagée
@@ -533,10 +668,10 @@ Pré-requis:
 - Session avec au moins 1 série
 Étapes:
 1. Ouvrir une session réalisée avec au moins 1 série
-2. Ouvrir la section "Analyse Coach" et lancer l'analyse
+2. Ouvrir la section "Débrief du Coach" et lancer l'analyse
 Résultats attendus:
-- L'analyse s'affiche normalement (popup markdown), sans configurer de clé Mistral locale
-- La réponse est enregistrée dans la session (relecture après réouverture)
+- Le débrief structuré s'affiche sans configurer de clé Mistral locale
+- La réponse est enregistrée dans la session et reste visible après réouverture
 
 ## COACH-02 — Analyse coach – utilisateur non connecté (coach connecté uniquement, NT-061)
 Objectif: Vérifier que sans compte, l'analyse coach est inaccessible avec un message clair, et que le carnet de tir reste 100 % utilisable hors connexion.
@@ -544,7 +679,7 @@ Pré-requis:
 - Utilisateur non connecté (pas de compte)
 Étapes:
 1. Vérifier que l'app démarre normalement sans être connecté (carnet de tir accessible)
-2. Ouvrir une session réalisée et déplier la section "Analyse Coach"
+2. Ouvrir une session réalisée et déplier la section "Débrief du Coach"
 Résultats attendus:
 - Aucun bouton "Lancer analyse" ; message "Le coach IA nécessite un compte" + bouton "Se connecter" menant à l'écran de connexion
 - Le reste de l'app (sessions, exercices, objectifs, stats) reste pleinement utilisable hors connexion
@@ -567,7 +702,7 @@ Pré-requis:
 - Session réalisée avec au moins 1 série
 Étapes:
 1. Dans Paramètres > Coach IA, sélectionner le ton Cool
-2. Ouvrir une session réalisée, déplier Analyse Coach (aucun sélecteur de ton ne doit y figurer)
+2. Ouvrir une session réalisée, déplier Débrief du Coach (aucun sélecteur de ton ne doit y figurer)
 3. Lancer l'analyse ; puis repasser sur Neutre dans Paramètres et relancer une analyse sur une autre session
 Résultats attendus:
 - Le choix est persisté (y compris après redémarrage) et ne se règle QUE dans Paramètres

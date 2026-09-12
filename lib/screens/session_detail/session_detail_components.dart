@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import '../../constants/session_constants.dart';
+import '../../models/coach_session_analysis.dart';
 import '../../models/shooting_session.dart';
 import '../../models/series.dart';
 import '../../models/exercise.dart';
@@ -13,11 +13,11 @@ import '../../providers/settings_provider.dart';
 import '../../services/coach_analysis_exception.dart';
 import '../../services/auth_session_exceptions.dart';
 import '../../services/server_coach_analysis_service.dart';
+import '../../services/exercise_service.dart';
 import '../../services/network_error.dart';
 import '../../services/logger.dart';
 import '../../services/session_service.dart';
-import '../../utils/markdown_sanitizer.dart';
-import '../../widgets/coach_analysis_card.dart';
+import '../../widgets/coach_debrief_card.dart';
 import '../../widgets/session_chip.dart';
 
 /// Carte header récapitulative de la session
@@ -208,16 +208,18 @@ class _SimpleSessionHeader extends StatelessWidget {
 /// Section analyse coach avec bouton génération
 class SessionCoachAnalysisSection extends StatefulWidget {
   final DetailedShootingSession session;
-  final String? analyse;
+  final CoachSessionAnalysis? analysis;
   final VoidCallback onAnalyseUpdated;
-  final Future<String> Function()? analysisLoader;
+  final Future<CoachSessionAnalysis> Function()? analysisLoader;
+  final ServerCoachAnalysisService? analysisService;
 
   const SessionCoachAnalysisSection({
     super.key,
     required this.session,
-    required this.analyse,
+    this.analysis,
     required this.onAnalyseUpdated,
     this.analysisLoader,
+    this.analysisService,
   });
 
   @override
@@ -238,68 +240,63 @@ class _SessionCoachAnalysisSectionState
   /// Le ton du coach (NT-032) vient exclusivement de la préférence
   /// `coachPersona` (Paramètres > Coach IA — retour de recette S2 : pas de
   /// sélecteur dans la session) et part au serveur en `prompt_variant`.
-  Future<String> _fetchAnalysisText() async {
+  Future<CoachSessionAnalysis> _fetchAnalysis() async {
+    final settingsProvider =
+        Provider.of<SettingsProvider?>(context, listen: false);
+    if (settingsProvider == null ||
+        !settingsProvider.isCoachDataSharingAllowed) {
+      throw CoachConsentRequiredException();
+    }
     if (widget.analysisLoader != null) return widget.analysisLoader!();
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final persona =
-        Provider.of<SettingsProvider>(context, listen: false).coachPersona;
-    final serverService = ServerCoachAnalysisService(
-      baseUrl: AppConfig.I.authBaseUrl,
-      authService: authProvider.authService,
+    final serverService = widget.analysisService ??
+        ServerCoachAnalysisService(
+          baseUrl: AppConfig.I.authBaseUrl,
+          authService: authProvider.authService,
+        );
+    Exercise? exercise;
+    final exerciseId = widget.session.exerciseId;
+    if (exerciseId != null) {
+      final matches = (await ExerciseService().listAll())
+          .where((item) => item.id == exerciseId)
+          .toList();
+      exercise = matches.firstOrNull;
+    }
+    return serverService.analyzeSession(
+      widget.session,
+      coachDataSharingAllowed: settingsProvider.isCoachDataSharingAllowed,
+      exercise: exercise,
+      experienceLevel: settingsProvider.coachExperienceLevel,
+      promptVariant: settingsProvider.coachPersona,
     );
-    return serverService.analyzeSession(widget.session, promptVariant: persona);
   }
 
   Future<void> _launchAnalysis() async {
     setState(() => _isAnalysing = true);
     try {
-      final rawReply = await _fetchAnalysisText();
-      final coachReply = sanitizeCoachMarkdown(rawReply);
-
-      if (coachReply.trim().isNotEmpty) {
-        // Afficher la popup markdown
-        if (!mounted) return;
-        await showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Analyse du coach'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: SingleChildScrollView(
-                child: MarkdownBody(data: coachReply),
-              ),
+      final coachReply = await _fetchAnalysis();
+      if (!mounted) return;
+      await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Débrief du Coach'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: CoachDebriefCard(analysis: coachReply),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Fermer'),
-              ),
-            ],
           ),
-        );
-
-        // Enregistrer la réponse dans la session
-        final updatedSession = widget.session..analyse = coachReply;
-        await SessionService().updateSession(updatedSession);
-        widget.onAnalyseUpdated();
-      } else {
-        // Erreur API
-        if (!mounted) return;
-        await showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Erreur'),
-            content: const Text(
-                'Une erreur est survenue lors de l\'analyse, veuillez réesayer ultérieurement.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Fermer'),
-              ),
-            ],
-          ),
-        );
-      }
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Fermer'),
+            ),
+          ],
+        ),
+      );
+      final updatedSession = widget.session..coachAnalysis = coachReply;
+      await SessionService().updateSession(updatedSession);
+      widget.onAnalyseUpdated();
     } catch (e) {
       AppLogger.I.error('COACH UI: analyse impossible', e);
       if (e is SessionExpiredException && mounted) {
@@ -308,13 +305,19 @@ class _SessionCoachAnalysisSectionState
           await authProvider.handleConfirmedInvalidation();
         }
       }
-      final presentation = e is CoachAnalysisException
-          ? const NetworkErrorPresentation(
+      final presentation = e is CoachConsentRequiredException
+          ? NetworkErrorPresentation(
               family: NetworkErrorFamily.invalidRequest,
-              message: 'Cette session ne peut pas être analysée.',
+              message: e.message,
               action: NetworkErrorAction.none,
             )
-          : presentNetworkError(e);
+          : e is CoachAnalysisException
+              ? const NetworkErrorPresentation(
+                  family: NetworkErrorFamily.invalidRequest,
+                  message: 'Cette session ne peut pas être analysée.',
+                  action: NetworkErrorAction.none,
+                )
+              : presentNetworkError(e);
       if (mounted) {
         await showDialog(
           context: context,
@@ -357,16 +360,13 @@ class _SessionCoachAnalysisSectionState
       color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ExpansionTile(
-        initiallyExpanded:
-            widget.analyse != null && widget.analyse!.trim().isNotEmpty,
+        initiallyExpanded: _hasAnalysis,
         leading: Icon(Icons.analytics,
             color: Theme.of(context).colorScheme.secondary),
-        title: const Text('Analyse Coach',
+        title: const Text('Débrief du Coach',
             style: TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(
-          (widget.analyse != null && widget.analyse!.trim().isNotEmpty)
-              ? 'Analyse disponible'
-              : 'Aucune analyse générée',
+          _hasAnalysis ? 'Analyse disponible' : 'Aucune analyse générée',
           style: const TextStyle(fontSize: 12),
         ),
         children: [
@@ -390,6 +390,30 @@ class _SessionCoachAnalysisSectionState
             // affiche un message clair + accès direct à l'écran de connexion.
             Consumer<AuthProvider>(
               builder: (context, authProvider, _) {
+                final settingsProvider =
+                    Provider.of<SettingsProvider?>(context);
+                if (settingsProvider?.isCoachDataSharingAllowed != true) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12.0,
+                      vertical: 8,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Le partage de vos données est requis pour que le Coach puisse les analyser.',
+                        ),
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.settings_outlined),
+                          label: const Text('Paramètres Coach'),
+                          onPressed: () => AppRouter.showSettingsTab(context),
+                        ),
+                      ],
+                    ),
+                  );
+                }
                 if (authProvider.isVerificationPending) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(
@@ -456,52 +480,46 @@ class _SessionCoachAnalysisSectionState
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.play_arrow),
                       label: Text(
-                        (widget.analyse != null &&
-                                widget.analyse!.trim().isNotEmpty)
-                            ? 'Re-générer'
-                            : 'Lancer analyse',
+                        _hasAnalysis ? 'Re-générer' : 'Lancer analyse',
                       ),
-                      onPressed: (widget.analyse == null ||
-                              widget.analyse!.trim().isEmpty)
-                          ? _launchAnalysis
-                          : null,
+                      onPressed: _launchAnalysis,
                     ),
                   ),
                 );
               },
             ),
           ],
-          if (widget.analyse != null && widget.analyse!.trim().isNotEmpty) ...[
-            SizedBox(height: 12),
+          if (widget.analysis case final analysis?) ...[
+            const SizedBox(height: 12),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: CoachAnalysisCard(
-                  analyse: sanitizeCoachMarkdown(widget.analyse!)),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: CoachDebriefCard(analysis: analysis),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
           ],
         ],
       ),
     );
   }
+
+  bool get _hasAnalysis => widget.analysis != null;
 }
 
 /// Section exercices travaillés
 class SessionExercisesSection extends StatelessWidget {
-  final List<String> exerciseIds;
+  final String exerciseId;
   final List<Exercise> allExercises;
 
   const SessionExercisesSection({
     super.key,
-    required this.exerciseIds,
+    required this.exerciseId,
     required this.allExercises,
   });
 
   @override
   Widget build(BuildContext context) {
     final nameMap = {for (final e in allExercises) e.id: e.name};
-    final names = exerciseIds.map((id) => nameMap[id] ?? id).toList();
-    if (names.isEmpty) return SizedBox.shrink();
+    final name = nameMap[exerciseId] ?? exerciseId;
 
     return Card(
       elevation: 1,
@@ -516,41 +534,34 @@ class SessionExercisesSection extends StatelessWidget {
                 Icon(Icons.fitness_center,
                     size: 18, color: Theme.of(context).colorScheme.secondary),
                 const SizedBox(width: 8),
-                const Text('Exercices travaillés',
+                const Text('Exercice principal',
                     style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              children: [
-                for (final n in names)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.12)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.check, size: 14, color: Colors.greenAccent),
-                        SizedBox(width: 4),
-                        Text(n, style: TextStyle(fontSize: 12)),
-                      ],
-                    ),
-                  ),
-              ],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.12),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.check, size: 14, color: Colors.greenAccent),
+                  SizedBox(width: 4),
+                  Text(name, style: TextStyle(fontSize: 12)),
+                ],
+              ),
             ),
           ],
         ),

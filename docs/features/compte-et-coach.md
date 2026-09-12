@@ -12,7 +12,17 @@ La déconnexion tente de révoquer le refresh token côté serveur puis efface t
 
 Les écrans Auth, Profil et Coach partagent une traduction des erreurs réseau en sept familles : hors connexion/DNS, délai dépassé, service indisponible, limitation de débit, session invalide, requête invalide et erreur inattendue. Les détails techniques restent dans les journaux. Une erreur transitoire propose « Réessayer » pour la seule opération concernée et ne supprime jamais les jetons ; seule une invalidation confirmée propose « Se reconnecter ».
 
-Le profil affiche les informations fournies par le serveur. L'app permet actuellement de modifier le niveau d'expérience ; l'édition du nom n'est pas exposée.
+Le profil affiche les informations fournies par le serveur sans permettre
+d'éditer le niveau d'expérience. Ce niveau se règle dans `Paramètres > Coach IA`
+et accepte Débutant, Avancé, Expert ou aucune sélection. Il est conservé
+localement dans Hive et reste indépendant de la connexion et du compte courant.
+
+Lors de la première exécution après la migration, une ancienne valeur valide du
+profil localement mis en cache est reprise si la préférence n'a jamais été
+initialisée. Le marqueur `coach_experience_level_initialized` distingue cet état
+d'une absence volontaire ; une fois posé, aucun profil ne peut restaurer ou
+modifier la préférence. La valeur nullable est stockée sous
+`coach_experience_level` dans la box `app_preferences`.
 
 L'état de compte est porté uniquement par `AuthProvider` : vérification,
 connecté avec un profil exploitable, ou non connecté. Un profil valide est mis
@@ -25,6 +35,40 @@ Paramètres, au Profil et au Coach.
 
 ## Coach connecté uniquement
 
-Une session détaillée réalisée peut être envoyée à `POST /coach/analyze-session` avec son arme, son calibre, ses séries, sa synthèse et la variante de ton choisie. Le serveur construit le prompt et appelle Mistral ; aucune clé ni aucun prompt complet ne réside dans l'app.
+Une session détaillée réalisée peut être envoyée à `POST /coach/analyze-session`
+uniquement après consentement explicite. La requête contient son UUID stable,
+ses données complètes et ses séries, le niveau d'expérience local courant, les
+commentaires et la variante de ton choisie. Le serveur construit le prompt et
+appelle Mistral ; aucune clé ni aucun prompt complet ne réside dans l'app.
 
-Les tons Neutre et Cool se choisissent uniquement dans Paramètres. La réponse est affichée en Markdown et enregistrée dans la session. Sans compte, hors réseau, avec une session expirée ou pour une session libre, l'app bloque l'appel avec un état adapté sans rendre le carnet indisponible.
+Si la session référence un exercice personnel, l'app joint ponctuellement un
+instantané limité à son identifiant, son nom, sa provenance `personal`, sa
+description et ses consignes. Elle transmet séparément la réalisation déclarée,
+le suivi du protocole (`yes`, `partially` ou `no`) et le commentaire de la
+tentative. Les informations de catalogue, de plan, d'objectifs, de priorité,
+d'équipement, de durée et de difficulté ne sont pas envoyées par l'app pour ce
+débrief. L'instantané est persisté avec la session reçue, mais n'est jamais
+synchronisé vers le catalogue.
+Le débrief l'identifie comme exercice personnel hors plan de formation et ne
+l'évalue qu'avec la session, ces déclarations et les commentaires, sans critère
+de réussite métier.
+
+Le serveur résout lui-même un exercice du catalogue actif. Il crée ou met à
+jour le snapshot de session à la demande, puis persiste séparément le débrief.
+Une empreinte du contenu réutilise une analyse identique sans nouvel appel IA.
+
+La réponse structurée affiche le débrief, une à trois réussites, un point
+d'attention, les limites, l'évaluation éventuelle de l'exercice et uniquement
+les suites autorisées. Les tons Neutre et Cool se choisissent uniquement dans Paramètres ; un seul prompt
+est exécuté, sans anticiper la séparation de ton. Sans compte, hors réseau,
+avec une session expirée ou pour une session libre, l'app bloque l'appel avec
+un état adapté sans rendre le carnet indisponible.
+
+L'écran Coach présente le Coach de session et le futur Coach de progression.
+Ce dernier reste annoncé comme bientôt disponible et ne prend encore aucune
+décision.
+
+En build DEBUG uniquement, le bouton éclair de l'écran Sessions crée un
+exercice personnel de groupement et quatre sessions de recette : progression
+réussie, résultats irréguliers, protocole non suivi et session sans exercice.
+Chaque appui ajoute un nouveau jeu indépendant.

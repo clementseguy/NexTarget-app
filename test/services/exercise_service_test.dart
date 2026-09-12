@@ -92,6 +92,7 @@ void main() {
       expect(all.first.description, 'desc');
       // 'stand' as legacy category string defaults to precision via parser
       expect(all.first.categoryEnum, ExerciseCategory.precision);
+      expect(all.first.origin, ExerciseOrigin.personal);
       expect(all.first.consignes, ['a', 'b']);
     });
 
@@ -116,6 +117,7 @@ void main() {
         categoryEnum: ExerciseCategory.precision,
         type: ExerciseType.stand,
         difficulty: ExerciseDifficulty.expert,
+        origin: ExerciseOrigin.coachCatalog,
         description: 'Description',
         durationMinutes: 20,
         equipment: 'Pistolet',
@@ -133,6 +135,7 @@ void main() {
       expect(duplicate.categoryEnum, source.categoryEnum);
       expect(duplicate.type, source.type);
       expect(duplicate.difficulty, ExerciseDifficulty.expert);
+      expect(duplicate.origin, ExerciseOrigin.coachCatalog);
       expect(duplicate.description, source.description);
       expect(duplicate.durationMinutes, source.durationMinutes);
       expect(duplicate.equipment, source.equipment);
@@ -164,14 +167,14 @@ void main() {
           caliber: '9 mm',
           status: SessionConstants.statusRealisee,
           series: [Series(distance: 25, points: 40, groupSize: 5)],
-          exercises: [exerciseId],
+          exerciseId: exerciseId,
         ),
         DetailedShootingSession(
           weapon: '',
           caliber: '',
           status: SessionConstants.statusPrevue,
           series: [Series(distance: 25, points: 0, groupSize: 0)],
-          exercises: [exerciseId],
+          exerciseId: exerciseId,
         ),
         DetailedShootingSession(
           date: DateTime(2026, 9, 2),
@@ -186,7 +189,7 @@ void main() {
               isCompleted: false,
             ),
           ],
-          exercises: [exerciseId],
+          exerciseId: exerciseId,
         ),
         SimpleShootingSession(
           date: DateTime(2026, 9, 3),
@@ -194,7 +197,7 @@ void main() {
           caliber: '.22 LR',
           shotCount: 20,
           distance: 25,
-          exercises: [exerciseId],
+          exerciseId: exerciseId,
         ),
       ];
       for (final session in sessions) {
@@ -268,6 +271,44 @@ void main() {
 
       await expectLater(service.deleteExercise('ex'), throwsStateError);
       expect((await repo.getAll()).single.id, 'ex');
+    });
+
+    test('refuse toutes les mutations d’un exercice Coach', () async {
+      final coachExercise = Exercise(
+        id: 'coach-1',
+        name: 'Coach',
+        categoryEnum: ExerciseCategory.technique,
+        type: ExerciseType.stand,
+        origin: ExerciseOrigin.coachCatalog,
+        createdAt: DateTime(2026, 9, 11),
+      );
+      await repo.put(coachExercise);
+
+      await expectLater(
+        service.updateExercise(coachExercise.copyWith(name: 'Modifié')),
+        throwsA(isA<CoachCatalogExerciseMutationException>()),
+      );
+      await expectLater(
+        service.deleteExercise(coachExercise.id),
+        throwsA(isA<CoachCatalogExerciseMutationException>()),
+      );
+      await expectLater(
+        service.setGoals(coachExercise, ['g1']),
+        throwsA(isA<CoachCatalogExerciseMutationException>()),
+      );
+      await expectLater(
+        service.setConsignes(coachExercise, ['Nouvelle consigne']),
+        throwsA(isA<CoachCatalogExerciseMutationException>()),
+      );
+      await expectLater(
+        service.reorder([coachExercise]),
+        throwsA(isA<CoachCatalogExerciseMutationException>()),
+      );
+
+      final stored = (await repo.getAll()).single;
+      expect(stored.name, 'Coach');
+      expect(stored.goalIds, isEmpty);
+      expect(stored.consignes, isEmpty);
     });
 
     test('une erreur d’écriture ne crée aucune duplication partielle',

@@ -1,3 +1,5 @@
+import 'package:uuid/uuid.dart';
+
 import '../models/shooting_session.dart';
 import '../constants/session_constants.dart';
 import '../repositories/session_repository.dart';
@@ -6,6 +8,7 @@ import '../interfaces/session_service_interface.dart';
 import '../interfaces/session_photo_service_interface.dart';
 import 'logger.dart';
 import '../models/exercise.dart';
+import '../models/exercise_execution.dart';
 import '../models/series.dart';
 import 'preferences_service.dart';
 import 'session_photo_service.dart';
@@ -49,13 +52,16 @@ class SessionService implements ISessionService {
     final sourceSnapshot = ShootingSession.fromMap(source.toMap());
     final sessionMap = Map<String, dynamic>.from(sourceSnapshot.toMap())
       ..['id'] = null
-      ..['date'] = null;
+      ..['date'] = null
+      ..['sessionUuid'] = const Uuid().v4()
+      ..['coachAnalysis'] = null;
     final series = sourceSnapshot is DetailedShootingSession
         ? sourceSnapshot.series
             .map((item) => Map<String, dynamic>.from(item.toMap()))
             .toList()
         : <Map<String, dynamic>>[];
-    sessionMap['exercises'] = List<String>.from(sourceSnapshot.exercises);
+    sessionMap['exerciseId'] = sourceSnapshot.exerciseId;
+    sessionMap['exerciseExecution'] = null;
     return SessionDuplicationDraft(
       source: sourceSnapshot,
       initialSessionData: {'session': sessionMap, 'series': series},
@@ -232,7 +238,7 @@ class SessionService implements ISessionService {
       caliber: request.caliber.trim(),
       status: SessionConstants.statusDraft,
       category: request.category,
-      exercises: List<String>.from(request.exercises),
+      exerciseId: request.exerciseId,
       series: List.generate(
         request.seriesCount,
         (_) => Series(
@@ -384,6 +390,7 @@ class SessionService implements ISessionService {
     String? caliber,
     String? category,
     String? synthese,
+    ExerciseExecution? exerciseExecution,
     DateTime? forcedDate,
     List<Series>? updatedSeries,
   }) async {
@@ -395,6 +402,9 @@ class SessionService implements ISessionService {
     if (caliber != null) session.caliber = caliber;
     if (category != null) session.category = category;
     if (synthese != null) session.synthese = synthese;
+    if (session.exerciseId != null && exerciseExecution != null) {
+      session.exerciseExecution = exerciseExecution;
+    }
     if (updatedSeries != null) {
       session.series = updatedSeries;
     }
@@ -445,7 +455,7 @@ class SessionService implements ISessionService {
       date: null,
       status: 'prévue',
       series: series,
-      exercises: [exercise.id],
+      exerciseId: exercise.id,
       category: 'entraînement',
       synthese: 'Session créée à partir de ${exercise.name}',
     );
@@ -453,8 +463,7 @@ class SessionService implements ISessionService {
     // Récupération post-insertion pour garantir séries présentes et id assigné
     try {
       final all = await getAllSessions();
-      final match =
-          all.where((s) => s.exercises.contains(exercise.id)).toList();
+      final match = all.where((s) => s.exerciseId == exercise.id).toList();
       if (match.isNotEmpty && match.first is DetailedShootingSession) {
         // On choisit la plus récente (souvent la dernière insérée)
         match.sort((a, b) => (b.id ?? 0).compareTo(a.id ?? 0));

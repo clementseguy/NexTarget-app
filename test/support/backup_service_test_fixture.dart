@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:tir_sportif/interfaces/backup_location_provider.dart';
+import 'package:tir_sportif/models/coach_session_analysis.dart';
 import 'package:tir_sportif/models/goal.dart';
 import 'package:tir_sportif/models/exercise.dart';
 import 'package:tir_sportif/models/series.dart';
@@ -71,12 +72,26 @@ class BackupServiceTestFixture {
     final sessionService = SessionService(repository: sessionRepository);
     await sessionService.addSession(
       DetailedShootingSession(
+        sessionUuid: 'session-export',
         weapon: 'Pistolet de test',
         caliber: '9 mm',
         date: DateTime(2026, 9, 4),
         status: 'réalisée',
         category: 'entraînement',
         synthese: 'Export déterministe',
+        exerciseId: 'exercise-export',
+        coachAnalysis: CoachSessionAnalysis(
+          analysisId: 'analysis-export',
+          sessionId: 'session-export',
+          debrief: 'Débrief structuré exporté',
+          successes: const ['Régularité observée'],
+          attentionPoint: 'Conserver le lâcher',
+          limitations: const [],
+          exerciseEvaluation: null,
+          nextAction: null,
+          model: 'test-model',
+          generatedAt: DateTime.utc(2026, 9, 4, 12),
+        ),
         series: [Series(distance: 25, points: 45, shotCount: 5, groupSize: 8)],
       ),
     );
@@ -111,6 +126,7 @@ class BackupServiceTestFixture {
         categoryEnum: ExerciseCategory.precision,
         type: ExerciseType.stand,
         difficulty: ExerciseDifficulty.expert,
+        origin: ExerciseOrigin.coachCatalog,
         createdAt: DateTime(2026, 9, 1),
       ),
     ]);

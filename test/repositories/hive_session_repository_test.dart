@@ -40,7 +40,7 @@ void main() {
       caliber: '9mm',
       shotCount: 25,
       distance: 15,
-      exercises: const ['e1'],
+      exerciseId: 'e1',
     );
 
     final id = await repo.insert(session);

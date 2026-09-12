@@ -158,18 +158,6 @@ class MockAuthService extends _i1.Mock implements _i2.AuthService {
       ) as _i3.Future<Map<String, dynamic>>);
 
   @override
-  _i3.Future<Map<String, dynamic>> updateProfile({String? experienceLevel}) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #updateProfile,
-          [],
-          {#experienceLevel: experienceLevel},
-        ),
-        returnValue:
-            _i3.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
-      ) as _i3.Future<Map<String, dynamic>>);
-
-  @override
   _i3.Future<void> logout() => (super.noSuchMethod(
         Invocation.method(
           #logout,

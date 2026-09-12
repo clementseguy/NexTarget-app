@@ -4,7 +4,30 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Non publié]
 
+### Removed
+- Le champ historique Markdown `analyse` et son rendu, remplacés par le débrief
+  structuré `coachAnalysis` ; la migration Hive v14 et l'import des anciennes
+  sauvegardes conservent son contenu sous forme de débrief historique structuré.
+
 ### Added
+- NT-156 : débrief du Coach de session structuré et limité à la session, UUID
+  persistant partagé avec le serveur, transmission complète à la demande,
+  résultat d'exercice fermé, affichage rétrocompatible et présentation du futur
+  Coach de progression ; le bouton DEBUG des sessions génère quatre scénarios
+  de recette variés ; aucune mutation d'objectif, d'exercice ou de plan.
+- NT-161 : instantané borné et ponctuel des seuls champs utiles d'un exercice
+  personnel lors d'une analyse, avec qualification d'exécution séparée, sans
+  synchronisation catalogue ni nouvelle persistance.
+- NT-160 : récupération ciblée par identifiant d'un exercice actif du catalogue
+  Coach, cache Hive hors ligne sans synchronisation automatique, contrôle DEBUG
+  dédié et consultation en lecture seule identifiée « Créé par le Coach » ; cartes
+  de liste compactées avec les puces communes, des couleurs conditionnelles et
+  une colonne d'actions réduite aux icônes sans fond.
+- NT-159 : provenance `personal` ou `coach_catalog` ajoutée au modèle Exercise,
+  avec migration Hive rétrocompatible, duplication et sauvegardes version 5
+  alignées sur le contrat serveur complet.
+- NT-154 : wizard des sessions prévues clarifié et aéré, avec card exercice enrichie, catégorie contrôlée et dernière page regroupant synthèse du tireur et qualification facultative de l'exercice ; réalisation, protocole et commentaire sont persistés dans une structure Hive rétrocompatible.
+- NT-153 : autorisation locale unique, explicite et refusée par défaut avant tout partage de données avec les Coachs de session et de progression ; les deux points d'entrée expliquent le prérequis et aucune requête n'est construite sans accord.
 - NT-146 : aide gestuelle commune aux champs de groupement de la séance guidée et du wizard, accessible et sans effet sur la saisie.
 - NT-145 : ouverture directe de la session source depuis les records de score et de groupement, avec départage déterministe et rechargement des statistiques au retour.
 - NT-025 : difficulté facultative des exercices, filtre combinable, migration Hive additive et cycle de sauvegarde rétrocompatible.
@@ -13,6 +36,10 @@ Toutes les modifications notables de ce projet seront listées ici.
 - NT-143 : duplication des sessions détaillées et libres depuis leur détail, sans reprise de date, avec photo physique indépendante et rollback des fichiers en cas d'échec.
 
 ### Changed
+- NT-155 : niveau d'expérience déplacé du profil vers les préférences Coach
+  locales, nullable et stable indépendamment du compte ; reprise unique de
+  l'ancien choix mis en cache et source Hive commune aux exercices et analyses.
+- NT-152 : chaque session porte désormais zéro ou un exercice principal via `exerciseId` ; sélection unique, filtres, duplication, suppression, affichage, sauvegarde version 4 et contrat Coach sont alignés, avec migration conservant le premier exercice historique.
 - NT-148 : séparateurs et espacements identiques entre les trois blocs de Préférences Tir, dans leur ordre existant.
 - NT-147 : ordre final de Synthèse ajusté en Répartition Calibres, Répartition Catégories puis Tirs par arme, sans changement statistique.
 - NT-056 : traduction commune et actionnable des erreurs réseau Auth, Profil et Coach, sans fuite technique ni suppression des jetons lors d'une panne transitoire.

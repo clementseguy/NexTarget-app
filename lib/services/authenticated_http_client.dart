@@ -14,7 +14,7 @@ import 'auth_service.dart';
 ///   n'est donc jamais renvoyé tel quel ni finalisé deux fois.
 ///
 /// Utilisé par tous les appels authentifiés : Coach (`ServerCoachAnalysisService`)
-/// et profil (`AuthService.getUserInfo`/`AuthService.updateProfile`).
+/// et profil (`AuthService.getUserInfo`).
 class AuthenticatedHttpClient extends http.BaseClient {
   final AuthService _authService;
   final http.Client _innerClient;

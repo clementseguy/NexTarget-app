@@ -1,5 +1,6 @@
 import '../models/shooting_session.dart';
 import '../models/exercise.dart';
+import '../models/exercise_execution.dart';
 import '../models/series.dart';
 
 /// Interface pour le service de gestion des sessions de tir
@@ -45,6 +46,7 @@ abstract class ISessionService {
     String? caliber,
     String? category,
     String? synthese,
+    ExerciseExecution? exerciseExecution,
     DateTime? forcedDate,
     List<Series>? updatedSeries,
   });
@@ -62,7 +64,7 @@ class GuidedDraftRequest {
   final String weapon;
   final String caliber;
   final String category;
-  final List<String> exercises;
+  final String? exerciseId;
   final int seriesCount;
   final int shotsPerSeries;
   final int initialDistance;
@@ -73,7 +75,7 @@ class GuidedDraftRequest {
     required this.weapon,
     required this.caliber,
     required this.category,
-    required this.exercises,
+    this.exerciseId,
     required this.seriesCount,
     required this.shotsPerSeries,
     required this.initialDistance,

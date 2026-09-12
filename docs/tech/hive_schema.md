@@ -13,3 +13,53 @@ dart run tool/verify_hive_schema.dart
 ```
 
 Le diagnostic indique le fichier, le type ou la version incohérente et le programme termine avec un code non nul. Ce contrôle est lancé par `scripts/verify_before_commit.sh` et par la CI SonarCloud. Il complète, sans les remplacer, les tests de migration utilisant des données historiques.
+
+## Migration de l'exercice principal
+
+La migration Hive v10 remplace, dans chaque enveloppe de session, la liste
+historique `exercises` par `exerciseId`. Le premier identifiant dans l'ordre
+persisté est conservé ; les suivants sont ignorés. Une liste absente, vide ou
+invalide produit une valeur `null`. Les séries et les autres champs de la session
+ne sont pas modifiés. La désérialisation conserve le même fallback pour les
+sauvegardes historiques importées après la migration locale.
+
+## Qualification de l'exécution d'un exercice
+
+La migration Hive v11 ajoute une valeur `exerciseExecution` vide aux enveloppes
+de sessions qui référencent déjà un `exerciseId`. Les sessions sans exercice,
+les qualifications existantes, les séries et les autres champs ne sont pas
+réécrits. La désérialisation accepte également l'absence de cette structure et
+ignore ses valeurs inconnues sans inventer de réponse.
+
+## Provenance des exercices
+
+La migration Hive v12 ajoute `origin: personal` aux exercices qui ne portent
+pas encore de provenance. Une valeur existante, notamment `coach_catalog`, est
+préservée sans réécriture. La désérialisation applique le même défaut aux
+sauvegardes historiques importées après la migration locale et rejette les
+valeurs étrangères au contrat partagé.
+
+## Contrat du débrief Coach
+
+La migration Hive v13 ajoute à chaque session un `sessionUuid` stable et un
+champ `coachAnalysis` nullable. Les UUID existants et les débriefs déjà
+structurés sont préservés. Le modèle génère également un UUID lors de la lecture
+d'une sauvegarde historique qui n'en contient pas. La migration v14 supprime le
+champ Markdown historique `analyse` après avoir conservé son contenu dans un
+`coachAnalysis` explicitement identifié comme historique. La même conversion
+est appliquée aux anciennes sauvegardes lors de leur import ; les nouveaux
+exports n'émettent que le contrat structuré.
+
+## Préférence de niveau Coach
+
+NT-155 ajoute deux clés simples à la box `app_preferences`, sans modifier un
+modèle Hive structuré : `coach_experience_level`, nullable et limité à
+`beginner`, `advanced` ou `expert`, et
+`coach_experience_level_initialized`, booléen. Cette évolution ne change donc
+pas la version du schéma gérée par `MigrationRunner`.
+
+Au démarrage, après ouverture de la box et avant la création des providers, un
+service lit une seule fois le profil du stockage sécurisé. Si le marqueur est
+absent, il copie son ancien niveau valide ou initialise explicitement une valeur
+nulle, puis pose le marqueur. Les démarrages suivants, les états hors ligne et
+les changements de compte ne consultent plus le profil pour cette préférence.

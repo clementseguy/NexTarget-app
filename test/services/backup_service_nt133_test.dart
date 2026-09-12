@@ -52,7 +52,7 @@ void main() {
         distance: 50,
         synthese: 'RAS',
         photoPath: '/photo.jpg',
-        exercises: const ['e1'],
+        exerciseId: 'e1',
       ).toMap();
 
       final count = await BackupService().importSessionsFromJson(
@@ -74,7 +74,49 @@ void main() {
       final importedSimple = sessions.whereType<SimpleShootingSession>().single;
       expect(importedSimple.shotCount, 30);
       expect(importedSimple.photoPath, '/photo.jpg');
-      expect(importedSimple.exercises, ['e1']);
+      expect(importedSimple.exerciseId, 'e1');
+    });
+
+    test('importe le premier exercice d’une sauvegarde historique', () async {
+      final historical = {
+        'date': '2026-08-01T00:00:00.000',
+        'weapon': 'P',
+        'caliber': '9mm',
+        'exercises': ['premier', 'second'],
+        'series': <Map<String, dynamic>>[],
+      };
+
+      await BackupService().importSessionsFromJson(
+        jsonEncode(payload([historical])),
+      );
+
+      final imported = (await SessionService().getAllSessions()).single;
+      expect(imported.exerciseId, 'premier');
+    });
+
+    test('convertit et réexporte une analyse Markdown historique', () async {
+      final historical = {
+        'date': '2026-08-01T00:00:00.000Z',
+        'weapon': 'P',
+        'caliber': '9mm',
+        'analyse': '## Débrief historique\n\nBonne régularité.',
+        'series': <Map<String, dynamic>>[],
+      };
+
+      await BackupService().importSessionsFromJson(
+        jsonEncode(payload([historical])),
+      );
+
+      final imported = (await SessionService().getAllSessions()).single;
+      expect(imported.coachAnalysis?.debrief,
+          '## Débrief historique\n\nBonne régularité.');
+      expect(imported.coachAnalysis?.model, 'legacy-markdown');
+      final exported = imported.toMap();
+      expect(exported.containsKey('analyse'), isFalse);
+      expect(
+        (exported['coachAnalysis'] as Map)['debrief'],
+        '## Débrief historique\n\nBonne régularité.',
+      );
     });
 
     test('un type inconnu ne modifie aucune donnée locale', () async {
