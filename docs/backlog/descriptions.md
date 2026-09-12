@@ -288,10 +288,10 @@ sont volontairement pas reproduits.
 
 <a id="NT-155"></a>
 ### NT-155 — Déplacer le niveau d'expérience dans les préférences Coach
-- **Thème** : Socle Coach transverse · **Portée** : app · **Dépendances** : NT-032, NT-042
-- **Description** : Déplacer l'édition du niveau d'expérience depuis le profil vers les préférences Coach, à côté des autres réglages influençant les analyses.
-- **Critères d'acceptation** : le contrôle n'est plus éditable depuis le profil ; il apparaît dans `Paramètres > Coach IA` ; les trois valeurs et leur stockage actuels sont strictement conservés ; si l'utilisateur n'a sélectionné aucune valeur, le niveau reste non renseigné ; aucune valeur par défaut n'est appliquée ; aucune migration ni modification de modèle ou de contrat serveur n'est introduite.
-- **Notes** : la transmission de cette préférence pendant une analyse relève de NT-156.
+- **Thème** : Socle Coach transverse · **Portée** : app · **Dépendances** : NT-032, NT-042, NT-048, NT-156
+- **Description** : Sortir le niveau d'expérience du profil utilisateur et le gérer comme une préférence locale de l'application dans les préférences Coach, avec une source de vérité unique et stable.
+- **Critères d'acceptation** : le contrôle n'est plus affiché ni éditable depuis le profil et apparaît dans `Paramètres > Coach IA` ; les trois valeurs existantes sont conservées et l'absence de sélection reste une valeur valide, sans valeur par défaut ; le niveau est persisté localement dans Hive comme les autres préférences et reste stable après redémarrage, hors ligne, déconnexion, reconnexion ou changement de profil ; l'app ne lit plus le niveau depuis le profil et ne tente plus de le mettre à jour sur le serveur ; tous ses consommateurs, notamment l'affichage des exercices, le détail d'une session et les demandes d'analyse Coach, utilisent la même préférence locale ; lors de la première migration, un niveau valide déjà disponible dans le profil localement mis en cache est repris uniquement si la préférence n'a jamais été initialisée ; un marqueur distingue cet état initial d'un niveau volontairement non renseigné afin que l'ancienne valeur du profil ne soit jamais restaurée ensuite ; les tests couvrent migration, persistance, redémarrage, absence de sélection, fonctionnement hors ligne, changements d'état d'authentification et transmission lors d'une analyse.
+- **Notes** : aucun changement du modèle ou du contrat serveur n'est introduit ; le champ historique peut rester présent côté serveur pour compatibilité, mais l'app cesse de l'utiliser. NT-156 transmet déjà le niveau pendant une analyse ; NT-155 remplace sa source par cette préférence locale.
 
 <a id="NT-156"></a>
 ### NT-156 — Recentrer le Coach de session sur le débrief
