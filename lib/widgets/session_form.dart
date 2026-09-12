@@ -13,6 +13,8 @@ import '../models/shooting_session.dart';
 import '../constants/session_constants.dart';
 import '../models/series.dart';
 import '../models/exercise.dart';
+import '../models/coach_session_analysis.dart';
+import '../models/exercise_execution.dart';
 import '../services/exercise_service.dart';
 import '../interfaces/session_photo_service_interface.dart';
 import '../services/session_photo_service.dart';
@@ -63,7 +65,9 @@ class SessionFormState extends State<SessionForm> {
   String? _initialPhotoPath;
   bool _photoBusy = false;
   bool _saved = false;
-  String? _analyse;
+  String? _sessionUuid;
+  CoachSessionAnalysis? _coachAnalysis;
+  ExerciseExecution? _exerciseExecution;
 
   @override
   void initState() {
@@ -90,7 +94,19 @@ class SessionFormState extends State<SessionForm> {
       _status = session['status'] ?? SessionConstants.statusRealisee;
       _photoPath = session['photoPath'] as String?;
       _initialPhotoPath = _photoPath;
-      _analyse = session['analyse'] as String?;
+      _sessionUuid = session['sessionUuid'] as String?;
+      final rawCoachAnalysis = session['coachAnalysis'];
+      if (rawCoachAnalysis is Map) {
+        _coachAnalysis = CoachSessionAnalysis.fromMap(
+          Map<String, dynamic>.from(rawCoachAnalysis),
+        );
+      }
+      final rawExecution = session['exerciseExecution'];
+      if (rawExecution is Map) {
+        _exerciseExecution = ExerciseExecution.fromMap(
+          Map<String, dynamic>.from(rawExecution),
+        );
+      }
       _selectedExerciseId = _readInitialExerciseId(session);
       _series = series
           .map((s) => SeriesFormData(
@@ -289,6 +305,7 @@ class SessionFormState extends State<SessionForm> {
       }
     }
     final session = DetailedShootingSession(
+      sessionUuid: _sessionUuid,
       id: existingId,
       date: _date,
       weapon: _weaponController.text,
@@ -321,10 +338,12 @@ class SessionFormState extends State<SessionForm> {
           isScoreEntered: metadata['score_entered'] as bool? ?? true,
         );
       }),
-      analyse: _analyse,
+      coachAnalysis: _coachAnalysis,
       synthese: _syntheseController.text,
       category: _category,
       exerciseId: _selectedExerciseId,
+      exerciseExecution:
+          _selectedExerciseId == null ? null : _exerciseExecution,
       photoPath: _photoPath,
     );
     widget.onSave(session);

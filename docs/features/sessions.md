@@ -54,8 +54,7 @@ Les sessions libres comptent dans l'assiduité, les catégories et les volumes d
 Le champ `sessionType` vaut `detailed` ou `simple`. Chaque session porte un
 `sessionUuid` stable, généré à la création ou par migration pour les données
 historiques et conservé dans les sauvegardes. Une duplication reçoit un nouvel
-UUID. `coachAnalysis` contient le débrief structuré ; l'ancien champ `analyse`
-reste relu comme fallback Markdown. Une ancienne donnée sans `sessionType` est
+UUID. `coachAnalysis` contient le débrief structuré. Une ancienne donnée sans `sessionType` est
 relue comme une session détaillée. `exerciseId` contient l'identifiant facultatif
 de l'exercice principal. Lors de la migration d'une ancienne liste `exercises`,
 seul le premier identifiant dans l'ordre enregistré est conservé ; une liste

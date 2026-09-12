@@ -64,7 +64,6 @@ class DetailedShootingSession implements ShootingSession {
   List<Series> series;
   @override
   String status;
-  String? analyse;
   @override
   CoachSessionAnalysis? coachAnalysis;
   @override
@@ -86,7 +85,6 @@ class DetailedShootingSession implements ShootingSession {
     required this.caliber,
     required this.series,
     this.status = SessionConstants.statusRealisee,
-    this.analyse,
     this.coachAnalysis,
     this.synthese,
     this.category = SessionConstants.categoryEntrainement,
@@ -108,7 +106,6 @@ class DetailedShootingSession implements ShootingSession {
         'caliber': caliber,
         'series': series.map((s) => s.toMap()).toList(),
         'status': status,
-        'analyse': analyse,
         'coachAnalysis': coachAnalysis?.toMap(),
         'synthese': synthese,
         'category': category,
@@ -150,7 +147,6 @@ class DetailedShootingSession implements ShootingSession {
       caliber: caliber,
       series: parsedSeries,
       status: status,
-      analyse: map['analyse'] as String?,
       coachAnalysis: _readCoachAnalysis(map['coachAnalysis']),
       synthese: map['synthese'] as String?,
       category: category,
@@ -160,8 +156,7 @@ class DetailedShootingSession implements ShootingSession {
     );
   }
 
-  bool get hasAnalysis =>
-      coachAnalysis != null || (analyse != null && analyse!.trim().isNotEmpty);
+  bool get hasAnalysis => coachAnalysis != null;
 
   bool get isDraft => status == SessionConstants.statusDraft;
 
@@ -368,12 +363,7 @@ extension ShootingSessionTypeAccess on ShootingSession {
     (this as DetailedShootingSession).series = value;
   }
 
-  String? get analyse => this is DetailedShootingSession
-      ? (this as DetailedShootingSession).analyse
-      : null;
-
-  bool get hasAnalysis =>
-      coachAnalysis != null || (analyse != null && analyse!.trim().isNotEmpty);
+  bool get hasAnalysis => coachAnalysis != null;
 
   int get totalShotCount => this is SimpleShootingSession
       ? (this as SimpleShootingSession).shotCount

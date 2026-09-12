@@ -38,8 +38,7 @@ class SessionCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final accent = _accentColor(isPlanned, isSimple, colors);
     final identityColor = isPlanned ? Colors.blueAccent : null;
-    final hasCoachAnalysis =
-        !isSimple && (session['analyse'] as String?)?.trim().isNotEmpty == true;
+    final hasCoachAnalysis = !isSimple && session['coachAnalysis'] is Map;
 
     return Card(
       color: Theme.of(context).cardColor,

@@ -5,6 +5,7 @@ import 'package:tir_sportif/interfaces/session_photo_service_interface.dart';
 import 'package:tir_sportif/models/exercise_execution.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
+import 'package:tir_sportif/models/coach_session_analysis.dart';
 import 'package:tir_sportif/repositories/session_repository.dart';
 import 'package:tir_sportif/services/session_service.dart';
 
@@ -76,7 +77,18 @@ DetailedShootingSession _detailed({
       status: status,
       category: SessionConstants.categoryMatch,
       synthese: 'Synthèse',
-      analyse: 'Analyse',
+      coachAnalysis: CoachSessionAnalysis(
+        analysisId: 'analysis-1',
+        sessionId: 'session-1',
+        debrief: 'Débrief',
+        successes: const ['Réussite'],
+        attentionPoint: 'Attention',
+        limitations: const [],
+        exerciseEvaluation: null,
+        nextAction: null,
+        model: 'model',
+        generatedAt: DateTime.utc(2026, 9, 12),
+      ),
       exerciseId: 'ex-1',
       exerciseExecution: const ExerciseExecution(
         performed: true,
@@ -126,7 +138,7 @@ void main() {
       expect(map['category'], source.category);
       expect(map['status'], source.status);
       expect(map['synthese'], source.synthese);
-      expect(map['analyse'], isNull);
+      expect(map.containsKey('analyse'), isFalse);
       expect(map['coachAnalysis'], isNull);
       expect(map['sessionUuid'], isNotEmpty);
       expect(map['sessionUuid'], isNot(source.sessionUuid));
@@ -177,7 +189,7 @@ void main() {
         category: source.category,
         status: source.status,
         synthese: source.synthese,
-        analyse: source.analyse,
+        coachAnalysis: source.coachAnalysis,
         exerciseId: source.exerciseId,
       );
 

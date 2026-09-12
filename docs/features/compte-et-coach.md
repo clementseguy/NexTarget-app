@@ -59,8 +59,7 @@ Une empreinte du contenu réutilise une analyse identique sans nouvel appel IA.
 
 La réponse structurée affiche le débrief, une à trois réussites, un point
 d'attention, les limites, l'évaluation éventuelle de l'exercice et uniquement
-les suites autorisées. Les anciennes analyses Markdown restent lisibles. Les
-tons Neutre et Cool se choisissent uniquement dans Paramètres ; un seul prompt
+les suites autorisées. Les tons Neutre et Cool se choisissent uniquement dans Paramètres ; un seul prompt
 est exécuté, sans anticiper la séparation de ton. Sans compte, hors réseau,
 avec une session expirée ou pour une session libre, l'app bloque l'appel avec
 un état adapté sans rendre le carnet indisponible.

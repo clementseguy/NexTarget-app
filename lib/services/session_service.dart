@@ -54,8 +54,7 @@ class SessionService implements ISessionService {
       ..['id'] = null
       ..['date'] = null
       ..['sessionUuid'] = const Uuid().v4()
-      ..['coachAnalysis'] = null
-      ..['analyse'] = null;
+      ..['coachAnalysis'] = null;
     final series = sourceSnapshot is DetailedShootingSession
         ? sourceSnapshot.series
             .map((item) => Map<String, dynamic>.from(item.toMap()))

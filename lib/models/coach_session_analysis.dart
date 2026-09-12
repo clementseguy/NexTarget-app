@@ -56,6 +56,32 @@ class CoachSessionAnalysis {
     this.reused = false,
   });
 
+  factory CoachSessionAnalysis.fromLegacyMarkdown({
+    required String markdown,
+    required String sessionId,
+    required DateTime generatedAt,
+  }) {
+    final debrief = markdown.trim();
+    if (debrief.isEmpty) {
+      throw const FormatException('Ancien débrief vide.');
+    }
+    return CoachSessionAnalysis(
+      analysisId: 'legacy-$sessionId',
+      sessionId: sessionId,
+      debrief: debrief,
+      successes: const ['Analyse antérieure conservée.'],
+      attentionPoint:
+          'Le point d’attention n’était pas séparé dans cet ancien format.',
+      limitations: const [
+        'Débrief importé depuis l’ancien format Markdown non structuré.',
+      ],
+      exerciseEvaluation: null,
+      nextAction: null,
+      model: 'legacy-markdown',
+      generatedAt: generatedAt,
+    );
+  }
+
   Map<String, dynamic> toMap() => {
         'analysis_id': analysisId,
         'session_id': sessionId,

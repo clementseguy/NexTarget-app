@@ -2,6 +2,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tir_sportif/constants/session_constants.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
+import 'package:tir_sportif/models/coach_session_analysis.dart';
+
+CoachSessionAnalysis _analysis() => CoachSessionAnalysis(
+      analysisId: 'analysis-1',
+      sessionId: 'session-1',
+      debrief: 'Débrief',
+      successes: const ['Réussite'],
+      attentionPoint: 'Attention',
+      limitations: const [],
+      exerciseEvaluation: null,
+      nextAction: null,
+      model: 'model',
+      generatedAt: DateTime.utc(2026, 9, 12),
+    );
 
 void main() {
   group('NT-133 polymorphisme des sessions', () {
@@ -53,7 +67,7 @@ void main() {
             groupSize: 8,
           ),
         ],
-        analyse: 'Analyse',
+        coachAnalysis: _analysis(),
       );
       final simple = SimpleShootingSession(
         id: 2,

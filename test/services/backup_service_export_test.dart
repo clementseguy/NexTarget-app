@@ -43,6 +43,11 @@ void main() {
       final session = (data['sessions'] as List).single as Map<String, dynamic>;
       expect(session['exerciseId'], 'exercise-export');
       expect(session.containsKey('exercises'), isFalse);
+      expect(session.containsKey('analyse'), isFalse);
+      expect(
+        (session['coachAnalysis'] as Map)['debrief'],
+        'Débrief structuré exporté',
+      );
       expect((data['exercises'] as List).single['difficulty'], 'expert');
       expect((data['exercises'] as List).single['origin'], 'coach_catalog');
     });

@@ -17,8 +17,6 @@ import '../../services/exercise_service.dart';
 import '../../services/network_error.dart';
 import '../../services/logger.dart';
 import '../../services/session_service.dart';
-import '../../utils/markdown_sanitizer.dart';
-import '../../widgets/coach_analysis_card.dart';
 import '../../widgets/coach_debrief_card.dart';
 import '../../widgets/session_chip.dart';
 
@@ -210,7 +208,6 @@ class _SimpleSessionHeader extends StatelessWidget {
 /// Section analyse coach avec bouton génération
 class SessionCoachAnalysisSection extends StatefulWidget {
   final DetailedShootingSession session;
-  final String? analyse;
   final CoachSessionAnalysis? analysis;
   final VoidCallback onAnalyseUpdated;
   final Future<CoachSessionAnalysis> Function()? analysisLoader;
@@ -219,7 +216,6 @@ class SessionCoachAnalysisSection extends StatefulWidget {
   const SessionCoachAnalysisSection({
     super.key,
     required this.session,
-    required this.analyse,
     this.analysis,
     required this.onAnalyseUpdated,
     this.analysisLoader,
@@ -298,9 +294,7 @@ class _SessionCoachAnalysisSectionState
           ],
         ),
       );
-      final updatedSession = widget.session
-        ..coachAnalysis = coachReply
-        ..analyse = null;
+      final updatedSession = widget.session..coachAnalysis = coachReply;
       await SessionService().updateSession(updatedSession);
       widget.onAnalyseUpdated();
     } catch (e) {
@@ -503,23 +497,12 @@ class _SessionCoachAnalysisSectionState
             ),
             const SizedBox(height: 12),
           ],
-          if (widget.analyse != null && widget.analyse!.trim().isNotEmpty) ...[
-            SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: CoachAnalysisCard(
-                  analyse: sanitizeCoachMarkdown(widget.analyse!)),
-            ),
-            SizedBox(height: 12),
-          ],
         ],
       ),
     );
   }
 
-  bool get _hasAnalysis =>
-      widget.analysis != null ||
-      (widget.analyse != null && widget.analyse!.trim().isNotEmpty);
+  bool get _hasAnalysis => widget.analysis != null;
 }
 
 /// Section exercices travaillés

@@ -22,8 +22,9 @@ Coach structuré éventuel et un `exerciseId` facultatif ; chaque exercice porte
 une provenance `personal` ou `coach_catalog`. Les identifiants Hive importés
 sont remplacés pour éviter les collisions, tandis que le `sessionUuid` est
 conservé afin d'identifier la même session côté serveur. Les anciens exports
-restent acceptés : un UUID absent est généré, une ancienne analyse Markdown
-reste lisible, le premier élément d'une liste `exercises` devient l'exercice
+restent acceptés : un UUID absent est généré, l'ancien champ Markdown `analyse`
+est converti en débrief structuré historique, le premier élément d'une liste
+`exercises` devient l'exercice
 principal et un exercice sans provenance devient `personal`. Une difficulté
 d'exercice absente ou inconnue est importée comme non renseignée.
 

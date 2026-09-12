@@ -56,7 +56,6 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
         .toList();
     final isRealisee = session.status == SessionConstants.statusRealisee;
     final bool isPlanned = session.status == SessionConstants.statusPrevue;
-    String? analyse = _currentSessionData!['session']['analyse'];
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -179,7 +178,6 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
             const SizedBox(height: 16),
             SessionCoachAnalysisSection(
               session: session,
-              analyse: analyse,
               analysis: session.coachAnalysis,
               onAnalyseUpdated: () async {
                 final all = await _sessionService.getAllSessions();

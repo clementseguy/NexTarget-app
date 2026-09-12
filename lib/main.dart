@@ -19,6 +19,7 @@ import 'migrations/migration_10_single_session_exercise.dart';
 import 'migrations/migration_11_add_exercise_execution.dart';
 import 'migrations/migration_12_add_exercise_origin.dart';
 import 'migrations/migration_13_add_coach_session_contract.dart';
+import 'migrations/migration_14_remove_legacy_coach_analysis.dart';
 import 'constants/session_constants.dart';
 import 'providers/navigation_provider.dart';
 import 'providers/settings_provider.dart';
@@ -56,6 +57,7 @@ Future<void> main() async {
     Migration11AddExerciseExecution(), // v11
     Migration12AddExerciseOrigin(), // v12
     Migration13AddCoachSessionContract(), // v13
+    Migration14RemoveLegacyCoachAnalysis(), // v14
   ], schemaStore);
   await runner.run();
 

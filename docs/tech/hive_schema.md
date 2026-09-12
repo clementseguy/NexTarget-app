@@ -44,9 +44,11 @@ valeurs étrangères au contrat partagé.
 La migration Hive v13 ajoute à chaque session un `sessionUuid` stable et un
 champ `coachAnalysis` nullable. Les UUID existants et les débriefs déjà
 structurés sont préservés. Le modèle génère également un UUID lors de la lecture
-d'une sauvegarde historique qui n'en contient pas. Le champ historique
-`analyse` n'est pas supprimé afin de conserver l'affichage des réponses Markdown
-antérieures à NT-156.
+d'une sauvegarde historique qui n'en contient pas. La migration v14 supprime le
+champ Markdown historique `analyse` après avoir conservé son contenu dans un
+`coachAnalysis` explicitement identifié comme historique. La même conversion
+est appliquée aux anciennes sauvegardes lors de leur import ; les nouveaux
+exports n'émettent que le contrat structuré.
 
 ## Préférence de niveau Coach
 

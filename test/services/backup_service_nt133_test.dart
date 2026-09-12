@@ -94,6 +94,31 @@ void main() {
       expect(imported.exerciseId, 'premier');
     });
 
+    test('convertit et réexporte une analyse Markdown historique', () async {
+      final historical = {
+        'date': '2026-08-01T00:00:00.000Z',
+        'weapon': 'P',
+        'caliber': '9mm',
+        'analyse': '## Débrief historique\n\nBonne régularité.',
+        'series': <Map<String, dynamic>>[],
+      };
+
+      await BackupService().importSessionsFromJson(
+        jsonEncode(payload([historical])),
+      );
+
+      final imported = (await SessionService().getAllSessions()).single;
+      expect(imported.coachAnalysis?.debrief,
+          '## Débrief historique\n\nBonne régularité.');
+      expect(imported.coachAnalysis?.model, 'legacy-markdown');
+      final exported = imported.toMap();
+      expect(exported.containsKey('analyse'), isFalse);
+      expect(
+        (exported['coachAnalysis'] as Map)['debrief'],
+        '## Débrief historique\n\nBonne régularité.',
+      );
+    });
+
     test('un type inconnu ne modifie aucune donnée locale', () async {
       await SessionService().addSession(
         SimpleShootingSession(

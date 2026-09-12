@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import '../interfaces/backup_location_provider.dart';
+import '../models/coach_session_analysis.dart';
 import '../models/shooting_session.dart';
 import '../services/session_service.dart';
 import '../models/goal.dart';
@@ -139,7 +140,19 @@ class BackupService {
             .map((e) => e is Map ? Map<String, dynamic>.from(e) : e)
             .toList();
       }
-      sessions.add(ShootingSession.fromMap(map));
+      final session = ShootingSession.fromMap(map);
+      final legacyAnalysis = map['analyse'];
+      if (session is DetailedShootingSession &&
+          session.coachAnalysis == null &&
+          legacyAnalysis is String &&
+          legacyAnalysis.trim().isNotEmpty) {
+        session.coachAnalysis = CoachSessionAnalysis.fromLegacyMarkdown(
+          markdown: legacyAnalysis,
+          sessionId: session.sessionUuid,
+          generatedAt: session.date ?? DateTime.utc(1970),
+        );
+      }
+      sessions.add(session);
     }
     // Toutes les sessions sont validées avant la première écriture. Hive les
     // persiste ensuite dans une unique opération putAll.

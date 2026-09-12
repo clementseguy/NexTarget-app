@@ -4,6 +4,11 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Non publié]
 
+### Removed
+- Le champ historique Markdown `analyse` et son rendu, remplacés par le débrief
+  structuré `coachAnalysis` ; la migration Hive v14 et l'import des anciennes
+  sauvegardes conservent son contenu sous forme de débrief historique structuré.
+
 ### Added
 - NT-156 : débrief du Coach de session structuré et limité à la session, UUID
   persistant partagé avec le serveur, transmission complète à la demande,

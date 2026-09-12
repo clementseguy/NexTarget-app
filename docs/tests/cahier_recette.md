@@ -125,14 +125,16 @@ Pré-requis:
 4. Lancer le débrief avec exercice du catalogue qualifié comme réalisé et protocole suivi
 5. Rejouer côté API la même demande avec le même sessionUuid et un payload inchangé
 6. Modifier un commentaire de session puis relancer la demande côté API
-7. Désactiver le consentement et vérifier les deux présentations depuis le détail et l'écran Coach
+7. Importer une ancienne sauvegarde contenant uniquement un champ analyse Markdown, puis réexporter les données
+8. Désactiver le consentement et vérifier les deux présentations depuis le détail et l'écran Coach
 Résultats attendus:
 - Le débrief affiche un texte factuel, une à trois réussites, un point d'attention et les limites
 - L'exercice affiche Réussi, Échoué ou Non évaluable uniquement d'après sa réalisation et son protocole déclaré
 - La seule prochaine action éventuelle est de refaire l'exercice ou solliciter le Coach de progression
 - L'exercice personnel est borné et l'exercice catalogue est résolu côté serveur sans copie cliente de son contenu
 - Le rejeu inchangé renvoie la même analyse sans nouvel appel IA ni doublon ; le commentaire modifié produit un nouveau débrief lié à la même session
-- Le débrief structuré reste visible après redémarrage et une ancienne analyse Markdown reste lisible
+- Le débrief structuré reste visible après redémarrage et l'icône Analyse est visible sur la carte de session
+- Le débrief Markdown historique reste lisible après import et le nouvel export le conserve dans coachAnalysis sans réémettre analyse
 - L'écran Coach présente le Coach de session et le Coach de progression comme bientôt disponible
 - Sans consentement, aucune requête n'est construite et aucune synchronisation automatique n'a lieu
 

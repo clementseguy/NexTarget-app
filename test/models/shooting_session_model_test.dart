@@ -2,6 +2,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/exercise_execution.dart';
+import 'package:tir_sportif/models/coach_session_analysis.dart';
+
+CoachSessionAnalysis _analysis() => CoachSessionAnalysis(
+      analysisId: 'analysis-1',
+      sessionId: 'session-1',
+      debrief: 'Débrief',
+      successes: const ['Réussite'],
+      attentionPoint: 'Attention',
+      limitations: const [],
+      exerciseEvaluation: null,
+      nextAction: null,
+      model: 'model',
+      generatedAt: DateTime.utc(2026, 9, 12),
+    );
 
 void main() {
   group('ShootingSession model mapping & flags', () {
@@ -12,7 +26,7 @@ void main() {
         weapon: 'P',
         caliber: '22LR',
         status: 'réalisée',
-        analyse: 'A',
+        coachAnalysis: _analysis(),
         synthese: 'S',
         category: 'match',
         series: [Series(distance: 10, points: 50, groupSize: 20)],

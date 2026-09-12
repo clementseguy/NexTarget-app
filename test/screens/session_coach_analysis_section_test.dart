@@ -191,7 +191,6 @@ void main() {
     await tester.pumpWidget(_wrap(
       SessionCoachAnalysisSection(
         session: _session(),
-        analyse: null,
         onAnalyseUpdated: () {},
         analysisLoader: () async {
           calls++;
@@ -247,7 +246,6 @@ void main() {
         builder: (_) => Scaffold(
           body: SessionCoachAnalysisSection(
             session: _session(),
-            analyse: null,
             onAnalyseUpdated: () {},
           ),
         ),
@@ -271,7 +269,6 @@ void main() {
     await tester.pumpWidget(_wrap(
       SessionCoachAnalysisSection(
         session: _session(),
-        analyse: null,
         onAnalyseUpdated: () {},
       ),
       authenticated: false,
@@ -295,7 +292,6 @@ void main() {
     await tester.pumpWidget(_wrap(
       SessionCoachAnalysisSection(
         session: _session(),
-        analyse: null,
         onAnalyseUpdated: () {},
       ),
       authenticated: true,
@@ -316,7 +312,6 @@ void main() {
     await tester.pumpWidget(_wrap(
       SessionCoachAnalysisSection(
         session: _session(),
-        analyse: null,
         onAnalyseUpdated: () {},
       ),
       authenticated: false,
@@ -348,7 +343,6 @@ void main() {
     await tester.pumpWidget(_wrap(
       SessionCoachAnalysisSection(
         session: _session(),
-        analyse: null,
         onAnalyseUpdated: () {},
       ),
       authenticated: true,
@@ -372,7 +366,6 @@ void main() {
     await tester.pumpWidget(_wrap(
       SessionCoachAnalysisSection(
         session: _session(),
-        analyse: null,
         onAnalyseUpdated: () {},
         analysisService: service,
       ),
@@ -393,7 +386,6 @@ void main() {
     await tester.pumpWidget(_wrap(
       SessionCoachAnalysisSection(
         session: _session(),
-        analyse: null,
         onAnalyseUpdated: () {},
         analysisLoader: () async {
           calls++;
@@ -429,7 +421,6 @@ void main() {
     await tester.pumpWidget(_wrap(
       SessionCoachAnalysisSection(
         session: _session(),
-        analyse: null,
         onAnalyseUpdated: () {},
         analysisLoader: () async =>
             throw SessionExpiredException('refresh révoqué'),
@@ -456,7 +447,6 @@ void main() {
     await tester.pumpWidget(_wrap(
       SessionCoachAnalysisSection(
         session: _session(),
-        analyse: null,
         onAnalyseUpdated: () {},
         analysisLoader: () async {
           authProvider.markUnauthenticated();
