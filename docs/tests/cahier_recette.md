@@ -116,14 +116,16 @@ Résultats attendus:
 Objectif: Vérifier la transmission à la demande, l'idempotence et les limites du Coach de session.
 Pré-requis:
 - Utilisateur connecté avec consentement Coach activé et niveau d'expérience renseigné
-- Une session réalisée sans exercice, une avec exercice personnel et une avec exercice du catalogue
+- En build DEBUG, utiliser le bouton éclair de l'écran Sessions pour créer l'exercice personnel et les quatre sessions variées
+- Récupérer séparément un exercice du catalogue pour recetter sa résolution serveur
 Étapes:
-1. Lancer le débrief de la session sans exercice puis rouvrir son détail
-2. Lancer le débrief avec exercice personnel qualifié comme réalisé et protocole partiellement suivi
-3. Lancer le débrief avec exercice du catalogue qualifié comme réalisé et protocole suivi
-4. Rejouer côté API la même demande avec le même sessionUuid et un payload inchangé
-5. Modifier un commentaire de session puis relancer la demande côté API
-6. Désactiver le consentement et vérifier les deux présentations depuis le détail et l'écran Coach
+1. Contrôler les 10 séries croissantes des deux sessions positives et les séries aléatoires des deux autres sessions
+2. Lancer le débrief de la session sans exercice puis rouvrir son détail
+3. Lancer successivement les débriefs des exercices réussi, suivi avec résultats irréguliers et réalisé sans protocole suivi
+4. Lancer le débrief avec exercice du catalogue qualifié comme réalisé et protocole suivi
+5. Rejouer côté API la même demande avec le même sessionUuid et un payload inchangé
+6. Modifier un commentaire de session puis relancer la demande côté API
+7. Désactiver le consentement et vérifier les deux présentations depuis le détail et l'écran Coach
 Résultats attendus:
 - Le débrief affiche un texte factuel, une à trois réussites, un point d'attention et les limites
 - L'exercice affiche Réussi, Échoué ou Non évaluable uniquement d'après sa réalisation et son protocole déclaré

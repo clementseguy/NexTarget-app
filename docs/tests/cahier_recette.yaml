@@ -121,10 +121,12 @@ features:
     objectif: Vérifier la transmission à la demande, l'idempotence et les limites du Coach de session.
     preconditions:
       - Utilisateur connecté avec consentement Coach activé et niveau d'expérience renseigné
-      - Une session réalisée sans exercice, une avec exercice personnel et une avec exercice du catalogue
+      - En build DEBUG, utiliser le bouton éclair de l'écran Sessions pour créer l'exercice personnel et les quatre sessions variées
+      - Récupérer séparément un exercice du catalogue pour recetter sa résolution serveur
     steps:
+      - Contrôler les 10 séries croissantes des deux sessions positives et les séries aléatoires des deux autres sessions
       - Lancer le débrief de la session sans exercice puis rouvrir son détail
-      - Lancer le débrief avec exercice personnel qualifié comme réalisé et protocole partiellement suivi
+      - Lancer successivement les débriefs des exercices réussi, suivi avec résultats irréguliers et réalisé sans protocole suivi
       - Lancer le débrief avec exercice du catalogue qualifié comme réalisé et protocole suivi
       - Rejouer côté API la même demande avec le même sessionUuid et un payload inchangé
       - Modifier un commentaire de session puis relancer la demande côté API

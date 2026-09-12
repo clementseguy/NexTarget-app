@@ -68,3 +68,8 @@ un état adapté sans rendre le carnet indisponible.
 L'écran Coach présente le Coach de session et le futur Coach de progression.
 Ce dernier reste annoncé comme bientôt disponible et ne prend encore aucune
 décision.
+
+En build DEBUG uniquement, le bouton éclair de l'écran Sessions crée un
+exercice personnel de groupement et quatre sessions de recette : progression
+réussie, résultats irréguliers, protocole non suivi et session sans exercice.
+Chaque appui ajoute un nouveau jeu indépendant.
