@@ -1,239 +1,84 @@
 # AGENTS.md — NexTarget App
 
-Instructions pour les agents de développement IA travaillant sur ce dépôt.
-Objectif : produire du code cohérent avec l'existant et **maintenir un niveau de
-qualité élevé** (ce repo doit pouvoir être partagé sans réserve).
+Instructions pour les agents travaillant sur l'application Flutter NexTarget.
 
-## Projet
+## Projet et sources
 
-NexTarget est le carnet de tir sportif du tireur solo : saisie des sessions
-(armes, calibres, séries, groupements), statistiques, objectifs, exercices, et un
-**coach IA** qui analyse les séances. L'app fonctionne **hors-ligne** ; un compte
-(OAuth) est **optionnel** et sert à sécuriser les appels IA (proxy serveur).
+- Flutter/Dart, Hive, `provider` et package historique `tir_sportif`.
+- Application utilisable hors ligne ; compte facultatif pour le Coach IA.
+- Identifiants de code en anglais ; UI et documentation en français.
+- Le backlog canonique est dans `docs/backlog/`. Pour une US, commencer par :
+  `bash scripts/us_context.sh NT-XXX`.
+- Le backlog définit le quoi ; ce fichier définit les invariants techniques.
 
-- **Stack** : Flutter / Dart (SDK `>=3.0.0 <4.0.0`), stockage local **Hive**
-- **State management** : `provider` (`ChangeNotifier`)
-- **Backend** : NexTarget-server (OAuth + proxy Coach IA), consommé via `http`
-- **Version** : voir `pubspec.yaml` (`version:`)
-- **Package id historique** : `tir_sportif` (branding affiché = *NexTarget*, ne pas renommer le package)
-- **Langue** : identifiants en **anglais** ; commentaires, docs et **UI en français** ; certaines valeurs métier sont en français (`"réalisée"`, `"entraînement"`) — les conserver telles quelles.
+Lire uniquement la documentation utile à la tâche :
 
-## Source de vérité produit
+| Besoin | Référence |
+|---|---|
+| Produit livré | `docs/README.md`, puis `docs/features/` |
+| Schéma ou migration Hive | `docs/tech/hive_schema.md` |
+| Tests et recette | `docs/tests/README.md` |
+| Compte ou Coach | `docs/features/compte-et-coach.md` |
+| Serveur local Android | `docs/tech/serveur_local_emulateur_android.md` |
+| Build APK | `docs/tech/build_apk_guide.md` |
 
-Le **quoi/pourquoi** vit dans les documents du backlog, pas ici :
+Le code et les tests restent la référence du comportement exécuté. Ne pas lire
+le journal ou les archives du backlog sans besoin historique explicite.
 
-- **Backlog** : [`docs/backlog/backlog-unifie.md`](docs/backlog/backlog-unifie.md) — inventaire et statut des items `NT-XXX`.
-- **Descriptions** : [`docs/backlog/descriptions.md`](docs/backlog/descriptions.md) — définition fonctionnelle des items actifs.
-- **Priorités** : [`docs/backlog/priorites.md`](docs/backlog/priorites.md) — ordre de traitement courant.
-- **Journal** : [`docs/backlog/journal/`](docs/backlog/journal/) — historique concis des décisions et livraisons, jamais source du statut courant.
-- **Gouvernance / DoD / convention d'IDs** : [`docs/backlog/README.md`](docs/backlog/README.md).
+## Architecture
 
-Ces documents se modifient **uniquement dans `NexTarget-app`**. Le repo
-`NexTarget-server` pointe vers le backlog unifié et filtre les items par leur
-portée `server` ou `both`, sans maintenir de copie ni de backlog concurrent.
+Sens des dépendances :
+`screens/widgets → providers → services → repositories → models`.
 
-En cas de conflit entre ce fichier et le backlog sur le périmètre produit, **le
-backlog prime**. Cet `AGENTS.md` fait autorité sur le **comment** (architecture,
-conventions, qualité).
+- Aucun accès Hive direct depuis l'UI.
+- Aucun I/O ou appel réseau dans `models/`.
+- Toute configuration passe par `AppConfig`.
+- La plupart des modèles utilisent `toMap`/`fromMap` ; seul `Goal` utilise des
+  adapters générés. Ne pas généraliser un autre mode de persistance sans US.
 
-## Architecture (`lib/`)
+## Invariants
 
-```
-lib/
-  main.dart          # Bootstrap : AppConfig, Hive.initFlutter, migrations, adapters, providers
-  app/               # MyApp (MaterialApp, thèmes, routing racine)
-  config/            # AppConfig (singleton) — charge assets/config.yaml + secrets
-  constants/         # Constantes (noms de box Hive, catégories, etc.)
-  models/            # Modèles de domaine (majoritairement toMap/fromMap ; Goal en @HiveType)
-  repositories/      # Accès données Hive (une box par agrégat)
-  services/          # Logique métier (stats, coach, backup, auth, préférences…)
-  providers/         # État applicatif (Navigation, Settings, Auth) via ChangeNotifier
-  interfaces/        # Contrats/abstractions
-  navigation/        # Navigation
-  screens/           # Écrans (UI)
-  widgets/           # Composants réutilisables
-  forms/             # Contrôleurs/état de formulaires
-  theme/             # Thèmes visuels
-  migrations/        # MigrationRunner + migrations de schéma Hive versionnées
-  utils/             # Utilitaires transverses
-```
+### Persistance
 
-### Règles d'architecture
-- **Sens des dépendances** : `screens/widgets → providers → services → repositories → models`. Ne jamais faire remonter (un service n'importe pas un écran, un modèle ne dépend de rien).
-- **Pas d'accès Hive direct depuis l'UI** : passer par un repository, puis un service.
-- **Modèles = données** : pas d'I/O ni d'appel réseau dans `models/` (leur rôle : structure + `toMap`/`fromMap`).
-- **Persistance Hive** : la plupart des modèles sont stockés en `Map<String, dynamic>` (sérialisation manuelle `toMap`/`fromMap`). Seul `Goal` utilise l'adapter généré (`@HiveType`, `part 'goal.g.dart'`).
-- **Config & secrets** : tout passe par `AppConfig` (charge `assets/config.yaml`). Depuis NT-061, **aucun secret côté client** (la clé Mistral vit côté serveur) ; `config.local.yaml` ne sert plus qu'aux surcharges locales non sensibles (ex. calibres).
+- Les `typeId` et index `HiveField` sont stables, uniques et jamais réutilisés.
+- Toute évolution structurelle est additive et fournit migration, registre et
+  test conformément à `docs/tech/hive_schema.md`.
+- Après modification d'un type généré, régénérer et committer les adapters.
+- Les données historiques et sauvegardes doivent rester lisibles.
 
-## Hive — règles impératives
+### HTTP, authentification et Coach
 
-Casser la persistance = corrompre les données des utilisateurs. Traiter avec soin.
+- Utiliser `AuthenticatedHttpClient` pour les appels authentifiés.
+- Stocker les tokens dans `flutter_secure_storage` et ne jamais les journaliser.
+- Conserver le retour OAuth par deep link `nextarget://callback`.
+- `ServerCoachAnalysisService` est l'unique voie d'analyse Coach. Ne jamais
+  ajouter de clé Mistral, prompt serveur ou appel Mistral direct dans l'app.
 
-1. **typeIds stables et uniques.** Les `@HiveType(typeId:)` (Goal : 40–44) ne se
-   réutilisent **jamais**. Nouveau type persisté → nouveau typeId non utilisé.
-2. **Champs additifs.** Ajouter un champ = nouvel index `@HiveField`, jamais
-   réutiliser un ancien index. Ne pas réordonner/supprimer des champs existants.
-3. **Migration obligatoire pour tout changement de schéma structurel.** Ajouter une
-   `HiveMigration` (`toVersion` croissant) et l'enregistrer dans le `MigrationRunner`
-   de `main.dart`. Fournir un test de migration (cf. `test/migrations/`).
-4. **Après modif d'un modèle `@HiveType`** : régénérer les adapters
-   (`dart run build_runner build --delete-conflicting-outputs`) et committer le
-   `*.g.dart`.
-5. **Ne pas ouvrir une box avant que migrations + adapters soient prêts** (ordre de
-   `main.dart` : `AppConfig.load` → `Hive.initFlutter` → migrations → `registerAdapter` → `openBox`).
+## Code et tests
 
-## Conventions de code
+- Respecter le style Dart, privilégier `final` et `const`.
+- Utiliser `AppLogger`, jamais `print` ; ne pas ajouter `withOpacity`.
+- Aucun émoji dans le code, l'UI, la documentation ou les messages Git.
+- Toute logique nouvelle reçoit un test nominal et un cas d'erreur pertinent.
+- Un changement visible met à jour la recette YAML puis le Markdown généré.
+- Après changement d'une interface mockée, régénérer les mocks.
+- Dans `test/support`, conserver les garanties de
+  `FakeSessionRepository` et utiliser `captureError` pour les erreurs async.
 
-- **Style Dart standard** : `lowerCamelCase` (variables/fonctions), `UpperCamelCase`
-  (types), `snake_case.dart` (fichiers), un widget/écran par fichier.
-- **`const` partout où c'est possible** (widgets, littéraux) — c'est aussi une
-  attente de l'analyse statique.
-- **Immutabilité** : privilégier `final` ; modèles avec `copyWith` quand pertinent
-  (cf. `Exercise`).
-- **Async** : `async/await`, gérer explicitement les erreurs réseau (voir les
-  services coach : `TimeoutException`, `SocketException`, codes HTTP).
-- **Logging** : utiliser `services/logger.dart` (`AppLogger`), **pas** `print`.
-  ATTENTION : il reste des `print('[DEBUG] …')` hérités dans le code coach -> ne pas en
-  ajouter, et les retirer si tu touches ces fichiers.
-- **Dépréciations** : ne pas introduire de `withOpacity(` (déprécié ; le
-  pré-commit le signale) — préférer `.withValues(...)`.
-- **UI** : Material, textes en français, thématisable (`theme/`).
-- **Aucun émoji** : ni dans le code (commentaires, docstrings, messages de log,
-  textes affichés à l'utilisateur), ni dans la documentation (`*.md`, `AGENTS.md`
-  inclus), ni dans les messages de commit/PR. Ce dépôt est de la documentation
-  technique, pas un post LinkedIn — texte brut uniquement.
+## Validation
 
-## HTTP & Auth
-- Client HTTP : package `http`. Pour les appels **authentifiés**, utiliser
-  `AuthenticatedHttpClient` (injecte le JWT), pas un `http.Client` nu.
-- Tokens stockés via `flutter_secure_storage`. Ne jamais logguer un token ni une clé.
-- OAuth : flow délégué au serveur, retour par **deep link** `nextarget://callback?token=…`
-  (`app_links`). Ne pas réimplémenter le flow ailleurs.
-- **Coach IA** : **coach connecté uniquement** (NT-061, livré) —
-  `ServerCoachAnalysisService` est l'unique chemin d'analyse ; il n'existe plus de
-  clé Mistral ni d'appel Mistral direct côté client. **Ne jamais les réintroduire.**
-  Le reste de l'app reste utilisable hors-ligne.
+Pendant le développement, exécuter uniquement les tests ciblés utiles. À la
+fin, lancer une seule fois `bash scripts/verify_before_commit.sh`, qui couvre
+déjà analyse, schéma Hive et suite de tests. Ne pas relancer séparément ces
+contrôles complets juste avant ou après sans modification du code.
 
-## Tests
+## Livraison
 
-- **Framework** : `flutter_test` + `mockito` (mocks générés → `*.mocks.dart` via
-  `build_runner`).
-- **Organisation** : `test/` reflète `lib/` (`test/models`, `test/services`,
-  `test/repositories`, `test/screens`, `test/forms`, `test/migrations`). ~103 fichiers
-  de test aujourd'hui — **maintenir cette couverture**.
-- **Attendu pour toute évolution** : au moins un test nominal + un cas d'erreur.
-  Nouveau service/logique → test unitaire. Nouvel écran → widget test. Changement de
-  schéma → test de migration.
-- **Fakes de repository (`test/support/`, NT-058)** : pour un `SessionRepository`
-  en mémoire, utiliser/étendre `test/support/fake_session_repository.dart`
-  (`FakeSessionRepository`) plutôt que d'écrire un nouveau fake ad hoc.
-  **Impératif : `getAll()` doit cloner** chaque élément (ex.
-  `ShootingSession.fromMap(s.toMap())`), jamais `List.of(...)` seul — un fake qui
-  partage les références d'objets mutables peut laisser un état incohérent si le
-  code testé mute un champ avant un `update()` qui échoue (rollback), contrairement
-  à `HiveSessionRepository` qui reconstruit toujours des objets frais. Ce défaut a
-  provoqué un débogage long et trompeur lors de NT-008 (le message d'échec de
-  `expect()` semblait accuser le mauvais code). Un stub en lecture seule qui
-  renvoie une liste fixe (sans `insert`/`update` réels) n'a pas besoin de ce
-  clonage et peut rester ad hoc.
-- **Erreurs async (`test/support/async_test_helpers.dart`)** : pour vérifier
-  qu'une fonction `async` lève une exception, utiliser `captureError(() => ...)`
-  (awaited) plutôt que `expect(() => asyncFn(), throwsA(...))` **non awaité** —
-  ce dernier peut laisser un travail asynchrone en suspens qui se résout pendant
-  le test suivant, avec un message d'échec attribué à la mauvaise assertion.
-  `await expectLater(future, throwsA(...))` (Future direct, pas de closure) reste
-  une alternative correcte.
-- **Lancement** : `flutter test` (tout) ou `flutter test --coverage` (rapport LCOV
-  pour SonarCloud). Pendant un débogage, cibler un fichier/test précis
-  (`flutter test test/xxx_test.dart --plain-name "..."`) avant de relancer toute
-  la suite.
-- **Régénérer les mocks** après changement d'interface mockée :
-  `dart run build_runner build --delete-conflicting-outputs`.
-
-## Qualité & CI
-
-- **Analyse statique** : `flutter_lints` est **actif** (`analysis_options.yaml`,
-  NT-051) et `flutter analyze` doit rester à **zéro issue** (infos comprises) —
-  la CI exécute `flutter analyze --fatal-infos`. Pas de nouveau `// ignore:`
-  sans justification en commentaire.
-- **SonarCloud** : workflow `.github/workflows/sonarcloud.yml` (push `dev`/`main`,
-  PR vers `main`, run quotidien). Couverture importée via `coverage/lcov.info`.
-  **Le Quality Gate SonarCloud (check « SonarCloud Code Analysis ») est
-  informatif, non bloquant** (décision 2026-07-09, gate par défaut 80 % nouveau
-  code non personnalisable en compte gratuit — inadapté à un diff UI-heavy).
-  Le check bloquant des PR est le job **« Test & SonarCloud »** (analyze
-  --fatal-infos + tests). Règle qualité : tout nouveau service/logique reçoit
-  des tests (nominal + erreur) ; viser ~60 % sur le nouveau code, sans y
-  sacrifier des tests de layout à faible valeur.
-- **Cahier de recette** : `docs/tests/cahier_recette.md` généré depuis
-  `docs/tests/cahier_recette.yaml` (`scripts/generate_cahier_recette.dart`). Le
-  **rejouer avant toute MR vers `main`** ; si un comportement visible change, mettre
-  à jour le YAML **et** régénérer.
-
-## Avant de committer (checklist)
-
-1. `bash scripts/verify_before_commit.sh` (lance `flutter analyze` + `flutter test` ;
-   `… fast` pour un sous-ensemble rapide).
-2. Adapters régénérés/committés si un modèle `@HiveType` a changé.
-3. Migration + test de migration ajoutés si le schéma Hive a changé.
-4. Si la PR clôt une US, préparer son statut `FAIT` uniquement dans
-   `docs/backlog/backlog-unifie.md` ; ce statut devient canonique à la fusion
-   dans `dev`. Compléter `CHANGELOG.md` si la livraison doit y être annoncée.
-5. Dans la même PR, préparer une entrée `LIVRAISON` concise dans
-   `docs/backlog/journal/<année>.md`. Lors d'un changement matériel de périmètre,
-   mettre à jour `descriptions.md` et ajouter une entrée `CADRAGE` qui explique
-   la décision. Ne jamais placer ce journal dans `backlog-unifie.md`,
-   `descriptions.md` ou `priorites.md`, ni recopier les détails déjà présents
-   dans une PR, le changelog ou une note de release.
-6. Aucun secret, token ou clé dans le diff ; aucun nouveau `print`/`withOpacity`.
-7. Aucun émoji dans le diff (code, doc, `CHANGELOG.md`, message de commit/PR).
-
-## Workflow Git (rappel gouvernance)
-
-- **Flux de branches (Git flow)** : `main` ← `dev` ← `feature/<code_nom_feature>`.
-  - **`main`** : branche de **production**, taggée à chaque **release**. Jamais de commit direct.
-  - **`dev`** : branche d'**intégration** ; reçoit les features validées.
-  - Toute branche de développement part de **`dev`** (jamais de `main`) et suit la
-    convention `type/NT-XXX-slug` lorsqu'elle traite une US
-    (ex. `feature/NT-061-coach-connecte-uniquement`). Une maintenance technique
-    ou documentaire sans US utilise `chore/slug-court`.
-    Pour un lot multi-features, une branche `features/<codes_noms_features>` regroupant
-    les IDs concernés est acceptée.
-- **Cycle de développement d'une (ou plusieurs) feature(s)** :
-  1. Créer la branche depuis **`dev`**.
-  2. Développer, puis ouvrir une **PR de la branche vers `dev`** (merge après revue + CI verte).
-  3. Pour livrer : ouvrir une **PR de `dev` vers `main`**, accompagnée d'une **release**
-     (bump de version dans `pubspec.yaml`, `CHANGELOG.md`, tag).
-- **Commit** : sujet préfixé par l'ID lorsqu'une US existe — exemple :
-  `feat(coach): NT-032 persona coach cool`. L'ID est facultatif pour une tâche
-  technique ou documentaire sans US.
-- **PR** : titre `[NT-XXX] …` lorsqu'elle traite une US, corps listant les IDs et
-  critères d'acceptation cochés ; la CI (« Test & SonarCloud ») s'exécute sur la PR.
-- **Definition of Done** : voir [`docs/backlog/README.md`](docs/backlog/README.md).
-
-## Décisions intentionnelles (ne pas « corriger »)
-
-- **Package id `tir_sportif`** conservé (le branding NexTarget est au niveau UI).
-- **Stockage Map + `toMap`/`fromMap`** pour la plupart des modèles (seul `Goal` en
-  adapter généré) — choix assumé, ne pas tout migrer sans raison.
-- **Valeurs métier en français** dans les données (`status`, `category`).
-
-## Commandes de référence
-
-```bash
-flutter pub get                 # dépendances
-flutter run                     # lancer l'app
-flutter test                    # tous les tests
-flutter test --coverage         # tests + couverture (lcov)
-flutter analyze                 # analyse statique
-dart run build_runner build --delete-conflicting-outputs   # (ré)générer adapters & mocks
-bash scripts/verify_before_commit.sh        # garde pré-commit (full)
-bash scripts/verify_before_commit.sh fast   # variante rapide
-dart run scripts/generate_cahier_recette.dart   # régénérer le cahier de recette
-```
-
-## Documentation de référence
-- [`docs/backlog/`](docs/backlog/) — backlog unifié, descriptions, priorités et gouvernance
-- [`docs/tech/`](docs/tech/) — specs techniques (API serveur, charts, build APK)
-- [`docs/features/`](docs/features/) — specs fonctionnelles (statistiques, objectifs…)
-- [`CHANGELOG.md`](CHANGELOG.md) — historique des changements
+- Flux Git : `main ← dev ← type/NT-XXX-slug` ; jamais de commit direct sur
+  `main`.
+- Une PR de feature vise `dev`. Inclure `NT-XXX` dans branche, commits et PR.
+- Une PR qui clôt une US prépare son statut `FAIT` dans
+  `docs/backlog/backlog-unifie.md` et une entrée `LIVRAISON` dans le journal.
+- Modifier la définition, la priorité et le statut uniquement dans leurs
+  fichiers canoniques décrits par `docs/backlog/README.md`.
+- Préserver les changements utilisateur et ne jamais committer de secret.

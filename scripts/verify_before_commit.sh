@@ -12,34 +12,35 @@ log() { echo -e "${YELLOW}[verify]${NC} $*"; }
 ok() { echo -e "${GREEN}[ok]${NC} $*"; }
 err() { echo -e "${RED}[fail]${NC} $*"; }
 
-log "Flutter analyze..."
-if ! flutter analyze; then
-  err "flutter analyze failed"
-  exit 1
-fi
-ok "Analyze passed"
+run_check() {
+  local label=$1
+  shift
+  local output_file
+  output_file=$(mktemp "${TMPDIR:-/tmp}/nextarget-verify.XXXXXX")
 
-log "Hive schema consistency..."
-if ! dart run tool/verify_hive_schema.dart; then
-  err "Hive schema verification failed"
-  exit 1
-fi
-ok "Hive schema passed"
+  log "$label..."
+  if "$@" >"$output_file" 2>&1; then
+    rm -f "$output_file"
+    ok "$label passed"
+    return 0
+  fi
 
-log "Running tests ($MODE mode)..."
+  err "$label failed"
+  cat "$output_file"
+  echo "Full output: $output_file" >&2
+  return 1
+}
+
+run_check "Flutter analyze" flutter analyze
+
+run_check "Hive schema" dart run tool/verify_hive_schema.dart
+
 if [[ "$MODE" == "fast" ]]; then
-  # Fast mode: run only service + widget smoke tests (adjust pattern if more granularity needed)
-  if ! flutter test test/services/rolling_stats_service_test.dart test/widget_test.dart; then
-    err "Fast tests failed"
-    exit 1
-  fi
+  run_check "Tests ($MODE mode)" flutter test \
+    test/services/rolling_stats_service_test.dart test/widget_test.dart
 else
-  if ! flutter test; then
-    err "Full test suite failed"
-    exit 1
-  fi
+  run_check "Tests ($MODE mode)" flutter test
 fi
-ok "Tests passed"
 
 log "Deprecation scan (withOpacity) ..."
 WITH_OPACITY_COUNT=$(grep -R "withOpacity(" -n lib || true | wc -l | tr -d ' ')

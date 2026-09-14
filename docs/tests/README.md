@@ -2,18 +2,21 @@
 
 ## Tests automatisés
 
-Depuis la racine du dépôt :
+Pendant le développement, cibler les tests concernés, par exemple :
 
 ```bash
-flutter analyze
-flutter test
+flutter test test/services/rolling_stats_service_test.dart
 ```
 
-Pour la validation complète avant commit :
+Pour la validation complète avant commit, lancer uniquement :
 
 ```bash
 bash scripts/verify_before_commit.sh
 ```
+
+Ce script exécute déjà l'analyse Flutter, la vérification du schéma Hive et la
+suite complète. Ne pas relancer ces contrôles séparément sans modification du
+code entre les exécutions.
 
 Les tests suivent l'organisation de `lib/`. Les appels OAuth et Mistral sont mockés ; la suite ne doit effectuer aucun appel réseau réel.
 

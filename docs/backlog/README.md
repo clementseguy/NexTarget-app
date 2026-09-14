@@ -14,6 +14,13 @@ l'application et le serveur.
 | [`archive/`](archive/) | US archivées, classées par année d'archivage. |
 | [`details/`](details/) | Référentiels et compléments durables liés aux US. |
 
+Pour afficher uniquement le contexte utile d'une US active, sans charger tous
+les documents :
+
+```bash
+bash scripts/us_context.sh NT-XXX
+```
+
 ## Cycle de vie
 
 Les statuts autorisés sont `À FAIRE`, `EN COURS`, `FAIT` et `ANNULÉ`.
