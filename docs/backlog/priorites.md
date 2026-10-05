@@ -20,13 +20,15 @@ de limiter P0 à **2 US** et P1 à **5 US**.
 ## P1 — Prochain
 
 - [NT-155](descriptions.md#NT-155) — Déplacer le niveau dans les préférences Coach.
-- [NT-162](descriptions.md#NT-162) — Auditer et enrichir le modèle métier Exercise.
-- [NT-163](descriptions.md#NT-163) — Déterminer la réussite et la suite du Coach de session.
 - [NT-164](descriptions.md#NT-164) — Gérer l'attente du Coach de progression.
 - [NT-157](descriptions.md#NT-157) — Séparer la décision du ton du Coach.
+- [NT-172](descriptions.md#NT-172) — Ne plus forcer le consentement Google à chaque connexion.
 
 ## P2 — Ultérieur
 
+- [NT-174](descriptions.md#NT-174) — Qualifier le signal de tir de la Garmin vívoactive HR.
+- [NT-175](descriptions.md#NT-175) — Détecter et transmettre automatiquement cinq tirs.
+- [NT-176](descriptions.md#NT-176) — Recevoir, afficher et enregistrer le chronométrage dans une page prototype.
 - [NT-121](descriptions.md#NT-121) — Détailler et construire le MVP Coach de progression.
 - [NT-122](descriptions.md#NT-122) — Structurer les sorties du Coach.
 - [NT-123](descriptions.md#NT-123) — Sélectionner un exercice validé pour le plan.
@@ -54,6 +56,12 @@ de limiter P0 à **2 US** et P1 à **5 US**.
 - [NT-044](descriptions.md#NT-044) — Compléter les fournisseurs OAuth.
 - [NT-132](descriptions.md#NT-132) — Évaluer la saisie vocale au stand.
 - [NT-151](descriptions.md#NT-151) — Densifier les cartes d'exercice.
+- [NT-167](descriptions.md#NT-167) — Internationaliser l'app et les Coachs en anglais.
+- [NT-168](descriptions.md#NT-168) — Faire exécuter le cahier de recette par un agent.
+- [NT-169](descriptions.md#NT-169) — Auditer globalement la qualité et la sécurité du code.
+- [NT-170](descriptions.md#NT-170) — Sauvegarder les données de sessions dans le cloud.
+- [NT-171](descriptions.md#NT-171) — Cadrer les offres gratuite, payante et premium.
+- [NT-173](descriptions.md#NT-173) — Réveiller le serveur Render depuis l'accueil et la fin de session.
 
 ## Icebox — Pas envisagé actuellement
 

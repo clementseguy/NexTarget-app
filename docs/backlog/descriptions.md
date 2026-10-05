@@ -14,6 +14,13 @@ sont volontairement pas reproduits.
 - **Critères d'acceptation** : à définir — extraction dispersion/score ; résultat versé dans le contexte envoyé au coach.
 - **Notes** : vision par ordinateur, coûteux ; probablement côté serveur. Décision 2026-07-13 : l'analyse **qualitative multimodale** (NT-111) est retenue en premier ; NT-006 reste en Icebox, à réévaluer après retour d'usage de NT-111.
 
+<a id="NT-170"></a>
+### NT-170 — Sauvegarder les données de sessions dans le cloud
+- **Thème** : Carnet de tir · **Portée** : both · **Dépendances** : authentification et persistance serveur existantes
+- **Description** : Permettre à un utilisateur authentifié de sauvegarder ses données de sessions dans le cloud, en complément des mécanismes locaux d'import et d'export.
+- **Critères d'acceptation** : à cadrer — données concernées, synchronisation, restauration, gestion des conflits, fonctionnement hors ligne, quotas, chiffrement, suppression et réversibilité.
+- **Notes** : la source de vérité entre stockage local et cloud ainsi que les garanties de confidentialité et de portabilité doivent être décidées avant développement.
+
 ## Thème 2 — Statistiques & Objectifs
 
 <a id="NT-015"></a>
@@ -28,6 +35,20 @@ sont volontairement pas reproduits.
 - **Description** : Cycle de vie d'objectif plus riche que l'actuel `active/achieved/failed` : statuts étendus (ex. planned/in_progress/achieved/abandoned), journal des changements de statut (avec dates), vue détail dédiée.
 - **Critères d'acceptation** : statuts étendus persistés (migration Hive + adapters régénérés) ; historique des transitions consultable ; écran détail d'un objectif.
 - **Notes** : repris de l'issue GitHub #5 (tracking v0.3), 2026-07-09. Attention : champ Hive additif uniquement (typeIds/index stables).
+
+<a id="NT-165"></a>
+### NT-165 — Refondre les Objectifs pour le coaching de progression
+- **Thème** : Statistiques & Objectifs · **Portée** : both · **Dépendances** : NT-012
+- **Description** : Remplacer le modèle actuel, principalement orienté hauts faits et seuils statistiques, par de vrais objectifs de travail capables d'orienter durablement la sélection d'exercices et le futur Coach de progression, tout en distinguant explicitement objectif, critère mesurable, progression et achievement.
+- **Critères d'acceptation** : avant développement, un état des lieux qualifie chaque champ, métrique et relation du modèle `Goal` actuel comme conservé, modifié, déplacé ou supprimé ; un MCD lisible compare le modèle actuel et le modèle cible et identifie séparément les champs et relations ajoutés, modifiés et supprimés ; le modèle cible définit au minimum l'intention de progression, la compétence travaillée, le niveau de départ éventuel, le résultat attendu, le mode de mesure, l'horizon exprimé en sessions et ses liens avec les exercices, sessions et futurs plans ; les achievements et records ne sont plus confondus avec les objectifs de travail ; le périmètre de migration des objectifs historiques est explicite et n'invente aucune donnée ; l'incrément initial reste utilisable sans Coach de progression et permet des évolutions additives ; les contrats app et serveur, la propriété de chaque donnée et la stratégie de versionnement sont fixés avant implémentation ; l'impact sur NT-015, NT-016, NT-121, NT-124 et NT-126 est arbitré sans créer de modèle parallèle.
+- **Notes** : US de cadrage et d'évolution du modèle, volontairement distincte de la création automatique d'un objectif par le Coach. Sa priorité sera arbitrée avec le découpage du Coach de session simplifié et du Coach de progression.
+
+<a id="NT-166"></a>
+### NT-166 — Afficher la synthèse des indicateurs d'une session
+- **Thème** : Statistiques & Objectifs · **Portée** : app · **Dépendances** : à préciser avec l'US de calcul des indicateurs du Coach de session
+- **Description** : Présenter dans le détail d'une session les indicateurs intra-session déjà calculés et persistés pour son débrief, sans introduire une seconde implémentation statistique dans l'application.
+- **Critères d'acceptation** : écran ou section de synthèse distincte du débrief narratif ; affichage selon disponibilité de la moyenne, médiane, stabilité, taux de conformité, évolution, distance évaluée, niveau de confiance et avertissements ; distinction claire entre mesure objective et commentaire du tireur ; consultation hors ligne après persistance locale ; absence de recalcul divergent entre serveur et app ; états partiels et non évaluables explicités sans valeur inventée.
+- **Notes** : amélioration différée et non priorisée ; les indicateurs pourront d'abord être visibles uniquement dans le débrief du Coach de session.
 
 ## Thème 3 — Exercices
 
@@ -75,6 +96,13 @@ sont volontairement pas reproduits.
 - **Description** : Provider Apple (requis pour publication iOS si autres logins sociaux présents).
 - **Critères d'acceptation** : à définir. · **Notes** : roadmap serveur v0.2.
 
+<a id="NT-172"></a>
+### NT-172 — Ne plus forcer le consentement Google à chaque connexion
+- **Thème** : Auth & Compte · **Portée** : server · **Dépendances** : NT-040, NT-048
+- **Description** : Corriger le flux OAuth Google afin qu'une connexion ordinaire ne redemande pas systématiquement le choix du compte et le consentement, sans dépendre inutilement d'un refresh token Google.
+- **Critères d'acceptation** : après un premier consentement valide, les connexions ordinaires ne forcent plus l'écran de consentement ni un nouvel email de partage d'informations ; le choix du compte et un nouveau consentement ne sont demandés que lorsque le parcours le justifie ; le besoin de `access_type=offline` est audité et ce paramètre est retiré si aucun appel ultérieur aux API Google ne le nécessite ; première connexion, reconnexion et reconnexion après révocation sont vérifiées ; les tests OAuth contrôlent les paramètres retenus ; `state` à usage unique, nonce, validation du token et redirections autorisées restent protégés ; aucun secret, token ou donnée utilisateur n'est journalisé.
+- **Notes** : reprise de l'[issue NexTarget-server #12](https://github.com/clementseguy/NexTarget-server/issues/12). Anomalie distincte de la persistance des utilisateurs suivie historiquement par l'issue serveur #9.
+
 ## Thème 8 — Plateforme & Déploiement
 
 <a id="NT-074"></a>
@@ -86,6 +114,13 @@ sont volontairement pas reproduits.
 ### NT-076 — Cache stats + compactage Hive
 - **Thème** : Plateforme & Déploiement · **Portée** : app · **Dépendances** : NT-010 · **Description** : Cache mémoire des stats (TTL courte) + compactage Hive périodique.
 - **Critères d'acceptation** : stats mises en cache ; compactage déclenché sur seuil.
+
+<a id="NT-173"></a>
+### NT-173 — Réveiller le serveur Render aux moments utiles
+- **Thème** : Plateforme & Déploiement · **Portée** : app · **Dépendances** : NT-070
+- **Description** : Anticiper la sortie de veille du serveur Render afin de réduire l'attente avant les fonctionnalités réseau, en déclenchant un appel depuis l'écran d'accueil au lancement de l'app et depuis l'écran final de synthèse après une session au stand.
+- **Critères d'acceptation** : un appel léger vers le point de santé configuré est déclenché une fois l'écran d'accueil affiché et à l'affichage de la synthèse finale d'une session au stand ; les appels sont asynchrones, non bloquants, bornés par un timeout et ne dégradent ni la navigation ni l'enregistrement local si le serveur est indisponible ; les déclenchements rapprochés sont dédupliqués ou limités ; aucun secret, token ou contenu de session n'est transmis ; l'URL provient de `AppConfig` ; les tests couvrent les deux déclencheurs, l'indisponibilité réseau et la déduplication.
+- **Notes** : il s'agit d'un réveil best effort du service Render, sans indicateur de disponibilité imposé à l'utilisateur et sans dépendance fonctionnelle du carnet de tir au serveur.
 
 ## Thème 9 — Idées / hors-scope
 
@@ -166,7 +201,7 @@ sont volontairement pas reproduits.
 
 <a id="NT-121"></a>
 ### NT-121 — MVP Coach de progression transverse
-- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-030, NT-152 à NT-157, NT-159, NT-160, NT-162, NT-163
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-030, NT-152 à NT-157, NT-159, NT-160, NT-162, NT-163, NT-165
 - **Description** : Macro-US du MVP Coach de progression : analyser plusieurs sessions comparables, choisir une priorité explicable, créer ou réviser un objectif de coaching, sélectionner un exercice validé et suivre un plan exprimé en nombre de sessions. Reprend et remplace le périmètre UX de NT-033.
 - **Critères d'acceptation** : à détailler dans des US dédiées avant développement ; `coach_screen.dart` remplace le placeholder « Coming soon » ; le Coach de progression reste seul autorisé à créer ou modifier le plan.
 - **VM** : 5
@@ -189,7 +224,7 @@ sont volontairement pas reproduits.
 
 <a id="NT-124"></a>
 ### NT-124 — Coach de progression : proposer un objectif
-- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-012, NT-121, NT-122
+- **Thème** : Coach avancé · **Portée** : both · **Dépendances** : NT-121, NT-122, NT-165
 - **Description** : Le Coach de progression propose un objectif de coaching mesurable, aligné sur la priorité retenue et distinct de l'intention personnelle de l'utilisateur.
 - **Critères d'acceptation** : à revoir avant développement — compétence, métrique, référence initiale, valeur cible, nombre de sessions et justification structurés.
 - **VM** : 4
@@ -355,5 +390,62 @@ sont volontairement pas reproduits.
 - **Description** : Fournir une suite compréhensible après un débrief qui demande une décision du Coach de progression alors que ce Coach n'est pas encore disponible, sans étendre les responsabilités du Coach de session.
 - **Critères d'acceptation** : lorsque la prochaine action vaut `request_progression_coach` et que le Coach de progression est indisponible, l'application indique que l'exercice est validé pour cette session et que la réévaluation guidée n'est pas encore disponible ; aucun appel vers une fonction inactive n'est effectué ; l'utilisateur peut consulter le débrief, refaire l'exercice pour consolider ou ouvrir la liste afin de choisir lui-même un exercice, sans recommandation automatique d'un autre axe ; ce comportement n'altère ni le résultat persisté ni la prochaine action décidée par le serveur ; lorsque NT-121 rend le Coach de progression disponible, l'action ouvre son parcours sans modifier le contrat du débrief ; les tests couvrent les états indisponible et disponible ainsi que l'absence de mutation automatique d'un objectif, exercice ou plan.
 - **Notes** : il s'agit d'un comportement transitoire et réversible. Il ne simule pas un Coach de progression et ne doit pas annoncer de date de disponibilité.
+
+---
+
+## Thème 16 — Produit, qualité & exploitation
+
+<a id="NT-167"></a>
+### NT-167 — Internationaliser l'app et les Coachs en anglais
+- **Thème** : Produit, qualité & exploitation · **Portée** : both
+- **Description** : Internationaliser l'application et les contenus des Coachs avec l'anglais comme seule langue supplémentaire au français existant.
+- **Critères d'acceptation** : à cadrer — stratégie de localisation, sélection et persistance de la langue, couverture des textes UI et des contenus Coach, formats locaux, fallback et non-régression du français.
+- **Notes** : le cadrage doit distinguer les textes embarqués dans l'app, les contenus servis par le serveur et les réponses générées par les Coachs.
+
+<a id="NT-168"></a>
+### NT-168 — Faire exécuter la recette de l'app par un agent
+- **Thème** : Produit, qualité & exploitation · **Portée** : app · **Dépendances** : NT-052
+- **Description** : Permettre à un agent d'exécuter la recette de l'application à partir du cahier de recette canonique et d'en produire des résultats vérifiables.
+- **Critères d'acceptation** : à cadrer — environnement et appareils couverts, prérequis et jeux de données, scénarios automatisables, collecte des preuves, format du rapport, gestion des blocages et validation humaine des résultats.
+- **Notes** : le cahier de recette existant reste la source des scénarios ; cette US ne présume pas que tous les contrôles manuels sont automatisables.
+
+<a id="NT-169"></a>
+### NT-169 — Réaliser une revue générale qualité et sécurité
+- **Thème** : Produit, qualité & exploitation · **Portée** : both
+- **Description** : Effectuer une revue transversale de l'application et du serveur, orientée qualité du code et sécurité, puis prioriser les constats actionnables.
+- **Critères d'acceptation** : à cadrer — périmètre, référentiels, outils, niveaux de sévérité, traitement des faux positifs, livrables attendus et règles de transformation des constats en US ou correctifs.
+- **Notes** : la revue doit couvrir les contrats partagés et les frontières sensibles sans dupliquer les contrôles continus déjà en place.
+
+<a id="NT-171"></a>
+### NT-171 — Cadrer les offres gratuite, payante et premium
+- **Thème** : Produit, qualité & exploitation · **Portée** : both
+- **Description** : Préparer l'application à trois niveaux d'offre : un mode gratuit centré sur le carnet de tir, une formule d'appel incluant un débrief du Coach de session par semaine et une formule premium donnant accès aux Coachs, aux exercices, aux sessions dans le cloud et à de futures fonctions.
+- **Critères d'acceptation** : à cadrer — proposition de valeur et périmètre exact de chaque offre, règles d'éligibilité et de quota, métriques économiques, tarification, essais, achats et restauration, gestion des droits côté app et serveur, fonctionnement hors ligne, migration des utilisateurs existants, conformité et séquencement technique.
+- **Notes** : macro-US nécessitant un cadrage produit et business avant tout découpage fonctionnel ou choix d'architecture. Les capacités citées ne sont pas considérées comme définitivement incluses tant que ce cadrage n'est pas validé.
+
+---
+
+## Thème 17 — Chronométrer les tirs
+
+<a id="NT-174"></a>
+### NT-174 — Qualifier la détection des tirs avec la Garmin vívoactive HR
+- **Thème** : Chronométrer les tirs · **Portée** : app · **Dépendances** : —
+- **Description** : Réaliser un spike court sur la montre disponible pour vérifier qu'une impulsion de tir peut être distinguée des mouvements usuels du poignet avant d'intégrer la communication à NexTarget.
+- **Critères d'acceptation** : une application Connect IQ minimale arme et désarme l'acquisition, enregistre les axes de l'accéléromètre avec leurs timestamps et permet d'extraire les traces utiles ; la fiche d'essai consigne le modèle exact, la version du firmware et de Connect IQ, la fréquence demandée et réellement observée, la résolution temporelle, les unités, l'orientation des axes, la plage mesurable, les saturations et échantillons manquants ; le jeu d'essai comporte au moins 10 séries de 5 tirs avec une référence temporelle indépendante et des séquences sans tir représentatives ; le résultat documente l'amplitude, la durée et la variabilité du signal, le bruit de fond, le filtrage, le seuil et la période réfractaire testés, ainsi que vrais positifs, tirs manqués, faux positifs, précision, rappel et erreurs temporelles médiane, P95 et maximale ; un go/no-go motivé précise les limites liées au calibre, à l'arme, à la main porteuse, au serrage du bracelet et aux mouvements parasites.
+- **Notes** : timebox S et usage expérimental uniquement. Aucun apprentissage automatique, aucune compatibilité autre que la vívoactive HR disponible et aucune intégration aux sessions NexTarget dans cette US.
+
+<a id="NT-175"></a>
+### NT-175 — Détecter et transmettre automatiquement une série de 5 tirs
+- **Thème** : Chronométrer les tirs · **Portée** : app · **Dépendances** : NT-174
+- **Description** : Transformer le résultat concluant du spike en application Connect IQ minimale qui horodate localement cinq tirs puis envoie automatiquement la série à l'application Android NexTarget.
+- **Critères d'acceptation** : la montre permet d'armer ou d'annuler une série, applique l'algorithme simple validé par NT-174, conserve cinq timestamps locaux et s'arrête au cinquième tir ; le payload versionné contient un identifiant de série, les cinq timestamps relatifs, les intervalles entre tirs et les diagnostics minimaux de détection ; l'envoi utilise la liaison Connect IQ vers le téléphone, sans streaming des données brutes ni synchronisation manuelle ; une série non acquittée reste disponible pour une nouvelle tentative et la réception est idempotente ; la compatibilité de l'APK installé hors store est vérifiée ; la note technique fixe les versions du SDK montre et du SDK Android, les identifiants d'application, le rôle éventuel de Garmin Connect Mobile, les permissions et contraintes Android, le comportement au premier appairage, en arrière-plan et après reconnexion, ainsi que latence, pertes et doublons observés ; si l'application de montre doit être ouverte manuellement, cette limite est explicite.
+- **Notes** : aucun serveur NexTarget, aucun compte, aucune publication Connect IQ Store, aucune gestion multi-montres et aucune généralisation à d'autres modèles dans ce POC.
+
+<a id="NT-176"></a>
+### NT-176 — Ajouter la page prototype Garmin dans NexTarget
+- **Thème** : Chronométrer les tirs · **Portée** : app · **Dépendances** : NT-175
+- **Description** : Ajouter une page expérimentale unique permettant de connecter la Garmin, lancer l'acquisition d'une série de cinq tirs, afficher les données reçues et les enregistrer localement dans NexTarget.
+- **Critères d'acceptation** : la page affiche les états non configuré, déconnecté, connexion en cours, prêt, acquisition en cours, série reçue et erreur ; une action lance la connexion ou fournit l'instruction minimale requise côté montre, puis une action lance une série ; les cinq tirs sont affichés dans l'ordre avec temps relatif et intervalle depuis le tir précédent ; l'utilisateur peut enregistrer ou abandonner la série ; l'enregistrement local conserve au minimum l'identifiant, la date, les cinq timestamps, les quatre intervalles, le modèle de montre, la version du protocole et les diagnostics reçus, reste consultable après redémarrage et ne crée ni session ni série métier ; doublons, payload incomplet, déconnexion et timeout produisent un état explicite sans enregistrement partiel ; les tests couvrent le parcours nominal, les erreurs de connexion et de payload, l'idempotence et la persistance.
+- **Notes** : page de laboratoire Android uniquement, accessible depuis un point d'entrée expérimental. Sont hors périmètre : association aux impacts ou aux sessions, modification des modèles métier Session/Série, statistiques, Coach, export, réglage fin des seuils dans l'UI, iOS et interface de production.
 
 ---
