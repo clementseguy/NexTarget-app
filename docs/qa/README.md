@@ -12,6 +12,9 @@ uniquement les scénarios déclarés dans son manifeste externe. Les US
 exclusivement serveur sont hors périmètre de la recette mobile ; une US
 app+serveur garde un scénario mobile.
 
+La campagne de recette s'exécute sur `staging`, après fusion de `dev` et avant
+la fusion de `staging` dans `main`.
+
 Les rapports, captures et logs sont produits par Yvain. Les tickets GitHub sont
 préparés à partir de deux échecs reproductibles après remise à zéro ; leur
 publication est une action explicitement validée par un humain.

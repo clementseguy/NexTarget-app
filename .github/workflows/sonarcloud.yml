@@ -2,9 +2,9 @@ name: SonarCloud
 
 on:
   push:
-    branches: [ "dev", "main" ]
+    branches: [ "dev", "staging", "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "dev", "staging", "main" ]
   workflow_dispatch:
     inputs:
       branch:
@@ -21,7 +21,7 @@ jobs:
     outputs:
       has_pr: ${{ steps.check.outputs.has_pr }}
     steps:
-      - name: Check for open PR from branch to main
+      - name: Check for open PR to the next branch
         id: check
         uses: actions/github-script@v7
         with:
@@ -34,7 +34,12 @@ jobs:
               return;
             }
             const branch = context.ref.replace('refs/heads/','');
-            const { data: prs } = await github.rest.pulls.list({ owner, repo, state: 'open', head: `${owner}:${branch}`, base: 'main' });
+            const nextBranch = { dev: 'staging', staging: 'main' }[branch];
+            if (!nextBranch) {
+              core.setOutput('has_pr', 'false');
+              return;
+            }
+            const { data: prs } = await github.rest.pulls.list({ owner, repo, state: 'open', head: `${owner}:${branch}`, base: nextBranch });
             core.setOutput('has_pr', prs.length > 0 ? 'true' : 'false');
 
   build-and-analyze:
