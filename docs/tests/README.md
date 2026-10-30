@@ -31,6 +31,6 @@ dart run scripts/generate_cahier_recette.dart
 git diff --exit-code docs/tests/cahier_recette.md
 ```
 
-Le cahier couvre notamment les deux types de session, les statistiques 30/90 jours, les objectifs, exercices, préférences, sauvegardes, l'authentification durable et le Coach connecté uniquement. Il doit être rejoué avant une merge request vers `main`.
+Le cahier couvre notamment les deux types de session, les statistiques 30/90 jours, les objectifs, exercices, préférences, sauvegardes, l'authentification durable et le Coach connecté uniquement. Après les tests d'intégration sur `dev`, il doit être rejoué sur `staging` avant la fusion vers `main`.
 
 Les anciens guides OAuth séparés ont été supprimés : ils dupliquaient ces scénarios et décrivaient plusieurs flux qui ne sont plus implémentés.

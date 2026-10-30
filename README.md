@@ -75,9 +75,17 @@ Un fichier `assets/config.example.yaml` est fourni comme modèle.
 |---|---|
 | Analyse statique | `flutter_lints` actif, zéro issue exigé (`flutter analyze --fatal-infos` en CI) |
 | Tests | Suite automatisée exécutée avec `flutter test` |
-| CI | GitHub Actions + SonarCloud (push `dev`/`main`, PR vers `main`) |
+| CI | GitHub Actions + SonarCloud (push `dev`/`staging`/`main`, PR vers ces trois branches) |
 | Pré-commit | `./scripts/verify_before_commit.sh` (analyse + tests, variante `fast`) — hook : `ln -sf ../../scripts/verify_before_commit.sh .git/hooks/pre-commit` |
-| Recette manuelle | [Cahier de recette](docs/tests/cahier_recette.md) généré depuis `docs/tests/cahier_recette.yaml` (`dart run scripts/generate_cahier_recette.dart`), à rejouer avant toute MR vers `main` |
+| Recette manuelle | [Cahier de recette](docs/tests/cahier_recette.md) généré depuis `docs/tests/cahier_recette.yaml` (`dart run scripts/generate_cahier_recette.dart`), à rejouer sur `staging` avant la fusion vers `main` |
+
+## Contribution et livraison
+
+Créer `feature/NT-XXX-slug` ou `fix/NT-XXX-slug` depuis `dev`, puis fusionner
+par PR dans `dev` pour les tests d'intégration. Fusionner ensuite `dev` dans
+`staging` pour la recette, puis `staging` dans `main` pour la release. Les
+changements de maintenance sans US partent aussi de `dev` sur une branche
+`chore/slug-court`.
 
 ## Documentation
 
