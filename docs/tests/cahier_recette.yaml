@@ -1,5 +1,5 @@
 version: v0.9
-last_updated: 2026-09-11
+last_updated: 2026-11-01
 features:
   - id: NT-161
     name: Analyse ponctuelle d'un exercice personnel
@@ -38,6 +38,25 @@ features:
       - La liste et le détail affichent Créé par le Coach sans action de modification ou suppression
       - Les échecs conservent la copie Coach déjà en cache et tous les exercices personnels
       - Le bouton éclair est absent des builds hors DEBUG
+
+  - id: NT-159
+    name: Provenance et contrat Exercise partagé
+    objectif: Vérifier la compatibilité du modèle complet et la conservation de la provenance sans compte Coach.
+    preconditions:
+      - Build DEBUG et staging de recette avec un exercice personnel et un exercice synthétique coach_catalog
+      - Sauvegarde historique synthétique contenant un exercice sans provenance
+    steps:
+      - Créer un exercice personnel puis relever son identifiant et sa provenance dans les données locales
+      - Importer la sauvegarde historique puis relancer l'application et relire les exercices importés
+      - Charger l'exercice de catalogue synthétique par son identifiant puis comparer ses champs et sa provenance au contrat serveur
+      - Dupliquer les exercices par les parcours autorisés puis exporter et réimporter les données dans une installation de recette vierge
+      - Comparer sérialisation, désérialisation et valeurs d'énumération du modèle complet entre app et serveur
+    expected:
+      - Un exercice nouveau ou historique sans provenance explicite devient personal et conserve son identifiant local
+      - L'exercice de catalogue conserve coach_catalog et l'identifiant fourni par le serveur sans champ serverId supplémentaire
+      - Les champs partagés, types, noms d'échange, valeurs contrôlées et règles de nullabilité sont compatibles entre app et serveur
+      - La duplication, la migration, l'import et l'export préservent la provenance des exercices sans écraser les données historiques
+      - Une provenance inconnue est rejetée et aucune synchronisation d'un exercice personnel comme entité serveur n'est déclenchée
 
   - id: NT-153
     name: Consentement à l'utilisation des Coachs
@@ -155,6 +174,26 @@ features:
       - Le nom explicitement choisi est conservé sans réécriture
       - Le format mycoach-data version 6 est produit et les anciens exports sans provenance ni sessionUuid restent importables
 
+  - id: NT-151
+    name: Hiérarchie et densité des cartes Exercices
+    objectif: Vérifier la composition compacte des cartes après livraison de NT-151, sans changer les parcours métier.
+    preconditions:
+      - NT-151 livrée ; au 2026-11-01 cette US est encore À FAIRE dans le backlog
+      - Exercices Stand et Maison avec données minimales et complètes, dont un exercice lié à une session prévue
+    steps:
+      - Comparer les conventions des cartes Exercices avec celles des cartes Sessions et Séries
+      - Ouvrir la liste Exercices dans les thèmes Classique et France sur les largeurs mobiles prises en charge
+      - Examiner les cartes Stand et Maison, avec données minimales puis complètes et avec session prévue
+      - Utiliser planification, modification, duplication et suppression par les contrôles visibles ou leur menu secondaire
+      - Ouvrir les détails et revenir à la liste pour vérifier navigation, débordements, zones tactiles et accessibilité
+    expected:
+      - La zone d'information prime sur la zone d'actions sans tronquer nom, catégorie, type, difficulté, objectifs, consignes, durée ou matériel disponibles
+      - Les conventions visuelles existantes des cartes Sessions et Séries sont réutilisées avec une hiérarchie compacte et compréhensible
+      - Les quatre actions restent accessibles, les actions secondaires étant identifiées clairement si elles sont regroupées
+      - L'état lié à une session prévue est lisible sans dépendre uniquement de la couleur
+      - Textes, contrastes, zones tactiles et espacements restent lisibles sans débordement dans les deux thèmes et sur les largeurs vérifiées
+      - Navigation, routes et comportements métier existants restent inchangés
+
   - id: NT-148
     name: Séparateurs des préférences de tir
     objectif: Distinguer les trois réglages avec deux séparateurs identiques.
@@ -176,6 +215,23 @@ features:
       - Répartition Calibres précède immédiatement Répartition Catégories, elle-même immédiatement au-dessus de Tirs par arme
       - Tirs par arme reste la dernière carte et chaque carte apparaît une seule fois
       - Les couleurs, calculs et états de chargement ou vides restent inchangés
+
+  - id: NT-142
+    name: Tirs par arme en dernière carte de Synthèse
+    objectif: Vérifier le déplacement sans doublon ni changement de calcul du volume par arme.
+    preconditions:
+      - Historique local de recette avec au moins deux armes et des séances de tirs connues, puis état vide à contrôler
+    steps:
+      - Ouvrir Statistiques puis Synthèse et faire défiler jusqu'aux cartes de répartition
+      - Comparer les volumes et l'ordre des armes avec les séances connues
+      - Vérifier la position de Tirs par arme après Répartition Calibres et Répartition Catégories
+      - Ouvrir l'onglet Avancé puis revenir à Synthèse et rafraîchir le tableau de bord
+      - Refaire le contrôle sur un historique vide et pendant le chargement du râtelier
+    expected:
+      - Tirs par arme apparaît une seule fois et reste la dernière carte de Synthèse
+      - Tirs par arme est absent de l'onglet Avancé
+      - Les volumes, sessions prises en compte, ordre des armes et états vide ou chargement restent conformes aux données de recette
+      - Le râtelier se recharge à l'ouverture et au rafraîchissement du tableau de bord
 
   - id: NT-146
     name: Aide gestuelle au groupement

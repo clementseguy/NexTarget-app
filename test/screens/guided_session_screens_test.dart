@@ -152,7 +152,15 @@ void main() {
     expect(find.byType(GroupSizeHelpButton), findsOneWidget);
     final helpSemantics = tester.getSemantics(find.byType(GroupSizeHelpButton));
     expect(helpSemantics.label, contains(GroupSizeHelpButton.semanticsLabel));
-    expect(helpSemantics.getSemanticsData().hasAction(SemanticsAction.tap),
+    final actionableButton = find.descendant(
+      of: find.byType(GroupSizeHelpButton),
+      matching: find.byType(IconButton),
+    );
+    expect(
+        tester
+            .getSemantics(actionableButton)
+            .getSemanticsData()
+            .hasAction(SemanticsAction.tap),
         isTrue);
     await tester.tap(find.byType(GroupSizeHelpButton));
     await tester.pumpAndSettle();
