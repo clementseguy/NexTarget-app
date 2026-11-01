@@ -56,7 +56,7 @@ void main() {
       now = DateTime.now();
       detailed = DetailedShootingSession(
         id: 1,
-        date: now.subtract(const Duration(days: 1)),
+        date: now,
         weapon: 'Glock 17',
         caliber: '9mm',
         category: 'match',
