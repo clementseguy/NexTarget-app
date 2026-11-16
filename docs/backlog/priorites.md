@@ -61,7 +61,6 @@ de limiter P0 à **2 US** et P1 à **5 US**.
 - [NT-169](descriptions.md#NT-169) — Auditer globalement la qualité et la sécurité du code.
 - [NT-170](descriptions.md#NT-170) — Sauvegarder les données de sessions dans le cloud.
 - [NT-171](descriptions.md#NT-171) — Cadrer les offres gratuite, payante et premium.
-- [NT-173](descriptions.md#NT-173) — Réveiller le serveur Render depuis l'accueil et la fin de session.
 
 ## Icebox — Pas envisagé actuellement
 

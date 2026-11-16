@@ -56,7 +56,7 @@ l'unique source de vérité pour leur statut. Les descriptions sont dans
 |---|---|---|---|---|---|---|
 | [NT-074](descriptions.md#NT-074) | Saisie séries plein écran + navigation rapide | app | À FAIRE | Could | M | — |
 | [NT-076](descriptions.md#NT-076) | Cache stats + compactage Hive | app | À FAIRE | Could | M | — |
-| [NT-173](descriptions.md#NT-173) | Réveiller le serveur Render aux moments utiles | app | À FAIRE | — | — | — |
+| [NT-173](descriptions.md#NT-173) | Réveiller le serveur Render aux moments utiles | app | FAIT | — | — | — |
 
 ## Thème 9 — Idées / hors-scope
 
