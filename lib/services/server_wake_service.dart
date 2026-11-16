@@ -13,8 +13,8 @@ abstract interface class ServerWakeService {
 
 /// Réveille le serveur en best effort, sans authentification ni donnée métier.
 class HttpServerWakeService implements ServerWakeService {
-  static const defaultTimeout = Duration(seconds: 5);
-  static const defaultCooldown = Duration(seconds: 30);
+  static const defaultTimeout = Duration(seconds: 3);
+  static const defaultCooldown = Duration(minutes: 5);
 
   final String _baseUrl;
   final http.Client _client;
