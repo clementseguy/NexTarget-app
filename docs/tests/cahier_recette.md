@@ -117,8 +117,9 @@ Objectif: Qualifier facultativement l'exécution lors de la conversion d'une ses
 5. Choisir successivement Oui, Non et Non renseigné pour l'exercice réalisé
 6. Choisir successivement Oui, Partiellement, Non et Non renseigné pour le protocole suivi
 7. Ajouter un commentaire, terminer la session, redémarrer puis contrôler exerciseExecution dans un export JSON
-8. Convertir une autre session avec exercice sans renseigner aucun champ
-9. Convertir enfin une session prévue sans exercice
+8. Modifier la session qualifiée sans changer d'exercice, puis remplacer l'exercice principal et enfin le désélectionner en enregistrant après chaque étape
+9. Convertir une autre session avec exercice sans renseigner aucun champ
+10. Convertir enfin une session prévue sans exercice
 Résultats attendus:
 - La card Exercice occupe toute la largeur et affiche dix consignes, la durée et le matériel requis
 - Arme, Calibre et Catégorie ne se chevauchent pas et la catégorie reste une liste contrôlée
@@ -126,6 +127,7 @@ Résultats attendus:
 - Les aides s'ouvrent au toucher et expliquent l'exécution de l'exercice et du protocole du début à la fin
 - Toutes les réponses et le commentaire sont facultatifs et n'empêchent jamais l'enregistrement
 - Les réponses choisies et le commentaire sont conservés après redémarrage
+- Enregistrer sans changer d'exercice conserve sa qualification, tandis que remplacer ou retirer l'exercice efface la qualification précédente
 - La session sans exercice conserve la dernière page et le comportement historiques
 
 ## NT-155 — Niveau d'expérience local du Coach
