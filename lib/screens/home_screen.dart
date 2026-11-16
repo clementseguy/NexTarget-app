@@ -1,10 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../widgets/rules_bottom_sheet.dart';
 import '../widgets/dashboard/dashboard_tab_view.dart';
 import '../widgets/app_bar_title.dart';
 import '../services/session_service.dart';
 import '../models/shooting_session.dart';
 import '../widgets/help_button.dart';
+import '../services/server_wake_service.dart';
 
 const dashboardStatisticsHelpPoints = <String>[
   'Régularité : indice de stabilité des scores sur les 30 derniers jours. Plus il est proche de 100 %, plus les scores sont homogènes.',
@@ -16,14 +21,22 @@ const dashboardStatisticsHelpPoints = <String>[
 
 /// Écran tableau de bord avec statistiques
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final SessionService? sessionService;
+  final ServerWakeService? serverWakeService;
+
+  const HomeScreen({
+    super.key,
+    this.sessionService,
+    this.serverWakeService,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final SessionService _sessionService = SessionService();
+  late final SessionService _sessionService =
+      widget.sessionService ?? SessionService();
   List<ShootingSession> _sessions = [];
   bool _isLoading = true;
 
@@ -31,6 +44,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadSessions();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final service = widget.serverWakeService ??
+          Provider.of<ServerWakeService?>(context, listen: false);
+      if (service != null) unawaited(service.wake());
+    });
   }
 
   Future<void> _loadSessions() async {

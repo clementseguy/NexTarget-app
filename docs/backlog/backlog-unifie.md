@@ -56,7 +56,7 @@ l'unique source de vérité pour leur statut. Les descriptions sont dans
 |---|---|---|---|---|---|---|
 | [NT-074](descriptions.md#NT-074) | Saisie séries plein écran + navigation rapide | app | À FAIRE | Could | M | — |
 | [NT-076](descriptions.md#NT-076) | Cache stats + compactage Hive | app | À FAIRE | Could | M | — |
-| [NT-173](descriptions.md#NT-173) | Réveiller le serveur Render aux moments utiles | app | À FAIRE | — | — | — |
+| [NT-173](descriptions.md#NT-173) | Réveiller le serveur Render aux moments utiles | app | FAIT | — | — | — |
 
 ## Thème 9 — Idées / hors-scope
 
@@ -122,7 +122,7 @@ l'unique source de vérité pour leur statut. Les descriptions sont dans
 | [NT-159](descriptions.md#NT-159) | Créer le modèle Exercise partagé et sa provenance | both | FAIT | Must | M | — |
 | [NT-160](descriptions.md#NT-160) | Récupérer à la demande les exercices du catalogue Coach | both | FAIT | Must | M | — |
 | [NT-161](descriptions.md#NT-161) | Analyser un exercice personnel sans le cataloguer | both | FAIT | Must | M | — |
-| [NT-162](descriptions.md#NT-162) | Auditer et enrichir le modèle métier Exercise | both | À FAIRE | Should | L | — |
+| [NT-162](descriptions.md#NT-162) | Enrichir Exercise et livrer la première bibliothèque Coach | both | À FAIRE | Must | L | — |
 | [NT-163](descriptions.md#NT-163) | Déterminer la réussite et la suite du Coach de session | both | À FAIRE | Must | L | — |
 | [NT-164](descriptions.md#NT-164) | Gérer l'attente du Coach de progression | app | À FAIRE | Should | S | — |
 

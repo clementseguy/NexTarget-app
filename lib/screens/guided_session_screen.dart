@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 import '../models/exercise.dart';
 import '../models/series.dart';
@@ -10,6 +11,7 @@ import '../models/shooting_session.dart';
 import '../services/exercise_service.dart';
 import '../services/session_photo_service.dart';
 import '../services/session_service.dart';
+import '../services/server_wake_service.dart';
 import '../interfaces/session_photo_service_interface.dart';
 import '../widgets/session_form/session_form_components.dart';
 import '../widgets/group_size_help.dart';
@@ -20,6 +22,7 @@ class GuidedSessionScreen extends StatefulWidget {
   final SessionService? sessionService;
   final ExerciseService? exerciseService;
   final ISessionPhotoService? photoService;
+  final ServerWakeService? serverWakeService;
   final Future<void> Function()? onSessionChanged;
 
   const GuidedSessionScreen({
@@ -28,6 +31,7 @@ class GuidedSessionScreen extends StatefulWidget {
     this.sessionService,
     this.exerciseService,
     this.photoService,
+    this.serverWakeService,
     this.onSessionChanged,
   });
 
@@ -257,7 +261,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
         await _finishEarly();
         return;
       }
-      setState(() => _showSummary = true);
+      _displaySummary();
       return;
     }
     setState(() {
@@ -316,7 +320,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
     }
     final removed = _draft.series.length - completed;
     if (removed == 0) {
-      setState(() => _showSummary = true);
+      _displaySummary();
       return;
     }
     final confirmed = await _confirmFinishEarly(removed);
@@ -325,8 +329,18 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
         _draft.series.where((item) => item.isCompleted).toList(growable: true);
     try {
       await _enqueueSave(DetailedShootingSession.fromMap(_draft.toMap()));
-      if (mounted) setState(() => _showSummary = true);
+      if (mounted) _displaySummary();
     } catch (_) {}
+  }
+
+  void _displaySummary() {
+    setState(() => _showSummary = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_showSummary) return;
+      final service = widget.serverWakeService ??
+          Provider.of<ServerWakeService?>(context, listen: false);
+      if (service != null) unawaited(service.wake());
+    });
   }
 
   Future<bool?> _confirmFinishEarly(int removed) {

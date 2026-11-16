@@ -1,7 +1,23 @@
 # Cahier de Recette
 
-- Dernière mise à jour: 2026-11-01
+- Dernière mise à jour: 2026-11-16
 - Généré automatiquement depuis `docs/tests/cahier_recette.yaml`
+
+## NT-173 — Réveil best effort du serveur Render
+Objectif: Vérifier que l'accueil et la synthèse finale au stand anticipent la sortie de veille sans bloquer l'application.
+Pré-requis:
+- Build configuré avec l'URL du serveur de recette
+- Serveur Render en veille ou réseau du téléphone désactivable
+Étapes:
+1. Lancer l'application et attendre l'affichage de l'écran Synthèse après l'éventuel onboarding
+2. Démarrer une séance Au stand, renseigner la dernière série puis afficher la synthèse finale
+3. Répéter rapidement les affichages, puis recommencer avec le réseau coupé et avec le serveur en sortie de veille
+4. Inspecter les requêtes réseau émises vers le serveur configuré
+Résultats attendus:
+- Un GET /health est lancé après l'affichage de l'accueil et à la synthèse finale, sans ralentir l'interface, la navigation ni l'enregistrement local
+- Les déclenchements simultanés ou espacés de moins de 30 secondes sont dédupliqués et aucun polling ni retry n'est créé
+- Une panne, un timeout de 5 secondes ou une réponse non 2xx ne produit aucun message utilisateur ni crash
+- La requête utilise l'URL configurée et ne contient ni jeton, ni secret, ni donnée de session ou du Coach
 
 ## NT-161 — Analyse ponctuelle d'un exercice personnel
 Objectif: Vérifier le débrief borné sans catalogage ni persistance supplémentaire.
