@@ -4,6 +4,10 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Non publié]
 
+### Fixed
+- Édition de session : changer d’exercice principal efface désormais la
+  qualification liée à l’exercice précédent.
+
 ## [0.8.0] - 2026-11-16
 
 ### Removed

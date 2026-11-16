@@ -223,6 +223,15 @@ class SessionFormState extends State<SessionForm> {
 
   void markSaved() => _saved = true;
 
+  void _selectExercise(String? exerciseId) {
+    setState(() {
+      if (exerciseId != _selectedExerciseId) {
+        _exerciseExecution = null;
+      }
+      _selectedExerciseId = exerciseId;
+    });
+  }
+
   void _addSeries() {
     setState(() {
       // Propager la distance de la dernière série si disponible, sinon 25m
@@ -452,7 +461,7 @@ class SessionFormState extends State<SessionForm> {
             isLoading: _loadingExercises,
             exercises: _allExercises,
             selectedId: _selectedExerciseId,
-            onChanged: (id) => setState(() => _selectedExerciseId = id),
+            onChanged: _selectExercise,
           ),
           SizedBox(height: 24),
           Row(
