@@ -9,23 +9,15 @@ de limiter P0 à **2 US** et P1 à **5 US**.
 
 ## P0 — Immédiat
 
-- [NT-152](descriptions.md#NT-152) — Limiter une session à un exercice principal.
-- [NT-153](descriptions.md#NT-153) — Exiger le consentement avant l'utilisation des coachs.
-- [NT-154](descriptions.md#NT-154) — Qualifier l'exercice réalisé dans le wizard.
-- [NT-159](descriptions.md#NT-159) — Créer le modèle Exercise partagé et sa provenance.
-- [NT-160](descriptions.md#NT-160) — Récupérer à la demande les exercices du catalogue Coach.
-- [NT-161](descriptions.md#NT-161) — Encadrer l'analyse des exercices personnels.
-- [NT-156](descriptions.md#NT-156) — Livrer le nouveau débrief du Coach de session.
 
 ## P1 — Prochain
 
-- [NT-155](descriptions.md#NT-155) — Déplacer le niveau dans les préférences Coach.
-- [NT-164](descriptions.md#NT-164) — Gérer l'attente du Coach de progression.
-- [NT-157](descriptions.md#NT-157) — Séparer la décision du ton du Coach.
 - [NT-172](descriptions.md#NT-172) — Ne plus forcer le consentement Google à chaque connexion.
 
 ## P2 — Ultérieur
 
+- [NT-157](descriptions.md#NT-157) — Séparer la décision du ton du Coach.
+- [NT-166](descriptions.md#NT-166) — Afficher la synthèse des indicateurs d'une session.
 - [NT-174](descriptions.md#NT-174) — Qualifier le signal de tir de la Garmin vívoactive HR.
 - [NT-175](descriptions.md#NT-175) — Détecter et transmettre automatiquement cinq tirs.
 - [NT-176](descriptions.md#NT-176) — Recevoir, afficher et enregistrer le chronométrage dans une page prototype.
