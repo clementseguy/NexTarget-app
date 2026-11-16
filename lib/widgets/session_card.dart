@@ -23,9 +23,7 @@ class SessionCard extends StatelessWidget {
     final dateLabel = date == null ? 'Sans date' : '${date.day}/${date.month}';
     final isPlanned = session['status'] == 'prévue';
     final isSimple = session['sessionType'] == 'simple';
-    final exerciseIds = session['exercises'] is List
-        ? session['exercises'] as List<dynamic>
-        : const <dynamic>[];
+    final exerciseId = session['exerciseId'] as String?;
     final totalPoints = series.fold<int>(
       0,
       (sum, item) => sum + ((item['points'] ?? 0) as int),
@@ -38,14 +36,9 @@ class SessionCard extends StatelessWidget {
                 .fold<double>(0, (sum, value) => sum + value.toDouble()) /
             series.length;
     final colors = Theme.of(context).colorScheme;
-    final accent = isPlanned
-        ? Colors.blueAccent
-        : isSimple
-            ? colors.secondary
-            : colors.primary;
+    final accent = _accentColor(isPlanned, isSimple, colors);
     final identityColor = isPlanned ? Colors.blueAccent : null;
-    final hasCoachAnalysis =
-        !isSimple && (session['analyse'] as String?)?.trim().isNotEmpty == true;
+    final hasCoachAnalysis = !isSimple && session['coachAnalysis'] is Map;
 
     return Card(
       color: Theme.of(context).cardColor,
@@ -137,63 +130,15 @@ class SessionCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 7),
-                    Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        if (isSimple) ...[
-                          _MetricBadge(
-                            label: 'Tirs',
-                            value: '${session['shotCount'] ?? 0}',
-                            icon: Icons.adjust,
-                            color: colors.secondary,
-                          ),
-                          _MetricBadge(
-                            label: 'Distance',
-                            value: '${_distanceLabel(session['distance'])} m',
-                            icon: Icons.social_distance,
-                            color: colors.secondary,
-                          ),
-                        ] else if (isPlanned)
-                          _MetricBadge(
-                            label: 'Séries prévues',
-                            value: '${series.length}',
-                            icon: Icons.list_alt,
-                            color: Colors.blueAccent,
-                          )
-                        else ...[
-                          _MetricBadge(
-                            label: 'Score',
-                            value: avgScore.toStringAsFixed(1),
-                            icon: Icons.score,
-                            color: colors.primary,
-                          ),
-                          _MetricBadge(
-                            label: 'Groupement',
-                            value: '${avgGroup.toStringAsFixed(1)} cm',
-                            icon: Icons.adjust,
-                            color: colors.secondary,
-                          ),
-                          if (hasCoachAnalysis)
-                            Semantics(
-                              label: 'Analyse Coach disponible',
-                              child: Tooltip(
-                                message: 'Analyse Coach disponible',
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4),
-                                  child: Icon(
-                                    Icons.analytics,
-                                    size: 20,
-                                    color: colors.secondary,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ],
+                    _buildMetrics(
+                      colors: colors,
+                      isSimple: isSimple,
+                      isPlanned: isPlanned,
+                      hasCoachAnalysis: hasCoachAnalysis,
+                      avgScore: avgScore,
+                      avgGroup: avgGroup,
                     ),
-                    if (exerciseIds.isNotEmpty) ...[
+                    if (exerciseId != null) ...[
                       const SizedBox(height: 6),
                       Row(
                         mainAxisSize: MainAxisSize.min,
@@ -201,7 +146,7 @@ class SessionCard extends StatelessWidget {
                           Icon(Icons.fitness_center, size: 14, color: accent),
                           const SizedBox(width: 4),
                           Text(
-                            '${exerciseIds.length} exercice(s)',
+                            '1 exercice',
                             style: TextStyle(
                               fontSize: 12,
                               color: isPlanned
@@ -237,6 +182,85 @@ class SessionCard extends StatelessWidget {
     return number == number.truncateToDouble()
         ? number.toInt().toString()
         : number.toString();
+  }
+
+  Color _accentColor(
+    bool isPlanned,
+    bool isSimple,
+    ColorScheme colors,
+  ) {
+    if (isPlanned) return Colors.blueAccent;
+    if (isSimple) return colors.secondary;
+    return colors.primary;
+  }
+
+  Widget _buildMetrics({
+    required ColorScheme colors,
+    required bool isSimple,
+    required bool isPlanned,
+    required bool hasCoachAnalysis,
+    required double avgScore,
+    required double avgGroup,
+  }) {
+    final badges = <Widget>[];
+    if (isSimple) {
+      badges.addAll([
+        _MetricBadge(
+          label: 'Tirs',
+          value: '${session['shotCount'] ?? 0}',
+          icon: Icons.adjust,
+          color: colors.secondary,
+        ),
+        _MetricBadge(
+          label: 'Distance',
+          value: '${_distanceLabel(session['distance'])} m',
+          icon: Icons.social_distance,
+          color: colors.secondary,
+        ),
+      ]);
+    } else if (isPlanned) {
+      badges.add(_MetricBadge(
+        label: 'Séries prévues',
+        value: '${series.length}',
+        icon: Icons.list_alt,
+        color: Colors.blueAccent,
+      ));
+    } else {
+      badges.addAll([
+        _MetricBadge(
+          label: 'Score',
+          value: avgScore.toStringAsFixed(1),
+          icon: Icons.score,
+          color: colors.primary,
+        ),
+        _MetricBadge(
+          label: 'Groupement',
+          value: '${avgGroup.toStringAsFixed(1)} cm',
+          icon: Icons.adjust,
+          color: colors.secondary,
+        ),
+      ]);
+      if (hasCoachAnalysis) {
+        badges.add(
+          Semantics(
+            label: 'Analyse Coach disponible',
+            child: Tooltip(
+              message: 'Analyse Coach disponible',
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(Icons.analytics, size: 20, color: colors.secondary),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 6,
+      runSpacing: 6,
+      children: badges,
+    );
   }
 }
 

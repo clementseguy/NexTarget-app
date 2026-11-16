@@ -24,6 +24,10 @@ class _FakeSessionPhotoService implements ISessionPhotoService {
   final List<String?> deletedPaths = [];
 
   @override
+  Future<String> duplicateStoredPhoto(String sourcePath) async =>
+      '$sourcePath.copy';
+
+  @override
   Future<String?> pickAndStore(ImageSource source) async {
     pickCalls.add(source);
     return nextPickResult;

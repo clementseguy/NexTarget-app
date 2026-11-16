@@ -16,10 +16,12 @@ class _FakeSessionRepository implements SessionRepository {
   final List<ShootingSession> sessions = [];
   int _nextId = 1;
 
-  ShootingSession _snapshot(ShootingSession session) => ShootingSession.fromMap(session.toMap());
+  ShootingSession _snapshot(ShootingSession session) =>
+      ShootingSession.fromMap(session.toMap());
 
   @override
-  Future<List<ShootingSession>> getAll() async => sessions.map(_snapshot).toList();
+  Future<List<ShootingSession>> getAll() async =>
+      sessions.map(_snapshot).toList();
 
   @override
   Future<int> insert(ShootingSession session) async {
@@ -30,7 +32,8 @@ class _FakeSessionRepository implements SessionRepository {
   }
 
   @override
-  Future<bool> update(ShootingSession session, {bool preserveExistingSeriesIfEmpty = true}) async {
+  Future<bool> update(ShootingSession session,
+      {bool preserveExistingSeriesIfEmpty = true}) async {
     final idx = sessions.indexWhere((s) => s.id == session.id);
     if (idx >= 0) sessions[idx] = _snapshot(session);
     return false;
@@ -53,6 +56,10 @@ class _FakeSessionPhotoService implements ISessionPhotoService {
   final List<String?> deletedPaths = [];
 
   @override
+  Future<String> duplicateStoredPhoto(String sourcePath) async =>
+      '$sourcePath.copy';
+
+  @override
   Future<void> deleteIfExists(String? path) async {
     deletedPaths.add(path);
   }
@@ -73,10 +80,14 @@ void main() {
       service = SessionService(repository: repo, photoService: photoService);
     });
 
-    test('updateSession supprime l\'ancienne photo si elle est remplacée', () async {
+    test('updateSession supprime l\'ancienne photo si elle est remplacée',
+        () async {
       final session = DetailedShootingSession(
-        weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
-        series: const [], photoPath: '/docs/old.jpg',
+        weapon: 'P',
+        caliber: '22LR',
+        status: SessionConstants.statusRealisee,
+        series: const [],
+        photoPath: '/docs/old.jpg',
       );
       await service.addSession(session);
 
@@ -89,8 +100,11 @@ void main() {
 
     test('updateSession ne supprime rien si la photo est inchangée', () async {
       final session = DetailedShootingSession(
-        weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
-        series: const [], photoPath: '/docs/same.jpg',
+        weapon: 'P',
+        caliber: '22LR',
+        status: SessionConstants.statusRealisee,
+        series: const [],
+        photoPath: '/docs/same.jpg',
       );
       await service.addSession(session);
 
@@ -99,10 +113,14 @@ void main() {
       expect(photoService.deletedPaths, isEmpty);
     });
 
-    test('updateSession supprime l\'ancienne photo si elle est retirée', () async {
+    test('updateSession supprime l\'ancienne photo si elle est retirée',
+        () async {
       final session = DetailedShootingSession(
-        weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
-        series: const [], photoPath: '/docs/old.jpg',
+        weapon: 'P',
+        caliber: '22LR',
+        status: SessionConstants.statusRealisee,
+        series: const [],
+        photoPath: '/docs/old.jpg',
       );
       await service.addSession(session);
 
@@ -114,8 +132,11 @@ void main() {
 
     test('deleteSession supprime la photo associée', () async {
       final session = DetailedShootingSession(
-        weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
-        series: const [], photoPath: '/docs/to_delete.jpg',
+        weapon: 'P',
+        caliber: '22LR',
+        status: SessionConstants.statusRealisee,
+        series: const [],
+        photoPath: '/docs/to_delete.jpg',
       );
       await service.addSession(session);
 
@@ -124,9 +145,13 @@ void main() {
       expect(photoService.deletedPaths, contains('/docs/to_delete.jpg'));
     });
 
-    test('deleteSession ne tente pas de supprimer si aucune photo n\'est associée', () async {
+    test(
+        'deleteSession ne tente pas de supprimer si aucune photo n\'est associée',
+        () async {
       final session = DetailedShootingSession(
-        weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee,
+        weapon: 'P',
+        caliber: '22LR',
+        status: SessionConstants.statusRealisee,
         series: const [],
       );
       await service.addSession(session);
@@ -136,17 +161,34 @@ void main() {
       expect(photoService.deletedPaths, isEmpty);
     });
 
-    test('clearAllSessions supprime toutes les photos existantes avant la purge', () async {
-      final s1 = DetailedShootingSession(weapon: 'P', caliber: '22LR', status: SessionConstants.statusRealisee, series: const [], photoPath: '/docs/a.jpg');
-      final s2 = DetailedShootingSession(weapon: 'C', caliber: '9mm', status: SessionConstants.statusRealisee, series: const [], photoPath: '/docs/b.jpg');
-      final s3 = DetailedShootingSession(weapon: 'R', caliber: '.38', status: SessionConstants.statusRealisee, series: const []);
+    test(
+        'clearAllSessions supprime toutes les photos existantes avant la purge',
+        () async {
+      final s1 = DetailedShootingSession(
+          weapon: 'P',
+          caliber: '22LR',
+          status: SessionConstants.statusRealisee,
+          series: const [],
+          photoPath: '/docs/a.jpg');
+      final s2 = DetailedShootingSession(
+          weapon: 'C',
+          caliber: '9mm',
+          status: SessionConstants.statusRealisee,
+          series: const [],
+          photoPath: '/docs/b.jpg');
+      final s3 = DetailedShootingSession(
+          weapon: 'R',
+          caliber: '.38',
+          status: SessionConstants.statusRealisee,
+          series: const []);
       await service.addSession(s1);
       await service.addSession(s2);
       await service.addSession(s3);
 
       await service.clearAllSessions();
 
-      expect(photoService.deletedPaths, containsAll(['/docs/a.jpg', '/docs/b.jpg']));
+      expect(photoService.deletedPaths,
+          containsAll(['/docs/a.jpg', '/docs/b.jpg']));
       final remaining = await repo.getAll();
       expect(remaining, isEmpty);
     });

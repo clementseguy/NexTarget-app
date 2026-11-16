@@ -10,6 +10,9 @@ abstract class ISessionPhotoService {
   /// fichier stocké. Retourne `null` si l'utilisateur annule la sélection.
   Future<String?> pickAndStore(ImageSource source);
 
+  /// Crée une copie physique indépendante d'une photo déjà stockée.
+  Future<String> duplicateStoredPhoto(String sourcePath);
+
   /// Supprime le fichier photo à l'emplacement [path] s'il existe. Ne fait rien si
   /// [path] est `null`/vide ou si le fichier est déjà absent.
   Future<void> deleteIfExists(String? path);

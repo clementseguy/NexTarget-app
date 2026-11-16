@@ -1,46 +1,77 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../config/app_config.dart';
+import '../providers/settings_provider.dart';
 import '../services/exercise_service.dart';
+import '../services/coach_catalog_service.dart';
+import '../services/network_error.dart';
 import '../models/exercise.dart';
 import '../services/session_service.dart';
+import '../services/goal_service.dart';
 import '../widgets/exercises_total_card.dart';
 import '../widgets/help_button.dart';
+import '../widgets/session_chip.dart';
 import 'session_detail_screen.dart';
 import 'exercise_form_screen.dart';
+import 'exercise_detail_screen.dart';
 import '../utils/exercise_sorting.dart';
+import '../utils/exercise_filters.dart';
 
 /// Liste des exercices avec filtrage et tri
 /// Refactorisé pour séparer la logique de listing du formulaire (voir exercise_form_screen.dart)
-/// 
+///
 /// Architecture:
 /// - Liste avec filtres repliables (catégorie, type)
 /// - Badge indicateur sessions prévues
 /// - Navigation vers formulaire extraction dans fichier séparé
 class ExercisesListScreen extends StatefulWidget {
-  const ExercisesListScreen({super.key});
+  final ExerciseService? exerciseService;
+  final SessionService? sessionService;
+  final GoalService? goalService;
+  final CoachCatalogService? catalogService;
+  final bool debugCatalogControlEnabled;
+
+  const ExercisesListScreen({
+    super.key,
+    this.exerciseService,
+    this.sessionService,
+    this.goalService,
+    this.catalogService,
+    this.debugCatalogControlEnabled = true,
+  });
   @override
   State<ExercisesListScreen> createState() => _ExercisesListScreenState();
 }
 
 class _ExercisesListScreenState extends State<ExercisesListScreen> {
-  final ExerciseService _service = ExerciseService();
-  final SessionService _sessionService = SessionService();
+  late final ExerciseService _service =
+      widget.exerciseService ?? ExerciseService();
+  late final SessionService _sessionService =
+      widget.sessionService ?? SessionService();
+  CoachCatalogService get _catalogService =>
+      widget.catalogService ??
+      CoachCatalogService(baseUrl: AppConfig.I.authBaseUrl);
   late Future<List<Exercise>> _future;
   // Map des exercices ayant au moins une session prévue associée
   Map<String, bool> _plannedExerciseMap = {};
   // Filtres sélectionnés
   final Set<ExerciseCategory> _selectedCategories = {}; // vide = toutes
   final Set<ExerciseType> _selectedTypes = {}; // vide = tous
+  ExerciseDifficultyFilter _difficultyFilter = ExerciseDifficultyFilter.all;
   bool _filtersExpanded = false; // replié par défaut
   ExerciseSortMode _sortMode = ExerciseSortMode.defaultOrder;
 
-  List<Exercise> _applySort(List<Exercise> list) => sortExercises(list, _sortMode);
+  List<Exercise> _applySort(List<Exercise> list) =>
+      sortExercises(list, _sortMode);
 
   List<Exercise> _applyFilters(List<Exercise> list) {
-    return list.where((e) {
-      if (_selectedCategories.isNotEmpty && !_selectedCategories.contains(e.categoryEnum)) return false;
-      if (_selectedTypes.isNotEmpty && !_selectedTypes.contains(e.type)) return false;
-      return true;
-    }).toList();
+    return filterExercises(
+      list,
+      categories: _selectedCategories,
+      types: _selectedTypes,
+      difficulty: _difficultyFilter,
+    );
   }
 
   void _toggleCategory(ExerciseCategory c) {
@@ -70,7 +101,9 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
   }
 
   void _reload() {
-    setState(() { _future = _service.listAll(); });
+    setState(() {
+      _future = _service.listAll();
+    });
     // Rafraîchir aussi le mapping des exercices planifiés
     _refreshPlannedMapping();
   }
@@ -80,34 +113,220 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
       final sessions = await _sessionService.getAllSessions();
       final Map<String, bool> map = {};
       for (final s in sessions) {
-        if (s.status == 'prévue') {
-          for (final exId in s.exercises) {
-            map[exId] = true;
-          }
+        final exerciseId = s.exerciseId;
+        if (s.status == 'prévue' && exerciseId != null) {
+          map[exerciseId] = true;
         }
       }
-      if (mounted) setState(()=> _plannedExerciseMap = map);
+      if (mounted) setState(() => _plannedExerciseMap = map);
     } catch (_) {
       // silencieux: ne pas casser l'affichage des exercices si session fetch échoue
     }
   }
 
   Future<void> _openCreate() async {
-    final created = await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ExerciseFormScreen()),
-    );
+    final created = await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ExerciseFormScreen()));
     if (created == true) _reload();
   }
 
   Future<void> _openEdit(Exercise exercise) async {
+    if (exercise.origin == ExerciseOrigin.coachCatalog) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => ExerciseDetailScreen(exercise)),
+      );
+      return;
+    }
     final updated = await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => ExerciseFormScreen(editing: exercise)),
+      MaterialPageRoute(
+        builder: (_) => ExerciseFormScreen(
+          editing: exercise,
+          exerciseService: _service,
+          goalService: widget.goalService,
+        ),
+      ),
     );
     if (updated == true) _reload();
   }
 
+  Future<void> _downloadCatalogExercise() async {
+    final controller = TextEditingController();
+    final id = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Télécharger un exercice Coach'),
+        content: TextField(
+          key: const Key('coach_catalog_id_field'),
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(labelText: 'Identifiant'),
+          textInputAction: TextInputAction.done,
+          onSubmitted: (value) {
+            if (value.trim().isNotEmpty) Navigator.pop(dialogContext, value);
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                Navigator.pop(dialogContext, controller.text);
+              }
+            },
+            child: const Text('Télécharger'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (id == null || !mounted) return;
+
+    try {
+      final exercise = await _catalogService.downloadById(id);
+      if (!mounted) return;
+      _reload();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('« ${exercise.name} » est disponible hors ligne.')),
+      );
+    } on CatalogExerciseNotFoundException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'Aucun exercice Coach actif ne correspond à cet identifiant.')),
+      );
+    } on CatalogExerciseConflictException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'Cet identifiant appartient déjà à un exercice personnel.')),
+      );
+    } on InvalidCatalogExerciseException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La réponse du catalogue est invalide.')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(presentNetworkError(error).message)),
+      );
+    }
+  }
+
+  Future<void> _openDuplicate(Exercise exercise) async {
+    final draft = _service.prepareDuplication(exercise);
+    final created = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ExerciseFormScreen(
+          initialExercise: draft,
+          exerciseService: _service,
+          goalService: widget.goalService,
+        ),
+      ),
+    );
+    if (created == true) _reload();
+  }
+
+  Future<void> _delete(Exercise exercise) async {
+    try {
+      final eligibility = await _service.checkDeletionEligibility(exercise.id);
+      if (!mounted) return;
+      if (!eligibility.canDelete) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Dissociez d’abord cet exercice des '
+              '${eligibility.linkedSessionCount} session(s) concernée(s).',
+            ),
+          ),
+        );
+        return;
+      }
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Supprimer l’exercice ?'),
+          content: Text('Supprimer définitivement « ${exercise.name} » ?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Supprimer'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+      await _service.deleteExercise(exercise.id);
+      if (!mounted) return;
+      _reload();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('« ${exercise.name} » a été supprimé.')),
+      );
+    } on ExerciseLinkedSessionsException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Suppression impossible : les sessions n’ont pas pu être '
+            'vérifiées ou l’écriture a échouée. $error',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _planExercise(Exercise exercise) async {
+    try {
+      final session = await _sessionService.planFromExercise(exercise);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Session prévue créée (${session.series.length} série(s))',
+          ),
+        ),
+      );
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SessionDetailScreen(
+            sessionData: {
+              'session': session.toMap(),
+              'series': session.series.map((series) => series.toMap()).toList(),
+            },
+          ),
+        ),
+      );
+      await _refreshPlannedMapping();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Impossible de planifier: $error')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final experienceLevel =
+        context.watch<SettingsProvider?>()?.coachExperienceLevel;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Exercices'),
@@ -124,7 +343,7 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
           PopupMenuButton<ExerciseSortMode>(
             tooltip: 'Trier',
             icon: const Icon(Icons.sort),
-            onSelected: (m)=> setState(()=> _sortMode = m),
+            onSelected: (m) => setState(() => _sortMode = m),
             itemBuilder: (ctx) => [
               _menuItem(ExerciseSortMode.defaultOrder, 'Défaut'),
               _menuItem(ExerciseSortMode.nameAsc, 'Nom A→Z'),
@@ -134,6 +353,12 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
               _menuItem(ExerciseSortMode.newest, 'Plus récents'),
             ],
           ),
+          if (kDebugMode && widget.debugCatalogControlEnabled)
+            IconButton(
+              onPressed: _downloadCatalogExercise,
+              icon: const Icon(Icons.bolt, color: Colors.amber),
+              tooltip: 'Télécharger un exercice Coach',
+            ),
           IconButton(
             onPressed: _reload,
             icon: const Icon(Icons.refresh),
@@ -159,129 +384,39 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
             );
           }
           return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(12,12,12,12),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
             itemCount: data.length + 2,
             separatorBuilder: (context, i) => const SizedBox(height: 8),
             itemBuilder: (context, i) {
               if (i == 0) {
-                return const ExercisesTotalCard();
+                return ExercisesTotalCard(
+                  key: ValueKey(raw.length),
+                  service: _service,
+                );
               }
               if (i == 1) {
                 return _FiltersBar(
                   expanded: _filtersExpanded,
-                  onToggleExpanded: () => setState(()=> _filtersExpanded = !_filtersExpanded),
+                  onToggleExpanded: () =>
+                      setState(() => _filtersExpanded = !_filtersExpanded),
                   selectedCategories: _selectedCategories,
                   onToggleCategory: _toggleCategory,
                   selectedTypes: _selectedTypes,
                   onToggleType: _toggleType,
+                  difficultyFilter: _difficultyFilter,
+                  onDifficultyChanged: (value) =>
+                      setState(() => _difficultyFilter = value),
                 );
               }
-              final ex = data[i-2];
-              return Card(
-                child: ListTile(
-                  title: Text(ex.name),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${ex.categoryLabelFr} • ${ex.goalIds.length} objectif(s)'),
-                      Padding(
-                        padding: const EdgeInsets.only(top:2.0),
-                        child: Text('Type: ${ex.typeLabelFr}', style: const TextStyle(fontSize: 12, color: Colors.white70)),
-                      ),
-                      if (ex.consignes.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top:4.0),
-                          child: Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: [
-                              _Badge(icon: Icons.list_alt, text: '${ex.consignes.length} consigne(s)'),
-                            ],
-                          ),
-                        ),
-                      if (ex.description != null && ex.description!.trim().isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top:4.0),
-                          child: Text(
-                            ex.description!.split('\n').first.trim(),
-                            style: const TextStyle(fontSize: 12, color: Colors.white70, fontStyle: FontStyle.italic),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      if (ex.durationMinutes != null || (ex.equipment != null && ex.equipment!.trim().isNotEmpty))
-                        Padding(
-                          padding: const EdgeInsets.only(top:6.0),
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
-                            children: [
-                              if (ex.durationMinutes != null)
-                                _Badge(icon: Icons.timer, text: '${ex.durationMinutes} min'),
-                              if (ex.equipment != null && ex.equipment!.trim().isNotEmpty)
-                                _Badge(icon: Icons.build, text: ex.equipment!.trim(), maxWidth: 140),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                  leading: Icon(
-                    ex.description != null && ex.description!.trim().isNotEmpty ? Icons.description : Icons.fitness_center,
-                    color: ex.description != null && ex.description!.trim().isNotEmpty ? Colors.amberAccent : null,
-                  ),
-                  trailing: Wrap(
-                    spacing: 4,
-                    children: [
-                      if (ex.type == ExerciseType.stand && _plannedExerciseMap[ex.id] == true)
-                        Tooltip(
-                          message: 'Au moins une session prévue liée',
-                          child: SizedBox(
-                            height: 40, // proche de la hauteur d'un IconButton standard
-                            width: 32,
-                            child: Center(
-                              child: Icon(Icons.schedule, size: 20, color: Colors.lightBlueAccent),
-                            ),
-                          ),
-                        ),
-                      if (ex.type == ExerciseType.stand)
-                        IconButton(
-                          icon: const Icon(Icons.event_available, size: 20),
-                          tooltip: 'Planifier une session',
-                          onPressed: () async {
-                            try {
-                              final sess = await _sessionService.planFromExercise(ex);
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Session prévue créée (${sess.series.length} série(s))')),
-                              );
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => SessionDetailScreen(sessionData: {
-                                    'session': sess.toMap(),
-                                    'series': sess.series.map((s)=> s.toMap()).toList(),
-                                  }),
-                                ),
-                              );
-                              // Actualiser le mapping (au cas où l'utilisateur revienne en arrière sans convertir)
-                              await _refreshPlannedMapping();
-                            } catch (e) {
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Impossible de planifier: $e')),
-                              );
-                            }
-                          },
-                        ),
-                      IconButton(
-                        icon: const Icon(Icons.edit, size: 18),
-                        tooltip: 'Modifier',
-                        onPressed: () => _openEdit(ex),
-                      ),
-                    ],
-                  ),
-                  onTap: () => _openEdit(ex),
-                ),
+              final ex = data[i - 2];
+              return _ExerciseCard(
+                exercise: ex,
+                hasPlannedSession: _plannedExerciseMap[ex.id] == true,
+                onTap: () => _openEdit(ex),
+                onPlan: () => _planExercise(ex),
+                onDuplicate: () => _openDuplicate(ex),
+                onDelete: () => _delete(ex),
+                experienceLevel: experienceLevel,
               );
             },
           );
@@ -299,6 +434,230 @@ PopupMenuItem<ExerciseSortMode> _menuItem(ExerciseSortMode m, String label) {
   return PopupMenuItem(value: m, child: Text(label));
 }
 
+class _ExerciseCard extends StatelessWidget {
+  final Exercise exercise;
+  final bool hasPlannedSession;
+  final VoidCallback onTap;
+  final VoidCallback onPlan;
+  final VoidCallback onDuplicate;
+  final VoidCallback onDelete;
+  final String? experienceLevel;
+
+  const _ExerciseCard({
+    required this.exercise,
+    required this.hasPlannedSession,
+    required this.onTap,
+    required this.onPlan,
+    required this.onDuplicate,
+    required this.onDelete,
+    required this.experienceLevel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isCoach = exercise.origin == ExerciseOrigin.coachCatalog;
+    final planColor = isDark ? Colors.lightBlueAccent : colors.primary;
+    final yellowColor = isDark ? Colors.amberAccent : const Color(0xFF8A5A00);
+    final matchingDifficultyColor =
+        isDark ? colors.secondary : const Color(0xFF147A3D);
+    final difficultyMatchesExperience =
+        exercise.difficulty?.name == experienceLevel;
+    final accent = isCoach ? planColor : colors.primary;
+    final goalLabel = exercise.goalIds.length == 1
+        ? '1 objectif'
+        : '${exercise.goalIds.length} objectifs';
+    final instructionLabel = exercise.consignes.length == 1
+        ? '1 consigne'
+        : '${exercise.consignes.length} consignes';
+
+    return Card(
+      key: ValueKey('exercise_card_${exercise.id}'),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: accent.withValues(alpha: 0.55), width: 1),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                key: ValueKey('exercise_leading_${exercise.id}'),
+                width: 42,
+                child: Icon(Icons.fitness_center, color: accent, size: 22),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      exercise.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 6),
+                    _ExerciseChipRow(
+                      first: SessionChip(
+                        text: goalLabel,
+                        icon: Icons.track_changes,
+                        color: yellowColor,
+                        compact: true,
+                      ),
+                      second: SessionChip(
+                        text: exercise.categoryLabelFr,
+                        icon: Icons.category,
+                        color: colors.secondary,
+                        compact: true,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    _ExerciseChipRow(
+                      first: SessionChip(
+                        text: exercise.typeLabelFr,
+                        icon: Icons.place_outlined,
+                        color: exercise.type == ExerciseType.stand
+                            ? planColor
+                            : null,
+                        compact: true,
+                      ),
+                      second: SessionChip(
+                        text: exercise.difficultyLabelFr,
+                        icon: Icons.signal_cellular_alt,
+                        color: difficultyMatchesExperience
+                            ? matchingDifficultyColor
+                            : null,
+                        compact: true,
+                      ),
+                    ),
+                    if (isCoach) ...[
+                      const SizedBox(height: 5),
+                      SizedBox(
+                        width: double.infinity,
+                        child: SessionChip(
+                          text: 'Créé par le Coach',
+                          icon: Icons.school_outlined,
+                          color: planColor,
+                          compact: true,
+                        ),
+                      ),
+                    ],
+                    if (exercise.consignes.isNotEmpty ||
+                        exercise.durationMinutes != null) ...[
+                      const SizedBox(height: 5),
+                      _ExerciseChipRow(
+                        first: exercise.consignes.isNotEmpty
+                            ? SessionChip(
+                                text: instructionLabel,
+                                icon: Icons.list_alt,
+                                color: yellowColor,
+                                compact: true,
+                              )
+                            : SessionChip(
+                                text: '${exercise.durationMinutes} min',
+                                icon: Icons.timer_outlined,
+                                compact: true,
+                              ),
+                        second: exercise.consignes.isNotEmpty &&
+                                exercise.durationMinutes != null
+                            ? SessionChip(
+                                text: '${exercise.durationMinutes} min',
+                                icon: Icons.timer_outlined,
+                                compact: true,
+                              )
+                            : null,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 4),
+              SizedBox(
+                key: ValueKey('exercise_actions_${exercise.id}'),
+                width: 38,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (exercise.type == ExerciseType.stand)
+                      IconButton(
+                        key: ValueKey('exercise_plan_${exercise.id}'),
+                        constraints: const BoxConstraints.tightFor(
+                          width: 34,
+                          height: 34,
+                        ),
+                        padding: EdgeInsets.zero,
+                        icon: Icon(
+                          hasPlannedSession
+                              ? Icons.event_repeat
+                              : Icons.event_available,
+                          size: 19,
+                          color: planColor,
+                        ),
+                        tooltip: hasPlannedSession
+                            ? 'Planifier une autre session'
+                            : 'Planifier une session',
+                        onPressed: onPlan,
+                      ),
+                    if (!isCoach)
+                      SizedBox(
+                        width: 34,
+                        height: 34,
+                        child: PopupMenuButton<String>(
+                          padding: EdgeInsets.zero,
+                          iconSize: 20,
+                          tooltip: 'Actions sur ${exercise.name}',
+                          onSelected: (action) {
+                            if (action == 'duplicate') onDuplicate();
+                            if (action == 'delete') onDelete();
+                          },
+                          itemBuilder: (_) => const [
+                            PopupMenuItem(
+                              value: 'duplicate',
+                              child: Text('Dupliquer'),
+                            ),
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Supprimer'),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExerciseChipRow extends StatelessWidget {
+  final Widget first;
+  final Widget? second;
+
+  const _ExerciseChipRow({required this.first, this.second});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: first),
+        const SizedBox(width: 6),
+        Expanded(child: second ?? const SizedBox.shrink()),
+      ],
+    );
+  }
+}
+
 class _FiltersBar extends StatelessWidget {
   final bool expanded;
   final VoidCallback onToggleExpanded;
@@ -306,6 +665,8 @@ class _FiltersBar extends StatelessWidget {
   final void Function(ExerciseCategory) onToggleCategory;
   final Set<ExerciseType> selectedTypes;
   final void Function(ExerciseType) onToggleType;
+  final ExerciseDifficultyFilter difficultyFilter;
+  final ValueChanged<ExerciseDifficultyFilter> onDifficultyChanged;
   const _FiltersBar({
     required this.expanded,
     required this.onToggleExpanded,
@@ -313,13 +674,17 @@ class _FiltersBar extends StatelessWidget {
     required this.onToggleCategory,
     required this.selectedTypes,
     required this.onToggleType,
+    required this.difficultyFilter,
+    required this.onDifficultyChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     final cats = ExerciseCategory.values;
     final types = ExerciseType.values;
-    final hasActive = selectedCategories.isNotEmpty || selectedTypes.isNotEmpty;
+    final hasActive = selectedCategories.isNotEmpty ||
+        selectedTypes.isNotEmpty ||
+        difficultyFilter != ExerciseDifficultyFilter.all;
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 1,
@@ -331,17 +696,33 @@ class _FiltersBar extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.filter_list, size: 18, color: Colors.amberAccent),
+                const Icon(
+                  Icons.filter_list,
+                  size: 18,
+                  color: Colors.amberAccent,
+                ),
                 const SizedBox(width: 8),
-                const Text('Filtres', style: TextStyle(fontWeight: FontWeight.w600)),
+                const Text(
+                  'Filtres',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
                 if (hasActive) ...[
                   const SizedBox(width: 8),
-                  _ActiveCountBadge(count: selectedCategories.length + selectedTypes.length),
+                  _ActiveCountBadge(
+                    count: selectedCategories.length +
+                        selectedTypes.length +
+                        (difficultyFilter == ExerciseDifficultyFilter.all
+                            ? 0
+                            : 1),
+                  ),
                 ],
                 const Spacer(),
                 IconButton(
                   tooltip: expanded ? 'Replier' : 'Déplier',
-                  icon: Icon(expanded ? Icons.expand_less : Icons.expand_more, size: 22),
+                  icon: Icon(
+                    expanded ? Icons.expand_less : Icons.expand_more,
+                    size: 22,
+                  ),
                   onPressed: onToggleExpanded,
                 ),
               ],
@@ -356,54 +737,126 @@ class _FiltersBar extends StatelessWidget {
                 axisAlignment: -1.0,
                 child: child,
               ),
-              child: !expanded ? const SizedBox.shrink() : Padding(
-                key: const ValueKey('filters-body'),
-                padding: const EdgeInsets.fromLTRB(4, 6, 4, 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Catégories', style: TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        for (final c in cats)
-                          FilterChip(
-                            label: Text(_catLabel(c)),
-                            selected: selectedCategories.contains(c),
-                            onSelected: (_) => onToggleCategory(c),
+              child: !expanded
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      key: const ValueKey('filters-body'),
+                      padding: const EdgeInsets.fromLTRB(4, 6, 4, 4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Catégories',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Text('Type', style: TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 8,
-                      children: [
-                        for (final t in types)
-                          FilterChip(
-                            label: Text(t == ExerciseType.stand ? 'Stand' : 'Maison'),
-                            selected: selectedTypes.contains(t),
-                            onSelected: (_) => onToggleType(t),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              for (final c in cats)
+                                FilterChip(
+                                  label: Text(_catLabel(c)),
+                                  selected: selectedCategories.contains(c),
+                                  onSelected: (_) => onToggleCategory(c),
+                                ),
+                            ],
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (hasActive)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          onPressed: () => _clearAll(),
-                          icon: const Icon(Icons.clear, size: 16),
-                          label: const Text('Réinitialiser'),
-                          style: TextButton.styleFrom(foregroundColor: Colors.white70),
-                        ),
+                          const SizedBox(height: 14),
+                          Text(
+                            'Difficulté',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          DropdownButtonFormField<ExerciseDifficultyFilter>(
+                            key: ValueKey(
+                              'exercise_difficulty_filter_${difficultyFilter.name}',
+                            ),
+                            initialValue: difficultyFilter,
+                            decoration: const InputDecoration(isDense: true),
+                            items: const [
+                              DropdownMenuItem(
+                                value: ExerciseDifficultyFilter.all,
+                                child: Text('Tous'),
+                              ),
+                              DropdownMenuItem(
+                                value: ExerciseDifficultyFilter.unspecified,
+                                child: Text('Non renseignée'),
+                              ),
+                              DropdownMenuItem(
+                                value: ExerciseDifficultyFilter.beginner,
+                                child: Text('Débutant'),
+                              ),
+                              DropdownMenuItem(
+                                value: ExerciseDifficultyFilter.advanced,
+                                child: Text('Avancé'),
+                              ),
+                              DropdownMenuItem(
+                                value: ExerciseDifficultyFilter.expert,
+                                child: Text('Expert'),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              if (value != null) onDifficultyChanged(value);
+                            },
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            'Type',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              for (final t in types)
+                                FilterChip(
+                                  label: Text(
+                                    t == ExerciseType.stand
+                                        ? 'Stand'
+                                        : 'Maison',
+                                  ),
+                                  selected: selectedTypes.contains(t),
+                                  onSelected: (_) => onToggleType(t),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          if (hasActive)
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton.icon(
+                                onPressed: () => _clearAll(),
+                                icon: const Icon(Icons.clear, size: 16),
+                                label: const Text('Réinitialiser'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                  ],
-                ),
-              ),
+                    ),
             ),
           ],
         ),
@@ -415,18 +868,31 @@ class _FiltersBar extends StatelessWidget {
     // On appelle les toggle uniquement pour les éléments sélectionnés pour les vider.
     final catsToClear = List<ExerciseCategory>.from(selectedCategories);
     final typesToClear = List<ExerciseType>.from(selectedTypes);
-    for (final c in catsToClear) { onToggleCategory(c); }
-    for (final t in typesToClear) { onToggleType(t); }
+    for (final c in catsToClear) {
+      onToggleCategory(c);
+    }
+    for (final t in typesToClear) {
+      onToggleType(t);
+    }
+    if (difficultyFilter != ExerciseDifficultyFilter.all) {
+      onDifficultyChanged(ExerciseDifficultyFilter.all);
+    }
   }
 
   static String _catLabel(ExerciseCategory c) {
     switch (c) {
-      case ExerciseCategory.precision: return 'Précision';
-      case ExerciseCategory.group: return 'Groupement';
-      case ExerciseCategory.speed: return 'Vitesse';
-      case ExerciseCategory.technique: return 'Technique';
-      case ExerciseCategory.mental: return 'Mental';
-      case ExerciseCategory.physical: return 'Physique';
+      case ExerciseCategory.precision:
+        return 'Précision';
+      case ExerciseCategory.group:
+        return 'Groupement';
+      case ExerciseCategory.speed:
+        return 'Vitesse';
+      case ExerciseCategory.technique:
+        return 'Technique';
+      case ExerciseCategory.mental:
+        return 'Mental';
+      case ExerciseCategory.physical:
+        return 'Physique';
     }
   }
 }
@@ -443,55 +909,14 @@ class _ActiveCountBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.amberAccent.withValues(alpha: 0.4)),
       ),
-      child: Text('$count', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.amberAccent)),
-    );
-  }
-}
-
-/// Badge informatif compact pour afficher icône + texte
-class _Badge extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  final double? maxWidth;
-  
-  const _Badge({
-    required this.icon,
-    required this.text,
-    this.maxWidth,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final content = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 12, color: Colors.amberAccent),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Text(
-            text,
-            style: const TextStyle(fontSize: 11),
-            overflow: TextOverflow.ellipsis,
-          ),
+      child: Text(
+        '$count',
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: Colors.amberAccent,
         ),
-      ],
-    );
-    
-    final child = maxWidth != null
-        ? ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxWidth!),
-            child: content,
-          )
-        : content;
-        
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white12),
       ),
-      child: child,
     );
   }
 }

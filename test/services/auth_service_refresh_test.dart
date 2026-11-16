@@ -90,13 +90,17 @@ void main() {
           .handleCallback(Uri.parse('nextarget://callback?token=cb'));
 
       expect(userInfo['email'], 'tireur@example.com');
-      expect(writeCount, 1);
+      expect(writeCount, 2);
       final stored =
           jsonDecode(store['auth_token_set']!) as Map<String, dynamic>;
       expect(stored['access_token'], 'access_1');
       expect(stored['refresh_token'], 'refresh_1');
       expect(stored['access_expires_at'], isNotNull);
       expect(stored['refresh_expires_at'], isNotNull);
+      expect(
+        jsonDecode(store['auth_profile_cache']!)['email'],
+        'tireur@example.com',
+      );
     });
   });
 
@@ -232,6 +236,7 @@ void main() {
         () async {
       store['jwt_token'] = 'legacy_token';
       store['user_email'] = 'ancien@example.com';
+      store['business_sessions'] = 'contenu métier intact';
       var networkCalls = 0;
       final client = MockClient((req) async {
         networkCalls++;
@@ -245,22 +250,19 @@ void main() {
       );
       expect(networkCalls, 0);
       expect(store.containsKey('jwt_token'), isFalse);
+      expect(store.containsKey('user_email'), isFalse);
+      expect(store['business_sessions'], 'contenu métier intact');
     });
 
-    test(
-        'access token legacy encore valide reste utilisable sans reconnexion immédiate',
-        () async {
+    test('access token legacy est supprimé dès sa première lecture', () async {
       store['jwt_token'] = 'legacy_token';
       store['user_email'] = 'ancien@example.com';
-      // Un vrai token legacy a une expiration JWT propre ; on simule ici un
-      // stockage déjà migré manuellement à une expiration future proche
-      // pour couvrir le cas où la fenêtre proactive n'est pas encore ouverte.
-      // (Le cas "déjà expiré" est couvert par le test précédent.)
       final client =
           MockClient((req) async => throw StateError('no network expected'));
-      // getToken() (lecture simple) doit fonctionner sans réseau ni exception.
       final token = await buildService(client).getToken();
-      expect(token, 'legacy_token');
+      expect(token, isNull);
+      expect(store.containsKey('jwt_token'), isFalse);
+      expect(store.containsKey('user_email'), isFalse);
     });
   });
 

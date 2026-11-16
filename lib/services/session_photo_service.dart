@@ -17,19 +17,26 @@ class SessionPhotoService implements ISessionPhotoService {
 
   final ImagePicker _picker;
 
-  SessionPhotoService({ImagePicker? picker}) : _picker = picker ?? ImagePicker();
+  SessionPhotoService({ImagePicker? picker})
+      : _picker = picker ?? ImagePicker();
 
   @override
   Future<String?> pickAndStore(ImageSource source) async {
     try {
-      final XFile? picked = await _picker.pickImage(source: source, imageQuality: 85);
+      final XFile? picked =
+          await _picker.pickImage(source: source, imageQuality: 85);
       if (picked == null) return null;
       return _storeFile(picked.path);
     } catch (e) {
-      AppLogger.I.error('Erreur lors de la sélection/prise de la photo cible', e);
+      AppLogger.I
+          .error('Erreur lors de la sélection/prise de la photo cible', e);
       return null;
     }
   }
+
+  @override
+  Future<String> duplicateStoredPhoto(String sourcePath) =>
+      _storeFile(sourcePath);
 
   @override
   Future<void> deleteIfExists(String? path) async {
@@ -52,8 +59,14 @@ class SessionPhotoService implements ISessionPhotoService {
     }
     final fileName = 'target_${const Uuid().v4()}${_extensionOf(sourcePath)}';
     final targetPath = '${targetDir.path}/$fileName';
-    await File(sourcePath).copy(targetPath);
-    return targetPath;
+    try {
+      await File(sourcePath).copy(targetPath);
+      return targetPath;
+    } catch (_) {
+      final target = File(targetPath);
+      if (await target.exists()) await target.delete();
+      rethrow;
+    }
   }
 
   String _extensionOf(String path) {

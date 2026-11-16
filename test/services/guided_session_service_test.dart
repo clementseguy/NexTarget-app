@@ -10,6 +10,10 @@ import '../support/async_test_helpers.dart';
 import '../support/fake_session_repository.dart';
 
 class _PhotoService implements ISessionPhotoService {
+  @override
+  Future<String> duplicateStoredPhoto(String sourcePath) async =>
+      '$sourcePath.copy';
+
   final deleted = <String?>[];
 
   @override
@@ -32,29 +36,31 @@ void main() {
     Future<DetailedShootingSession> create({
       int seriesCount = 10,
       int shots = 5,
-      List<String> exercises = const [],
+      String? exerciseId,
     }) =>
         service.createGuidedDraft(
-          date: DateTime(2026, 9, 4, 14, 30),
-          weapon: 'CZ 75',
-          caliber: '9 mm libre',
-          category: SessionConstants.categoryEntrainement,
-          exercises: exercises,
-          seriesCount: seriesCount,
-          shotsPerSeries: shots,
-          initialDistance: 25,
-          initialHandMethod: HandMethod.oneHand,
+          GuidedDraftRequest(
+            date: DateTime(2026, 9, 4, 14, 30),
+            weapon: 'CZ 75',
+            caliber: '9 mm libre',
+            category: SessionConstants.categoryEntrainement,
+            exerciseId: exerciseId,
+            seriesCount: seriesCount,
+            shotsPerSeries: shots,
+            initialDistance: 25,
+            initialHandMethod: HandMethod.oneHand,
+          ),
         );
 
     test('crée immédiatement un brouillon détaillé persistant', () async {
-      final draft = await create(shots: 8, exercises: const ['e1', 'e2']);
+      final draft = await create(shots: 8, exerciseId: 'e1');
 
       expect(draft.status, SessionConstants.statusDraft);
       expect(draft.series, hasLength(10));
       expect(draft.series.every((item) => !item.isCompleted), isTrue);
       expect(draft.series.every((item) => item.shotCount == 8), isTrue);
       expect(draft.series.first.handMethod, HandMethod.oneHand);
-      expect(draft.exercises, ['e1', 'e2']);
+      expect(draft.exerciseId, 'e1');
 
       final afterRestart = SessionService(repository: repository);
       final restored = (await afterRestart.getGuidedDrafts()).single;

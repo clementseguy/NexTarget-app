@@ -5,7 +5,7 @@ description: >
 
 publish_to: 'none'
 
-version: 0.7.0
+version: 0.8.0
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -19,7 +19,6 @@ dependencies:
   intl: ^0.20.2
   fl_chart: ^1.1.1
   http: ^1.5.0
-  flutter_markdown: ^0.7.7+1
   yaml: ^3.1.3
   file_picker: ^8.0.0
   image_picker: ^1.1.2
@@ -46,10 +45,10 @@ flutter_icons:
   adaptive_icon_background: "#000000"
   adaptive_icon_foreground: assets/app_logo.png
 
-## Ancien bloc flutter_native_splash supprimé (splash géré par overlay Flutter)
+## Le splash natif est configuré dans les ressources Android et iOS générées.
 
 flutter:
   uses-material-design: true
   assets:
-    - assets/app_logo.png # conservé temporairement (legacy)
+    - assets/app_logo.png # logo de l'application et du splash natif
     - assets/config.yaml

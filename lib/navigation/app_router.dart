@@ -14,11 +14,11 @@ import '../screens/exercises_list_screen.dart';
 import '../screens/login_screen.dart';
 import '../providers/navigation_provider.dart';
 import '../constants/session_constants.dart';
-import '../data/local_db_hive.dart';
 import '../models/goal.dart';
 import '../widgets/help_button.dart';
 import '../widgets/app_bar_title.dart';
 import '../services/session_service.dart';
+import '../services/debug_coach_fixture_service.dart';
 
 /// Classe responsable de la gestion des routes nommées de l'application
 class AppRouter {
@@ -32,6 +32,21 @@ class AppRouter {
   static const String exercisesList = '/exercises/list';
   static const String login = '/login';
   static const String dashboard = '/dashboard';
+
+  /// Ouvre l'onglet Paramètres du navigateur principal afin de conserver la
+  /// barre de navigation inférieure.
+  static void showSettingsTab(BuildContext context) {
+    final navigationProvider = Provider.of<NavigationProvider?>(
+      context,
+      listen: false,
+    );
+    if (navigationProvider == null) {
+      Navigator.of(context).pushNamed(settings);
+      return;
+    }
+    navigationProvider.goToSettings();
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
 
   /// Retourne la route correspondant au nom spécifié
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -185,11 +200,30 @@ class AppNavigator extends StatelessWidget {
         if (kDebugMode)
           IconButton(
             icon: Icon(Icons.bolt, color: Colors.amber),
-            tooltip: 'Ajouter 3 sessions aléatoires',
+            tooltip: 'Ajouter les sessions de recette Coach',
             onPressed: () async {
-              await LocalDatabaseHive()
-                  .insertRandomSessions(count: 3, status: 'réalisée');
+              try {
+                await DebugCoachFixtureService().createCoachReviewFixtures();
+              } catch (error) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Impossible de créer les données de recette : $error',
+                    ),
+                  ),
+                );
+                return;
+              }
               _historyKey.currentState?.refreshSessions();
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Exercice et 4 sessions de recette Coach créés.',
+                  ),
+                ),
+              );
             },
           ),
         IconButton(
@@ -209,7 +243,7 @@ class AppNavigator extends StatelessWidget {
           'status': SessionConstants.statusPrevue,
           'category': SessionConstants.categoryEntrainement,
           'series': [],
-          'exercises': [],
+          'exerciseId': null,
         },
         'series': [],
       };

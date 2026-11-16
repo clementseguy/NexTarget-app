@@ -56,11 +56,11 @@ void main() {
       now = DateTime.now();
       detailed = DetailedShootingSession(
         id: 1,
-        date: now.subtract(const Duration(days: 1)),
+        date: now,
         weapon: 'Glock 17',
         caliber: '9mm',
         category: 'match',
-        exercises: const ['precision'],
+        exerciseId: 'precision',
         series: [
           Series(
             shotCount: 5,
@@ -78,7 +78,7 @@ void main() {
         shotCount: 30,
         distance: 25,
         category: 'entraînement',
-        exercises: const ['vitesse'],
+        exerciseId: 'vitesse',
       );
     });
 

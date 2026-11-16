@@ -1,132 +1,98 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive/hive.dart';
-import 'package:tir_sportif/services/backup_service.dart';
-import 'package:tir_sportif/services/session_service.dart';
-import 'package:tir_sportif/models/shooting_session.dart';
-import 'package:tir_sportif/models/series.dart';
+import 'package:tir_sportif/models/exercise.dart';
+
+import '../support/backup_service_test_fixture.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-  
-  group('BackupService export functions', () {
-    late Directory tempDir;
-    
+  group('BackupService exportAllSessionsToJsonFile', () {
+    late Directory tempDirectory;
+
     setUp(() async {
-      tempDir = await Directory.systemTemp.createTemp('nt_backup_export_test_');
-      Hive.init(tempDir.path);
-      await Hive.openBox('sessions');
-      await Hive.openBox('exercises');
-      // Pour les goals, on teste sans les adapter, juste pour valider la structure
+      tempDirectory = await Directory.systemTemp.createTemp(
+        'nt_backup_export_temp_test_',
+      );
     });
 
     tearDown(() async {
-      // Fermer les boîtes Hive
-      for (final name in ['sessions','exercises']) {
-        if (Hive.isBoxOpen(name)) {
-          try {
-            await Hive.box(name).close();
-          } catch (e) {
-            // best-effort cleanup, erreur ignorée
-          }
-        }
-      }
-      
-      // Supprimer le répertoire temporaire avec gestion d'erreur
-      try {
-        if (await tempDir.exists()) {
-          await tempDir.delete(recursive: true);
-        }
-      } catch (e) {
-        // best-effort cleanup, erreur ignorée
-        // Ne pas échouer le test à cause de problèmes de nettoyage
-        // qui peuvent se produire dans l'environnement CI
+      if (await tempDirectory.exists()) {
+        await tempDirectory.delete(recursive: true);
       }
     });
-    
-    test('exportAllSessionsToJsonFile basic structure test', () async {
-      // Skip si ce test est exécuté sur la CI ou sans plugin
-      if (Platform.environment.containsKey('CI') || Platform.environment.containsKey('FLUTTER_TEST')) {
-        // Les plugins ne sont pas correctement initialisés dans l'environnement de test
-        return;
-      }
-      
-      // Setup real services with test data
-      final sessionService = SessionService();
-      final backupService = BackupService();
-      
-      // Add a test session
-      final testSession = DetailedShootingSession(
-        weapon: 'Test Weapon',
-        caliber: '22LR',
-        date: DateTime(2024, 5, 15),
-        status: 'réalisée',
-        category: 'entraînement',
-        series: [
-          Series(
-            distance: 10,
-            points: 90,
-            shotCount: 10,
-            groupSize: 15.0,
-            comment: 'Test comment',
-          ),
-        ],
-        synthese: 'Test synthesis',
+
+    test('écrit un export version 6 dans le répertoire temporaire injecté',
+        () async {
+      final fixture = await BackupServiceTestFixture.create(tempDirectory);
+
+      final file = await fixture.service.exportAllSessionsToJsonFile();
+
+      expect(file.parent.path, tempDirectory.path);
+      expect(file.path, endsWith('.json'));
+      expect(file.uri.pathSegments.last, startsWith('nextarget_export_'));
+      expect(await file.exists(), isTrue);
+      final data =
+          jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+      expect(data['format'], 'mycoach-data');
+      expect(data['version'], 6);
+      expect(data['sessions_count'], 1);
+      expect(data['goals_count'], 1);
+      expect(data['weapons_count'], 1);
+      expect(data['exercises_count'], 1);
+      final session = (data['sessions'] as List).single as Map<String, dynamic>;
+      expect(session['exerciseId'], 'exercise-export');
+      expect(session.containsKey('exercises'), isFalse);
+      expect(session.containsKey('analyse'), isFalse);
+      expect(
+        (session['coachAnalysis'] as Map)['debrief'],
+        'Débrief structuré exporté',
       );
-      
-      await sessionService.addSession(testSession);
-      
-      try {
-        // Execute export
-        final exportFile = await backupService.exportAllSessionsToJsonFile();
-        
-        // Verify file exists and has valid JSON structure
-        expect(await exportFile.exists(), isTrue);
-        
-        final fileContent = await exportFile.readAsString();
-        final jsonData = json.decode(fileContent) as Map<String, dynamic>;
-        
-        // Basic structure verification
-        expect(jsonData['format'], 'mycoach-data');
-        expect(jsonData['version'], 2);
-        expect(jsonData['sessions'], isA<List>());
-        expect(jsonData.containsKey('goals'), isTrue);
-        expect(jsonData['exported_at'], isNotNull);
-        
-        // Verify session data is correctly formatted
-        final sessions = jsonData['sessions'] as List;
-        expect(sessions.length, 1);
-        
-        final session = sessions[0] as Map<String, dynamic>;
-        expect(session['weapon'], 'Test Weapon');
-        expect(session['caliber'], '22LR');
-        expect(session['category'], 'entraînement');
-        expect(session['status'], 'réalisée');
-        expect(session['synthese'], 'Test synthesis');
-        
-        // Verify series data
-        final seriesList = session['series'] as List;
-        expect(seriesList.length, 1);
-        
-        final series = seriesList[0] as Map<String, dynamic>;
-        expect(series['distance'], 10);
-        expect(series['points'], 90);
-        expect(series['shotCount'], 10);
-        expect(series['groupSize'], 15.0);
-        expect(series['comment'], 'Test comment');
-        
-        // Clean up
-        await exportFile.delete();
-      } catch (e) {
-        if (e.toString().contains('MissingPluginException') || 
-            e.toString().contains('path_provider')) {
-          // Skip test gracefully if plugin is missing
-          markTestSkipped('Test ignoré: plugin path_provider non disponible dans l\'environnement de test');
-        } else {
-          rethrow; // Si c'est une autre erreur, la relancer
-        }
-      }
+      expect((data['exercises'] as List).single['difficulty'], 'expert');
+      expect((data['exercises'] as List).single['origin'], 'coach_catalog');
+    });
+
+    test('conserve difficulté et provenance au cycle export/import', () async {
+      final fixture = await BackupServiceTestFixture.create(tempDirectory);
+      final file = await fixture.service.exportAllSessionsToJsonFile();
+      final data =
+          jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+
+      await fixture.exerciseRepository.clear();
+      await fixture.service.importSessionsFromJson(jsonEncode(data));
+      expect(
+        (await fixture.exerciseRepository.getAll()).single.difficulty,
+        ExerciseDifficulty.expert,
+      );
+      expect(
+        (await fixture.exerciseRepository.getAll()).single.origin,
+        ExerciseOrigin.coachCatalog,
+      );
+
+      await fixture.exerciseRepository.clear();
+      (data['exercises'] as List).single['difficulty'] = 'impossible';
+      await fixture.service.importSessionsFromJson(jsonEncode(data));
+      expect(
+        (await fixture.exerciseRepository.getAll()).single.difficulty,
+        isNull,
+      );
+    });
+
+    test('importe un exercice historique sans provenance comme personnel',
+        () async {
+      final fixture = await BackupServiceTestFixture.create(tempDirectory);
+      final file = await fixture.service.exportAllSessionsToJsonFile();
+      final data =
+          jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+      (data['exercises'] as List).single.remove('origin');
+
+      await fixture.exerciseRepository.clear();
+      await fixture.service.importSessionsFromJson(jsonEncode(data));
+
+      expect(
+        (await fixture.exerciseRepository.getAll()).single.origin,
+        ExerciseOrigin.personal,
+      );
     });
   });
 }

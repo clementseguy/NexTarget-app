@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 import '../models/exercise.dart';
 import '../models/series.dart';
@@ -10,8 +11,10 @@ import '../models/shooting_session.dart';
 import '../services/exercise_service.dart';
 import '../services/session_photo_service.dart';
 import '../services/session_service.dart';
+import '../services/server_wake_service.dart';
 import '../interfaces/session_photo_service_interface.dart';
 import '../widgets/session_form/session_form_components.dart';
+import '../widgets/group_size_help.dart';
 import 'session_detail_screen.dart';
 
 class GuidedSessionScreen extends StatefulWidget {
@@ -19,6 +22,7 @@ class GuidedSessionScreen extends StatefulWidget {
   final SessionService? sessionService;
   final ExerciseService? exerciseService;
   final ISessionPhotoService? photoService;
+  final ServerWakeService? serverWakeService;
   final Future<void> Function()? onSessionChanged;
 
   const GuidedSessionScreen({
@@ -27,6 +31,7 @@ class GuidedSessionScreen extends StatefulWidget {
     this.sessionService,
     this.exerciseService,
     this.photoService,
+    this.serverWakeService,
     this.onSessionChanged,
   });
 
@@ -76,13 +81,17 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
     _draft = DetailedShootingSession.fromMap(widget.draft.toMap());
     final firstIncomplete =
         _draft.series.indexWhere((item) => !item.isCompleted);
-    _currentIndex = firstIncomplete == -1
-        ? (_draft.series.isEmpty ? 0 : _draft.series.length - 1)
-        : firstIncomplete;
+    _currentIndex = _initialSeriesIndex(firstIncomplete);
     _summaryController = TextEditingController(text: _draft.synthese ?? '');
     _createSeriesControllers();
     _bindCurrentSeries();
     _loadExercises();
+  }
+
+  int _initialSeriesIndex(int firstIncomplete) {
+    if (firstIncomplete != -1) return firstIncomplete;
+    if (_draft.series.isEmpty) return 0;
+    return _draft.series.length - 1;
   }
 
   Future<void> _loadExercises() async {
@@ -252,7 +261,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
         await _finishEarly();
         return;
       }
-      setState(() => _showSummary = true);
+      _displaySummary();
       return;
     }
     setState(() {
@@ -311,17 +320,39 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
     }
     final removed = _draft.series.length - completed;
     if (removed == 0) {
-      setState(() => _showSummary = true);
+      _displaySummary();
       return;
     }
-    final confirmed = await showDialog<bool>(
+    final confirmed = await _confirmFinishEarly(removed);
+    if (confirmed != true) return;
+    _draft.series =
+        _draft.series.where((item) => item.isCompleted).toList(growable: true);
+    try {
+      await _enqueueSave(DetailedShootingSession.fromMap(_draft.toMap()));
+      if (mounted) _displaySummary();
+    } catch (_) {}
+  }
+
+  void _displaySummary() {
+    setState(() => _showSummary = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_showSummary) return;
+      final service = widget.serverWakeService ??
+          Provider.of<ServerWakeService?>(context, listen: false);
+      if (service != null) unawaited(service.wake());
+    });
+  }
+
+  Future<bool?> _confirmFinishEarly(int removed) {
+    final plural = removed > 1;
+    final message = '$removed série${plural ? 's' : ''} '
+        'non renseignée${plural ? 's' : ''} '
+        '${plural ? 'seront retirées' : 'sera retirée'}.';
+    return showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Terminer plus tôt ?'),
-        content: Text(
-          '$removed série${removed > 1 ? 's' : ''} non renseignée${removed > 1 ? 's' : ''} '
-          '${removed > 1 ? 'seront retirées' : 'sera retirée'}.',
-        ),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -334,13 +365,6 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
         ],
       ),
     );
-    if (confirmed != true) return;
-    _draft.series =
-        _draft.series.where((item) => item.isCompleted).toList(growable: true);
-    try {
-      await _enqueueSave(DetailedShootingSession.fromMap(_draft.toMap()));
-      if (mounted) setState(() => _showSummary = true);
-    } catch (_) {}
   }
 
   Future<void> _leave() async {
@@ -664,7 +688,10 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
                 key: const Key('guided_group'),
                 controller: _groupController,
                 focusNode: _groupFocus,
-                decoration: const InputDecoration(labelText: 'Groupement (cm)'),
+                decoration: const InputDecoration(
+                  labelText: 'Groupement (cm)',
+                  suffixIcon: GroupSizeHelpButton(),
+                ),
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
@@ -749,10 +776,11 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
     final points = completed.fold<int>(0, (total, item) => total + item.points);
     final distances =
         completed.map((item) => item.distance.toInt()).toSet().toList()..sort();
-    final exerciseNames = _draft.exercises.map((id) {
-      final match = _exercises.where((item) => item.id == id);
-      return match.isEmpty ? id : match.first.name;
-    }).join(', ');
+    final exerciseId = _draft.exerciseId;
+    final exerciseMatches =
+        _exercises.where((item) => item.id == exerciseId).toList();
+    final exercise = exerciseMatches.isEmpty ? null : exerciseMatches.first;
+    final exerciseName = exercise?.name ?? exerciseId;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       children: [
@@ -768,8 +796,7 @@ class _GuidedSessionScreenState extends State<GuidedSessionScreen> {
                 Text('Arme : ${_draft.weapon}'),
                 Text('Calibre : ${_draft.caliber}'),
                 Text('Catégorie : ${_draft.category}'),
-                Text(
-                    'Exercices : ${exerciseNames.isEmpty ? 'Aucun' : exerciseNames}'),
+                Text('Exercice : ${exerciseName ?? 'Aucun'}'),
                 Text('Séries réalisées : ${completed.length}'),
                 Text('Total des coups : $shots'),
                 Text(

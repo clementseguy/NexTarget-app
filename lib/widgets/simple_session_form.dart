@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -16,12 +18,14 @@ import 'weapon_autocomplete_field.dart';
 
 class SimpleSessionForm extends StatefulWidget {
   final SimpleShootingSession? initialSession;
+  final Map<String, dynamic>? initialSessionData;
   final ValueChanged<SimpleShootingSession> onSave;
   final ISessionPhotoService? photoService;
 
   const SimpleSessionForm({
     super.key,
     this.initialSession,
+    this.initialSessionData,
     required this.onSave,
     this.photoService,
   });
@@ -39,36 +43,55 @@ class SimpleSessionFormState extends State<SimpleSessionForm> {
   late final TextEditingController _syntheseController;
   late final ISessionPhotoService _photoService;
   final ExerciseService _exerciseService = ExerciseService();
-  final Set<String> _selectedExerciseIds = {};
+  String? _selectedExerciseId;
   List<Exercise> _exercises = const [];
-  late DateTime _date;
+  DateTime? _date;
   late String _category;
   String? _photoPath;
   String? _initialPhotoPath;
   bool _photoBusy = false;
   bool _loadingExercises = true;
+  bool _saved = false;
 
   @override
   void initState() {
     super.initState();
     final initial = widget.initialSession;
-    _date = initial?.date ?? DateTime.now();
-    _category = initial?.category ?? SessionConstants.categoryEntrainement;
-    _weaponController = TextEditingController(text: initial?.weapon ?? '');
+    final initialData = widget.initialSessionData;
+    _date = initialData != null
+        ? DateTime.tryParse(initialData['date'] as String? ?? '')
+        : initial?.date ?? DateTime.now();
+    _category = initialData?['category'] as String? ??
+        initial?.category ??
+        SessionConstants.categoryEntrainement;
+    _weaponController = TextEditingController(
+      text: initialData?['weapon'] as String? ?? initial?.weapon ?? '',
+    );
     _caliberController = TextEditingController(
       text: pickInitialCaliber(
-        existing: initial?.caliber,
+        existing: initialData?['caliber'] as String? ?? initial?.caliber,
         defaultCaliber: PreferencesService().getDefaultCaliber(),
       ),
     );
-    _shotCountController =
-        TextEditingController(text: initial?.shotCount.toString() ?? '');
-    _distanceController = TextEditingController(
-      text: initial == null ? '' : _formatDistance(initial.distance),
+    _shotCountController = TextEditingController(
+      text: initialData?['shotCount']?.toString() ??
+          initial?.shotCount.toString() ??
+          '',
     );
-    _syntheseController = TextEditingController(text: initial?.synthese ?? '');
-    _selectedExerciseIds.addAll(initial?.exercises ?? const []);
-    _photoPath = initial?.photoPath;
+    _distanceController = TextEditingController(
+      text: initialData?['distance'] != null
+          ? _formatDistance((initialData!['distance'] as num).toDouble())
+          : initial == null
+              ? ''
+              : _formatDistance(initial.distance),
+    );
+    _syntheseController = TextEditingController(
+      text: initialData?['synthese'] as String? ?? initial?.synthese ?? '',
+    );
+    _selectedExerciseId = initialData == null
+        ? initial?.exerciseId
+        : _readInitialExerciseId(initialData);
+    _photoPath = initialData?['photoPath'] as String? ?? initial?.photoPath;
     _initialPhotoPath = _photoPath;
     _photoService = widget.photoService ?? SessionPhotoService();
     _loadExercises();
@@ -113,16 +136,23 @@ class SimpleSessionFormState extends State<SimpleSessionForm> {
 
   bool validateAndBuild() {
     if (!(_formKey.currentState?.validate() ?? false)) return false;
+    if (_date == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La date est obligatoire.')),
+      );
+      return false;
+    }
     final session = SimpleShootingSession(
+      sessionUuid: widget.initialSession?.sessionUuid,
       id: widget.initialSession?.id,
-      date: _date,
+      date: _date!,
       weapon: _weaponController.text.trim(),
       caliber: _caliberController.text.trim(),
       shotCount: int.parse(_shotCountController.text),
       distance: int.parse(_distanceController.text),
       category: _category,
       synthese: _syntheseController.text.trim(),
-      exercises: _selectedExerciseIds.toList(),
+      exerciseId: _selectedExerciseId,
       photoPath: _photoPath,
     );
     widget.onSave(session);
@@ -136,6 +166,9 @@ class SimpleSessionFormState extends State<SimpleSessionForm> {
 
   @override
   void dispose() {
+    if (!_saved && _photoPath != null && _photoPath != _initialPhotoPath) {
+      unawaited(_photoService.deleteIfExists(_photoPath));
+    }
     _weaponController.dispose();
     _caliberController.dispose();
     _shotCountController.dispose();
@@ -143,6 +176,8 @@ class SimpleSessionFormState extends State<SimpleSessionForm> {
     _syntheseController.dispose();
     super.dispose();
   }
+
+  void markSaved() => _saved = true;
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +191,7 @@ class SimpleSessionFormState extends State<SimpleSessionForm> {
             onPickDate: () async {
               final picked = await showDatePicker(
                 context: context,
-                initialDate: _date,
+                initialDate: _date ?? DateTime.now(),
                 firstDate: DateTime(2020),
                 lastDate: DateTime(2100),
               );
@@ -227,15 +262,11 @@ class SimpleSessionFormState extends State<SimpleSessionForm> {
             }),
           ),
           const SizedBox(height: 24),
-          ExercisesSelector(
+          ExerciseSelector(
             isLoading: _loadingExercises,
             exercises: _exercises,
-            selectedIds: _selectedExerciseIds,
-            onToggle: (id) => setState(() {
-              _selectedExerciseIds.contains(id)
-                  ? _selectedExerciseIds.remove(id)
-                  : _selectedExerciseIds.add(id);
-            }),
+            selectedId: _selectedExerciseId,
+            onChanged: (id) => setState(() => _selectedExerciseId = id),
           ),
           const SizedBox(height: 24),
           SessionPhotoField(
@@ -254,4 +285,16 @@ class SimpleSessionFormState extends State<SimpleSessionForm> {
       ),
     );
   }
+}
+
+String? _readInitialExerciseId(Map<String, dynamic> data) {
+  if (data.containsKey('exerciseId')) {
+    return data['exerciseId'] is String ? data['exerciseId'] as String : null;
+  }
+  final legacy = data['exercises'];
+  if (legacy is! List) return null;
+  for (final value in legacy) {
+    if (value is String) return value;
+  }
+  return null;
 }

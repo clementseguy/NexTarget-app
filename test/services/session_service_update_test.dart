@@ -173,7 +173,7 @@ void main() {
       // Verify session properties
       expect(plannedSession.id, isNotNull);
       expect(plannedSession.status, 'prévue');
-      expect(plannedSession.exercises, contains('test-exercise'));
+      expect(plannedSession.exerciseId, 'test-exercise');
       expect(plannedSession.category, 'entraînement');
       expect(plannedSession.synthese, contains('Test Exercise'));
       expect(plannedSession.caliber, '');
@@ -227,7 +227,7 @@ void main() {
       // Verify session properties
       expect(plannedSession.id, isNotNull);
       expect(plannedSession.status, 'prévue');
-      expect(plannedSession.exercises, contains('empty-exercise'));
+      expect(plannedSession.exerciseId, 'empty-exercise');
 
       // Should have one default series
       expect(plannedSession.series.length, 1);

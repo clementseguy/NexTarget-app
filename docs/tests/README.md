@@ -2,18 +2,21 @@
 
 ## Tests automatisés
 
-Depuis la racine du dépôt :
+Pendant le développement, cibler les tests concernés, par exemple :
 
 ```bash
-flutter analyze
-flutter test
+flutter test test/services/rolling_stats_service_test.dart
 ```
 
-Pour la validation complète avant commit :
+Pour la validation complète avant commit, lancer uniquement :
 
 ```bash
 bash scripts/verify_before_commit.sh
 ```
+
+Ce script exécute déjà l'analyse Flutter, la vérification du schéma Hive et la
+suite complète. Ne pas relancer ces contrôles séparément sans modification du
+code entre les exécutions.
 
 Les tests suivent l'organisation de `lib/`. Les appels OAuth et Mistral sont mockés ; la suite ne doit effectuer aucun appel réseau réel.
 
@@ -28,6 +31,6 @@ dart run scripts/generate_cahier_recette.dart
 git diff --exit-code docs/tests/cahier_recette.md
 ```
 
-Le cahier couvre notamment les deux types de session, les statistiques 30/90 jours, les objectifs, exercices, préférences, sauvegardes, l'authentification durable et le Coach connecté uniquement. Il doit être rejoué avant une merge request vers `main`.
+Le cahier couvre notamment les deux types de session, les statistiques 30/90 jours, les objectifs, exercices, préférences, sauvegardes, l'authentification durable et le Coach connecté uniquement. Après les tests d'intégration sur `dev`, il doit être rejoué sur `staging` avant la fusion vers `main`.
 
 Les anciens guides OAuth séparés ont été supprimés : ils dupliquaient ces scénarios et décrivaient plusieurs flux qui ne sont plus implémentés.

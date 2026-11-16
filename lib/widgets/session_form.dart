@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../forms/series_form_controllers.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,6 +13,8 @@ import '../models/shooting_session.dart';
 import '../constants/session_constants.dart';
 import '../models/series.dart';
 import '../models/exercise.dart';
+import '../models/coach_session_analysis.dart';
+import '../models/exercise_execution.dart';
 import '../services/exercise_service.dart';
 import '../interfaces/session_photo_service_interface.dart';
 import '../services/session_photo_service.dart';
@@ -20,12 +24,14 @@ class SessionForm extends StatefulWidget {
   final Map<String, dynamic>? initialSessionData;
   final void Function(ShootingSession session) onSave;
   final bool isEdit;
+  final bool preserveInitialCaliber;
   final ISessionPhotoService? photoService;
   const SessionForm({
     super.key,
     this.initialSessionData,
     required this.onSave,
     this.isEdit = false,
+    this.preserveInitialCaliber = false,
     this.photoService,
   });
 
@@ -47,10 +53,10 @@ class SessionFormState extends State<SessionForm> {
   late List<SeriesFormControllers> _seriesControllers;
   String _category = SessionConstants.categoryEntrainement;
   String _status = SessionConstants.statusRealisee; // allow planned
-  // Exercises selection
+  // Exercise selection
   final ExerciseService _exerciseService = ExerciseService();
   List<Exercise> _allExercises = [];
-  final Set<String> _selectedExerciseIds = <String>{};
+  String? _selectedExerciseId;
   bool _loadingExercises = true;
   // Photo de la cible (NT-005)
   late final ISessionPhotoService _photoService =
@@ -58,6 +64,10 @@ class SessionFormState extends State<SessionForm> {
   String? _photoPath;
   String? _initialPhotoPath;
   bool _photoBusy = false;
+  bool _saved = false;
+  String? _sessionUuid;
+  CoachSessionAnalysis? _coachAnalysis;
+  ExerciseExecution? _exerciseExecution;
 
   @override
   void initState() {
@@ -72,7 +82,9 @@ class SessionFormState extends State<SessionForm> {
           ? DateTime.tryParse(session['date'])
           : null;
       _weaponController.text = session['weapon'] ?? '';
-      final existingCal = widget.isEdit ? session['caliber'] as String? : null;
+      final existingCal = widget.isEdit || widget.preserveInitialCaliber
+          ? session['caliber'] as String?
+          : null;
       _caliberController.text = pickInitialCaliber(
           existing: existingCal,
           defaultCaliber: PreferencesService().getDefaultCaliber());
@@ -82,13 +94,20 @@ class SessionFormState extends State<SessionForm> {
       _status = session['status'] ?? SessionConstants.statusRealisee;
       _photoPath = session['photoPath'] as String?;
       _initialPhotoPath = _photoPath;
-      // Preload existing exercises list from session map if any
-      final existingEx = session['exercises'];
-      if (existingEx is List) {
-        for (final e in existingEx) {
-          if (e is String) _selectedExerciseIds.add(e);
-        }
+      _sessionUuid = session['sessionUuid'] as String?;
+      final rawCoachAnalysis = session['coachAnalysis'];
+      if (rawCoachAnalysis is Map) {
+        _coachAnalysis = CoachSessionAnalysis.fromMap(
+          Map<String, dynamic>.from(rawCoachAnalysis),
+        );
       }
+      final rawExecution = session['exerciseExecution'];
+      if (rawExecution is Map) {
+        _exerciseExecution = ExerciseExecution.fromMap(
+          Map<String, dynamic>.from(rawExecution),
+        );
+      }
+      _selectedExerciseId = _readInitialExerciseId(session);
       _series = series
           .map((s) => SeriesFormData(
                 shotCount: s['shot_count'] ?? 5,
@@ -190,6 +209,9 @@ class SessionFormState extends State<SessionForm> {
 
   @override
   void dispose() {
+    if (!_saved && _photoPath != null && _photoPath != _initialPhotoPath) {
+      unawaited(_photoService.deleteIfExists(_photoPath));
+    }
     for (final c in _seriesControllers) {
       c.dispose();
     }
@@ -198,6 +220,8 @@ class SessionFormState extends State<SessionForm> {
     _syntheseController.dispose();
     super.dispose();
   }
+
+  void markSaved() => _saved = true;
 
   void _addSeries() {
     setState(() {
@@ -274,41 +298,52 @@ class SessionFormState extends State<SessionForm> {
     }
     // Conserver l'id session si édition
     int? existingId;
-    if (widget.initialSessionData != null) {
+    if (widget.isEdit && widget.initialSessionData != null) {
       final sess = widget.initialSessionData!['session'];
       if (sess is Map && sess['id'] != null) {
         existingId = sess['id'] as int?;
       }
     }
     final session = DetailedShootingSession(
+      sessionUuid: _sessionUuid,
       id: existingId,
       date: _date,
       weapon: _weaponController.text,
       caliber: _caliberController.text,
       status: _status,
-      series: List.generate(
-          _series.length,
-          (i) => Series(
-                shotCount: int.tryParse(
-                        _seriesControllers[i].shotCountController.text) ??
-                    0,
-                distance: double.tryParse(
-                        _seriesControllers[i].distanceController.text) ??
-                    0,
-                points:
-                    int.tryParse(_seriesControllers[i].pointsController.text) ??
-                        0,
-                groupSize: double.tryParse(
-                        _seriesControllers[i].groupSizeController.text) ??
-                    0,
-                comment: _seriesControllers[i].commentController.text.trim(),
-                handMethod: _seriesControllers[i].handMethod == 'one'
-                    ? HandMethod.oneHand
-                    : HandMethod.twoHands,
-              )),
+      series: List.generate(_series.length, (i) {
+        final initialSeries = widget.initialSessionData?['series'];
+        final raw = initialSeries is List && i < initialSeries.length
+            ? initialSeries[i]
+            : null;
+        final metadata = raw is Map ? raw : const <String, dynamic>{};
+        return Series(
+          id: widget.isEdit ? metadata['id'] as int? : null,
+          shotCount:
+              int.tryParse(_seriesControllers[i].shotCountController.text) ?? 0,
+          distance:
+              double.tryParse(_seriesControllers[i].distanceController.text) ??
+                  0,
+          points:
+              int.tryParse(_seriesControllers[i].pointsController.text) ?? 0,
+          groupSize:
+              double.tryParse(_seriesControllers[i].groupSizeController.text) ??
+                  0,
+          comment: _seriesControllers[i].commentController.text.trim(),
+          handMethod: _seriesControllers[i].handMethod == 'one'
+              ? HandMethod.oneHand
+              : HandMethod.twoHands,
+          isCompleted: metadata['completed'] as bool? ?? true,
+          isDraftStarted: metadata['draft_started'] as bool? ?? true,
+          isScoreEntered: metadata['score_entered'] as bool? ?? true,
+        );
+      }),
+      coachAnalysis: _coachAnalysis,
       synthese: _syntheseController.text,
       category: _category,
-      exercises: _selectedExerciseIds.toList(),
+      exerciseId: _selectedExerciseId,
+      exerciseExecution:
+          _selectedExerciseId == null ? null : _exerciseExecution,
       photoPath: _photoPath,
     );
     widget.onSave(session);
@@ -375,7 +410,7 @@ class SessionFormState extends State<SessionForm> {
                   },
                 ),
               ),
-              SizedBox(width: 14),
+              const SizedBox(width: 14),
               Expanded(
                 child: CaliberAutocompleteField(
                   controller: _caliberController,
@@ -383,10 +418,10 @@ class SessionFormState extends State<SessionForm> {
               ),
             ],
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: _category,
-            decoration: InputDecoration(labelText: 'Catégorie'),
+            decoration: const InputDecoration(labelText: 'Catégorie'),
             items: SessionConstants.categories
                 .map((c) => DropdownMenuItem(
                       value: c,
@@ -396,11 +431,11 @@ class SessionFormState extends State<SessionForm> {
             onChanged: (v) => setState(
                 () => _category = v ?? SessionConstants.categoryEntrainement),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: _status,
-            decoration: InputDecoration(labelText: 'Statut'),
-            items: [
+            decoration: const InputDecoration(labelText: 'Statut'),
+            items: const [
               DropdownMenuItem(
                   value: SessionConstants.statusRealisee,
                   child: Text('Réalisée')),
@@ -411,21 +446,13 @@ class SessionFormState extends State<SessionForm> {
                 setState(() => _status = v ?? SessionConstants.statusRealisee),
           ),
           // No direct goal link; exercises link goals indirectly.
-          SizedBox(height: 24),
-          // ---- Exercises selection ----
-          ExercisesSelector(
+          const SizedBox(height: 24),
+          // ---- Exercise selection ----
+          ExerciseSelector(
             isLoading: _loadingExercises,
             exercises: _allExercises,
-            selectedIds: _selectedExerciseIds,
-            onToggle: (id) {
-              setState(() {
-                if (_selectedExerciseIds.contains(id)) {
-                  _selectedExerciseIds.remove(id);
-                } else {
-                  _selectedExerciseIds.add(id);
-                }
-              });
-            },
+            selectedId: _selectedExerciseId,
+            onChanged: (id) => setState(() => _selectedExerciseId = id),
           ),
           SizedBox(height: 24),
           Row(
@@ -509,4 +536,18 @@ class SessionFormState extends State<SessionForm> {
       ),
     );
   }
+}
+
+String? _readInitialExerciseId(Map<dynamic, dynamic> session) {
+  if (session.containsKey('exerciseId')) {
+    return session['exerciseId'] is String
+        ? session['exerciseId'] as String
+        : null;
+  }
+  final legacy = session['exercises'];
+  if (legacy is! List) return null;
+  for (final value in legacy) {
+    if (value is String) return value;
+  }
+  return null;
 }

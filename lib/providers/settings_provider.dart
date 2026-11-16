@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../services/backup_service.dart';
+import '../services/coach_experience_preference_service.dart';
 import '../services/preferences_service.dart';
 import '../services/session_service.dart';
 import '../theme/app_theme.dart';
@@ -10,20 +11,34 @@ class SettingsProvider extends ChangeNotifier {
   final BackupService _backupService;
   final SessionService _sessionService;
   final Box _preferencesBox;
+  final CoachExperiencePreferenceService _coachExperiencePreferences;
 
   SettingsProvider({
     BackupService? backupService,
     SessionService? sessionService,
     Box? preferencesBox,
+    CoachExperiencePreferenceService? coachExperiencePreferences,
   })  : _backupService = backupService ?? BackupService(),
         _sessionService = sessionService ?? SessionService(),
-        _preferencesBox = preferencesBox ?? Hive.box('app_preferences');
+        _preferencesBox = preferencesBox ?? Hive.box('app_preferences'),
+        _coachExperiencePreferences = coachExperiencePreferences ??
+            CoachExperiencePreferenceService(
+              preferencesBox ?? Hive.box('app_preferences'),
+            );
 
   // Getters pour les préférences
   String get defaultHandMethod =>
       _preferencesBox.get('default_hand_method', defaultValue: 'two');
 
   String? get defaultCaliber => PreferencesService().getDefaultCaliber();
+
+  String? get coachExperienceLevel =>
+      _coachExperiencePreferences.experienceLevel;
+
+  Future<void> updateCoachExperienceLevel(String? level) async {
+    await _coachExperiencePreferences.updateExperienceLevel(level);
+    notifyListeners();
+  }
 
   // Persona du coach IA (NT-032) : 'coach_neutre' ou 'coach_cool'.
   // Valeur = prompt_variant envoyé au serveur (POST /coach/analyze-session).
@@ -38,6 +53,22 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> updateCoachPersona(String persona) async {
     if (!coachPersonas.contains(persona)) return;
     await _preferencesBox.put('coach_persona', persona);
+    notifyListeners();
+  }
+
+  /// Autorisation globale de transmettre des données aux Coachs NexTarget.
+  ///
+  /// L'absence de préférence vaut refus : une mise à jour de l'application ne
+  /// doit jamais activer implicitement un partage de données.
+  bool get isCoachDataSharingAllowed =>
+      _preferencesBox.get(
+        'coach_data_sharing_allowed',
+        defaultValue: false,
+      ) ==
+      true;
+
+  Future<void> updateCoachDataSharingAllowed(bool allowed) async {
+    await _preferencesBox.put('coach_data_sharing_allowed', allowed);
     notifyListeners();
   }
 

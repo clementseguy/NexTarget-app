@@ -4,6 +4,73 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Non publié]
 
+## [0.8.0] - 2026-11-16
+
+### Removed
+- Le champ historique Markdown `analyse` et son rendu, remplacés par le débrief
+  structuré `coachAnalysis` ; la migration Hive v14 et l'import des anciennes
+  sauvegardes conservent son contenu sous forme de débrief historique structuré.
+
+### Added
+- NT-173 : réveil best effort du serveur Render par `GET /health` après
+  l’affichage de l’accueil et de la synthèse finale d’une séance au stand, avec
+  timeout de 3 secondes, déduplication sur 5 minutes et aucune dépendance à
+  l’authentification, au consentement Coach ou aux données de session.
+- NT-156 : débrief du Coach de session structuré et limité à la session, UUID
+  persistant partagé avec le serveur, transmission complète à la demande,
+  résultat d'exercice fermé, affichage rétrocompatible et présentation du futur
+  Coach de progression ; le bouton DEBUG des sessions génère quatre scénarios
+  de recette variés ; aucune mutation d'objectif, d'exercice ou de plan.
+- NT-161 : instantané borné et ponctuel des seuls champs utiles d'un exercice
+  personnel lors d'une analyse, avec qualification d'exécution séparée, sans
+  synchronisation catalogue ni nouvelle persistance.
+- NT-160 : récupération ciblée par identifiant d'un exercice actif du catalogue
+  Coach, cache Hive hors ligne sans synchronisation automatique, contrôle DEBUG
+  dédié et consultation en lecture seule identifiée « Créé par le Coach » ; cartes
+  de liste compactées avec les puces communes, des couleurs conditionnelles et
+  une colonne d'actions réduite aux icônes sans fond.
+- NT-159 : provenance `personal` ou `coach_catalog` ajoutée au modèle Exercise,
+  avec migration Hive rétrocompatible, duplication et sauvegardes version 5
+  alignées sur le contrat serveur complet.
+- NT-154 : wizard des sessions prévues clarifié et aéré, avec card exercice enrichie, catégorie contrôlée et dernière page regroupant synthèse du tireur et qualification facultative de l'exercice ; réalisation, protocole et commentaire sont persistés dans une structure Hive rétrocompatible.
+- NT-153 : autorisation locale unique, explicite et refusée par défaut avant tout partage de données avec les Coachs de session et de progression ; les deux points d'entrée expliquent le prérequis et aucune requête n'est construite sans accord.
+- NT-146 : aide gestuelle commune aux champs de groupement de la séance guidée et du wizard, accessible et sans effet sur la saisie.
+- NT-145 : ouverture directe de la session source depuis les records de score et de groupement, avec départage déterministe et rechargement des statistiques au retour.
+- NT-025 : difficulté facultative des exercices, filtre combinable, migration Hive additive et cycle de sauvegarde rétrocompatible.
+- NT-077 : registre historique et vérification déterministe en lecture seule des migrations, `typeId` et index `HiveField`, intégrée au contrôle avant commit et à la CI.
+- NT-026/NT-027 : actions de suppression sécurisée et de duplication depuis la liste des exercices, avec formulaire prérempli, clonage profond et rafraîchissement des compteurs.
+- NT-143 : duplication des sessions détaillées et libres depuis leur détail, sans reprise de date, avec photo physique indépendante et rollback des fichiers en cas d'échec.
+
+### Changed
+- NT-155 : niveau d'expérience déplacé du profil vers les préférences Coach
+  locales, nullable et stable indépendamment du compte ; reprise unique de
+  l'ancien choix mis en cache et source Hive commune aux exercices et analyses.
+- NT-152 : chaque session porte désormais zéro ou un exercice principal via `exerciseId` ; sélection unique, filtres, duplication, suppression, affichage, sauvegarde version 4 et contrat Coach sont alignés, avec migration conservant le premier exercice historique.
+- NT-148 : séparateurs et espacements identiques entre les trois blocs de Préférences Tir, dans leur ordre existant.
+- NT-147 : ordre final de Synthèse ajusté en Répartition Calibres, Répartition Catégories puis Tirs par arme, sans changement statistique.
+- NT-056 : traduction commune et actionnable des erreurs réseau Auth, Profil et Coach, sans fuite technique ni suppression des jetons lors d'une panne transitoire.
+- NT-057 : suppression de quatre widgets sans appelant confirmé, sans modification des routes ni des écrans actifs.
+- NT-144 : gouvernance, vues et plan du backlog resynchronisés ; ancien plan concurrent archivé explicitement.
+- NT-141 : Paramètres réordonné en Préférences Tir, Sauvegardes & Portabilité, Coach IA, Thème et Aide ; ordre interne prise, râtelier, calibre et avertissement non chiffré rattaché aux sauvegardes.
+- NT-142 : carte « Tirs par arme » déplacée en dernière position de Statistiques > Synthèse, sans modification de calcul.
+
+### Fixed
+- Android : suppression ciblée des avertissements de compatibilité Java 8 émis par le JDK 21 pour `file_picker` et `flutter_secure_storage`, sans migration fonctionnelle de ces plugins.
+- NT-149 : nom par défaut des exports partagés et enregistrés harmonisé en `nextarget_export_<timestamp>.json`, sans modification du JSON ni de l'import historique.
+- NT-150 : état d'authentification global invariant, cache sécurisé du dernier profil valide, migration immédiate des anciens jetons isolés et état « Connexion à vérifier » sans Coach actif lorsque le premier contrôle est impossible hors ligne.
+- Retours de recette NT-025 : Catégorie et Type alignés, difficulté présentée comme un sélecteur à quatre choix et textes des cartes lisibles dans le thème France.
+- Retours de recette UI : libellé de difficulté vide raccourci en « N/A » dans le formulaire et contraste des objectifs atteints corrigé dans le thème France.
+- Sauvegardes mobiles : « Enregistrer le fichier » transmet désormais le JSON au sélecteur natif Android/iOS, comme l'exige `file_picker`, tout en conservant l'écriture par chemin sur ordinateur.
+- Revue MR #35 : le contrôle Hive couvre les classes avec héritage et les suppressions de champs actifs ; la réinitialisation des filtres resynchronise le sélecteur de difficulté.
+- Retours de recette NT-056 : le login depuis Paramètres utilise désormais les messages sûrs et l'action « Réessayer » communs.
+- Sauvegardes : le sélecteur fournit désormais un chemin de fichier complet, sans concaténation erronée, et l'import privilégie les octets fournis par le plugin lorsque le chemin système n'est pas lisible.
+- NT-059 : résorption locale des 53 constats SonarCloud de référence par corrections ciblées et remplacement des trois tests d'export masqués par des scénarios déterministes.
+- NT-140 : suppression du second splash Flutter `FadeInWrapper`, de son délai artificiel et de sa configuration morte ; le splash natif et son logo sont conservés.
+- Sauvegardes : remplacement des tests d’export ignorés par des scénarios déterministes couvrant le dossier choisi, l’annulation, le répertoire temporaire, le format JSON version 3 et les erreurs d’écriture.
+
+### Documentation
+- NT-151 : ajout d'une US dédiée à l'harmonisation et à la densification des cartes Exercices, explicitement hors périmètre du retour de recette courant.
+
 ## [0.7.0] - 2026-09-04
 
 ### Added
@@ -110,7 +177,11 @@ Toutes les modifications notables de ce projet seront listées ici.
     - Prints `[DEBUG]` hérités retirés des fichiers coach.
     - Rotation de la clé Mistral historique : action manuelle (console Mistral + env Render), hors code.
 
-## [0.4.0] - Unreleased
+## [0.4.0] - Non publiée
+
+Cette version n'a pas été publiée. La section est conservée pour tracer les
+travaux intégrés dans les versions suivantes.
+
 ### Technical
 - T1: Intégration SonarCloud (acceptation: badge visible, Quality Gate ≥ B, couverture ≥ 20%).
     - CI GitHub Actions: analyse automatique à chaque push sur `dev` et sur chaque PR vers `main`.

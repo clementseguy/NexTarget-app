@@ -5,7 +5,8 @@ import 'package:tir_sportif/widgets/dashboard/stats_summary_cards.dart';
 
 void main() {
   group('StatsSummaryCards', () {
-    testWidgets('affiche les cartes avec les bonnes valeurs', (WidgetTester tester) async {
+    testWidgets('affiche les cartes avec les bonnes valeurs',
+        (WidgetTester tester) async {
       const summary = DashboardSummary(
         avgPoints30Days: 42.5,
         avgGroupSize30Days: 8.9,
@@ -32,7 +33,8 @@ void main() {
 
       // Vérifier les unités
       expect(find.text('pts'), findsNWidgets(2)); // Points + Meilleur Score
-      expect(find.text('cm'), findsNWidgets(2)); // Groupement + Meilleur Groupement
+      expect(find.text('cm'),
+          findsNWidgets(2)); // Groupement + Meilleur Groupement
 
       // Vérifier les titres
       expect(find.text('Moyenne Points 30j'), findsOneWidget);
@@ -41,7 +43,8 @@ void main() {
       expect(find.text('Meilleur Groupement'), findsOneWidget);
     });
 
-    testWidgets('affiche "-" pour les valeurs vides', (WidgetTester tester) async {
+    testWidgets('affiche "-" pour les valeurs vides',
+        (WidgetTester tester) async {
       const summary = DashboardSummary.empty();
 
       await tester.pumpWidget(
@@ -53,10 +56,16 @@ void main() {
       );
 
       // Vérifier que "-" est affiché pour les valeurs vides
-      expect(find.text('-'), findsNWidgets(2)); // Meilleur Score + Meilleur Groupement
-      
+      expect(find.text('-'),
+          findsNWidgets(2)); // Meilleur Score + Meilleur Groupement
+
       // Vérifier que les valeurs zéro sont affichées normalement
       expect(find.text('0.0'), findsNWidgets(2)); // Moyennes
+      expect(find.byType(InkWell), findsNWidgets(4));
+      expect(
+        tester.widget<InkWell>(find.byType(InkWell).first).onTap,
+        isNull,
+      );
     });
 
     testWidgets('affiche l\'état de chargement', (WidgetTester tester) async {
@@ -72,13 +81,14 @@ void main() {
 
       // Vérifier que l'état de chargement est affiché (placeholders gris)
       expect(find.byType(Container), findsWidgets);
-      
+
       // Ne devrait pas afficher les vraies valeurs
       expect(find.text('0.0'), findsNothing);
       expect(find.text('-'), findsNothing);
     });
 
-    testWidgets('les cartes sont cliquables et bien organisées', (WidgetTester tester) async {
+    testWidgets('les cartes sont cliquables et bien organisées',
+        (WidgetTester tester) async {
       const summary = DashboardSummary(
         avgPoints30Days: 42.5,
         avgGroupSize30Days: 8.9,
@@ -99,7 +109,7 @@ void main() {
 
       // Vérifier que les cartes sont dans un GridView
       expect(find.byType(GridView), findsOneWidget);
-      
+
       // Vérifier qu'il y a 4 cartes
       expect(find.byType(Card), findsNWidgets(4));
 

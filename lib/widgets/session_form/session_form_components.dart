@@ -240,18 +240,18 @@ class SyntheseCard extends StatelessWidget {
   }
 }
 
-/// Sélecteur d'exercices associés
-class ExercisesSelector extends StatelessWidget {
+/// Sélecteur de l'exercice principal facultatif.
+class ExerciseSelector extends StatelessWidget {
   final List exercises;
-  final Set<String> selectedIds;
-  final void Function(String) onToggle;
+  final String? selectedId;
+  final ValueChanged<String?> onChanged;
   final bool isLoading;
 
-  const ExercisesSelector({
+  const ExerciseSelector({
     super.key,
     required this.exercises,
-    required this.selectedIds,
-    required this.onToggle,
+    required this.selectedId,
+    required this.onChanged,
     required this.isLoading,
   });
 
@@ -284,7 +284,7 @@ class ExercisesSelector extends StatelessWidget {
                   Icon(Icons.fitness_center,
                       color: Colors.amberAccent, size: 20),
                   SizedBox(width: 8),
-                  Text('Exercices associés',
+                  Text('Exercice principal',
                       style: TextStyle(fontWeight: FontWeight.w600)),
                 ],
               ),
@@ -308,13 +308,8 @@ class ExercisesSelector extends StatelessWidget {
                 const Icon(Icons.fitness_center,
                     color: Colors.amberAccent, size: 20),
                 const SizedBox(width: 8),
-                const Text('Exercices associés',
+                const Text('Exercice principal',
                     style: TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(width: 6),
-                Text(
-                  '(${selectedIds.length})',
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
-                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -322,11 +317,11 @@ class ExercisesSelector extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: exercises.map((ex) {
-                final selected = selectedIds.contains(ex.id);
-                return FilterChip(
+                final selected = selectedId == ex.id;
+                return ChoiceChip(
                   label: Text(ex.name, overflow: TextOverflow.ellipsis),
                   selected: selected,
-                  onSelected: (_) => onToggle(ex.id),
+                  onSelected: (_) => onChanged(selected ? null : ex.id),
                 );
               }).toList(),
             ),

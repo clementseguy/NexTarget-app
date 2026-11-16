@@ -29,46 +29,46 @@ class RollingStatsService implements IRollingStatsService {
     final limit30 = now.subtract(const Duration(days: 30));
     final limit60 = now.subtract(const Duration(days: 60));
 
-    double sum30 = 0;
-    double sum60 = 0;
-    int count30 = 0;
-    int count60 = 0;
-    int detailedCount30 = 0;
-    int detailedCount60 = 0;
-
-    for (final s in sessions) {
-      final d = s.date;
-      if (d == null) continue;
-      if (d.isAfter(limit60)) {
-        count60++;
-        if (d.isAfter(limit30)) {
-          count30++;
-        }
-        if (s is DetailedShootingSession) {
-          final totalPoints = s.series.fold<int>(0, (acc, e) => acc + e.points);
-          sum60 += totalPoints.toDouble();
-          detailedCount60++;
-          if (d.isAfter(limit30)) {
-            sum30 += totalPoints.toDouble();
-            detailedCount30++;
-          }
-        }
-      }
-    }
-
-    final double avg60 = detailedCount60 == 0 ? 0 : (sum60 / detailedCount60);
-    final double avg30 = detailedCount30 == 0 ? 0 : (sum30 / detailedCount30);
+    final stats30 = _computeWindow(sessions, limit30);
+    final stats60 = _computeWindow(sessions, limit60);
+    final avg60 = stats60.average;
+    final avg30 = stats30.average;
     final double delta = avg30 - avg60;
 
     AppLogger.I.debug(
-        'Rolling stats: avg30=$avg30 avg60=$avg60 delta=$delta sessions30=$count30 sessions60=$count60');
+        'Rolling stats: avg30=$avg30 avg60=$avg60 delta=$delta sessions30=${stats30.sessionCount} sessions60=${stats60.sessionCount}');
 
     return RollingStatsSnapshot(
       avg30: avg30.toDouble(),
       avg60: avg60.toDouble(),
       delta: delta.toDouble(),
-      sessions30: count30,
-      sessions60: count60,
+      sessions30: stats30.sessionCount,
+      sessions60: stats60.sessionCount,
     );
   }
+
+  _WindowStats _computeWindow(
+    List<ShootingSession> sessions,
+    DateTime limit,
+  ) {
+    final inWindow = sessions.where((session) => session.date!.isAfter(limit));
+    final detailed = inWindow.whereType<DetailedShootingSession>().toList();
+    final total = detailed.fold<double>(
+      0,
+      (sum, session) =>
+          sum +
+          session.series.fold<int>(0, (value, item) => value + item.points),
+    );
+    return _WindowStats(
+      sessionCount: inWindow.length,
+      average: detailed.isEmpty ? 0 : total / detailed.length,
+    );
+  }
+}
+
+class _WindowStats {
+  final int sessionCount;
+  final double average;
+
+  const _WindowStats({required this.sessionCount, required this.average});
 }

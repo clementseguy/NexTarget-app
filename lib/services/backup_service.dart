@@ -1,12 +1,15 @@
 import 'dart:convert';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
+import '../interfaces/backup_location_provider.dart';
+import '../models/coach_session_analysis.dart';
 import '../models/shooting_session.dart';
 import '../services/session_service.dart';
 import '../models/goal.dart';
+import '../models/exercise.dart';
 import '../services/goal_service.dart';
 import '../services/weapon_service.dart';
+import '../services/exercise_service.dart';
+import 'platform_backup_location_provider.dart';
 
 /// Service pour exporter / importer toutes les sessions sous forme JSON plat
 /// Structure de fichier:
@@ -21,59 +24,91 @@ class BackupService {
   final SessionService _sessionService;
   final GoalService _goalService;
   final WeaponService _weaponService;
+  final ExerciseService _exerciseService;
+  final BackupLocationProvider _locationProvider;
 
   BackupService({
     SessionService? sessionService,
     GoalService? goalService,
     WeaponService? weaponService,
+    ExerciseService? exerciseService,
+    BackupLocationProvider? locationProvider,
   })  : _sessionService = sessionService ?? SessionService(),
         _goalService = goalService ?? GoalService(),
-        _weaponService = weaponService ?? WeaponService();
-  
+        _weaponService = weaponService ?? WeaponService(),
+        _exerciseService = exerciseService ?? ExerciseService(),
+        _locationProvider =
+            locationProvider ?? PlatformBackupLocationProvider();
+
   /// Lire un fichier JSON.
-  /// 
+  ///
   /// Retourne: Le contenu du fichier sous forme de chaîne.
   Future<String> readJsonFile(String path) async {
     final file = File(path);
     return await file.readAsString();
   }
 
+  /// Lit le résultat d'un sélecteur de fichier sans imposer un chemin local.
+  ///
+  /// Sur certaines plateformes, le sélecteur fournit des octets valides mais
+  /// un chemin temporaire inutilisable par [File].
+  Future<String> readSelectedJson({List<int>? bytes, String? path}) async {
+    if (bytes != null) return utf8.decode(bytes);
+    if (path == null || path.isEmpty) {
+      throw const FileSystemException('Fichier sélectionné inaccessible.');
+    }
+    return readJsonFile(path);
+  }
+
   Future<File> exportAllSessionsToJsonFile() async {
+    final jsonString = await _buildExportJson();
+    final dir = await _locationProvider.getTemporaryDirectory();
+    final file = File(
+      '${dir.path}/nextarget_export_${DateTime.now().millisecondsSinceEpoch}.json',
+    );
+    await file.writeAsString(jsonString);
+    return file;
+  }
+
+  Future<String> _buildExportJson() async {
     final sessions = await _sessionService.getAllSessions();
     await _goalService.init();
     final goals = await _goalService.listAll();
     final weapons = await _weaponService.listAll();
+    final exercises = await _exerciseService.listAll();
     final data = {
       'format': 'mycoach-data',
-      'version': 3,
+      'version': 6,
       'exported_at': DateTime.now().toUtc().toIso8601String(),
       'sessions_count': sessions.length,
       'goals_count': goals.length,
       'weapons_count': weapons.length,
+      'exercises_count': exercises.length,
       'sessions': sessions.map((s) => s.toMap()).toList(),
-      'goals': goals.map((g) => {
-        'id': g.id,
-        'title': g.title,
-        'description': g.description,
-        'metric': g.metric.index,
-        'comparator': g.comparator.index,
-        'targetValue': g.targetValue,
-        'status': g.status.index,
-        'period': g.period.index,
-        'createdAt': g.createdAt.toIso8601String(),
-        'updatedAt': g.updatedAt.toIso8601String(),
-        'lastProgress': g.lastProgress,
-        'lastMeasuredValue': g.lastMeasuredValue,
-        'priority': g.priority,
-      }).toList(),
+      'goals': goals
+          .map(
+            (g) => {
+              'id': g.id,
+              'title': g.title,
+              'description': g.description,
+              'metric': g.metric.index,
+              'comparator': g.comparator.index,
+              'targetValue': g.targetValue,
+              'status': g.status.index,
+              'period': g.period.index,
+              'createdAt': g.createdAt.toIso8601String(),
+              'updatedAt': g.updatedAt.toIso8601String(),
+              'lastProgress': g.lastProgress,
+              'lastMeasuredValue': g.lastMeasuredValue,
+              'priority': g.priority,
+            },
+          )
+          .toList(),
       // NT-008 : râtelier d'armes personnel (simple nom, cf. Weapon.toMap).
       'weapons': weapons.map((w) => w.toMap()).toList(),
+      'exercises': exercises.map((exercise) => exercise.toMap()).toList(),
     };
-    final jsonString = const JsonEncoder.withIndent('  ').convert(data);
-    final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/sessions_export_${DateTime.now().millisecondsSinceEpoch}.json');
-    await file.writeAsString(jsonString);
-    return file;
+    return const JsonEncoder.withIndent('  ').convert(data);
   }
 
   /// Importe les sessions depuis une chaîne JSON.
@@ -101,9 +136,23 @@ class BackupService {
       map['id'] = null;
       // Normaliser séries si besoin
       if (map['series'] is List) {
-        map['series'] = (map['series'] as List).map((e) => e is Map ? Map<String,dynamic>.from(e) : e).toList();
+        map['series'] = (map['series'] as List)
+            .map((e) => e is Map ? Map<String, dynamic>.from(e) : e)
+            .toList();
       }
-      sessions.add(ShootingSession.fromMap(map));
+      final session = ShootingSession.fromMap(map);
+      final legacyAnalysis = map['analyse'];
+      if (session is DetailedShootingSession &&
+          session.coachAnalysis == null &&
+          legacyAnalysis is String &&
+          legacyAnalysis.trim().isNotEmpty) {
+        session.coachAnalysis = CoachSessionAnalysis.fromLegacyMarkdown(
+          markdown: legacyAnalysis,
+          sessionId: session.sessionUuid,
+          generatedAt: session.date ?? DateTime.utc(1970),
+        );
+      }
+      sessions.add(session);
     }
     // Toutes les sessions sont validées avant la première écriture. Hive les
     // persiste ensuite dans une unique opération putAll.
@@ -121,12 +170,15 @@ class BackupService {
               title: g['title']?.toString() ?? 'Sans titre',
               description: g['description']?.toString(),
               metric: GoalMetric.values[(g['metric'] as num?)?.toInt() ?? 0],
-              comparator: GoalComparator.values[(g['comparator'] as num?)?.toInt() ?? 0],
+              comparator: GoalComparator
+                  .values[(g['comparator'] as num?)?.toInt() ?? 0],
               targetValue: (g['targetValue'] as num?)?.toDouble() ?? 0,
               status: GoalStatus.values[(g['status'] as num?)?.toInt() ?? 0],
               period: GoalPeriod.values[(g['period'] as num?)?.toInt() ?? 0],
-              createdAt: DateTime.tryParse(g['createdAt'] ?? '') ?? DateTime.now(),
-              updatedAt: DateTime.tryParse(g['updatedAt'] ?? '') ?? DateTime.now(),
+              createdAt:
+                  DateTime.tryParse(g['createdAt'] ?? '') ?? DateTime.now(),
+              updatedAt:
+                  DateTime.tryParse(g['updatedAt'] ?? '') ?? DateTime.now(),
               lastProgress: (g['lastProgress'] as num?)?.toDouble(),
               lastMeasuredValue: (g['lastMeasuredValue'] as num?)?.toDouble(),
               priority: (g['priority'] as num?)?.toInt(),
@@ -158,60 +210,40 @@ class BackupService {
         }
       }
     }
+    final exercisesRaw = decoded['exercises'];
+    if (exercisesRaw is List) {
+      for (final item in exercisesRaw) {
+        if (item is! Map) continue;
+        try {
+          await _exerciseService.createExercise(
+            Exercise.fromMap(Map<String, dynamic>.from(item)),
+          );
+        } on FormatException {
+          // Une entrée d'exercice invalide n'empêche pas la restauration des
+          // autres données. Les valeurs de difficulté inconnues sont, elles,
+          // normalisées à « non renseignée » par Exercise.fromMap.
+        } on TypeError {
+          // Même règle pour une ancienne entrée structurellement invalide.
+        }
+      }
+    }
     return sessions.length;
   }
 
   /// Exporte toutes les données (sessions + objectifs) dans un fichier JSON
   /// à l'emplacement choisi par l'utilisateur (si la plateforme le permet).
-  /// Retourne le fichier écrit ou lève une exception si annulé.
-  Future<File?> exportAllSessionsToUserFolder({String? suggestedFileName}) async {
-    final sessions = await _sessionService.getAllSessions();
-    await _goalService.init();
-    final goals = await _goalService.listAll();
-    final weapons = await _weaponService.listAll();
-    final data = {
-      'format': 'mycoach-data',
-      'version': 3,
-      'exported_at': DateTime.now().toUtc().toIso8601String(),
-      'sessions_count': sessions.length,
-      'goals_count': goals.length,
-      'weapons_count': weapons.length,
-      'sessions': sessions.map((s) => s.toMap()).toList(),
-      'goals': goals.map((g) => {
-        'id': g.id,
-        'title': g.title,
-        'description': g.description,
-        'metric': g.metric.index,
-        'comparator': g.comparator.index,
-        'targetValue': g.targetValue,
-        'status': g.status.index,
-        'period': g.period.index,
-        'createdAt': g.createdAt.toIso8601String(),
-        'updatedAt': g.updatedAt.toIso8601String(),
-        'lastProgress': g.lastProgress,
-        'lastMeasuredValue': g.lastMeasuredValue,
-        'priority': g.priority,
-      }).toList(),
-      // NT-008 : râtelier d'armes personnel (simple nom, cf. Weapon.toMap).
-      'weapons': weapons.map((w) => w.toMap()).toList(),
-    };
-    final jsonString = const JsonEncoder.withIndent('  ').convert(data);
+  /// Retourne le fichier écrit, `null` si l'utilisateur annule, ou propage
+  /// l'erreur technique de sélection ou d'écriture.
+  Future<File?> exportAllSessionsToUserFolder({
+    String? suggestedFileName,
+  }) async {
+    final jsonString = await _buildExportJson();
 
-    // Sélection d'un dossier (sur Android utiliser FilePicker.directory)
-    String? directoryPath;
-    try {
-      directoryPath = await FilePicker.platform.getDirectoryPath();
-    } catch (e) {
-      // Certaines plateformes peuvent ne pas supporter (web). On renvoie null.
-      return null;
-    }
-    if (directoryPath == null) {
-      // Annulation utilisateur.
-      return null;
-    }
-    final safeName = suggestedFileName ?? 'mycoach_export_${DateTime.now().millisecondsSinceEpoch}.json';
-    final file = File('$directoryPath/$safeName');
-    await file.writeAsString(jsonString);
-    return file;
+    final safeName = suggestedFileName ??
+        'nextarget_export_${DateTime.now().millisecondsSinceEpoch}.json';
+    return _locationProvider.saveExportFile(
+      safeName,
+      utf8.encode(jsonString),
+    );
   }
 }

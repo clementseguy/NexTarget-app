@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../config/app_config.dart';
+import '../services/logger.dart';
+import '../services/network_error.dart';
 
 /// Ecran de connexion avec authentification Google OAuth2
 ///
@@ -24,12 +26,19 @@ class _LoginScreenState extends State<LoginScreen> {
       // Le AuthProvider gère maintenant isLoading=true
       // AuthGate affichera le CircularProgressIndicator
     } catch (e) {
+      AppLogger.I.error('AUTH UI: connexion Google impossible', e);
       if (!context.mounted) return;
-
+      final presentation = presentNetworkError(e);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erreur d\'authentification: $e'),
+          content: Text(presentation.message),
           backgroundColor: Colors.red,
+          action: presentation.action == NetworkErrorAction.retry
+              ? SnackBarAction(
+                  label: presentation.actionLabel!,
+                  onPressed: () => _handleGoogleSignIn(context),
+                )
+              : null,
         ),
       );
     }

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/logger.dart';
+import '../services/network_error.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -13,17 +14,41 @@ class ProfileScreen extends StatelessWidget {
     final user = authProvider.currentUser;
     final colorScheme = Theme.of(context).colorScheme;
 
-    if (user == null) {
+    if (!authProvider.isAuthenticated || user == null) {
+      final verificationPending = authProvider.isVerificationPending;
       return Scaffold(
         appBar: AppBar(title: const Text('Mon profil')),
-        body: const Center(child: Text('Non connecté')),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(verificationPending
+                  ? 'Connexion à vérifier'
+                  : 'Non connecté'),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                icon: authProvider.isLoading
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(verificationPending ? Icons.refresh : Icons.login),
+                label: Text(verificationPending ? 'Réessayer' : 'Se connecter'),
+                onPressed: authProvider.isLoading
+                    ? null
+                    : verificationPending
+                        ? authProvider.checkAuthStatus
+                        : () => _signIn(context, authProvider),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
     final displayName = user['display_name'] as String?;
     final email = user['email'] as String? ?? '';
     final avatarUrl = user['avatar_url'] as String?;
-    final experienceLevel = user['experience_level'] as String?;
     final provider = user['provider'] as String? ?? '';
     final createdAt = user['created_at'] as String?;
 
@@ -36,11 +61,13 @@ class ProfileScreen extends StatelessWidget {
           Center(
             child: CircleAvatar(
               radius: 40,
-              backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+              backgroundImage:
+                  avatarUrl != null ? NetworkImage(avatarUrl) : null,
               child: avatarUrl == null
                   ? Text(
                       _initials(displayName, email),
-                      style: TextStyle(fontSize: 28, color: colorScheme.onPrimary),
+                      style:
+                          TextStyle(fontSize: 28, color: colorScheme.onPrimary),
                     )
                   : null,
             ),
@@ -63,43 +90,6 @@ class ProfileScreen extends StatelessWidget {
                     color: colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
             ),
-          ),
-
-          const SizedBox(height: 28),
-
-          // Niveau d'expérience
-          Text(
-            'Niveau d\'expérience',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 12),
-          SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'beginner', label: Text('Débutant')),
-              ButtonSegment(value: 'advanced', label: Text('Confirmé')),
-              ButtonSegment(value: 'expert', label: Text('Expert')),
-            ],
-            selected: experienceLevel != null ? {experienceLevel} : {},
-            emptySelectionAllowed: true,
-            onSelectionChanged: (selected) async {
-              if (selected.isEmpty) return;
-              try {
-                await authProvider.updateExperienceLevel(selected.first);
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Erreur : impossible de mettre à jour le niveau'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
           ),
 
           const SizedBox(height: 28),
@@ -148,7 +138,8 @@ class ProfileScreen extends StatelessWidget {
                 context: context,
                 builder: (context) => AlertDialog(
                   title: const Text('Déconnexion'),
-                  content: const Text('Voulez-vous vraiment vous déconnecter ?'),
+                  content:
+                      const Text('Voulez-vous vraiment vous déconnecter ?'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(false),
@@ -175,6 +166,31 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _signIn(
+    BuildContext context,
+    AuthProvider authProvider,
+  ) async {
+    try {
+      await authProvider.signInWithGoogle();
+    } catch (error) {
+      AppLogger.I.error('PROFILE AUTH UI: connexion impossible', error);
+      if (!context.mounted) return;
+      final presentation = presentNetworkError(error);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(presentation.message),
+          backgroundColor: Colors.red,
+          action: presentation.action == NetworkErrorAction.none
+              ? null
+              : SnackBarAction(
+                  label: presentation.actionLabel!,
+                  onPressed: () => _signIn(context, authProvider),
+                ),
+        ),
+      );
+    }
+  }
+
   String _initials(String? displayName, String email) {
     if (displayName != null && displayName.isNotEmpty) {
       final parts = displayName.trim().split(' ');
@@ -186,7 +202,7 @@ class ProfileScreen extends StatelessWidget {
     if (email.isNotEmpty) {
       return email[0].toUpperCase();
     }
-    return '?';
+    return '';
   }
 
   String _formatDate(String? isoDate) {

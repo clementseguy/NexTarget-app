@@ -6,6 +6,7 @@ import '../config/app_config.dart';
 import '../utils/caliber_normalization.dart';
 
 class SeriesStat {
+  final DetailedShootingSession session;
   final DateTime date; // date de la session associée
   final int points;
   final double groupSize;
@@ -15,6 +16,7 @@ class SeriesStat {
       seriesIndexInSession; // position de la série dans sa session (1-based)
   final HandMethod handMethod; // prise (1 main / 2 mains)
   SeriesStat({
+    required this.session,
     required this.date,
     required this.points,
     required this.groupSize,
@@ -49,6 +51,7 @@ class StatsService implements IStatsService {
       for (int i = 0; i < s.series.length; i++) {
         final serie = s.series[i];
         list.add(SeriesStat(
+          session: s,
           date: date,
           points: serie.points,
           groupSize: serie.groupSize,
@@ -94,7 +97,10 @@ class StatsService implements IStatsService {
     if (_series.isEmpty) return null;
     SeriesStat best = _series.first;
     for (final s in _series) {
-      if (s.points > best.points) best = s;
+      if (s.points > best.points ||
+          (s.points == best.points && _sourceIsMoreRecent(s, best))) {
+        best = s;
+      }
     }
     return best;
   }
@@ -264,12 +270,27 @@ class StatsService implements IStatsService {
 
   @override
   double bestGroupSize() {
-    if (_series.isEmpty) return 0;
-    final positives =
-        _series.where((s) => s.groupSize > 0).map((e) => e.groupSize).toList();
-    if (positives.isEmpty) return 0;
-    positives.sort();
-    return positives.first;
+    return bestSeriesByGroupSize()?.groupSize ?? 0;
+  }
+
+  @override
+  SeriesStat? bestSeriesByGroupSize() {
+    SeriesStat? best;
+    for (final series in _series.where((item) => item.groupSize > 0)) {
+      if (best == null ||
+          series.groupSize < best.groupSize ||
+          (series.groupSize == best.groupSize &&
+              _sourceIsMoreRecent(series, best))) {
+        best = series;
+      }
+    }
+    return best;
+  }
+
+  bool _sourceIsMoreRecent(SeriesStat candidate, SeriesStat current) {
+    final dateComparison = candidate.date.compareTo(current.date);
+    if (dateComparison != 0) return dateComparison > 0;
+    return (candidate.session.id ?? -1) > (current.session.id ?? -1);
   }
 
   @override

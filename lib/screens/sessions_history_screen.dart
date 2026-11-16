@@ -169,7 +169,7 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
         return RefreshIndicator(
           onRefresh: refreshSessions,
           child: ListView.builder(
-            padding: EdgeInsets.only(bottom: 112, top: 8),
+            padding: const EdgeInsets.only(bottom: 112, top: 8),
             itemCount: 1 +
                 (noDataRealized ? 1 : 0) +
                 (noDataPlannedOnly ? 1 : 0) +
@@ -327,13 +327,14 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
                                 .colorScheme
                                 .onSurface
                                 .withValues(alpha: 0.24)),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         Text(
                             hasExerciseFilter
                                 ? 'Aucune session prévue pour cet exercice'
                                 : 'Aucune session prévue',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
-                        SizedBox(height: 8),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 8),
                         Text(
                           hasExerciseFilter
                               ? 'Essaie un autre exercice ou réinitialise le filtre.'
@@ -364,13 +365,14 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
                                 .colorScheme
                                 .onSurface
                                 .withValues(alpha: 0.24)),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         Text(
                             hasExerciseFilter
                                 ? 'Aucune session réalisée pour cet exercice'
                                 : 'Aucune session réalisée',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
-                        SizedBox(height: 8),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 8),
                         Text(
                           hasExerciseFilter
                               ? 'Essaie un autre exercice ou réinitialise le filtre.'
@@ -393,7 +395,7 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
                 if (index == cursor) {
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                    child: Text('Sessions prévues',
+                    child: const Text('Sessions prévues',
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
@@ -435,7 +437,7 @@ class SessionsHistoryScreenState extends State<SessionsHistoryScreen> {
               if (_filter == 'planned') {
                 final plannedIndex = index - cursor;
                 if (plannedIndex < 0 || plannedIndex >= planned.length) {
-                  return SizedBox.shrink();
+                  return const SizedBox.shrink();
                 }
                 final p = planned[plannedIndex];
                 return Padding(
@@ -539,14 +541,14 @@ class _SummaryHeader extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.timeline, color: Colors.amberAccent),
-                  SizedBox(width: 8),
-                  Text('Résumé',
+                  const Icon(Icons.timeline, color: Colors.amberAccent),
+                  const SizedBox(width: 8),
+                  const Text('Résumé',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ],
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   _Stat(
@@ -667,7 +669,7 @@ class _VerticalDivider extends StatelessWidget {
       width: 1,
       height: 42,
       color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
-      margin: EdgeInsets.symmetric(horizontal: 8));
+      margin: const EdgeInsets.symmetric(horizontal: 8));
 }
 
 class _Stat extends StatelessWidget {
@@ -686,14 +688,14 @@ class _Stat extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, size: 18, color: color),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -714,7 +716,8 @@ class _Stat extends StatelessWidget {
                   value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -749,13 +752,14 @@ class _DaySection extends StatelessWidget {
               children: [
                 Icon(Icons.calendar_today,
                     size: 14, color: Theme.of(context).colorScheme.primary),
-                SizedBox(width: 6),
+                const SizedBox(width: 6),
                 Text(title,
-                    style:
-                        TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                SizedBox(width: 8),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 13)),
+                const SizedBox(width: 8),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Theme.of(context)
                         .colorScheme
@@ -785,12 +789,13 @@ class _DaySection extends StatelessWidget {
                       builder: (ctx) => SafeArea(
                         child: Wrap(children: [
                           ListTile(
-                              leading: Icon(Icons.delete, color: Colors.red),
-                              title: Text('Supprimer'),
+                              leading:
+                                  const Icon(Icons.delete, color: Colors.red),
+                              title: const Text('Supprimer'),
                               onTap: () => Navigator.pop(ctx, 'delete')),
                           ListTile(
-                              leading: Icon(Icons.close),
-                              title: Text('Annuler'),
+                              leading: const Icon(Icons.close),
+                              title: const Text('Annuler'),
                               onTap: () => Navigator.pop(ctx, null)),
                         ]),
                       ),
@@ -800,15 +805,15 @@ class _DaySection extends StatelessWidget {
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
-                          title: Text('Supprimer la session ?'),
-                          content: Text('Cette action est irréversible.'),
+                          title: const Text('Supprimer la session ?'),
+                          content: const Text('Cette action est irréversible.'),
                           actions: [
                             TextButton(
                                 onPressed: () => Navigator.pop(ctx, false),
-                                child: Text('Annuler')),
+                                child: const Text('Annuler')),
                             TextButton(
                                 onPressed: () => Navigator.pop(ctx, true),
-                                child: Text('Supprimer',
+                                child: const Text('Supprimer',
                                     style: TextStyle(color: Colors.red))),
                           ],
                         ),

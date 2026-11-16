@@ -9,12 +9,6 @@ auth:
   # Backend redirigera vers {callback_scheme}://callback?token=XYZ
   callback_scheme: "nextarget"
 
-splash:
-  # Durée minimale d'affichage du splash (en millisecondes)
-  min_display_ms: 1500
-  # Durée du fade-in de l'application après le splash (en millisecondes)
-  fade_duration_ms: 450
-
 calibers:
   - ".22 LR"
   - ".32 S&W Long"

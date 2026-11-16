@@ -1,11 +1,18 @@
 import 'dart:math';
 import '../models/exercise.dart';
 import '../repositories/exercise_repository.dart';
+import '../repositories/hive_session_repository.dart';
+import '../repositories/session_repository.dart';
 
 /// High-level operations for exercises (sorting, id generation).
 class ExerciseService {
   final ExerciseRepository _repo;
-  ExerciseService({ExerciseRepository? repository}) : _repo = repository ?? HiveExerciseRepository();
+  final SessionRepository _sessionRepository;
+  ExerciseService({
+    ExerciseRepository? repository,
+    SessionRepository? sessionRepository,
+  })  : _repo = repository ?? HiveExerciseRepository(),
+        _sessionRepository = sessionRepository ?? HiveSessionRepository();
 
   /// Generate a short unique id: base36 timestamp + random suffix.
   String generateId() {
@@ -20,6 +27,7 @@ class ExerciseService {
     required String name,
     required dynamic category, // accepts ExerciseCategory or legacy String
     ExerciseType type = ExerciseType.stand,
+    ExerciseDifficulty? difficulty,
     String? description,
     int priority = 9999,
     List<String>? goalIds,
@@ -35,16 +43,40 @@ class ExerciseService {
       name: name.trim(),
       categoryEnum: catEnum,
       type: type,
-      description: (description?.trim().isEmpty ?? true) ? null : description!.trim(),
+      difficulty: difficulty,
+      description:
+          (description?.trim().isEmpty ?? true) ? null : description!.trim(),
       createdAt: DateTime.now(),
       priority: priority,
       goalIds: goalIds ?? const [],
       durationMinutes: durationMinutes,
       equipment: (equipment?.trim().isEmpty ?? true) ? null : equipment!.trim(),
-      consignes: consignes?.map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
+      consignes:
+          consignes?.map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
     );
-    await _repo.put(ex);
+    await createExercise(ex);
   }
+
+  Future<void> createExercise(Exercise exercise) async {
+    final snapshot = Exercise.fromMap(exercise.toMap());
+    await _repo.put(snapshot);
+  }
+
+  Exercise prepareDuplication(Exercise source) => Exercise(
+        id: generateId(),
+        name: '${source.name} (copie)',
+        categoryEnum: source.categoryEnum,
+        type: source.type,
+        difficulty: source.difficulty,
+        origin: source.origin,
+        description: source.description,
+        durationMinutes: source.durationMinutes,
+        equipment: source.equipment,
+        createdAt: DateTime.now(),
+        priority: 9999,
+        goalIds: List<String>.from(source.goalIds),
+        consignes: List<String>.from(source.consignes),
+      );
 
   /// Backward compatibility helper (accept legacy string category names).
   // Legacy alias kept temporarily (now redundant since addExercise handles strings)
@@ -58,7 +90,8 @@ class ExerciseService {
     int? durationMinutes,
     String? equipment,
     List<String>? consignes,
-  }) => addExercise(
+  }) =>
+      addExercise(
         name: name,
         category: category,
         type: type,
@@ -70,11 +103,37 @@ class ExerciseService {
         consignes: consignes,
       );
 
-  Future<void> updateExercise(Exercise exercise) => _repo.put(exercise);
+  Future<void> updateExercise(Exercise exercise) async {
+    _rejectCoachMutation(exercise);
+    await _repo.put(exercise);
+  }
 
-  Future<void> deleteExercise(String id) => _repo.delete(id);
+  Future<ExerciseDeletionEligibility> checkDeletionEligibility(
+      String id) async {
+    final repository = _sessionRepository;
+    final sessions = repository is StrictSessionRepository
+        ? await (repository as StrictSessionRepository).getAllStrict()
+        : await repository.getAll();
+    final linkedCount =
+        sessions.where((session) => session.exerciseId == id).length;
+    return ExerciseDeletionEligibility(linkedSessionCount: linkedCount);
+  }
+
+  Future<void> deleteExercise(String id) async {
+    final exercise =
+        (await _repo.getAll()).where((item) => item.id == id).firstOrNull;
+    if (exercise != null) _rejectCoachMutation(exercise);
+    final eligibility = await checkDeletionEligibility(id);
+    if (!eligibility.canDelete) {
+      throw ExerciseLinkedSessionsException(eligibility.linkedSessionCount);
+    }
+    await _repo.delete(id);
+  }
 
   Future<void> reorder(List<Exercise> ordered) async {
+    for (final exercise in ordered) {
+      _rejectCoachMutation(exercise);
+    }
     int idx = 0;
     for (final ex in ordered) {
       await _repo.put(ex.copyWith(priority: idx++));
@@ -85,13 +144,47 @@ class ExerciseService {
 
   /// Replace goal associations for an exercise.
   Future<void> setGoals(Exercise exercise, List<String> goalIds) async {
+    _rejectCoachMutation(exercise);
     final distinct = goalIds.toSet().toList();
     await _repo.put(exercise.copyWith(goalIds: distinct));
   }
 
   /// Replace consignes (steps) for an exercise.
   Future<void> setConsignes(Exercise exercise, List<String> consignes) async {
-    final cleaned = consignes.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    _rejectCoachMutation(exercise);
+    final cleaned =
+        consignes.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
     await _repo.put(exercise.copyWith(consignes: cleaned));
   }
+
+  void _rejectCoachMutation(Exercise exercise) {
+    if (exercise.origin == ExerciseOrigin.coachCatalog) {
+      throw const CoachCatalogExerciseMutationException();
+    }
+  }
+}
+
+class CoachCatalogExerciseMutationException implements Exception {
+  const CoachCatalogExerciseMutationException();
+
+  @override
+  String toString() => 'Un exercice créé par le Coach est en lecture seule.';
+}
+
+class ExerciseDeletionEligibility {
+  final int linkedSessionCount;
+
+  const ExerciseDeletionEligibility({required this.linkedSessionCount});
+
+  bool get canDelete => linkedSessionCount == 0;
+}
+
+class ExerciseLinkedSessionsException implements Exception {
+  final int linkedSessionCount;
+
+  const ExerciseLinkedSessionsException(this.linkedSessionCount);
+
+  @override
+  String toString() =>
+      'L’exercice doit d’abord être dissocié de $linkedSessionCount session(s).';
 }

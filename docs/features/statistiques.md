@@ -14,16 +14,21 @@ Ce document décrit les règles fonctionnelles actuellement implémentées dans 
 - Moyenne des points sur 30 jours : moyenne simple des points de toutes les séries de la fenêtre.
 - Groupement moyen sur 30 jours : moyenne simple des valeurs enregistrées, y compris les anciennes valeurs nulles ou négatives. Seuls les records de groupement filtrent les valeurs non positives.
 - Meilleure série : maximum des points sur tout l'historique réalisé.
+- Les cartes du meilleur score de série et du meilleur groupement ouvrent leur
+  session source. En cas d'ex æquo, la séance la plus récente est retenue, puis
+  l'identifiant persistant le plus élevé à date égale.
 - Sessions du mois : sessions détaillées et libres réalisées du mois civil courant.
 - Courbes points et groupement : au plus les 30 dernières séries, affichées de l'ancienne vers la récente. La tendance points est une moyenne mobile sur trois séries, avec une fenêtre réduite au début.
 - Répartitions catégories et calibres : une occurrence par session réalisée. Les alias `9mm`, `9x19`, `9mm para` et `9mm (9x19)` sont regroupés sous `9 mm`. Un calibre inconnu reste dans la session mais est exclu de cette seule répartition.
+- En bas de Synthèse, l'ordre est Répartition Calibres, Répartition Catégories,
+  puis Tirs par arme. Son calcul reste celui décrit ci-dessous.
 
 ## Statistiques avancées
 
 - Régularité : `(1 - écart-type population / moyenne) × 100`, bornée entre 0 et 100 ; elle vaut 0 avec moins de trois séries ou une moyenne non positive.
 - Meilleur groupement : minimum strictement positif de tout l'historique.
 - Record de la dernière série : comparaison stricte avec toutes les séries précédentes, séparément pour les points et le groupement.
-- Compteur par arme : somme des tirs des sessions réalisées dont le nom d'arme correspond au râtelier après normalisation de casse et d'espaces. Les séries détaillées et le nombre direct des sessions libres sont additionnés ; les sessions prévues sont exclues. Ce compteur est un cumul non temporel : une session réalisée sans date, notamment issue de données historiques, reste comptabilisée.
+- Compteur par arme : somme des tirs des sessions réalisées dont le nom d'arme correspond au râtelier après normalisation de casse et d'espaces. Les séries détaillées et le nombre direct des sessions libres sont additionnés ; les sessions prévues sont exclues. Ce compteur est un cumul non temporel : une session réalisée sans date, notamment issue de données historiques, reste comptabilisée. Il est affiché dans Synthèse, pas dans Avancé.
 
 ## Comparatif 30 jours / 90 jours
 

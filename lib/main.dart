@@ -14,12 +14,20 @@ import 'migrations/migration_5_create_weapons_box.dart';
 import 'migrations/migration_6_add_session_type.dart';
 import 'migrations/migration_7_add_guided_draft_fields.dart';
 import 'migrations/migration_8_add_score_entered_field.dart';
+import 'migrations/migration_9_add_exercise_difficulty.dart';
+import 'migrations/migration_10_single_session_exercise.dart';
+import 'migrations/migration_11_add_exercise_execution.dart';
+import 'migrations/migration_12_add_exercise_origin.dart';
+import 'migrations/migration_13_add_coach_session_contract.dart';
+import 'migrations/migration_14_remove_legacy_coach_analysis.dart';
 import 'constants/session_constants.dart';
 import 'providers/navigation_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/auth_provider.dart';
 import 'services/auth_service.dart';
+import 'services/coach_experience_preference_service.dart';
 import 'services/logger.dart';
+import 'services/server_wake_service.dart';
 import 'app/my_app.dart';
 
 // Global key pour la navigation
@@ -45,6 +53,12 @@ Future<void> main() async {
     Migration6AddSessionType(), // v6
     Migration7AddGuidedDraftFields(), // v7
     Migration8AddScoreEnteredField(), // v8
+    Migration9AddExerciseDifficulty(), // v9
+    Migration10SingleSessionExercise(), // v10
+    Migration11AddExerciseExecution(), // v11
+    Migration12AddExerciseOrigin(), // v12
+    Migration13AddCoachSessionContract(), // v13
+    Migration14RemoveLegacyCoachAnalysis(), // v14
   ], schemaStore);
   await runner.run();
 
@@ -75,14 +89,32 @@ Future<void> main() async {
     authBaseUrl: AppConfig.I.authBaseUrl,
     callbackScheme: AppConfig.I.authCallbackScheme,
   );
+  final coachExperiencePreferences = CoachExperiencePreferenceService(
+    Hive.box('app_preferences'),
+  );
+  try {
+    await coachExperiencePreferences.initializeFromCachedProfile(
+      authService.readCachedUser,
+    );
+  } catch (error) {
+    AppLogger.I.warn('SETTINGS: reprise du niveau Coach différée: $error');
+  }
 
   // Lancer l'application avec les providers
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(
+          create: (_) => SettingsProvider(
+            coachExperiencePreferences: coachExperiencePreferences,
+          ),
+        ),
         ChangeNotifierProvider(create: (_) => AuthProvider(authService)),
+        Provider<ServerWakeService>(
+          create: (_) => HttpServerWakeService.fromConfig(),
+          dispose: (_, service) => service.close(),
+        ),
       ],
       child: MyApp(navigatorKey: navigatorKey),
     ),

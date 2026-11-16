@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tir_sportif/models/series.dart';
 import 'package:tir_sportif/models/shooting_session.dart';
+import 'package:tir_sportif/models/coach_session_analysis.dart';
 import 'package:tir_sportif/theme/app_theme.dart';
 import 'package:tir_sportif/widgets/session_card.dart';
 import 'package:tir_sportif/widgets/session_chip.dart';
@@ -42,7 +43,7 @@ void main() {
         shotCount: 40,
         distance: 25,
         category: 'test matériel',
-        exercises: const ['e1', 'e2'],
+        exerciseId: 'e1',
         synthese: 'Ne doit pas apparaître sur la carte',
       );
       await tester.pumpWidget(
@@ -69,7 +70,7 @@ void main() {
       expect(find.text('Test matériel'), findsOneWidget);
       expect(find.text('40'), findsOneWidget);
       expect(find.text('25 m'), findsOneWidget);
-      expect(find.text('2 exercice(s)'), findsOneWidget);
+      expect(find.text('1 exercice'), findsOneWidget);
       expect(find.textContaining('Score'), findsNothing);
       expect(find.textContaining('Groupement'), findsNothing);
       expect(find.textContaining('Ne doit pas apparaître'), findsNothing);
@@ -95,15 +96,26 @@ void main() {
       shotCount: 40,
       distance: 25,
       category: 'entraînement',
-      exercises: const ['e1'],
+      exerciseId: 'e1',
     );
     final detailed = DetailedShootingSession(
       date: DateTime(2026, 9, 3),
       weapon: 'CZ 75',
       caliber: '9 mm',
       category: 'entraînement',
-      analyse: 'Analyse disponible',
-      exercises: const ['e1'],
+      coachAnalysis: CoachSessionAnalysis(
+        analysisId: 'analysis-1',
+        sessionId: 'session-1',
+        debrief: 'Débrief',
+        successes: const ['Réussite'],
+        attentionPoint: 'Attention',
+        limitations: const [],
+        exerciseEvaluation: null,
+        nextAction: null,
+        model: 'model',
+        generatedAt: DateTime.utc(2026, 9, 12),
+      ),
+      exerciseId: 'e1',
       series: [Series(points: 45, groupSize: 8, distance: 25)],
     );
 
