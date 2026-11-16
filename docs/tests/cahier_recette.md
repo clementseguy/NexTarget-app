@@ -15,8 +15,8 @@ Pré-requis:
 4. Inspecter les requêtes réseau émises vers le serveur configuré
 Résultats attendus:
 - Un GET /health est lancé après l'affichage de l'accueil et à la synthèse finale, sans ralentir l'interface, la navigation ni l'enregistrement local
-- Les déclenchements simultanés ou espacés de moins de 30 secondes sont dédupliqués et aucun polling ni retry n'est créé
-- Une panne, un timeout de 5 secondes ou une réponse non 2xx ne produit aucun message utilisateur ni crash
+- Les déclenchements simultanés ou espacés de moins de 5 minutes sont dédupliqués et aucun polling ni retry n'est créé
+- Une panne, un timeout de 3 secondes ou une réponse non 2xx ne produit aucun message utilisateur ni crash
 - La requête utilise l'URL configurée et ne contient ni jeton, ni secret, ni donnée de session ou du Coach
 
 ## NT-161 — Analyse ponctuelle d'un exercice personnel

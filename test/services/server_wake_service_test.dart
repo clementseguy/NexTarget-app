@@ -66,7 +66,7 @@ void main() {
         requestCount++;
         return response.future;
       }),
-      cooldown: const Duration(seconds: 30),
+      cooldown: const Duration(minutes: 5),
       now: () => now,
     );
     addTearDown(service.close);
@@ -81,7 +81,7 @@ void main() {
     await service.wake();
     expect(requestCount, 1);
 
-    now = now.add(const Duration(seconds: 31));
+    now = now.add(const Duration(minutes: 5, seconds: 1));
     response = Completer<http.Response>();
     final afterCooldown = service.wake();
     await Future<void>.delayed(Duration.zero);
