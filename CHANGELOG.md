@@ -4,12 +4,18 @@ Toutes les modifications notables de ce projet seront listées ici.
 
 ## [Non publié]
 
+## [0.8.0] - 2026-11-16
+
 ### Removed
 - Le champ historique Markdown `analyse` et son rendu, remplacés par le débrief
   structuré `coachAnalysis` ; la migration Hive v14 et l'import des anciennes
   sauvegardes conservent son contenu sous forme de débrief historique structuré.
 
 ### Added
+- NT-173 : réveil best effort du serveur Render par `GET /health` après
+  l’affichage de l’accueil et de la synthèse finale d’une séance au stand, avec
+  timeout de 3 secondes, déduplication sur 5 minutes et aucune dépendance à
+  l’authentification, au consentement Coach ou aux données de session.
 - NT-156 : débrief du Coach de session structuré et limité à la session, UUID
   persistant partagé avec le serveur, transmission complète à la demande,
   résultat d'exercice fermé, affichage rétrocompatible et présentation du futur

@@ -27,6 +27,7 @@ import 'providers/auth_provider.dart';
 import 'services/auth_service.dart';
 import 'services/coach_experience_preference_service.dart';
 import 'services/logger.dart';
+import 'services/server_wake_service.dart';
 import 'app/my_app.dart';
 
 // Global key pour la navigation
@@ -110,6 +111,10 @@ Future<void> main() async {
           ),
         ),
         ChangeNotifierProvider(create: (_) => AuthProvider(authService)),
+        Provider<ServerWakeService>(
+          create: (_) => HttpServerWakeService.fromConfig(),
+          dispose: (_, service) => service.close(),
+        ),
       ],
       child: MyApp(navigatorKey: navigatorKey),
     ),

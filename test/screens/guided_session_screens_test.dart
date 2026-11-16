@@ -16,6 +16,7 @@ import 'package:tir_sportif/screens/session_detail_screen.dart';
 import 'package:tir_sportif/screens/sessions_history_screen.dart';
 import 'package:tir_sportif/services/preferences_service.dart';
 import 'package:tir_sportif/services/session_service.dart';
+import 'package:tir_sportif/services/server_wake_service.dart';
 import 'package:tir_sportif/services/weapon_service.dart';
 import 'package:tir_sportif/theme/app_theme.dart';
 import 'package:tir_sportif/widgets/guided_draft_card.dart';
@@ -38,6 +39,20 @@ class _DelayedCompletionSessionService extends SessionService {
     await releaseCompletion.future;
     return super.completeGuidedDraft(draft);
   }
+}
+
+class _PendingServerWakeService implements ServerWakeService {
+  final pending = Completer<void>();
+  int calls = 0;
+
+  @override
+  Future<void> wake() {
+    calls++;
+    return pending.future;
+  }
+
+  @override
+  void close() {}
 }
 
 void main() {
@@ -423,6 +438,47 @@ void main() {
     final restored = (await service.getGuidedDrafts()).single;
     expect(restored.series.single.comment, 'Série régulière, visée décalée');
     expect(restored.synthese, 'Très bonne séance à répéter');
+  });
+
+  testWidgets('réveille à la synthèse finale sans attendre la réponse réseau',
+      (tester) async {
+    await setLargeSurface(tester);
+    final wakeService = _PendingServerWakeService();
+    addTearDown(() {
+      if (!wakeService.pending.isCompleted) wakeService.pending.complete();
+    });
+    final draft = await service.createGuidedDraft(
+      GuidedDraftRequest(
+        date: DateTime(2026, 11, 16),
+        weapon: 'Pistolet',
+        caliber: '9 mm',
+        category: 'entraînement',
+        seriesCount: 1,
+        shotsPerSeries: 5,
+        initialDistance: 25,
+        initialHandMethod: HandMethod.twoHands,
+      ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GuidedSessionScreen(
+          draft: draft,
+          sessionService: service,
+          serverWakeService: wakeService,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('guided_points')), '45');
+    await tester.enterText(find.byKey(const Key('guided_group')), '8');
+    await tester.tap(find.byKey(const Key('guided_next')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Synthèse de la séance'), findsOneWidget);
+    expect(wakeService.calls, 1);
+    expect(wakeService.pending.isCompleted, isFalse);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('abandonne sans recréer le brouillon lors de la sortie',
