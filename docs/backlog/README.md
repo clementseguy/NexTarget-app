@@ -81,6 +81,22 @@ de journal intermédiaire.
   pour une maintenance technique ou documentaire sans US.
 - PR liée à une US : vérifier ses critères d'acceptation dans le corps.
 
+## Suivi opérationnel d'une release
+
+Le [board v0.8.1](https://github.com/users/clementseguy/projects/1/views/1)
+présente les US de la release sous forme de colonnes `À cadrer`, `Prêt`,
+`En cours`, `En revue`, `En recette` et `Terminé`.
+Une carte référence un ID `NT-XXX` et renvoie vers sa description canonique ;
+elle ne recopie ni ses critères d'acceptation ni son statut produit. Les US
+`both` peuvent lier les PR de l'app et du serveur depuis une seule carte.
+
+Avant une pause de développement, laisser sur chaque carte active la branche
+et les PR concernées, le dernier contrôle effectué, le blocage éventuel et
+surtout la **prochaine action concrète**. À la reprise, vérifier d'abord les
+branches, les PR et le backlog canonique, puis actualiser la carte. Le passage
+dans la colonne `Terminé` ne remplace jamais la mise à jour du statut dans
+`backlog-unifie.md` selon le cycle de vie ci-dessus.
+
 ## Journal du backlog
 
 Le dossier [`journal/`](journal/) conserve la chronologie des décisions produit

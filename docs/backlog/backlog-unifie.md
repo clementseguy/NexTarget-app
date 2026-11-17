@@ -1,6 +1,6 @@
 # NexTarget — Backlog unifié
 
-> **Prochain ID disponible : NT-177**
+> **Prochain ID disponible : NT-181**
 
 Ce fichier inventorie les US actives de l'application et du serveur. Il est
 l'unique source de vérité pour leur statut. Les descriptions sont dans
@@ -33,6 +33,8 @@ l'unique source de vérité pour leur statut. Les descriptions sont dans
 | ID | Titre | Portée | Statut | MoSCoW | Est. | Remplacée par |
 |---|---|---|---|---|---|---|
 | [NT-024](descriptions.md#NT-024) | Stats d'exécution (fenêtres glissantes) | app | À FAIRE | Could | M | — |
+| [NT-177](descriptions.md#NT-177) | Récupérer un exercice du catalogue par ID en production | app | À FAIRE | Must | S | — |
+| [NT-178](descriptions.md#NT-178) | Réaliser une session depuis un exercice du catalogue | app | À FAIRE | Must | M | — |
 
 ## Thème 4 — Coach IA
 
@@ -142,3 +144,10 @@ l'unique source de vérité pour leur statut. Les descriptions sont dans
 | [NT-174](descriptions.md#NT-174) | Qualifier la détection des tirs avec la Garmin vívoactive HR | app | À FAIRE | Must (POC) | S | — |
 | [NT-175](descriptions.md#NT-175) | Détecter et transmettre automatiquement une série de 5 tirs | app | À FAIRE | Must (POC) | M | — |
 | [NT-176](descriptions.md#NT-176) | Ajouter la page prototype Garmin dans NexTarget | app | À FAIRE | Must (POC) | M | — |
+
+## Thème 18 — Clubs
+
+| ID | Titre | Portée | Statut | MoSCoW | Est. | Remplacée par |
+|---|---|---|---|---|---|---|
+| [NT-179](descriptions.md#NT-179) | Créer et présenter un club | both | À FAIRE | Must | M | — |
+| [NT-180](descriptions.md#NT-180) | Rechercher un club et gérer les adhésions approuvées | both | À FAIRE | Must | L | — |

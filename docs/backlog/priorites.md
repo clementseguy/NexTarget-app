@@ -9,18 +9,26 @@ de limiter P0 à **2 US** et P1 à **5 US**.
 
 ## P0 — Immédiat
 
+- [NT-174](descriptions.md#NT-174) — Qualifier le signal de tir de la Garmin vívoactive HR.
+- [NT-165](descriptions.md#NT-165) — Fixer le modèle commun objectifs de travail, défis et exercices.
 
 ## P1 — Prochain
 
 - [NT-172](descriptions.md#NT-172) — Ne plus forcer le consentement Google à chaque connexion.
+- [NT-175](descriptions.md#NT-175) — Détecter et transmettre automatiquement les tirs Garmin.
+- [NT-176](descriptions.md#NT-176) — Recevoir, afficher et enregistrer le chronométrage dans une page prototype.
+- [NT-162](descriptions.md#NT-162) — Valider le modèle Exercise et la première bibliothèque serveur.
+- [NT-177](descriptions.md#NT-177) — Récupérer un exercice par ID hors DEBUG.
 
 ## P2 — Ultérieur
 
 - [NT-157](descriptions.md#NT-157) — Séparer la décision du ton du Coach.
 - [NT-166](descriptions.md#NT-166) — Afficher la synthèse des indicateurs d'une session.
-- [NT-174](descriptions.md#NT-174) — Qualifier le signal de tir de la Garmin vívoactive HR.
-- [NT-175](descriptions.md#NT-175) — Détecter et transmettre automatiquement cinq tirs.
-- [NT-176](descriptions.md#NT-176) — Recevoir, afficher et enregistrer le chronométrage dans une page prototype.
+- [NT-178](descriptions.md#NT-178) — Réaliser une session depuis l'exercice récupéré.
+- [NT-163](descriptions.md#NT-163) — Déterminer le résultat du Coach de session.
+- [NT-164](descriptions.md#NT-164) — Expliquer l'attente du Coach de progression après le débrief.
+- [NT-179](descriptions.md#NT-179) — Créer et présenter un club.
+- [NT-180](descriptions.md#NT-180) — Rechercher un club et approuver les adhésions.
 - [NT-121](descriptions.md#NT-121) — Détailler et construire le MVP Coach de progression.
 - [NT-122](descriptions.md#NT-122) — Structurer les sorties du Coach.
 - [NT-123](descriptions.md#NT-123) — Sélectionner un exercice validé pour le plan.
