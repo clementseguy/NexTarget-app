@@ -26,8 +26,9 @@ bash scripts/us_context.sh NT-XXX
 Les statuts autorisés sont `À FAIRE`, `EN COURS`, `FAIT` et `ANNULÉ`.
 
 - Une PR qui clôt une US prépare son statut `FAIT` et son entrée `LIVRAISON`.
-  Tant que la PR n'est pas fusionnée, le statut canonique sur `dev` reste
-  `EN COURS`. Les changements préparés deviennent canoniques à la fusion.
+  Pour la v0.8.1, la PR d'US vise `integration/v0.8.1`. Le statut canonique
+  sur `dev` reste celui déjà publié jusqu'à la fusion de la PR de version vers
+  `dev` ; les changements préparés deviennent alors canoniques.
 - Une US remplacée passe à `ANNULÉ` et référence ses remplaçantes dans le
   tableau et dans sa description.
 - Le statut n'est modifié que dans `backlog-unifie.md`.
@@ -77,6 +78,9 @@ de journal intermédiaire.
 
 - Branche liée à une US : `type/NT-XXX-slug-court`.
 - Maintenance sans US : `chore/slug-court`.
+- Pour la v0.8.1, partir de `integration/v0.8.1` et ouvrir les PR d'US vers
+  cette branche ; la PR de version vise ensuite `dev`. Pour les autres travaux,
+  partir de `dev` et viser `dev`.
 - Commit et PR : inclure `NT-XXX` lorsqu'une US existe ; l'ID est facultatif
   pour une maintenance technique ou documentaire sans US.
 - PR liée à une US : vérifier ses critères d'acceptation dans le corps.
@@ -105,7 +109,8 @@ et des livraisons significatives, dans un fichier par année.
 - Le journal est historique et ne constitue jamais une source du statut courant.
 - Le statut courant existe uniquement dans `backlog-unifie.md`.
 - Une entrée est ajoutée pour un cadrage matériel ou une annulation. Une PR qui
-  clôt une US prépare son entrée `LIVRAISON`, effective à sa fusion dans `dev`.
+  clôt une US prépare son entrée `LIVRAISON`, effective à la fusion dans `dev`
+  (directe ou par la PR de version v0.8.1).
 - Les changements ordinaires `À FAIRE` vers `EN COURS`, ou inversement, ne sont
   pas journalisés.
 - Une livraison est résumée en quelques lignes et renvoie vers la PR, le
@@ -130,11 +135,12 @@ Format recommandé :
 
 ## Definition of Done
 
-Une US peut être fusionnée dans `dev` lorsque ses critères d'acceptation sont
-vérifiés, les tests et contrôles qualité concernés sont verts, la recette est
-mise à jour si nécessaire et aucune règle de sécurité n'est régressée. La PR
-prépare son statut `FAIT` et son entrée `LIVRAISON` ; la fusion les rend
-canoniques.
+Une US peut être fusionnée dans sa branche d'intégration lorsque ses critères
+d'acceptation sont vérifiés, les tests et contrôles qualité concernés sont
+verts, la recette est mise à jour si nécessaire et aucune règle de sécurité
+n'est régressée. La PR prépare son statut `FAIT` et son entrée `LIVRAISON` ;
+ces changements deviennent canoniques sur `dev` à la fusion directe ou, pour
+la v0.8.1, à la fusion de la PR de version.
 
 Les `AGENTS.md` restent la référence pour les conventions de code,
 l'architecture et les règles de sécurité propres à chaque dépôt.

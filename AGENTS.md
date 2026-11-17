@@ -74,13 +74,18 @@ contrôles complets juste avant ou après sans modification du code.
 
 ## Livraison
 
-- Flux Git : branche dédiée issue de `dev` (`feature/NT-XXX-slug` ou
-  `fix/NT-XXX-slug`) → `dev` (tests d'intégration) → `staging` (recette) →
-  `main` (release). La maintenance sans US utilise `chore/slug-court`.
+- Pour la v0.8.1, créer les branches dédiées depuis `integration/v0.8.1`
+  (`feature/NT-XXX-slug` ou `fix/NT-XXX-slug`) et les fusionner dans cette
+  branche par PR. La maintenance sans US utilise `chore/slug-court` et suit
+  la même base et la même cible lorsqu'elle concerne la v0.8.1.
+- Flux de livraison v0.8.1 : `integration/v0.8.1` → `dev` (intégration finale)
+  → `staging` (recette) → `main` (release). Pour les travaux hors v0.8.1,
+  partir de `dev` et viser `dev` comme auparavant.
+- Si `dev` avance pendant le cycle, synchroniser `integration/v0.8.1` par PR
+  avant la PR finale vers `dev`.
 - Fusionner chaque étape par PR, dans cet ordre ; aucun commit direct sur
-  `dev`, `staging` ou `main`.
-- Une PR de développement vise `dev`. Inclure `NT-XXX` dans la branche, les
-  commits et la PR lorsqu'une US existe.
+  `integration/v0.8.1`, `dev`, `staging` ou `main`.
+- Inclure `NT-XXX` dans la branche, les commits et la PR lorsqu'une US existe.
 - Une PR qui clôt une US prépare son statut `FAIT` dans
   `docs/backlog/backlog-unifie.md` et une entrée `LIVRAISON` dans le journal.
 - Modifier la définition, la priorité et le statut uniquement dans leurs

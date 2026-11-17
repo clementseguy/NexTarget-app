@@ -2,9 +2,9 @@ name: SonarCloud
 
 on:
   push:
-    branches: [ "dev", "staging", "main" ]
+    branches: [ "integration/v0.8.1", "dev", "staging", "main" ]
   pull_request:
-    branches: [ "dev", "staging", "main" ]
+    branches: [ "integration/v0.8.1", "dev", "staging", "main" ]
   workflow_dispatch:
     inputs:
       branch:
@@ -34,7 +34,7 @@ jobs:
               return;
             }
             const branch = context.ref.replace('refs/heads/','');
-            const nextBranch = { dev: 'staging', staging: 'main' }[branch];
+            const nextBranch = { 'integration/v0.8.1': 'dev', dev: 'staging', staging: 'main' }[branch];
             if (!nextBranch) {
               core.setOutput('has_pr', 'false');
               return;

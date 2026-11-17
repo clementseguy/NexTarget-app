@@ -40,6 +40,6 @@ Les captures et ressources sous `assets/` sont volontairement hors du périmètr
 1. Modifier le statut uniquement dans `backlog/backlog-unifie.md`, la définition fonctionnelle dans `backlog/descriptions.md` et l'ordre de traitement dans `backlog/priorites.md`.
 2. Mettre à jour la documentation fonctionnelle avec tout comportement visible modifié.
 3. Mettre à jour `docs/tests/cahier_recette.yaml`, puis régénérer le Markdown pour tout parcours concerné.
-4. Préparer dans la PR l'entrée du journal et le statut `FAIT` lorsqu'elle clôt une US ; ces changements deviennent canoniques à la fusion dans `dev`.
+4. Préparer dans la PR l'entrée du journal et le statut `FAIT` lorsqu'elle clôt une US ; pour la v0.8.1, ces changements deviennent canoniques à la fusion de la branche d'intégration dans `dev`.
 5. Ajouter une note dans `releases/` uniquement lors d'une release ; `CHANGELOG.md` conserve l'historique détaillé.
 6. Ne pas conserver de brouillon obsolète dans la documentation active.
